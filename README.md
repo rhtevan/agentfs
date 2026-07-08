@@ -39,6 +39,41 @@ Current bundles:
 - **AgentFS ↔ Claude Compatibility** — Cross-agent context discovery gap analysis
 - **Headroom Compression Analysis** — Proxy compression analysis for OpenAI-compatible endpoints
 
+## Modes
+
+AgentFS operates in two modes:
+
+### USER Mode (`~/.agents/`)
+
+A **machine-wide shared library** of skills and knowledge visible to any agent across all projects. No agent identity, memories, or profiles — purely a capability and knowledge store.
+
+```
+~/.agents/
+├── skills/          # Shared agent workflows
+├── knowledge/       # Shared knowledge bundles
+├── index.md
+└── log.md
+```
+
+> **This repository is a USER mode AgentFS instance.**
+
+### PROJECT Mode (`./.agents/` in a repo)
+
+A **per-repository agent workspace** that adds identity, memory, and multi-agent collaboration on top of skills and knowledge. Each project can have its own agent profiles with independent memories.
+
+```
+./
+├── AGENTS.md                # Workspace entry point
+└── .agents/
+    ├── SOUL.md              # Default agent identity
+    ├── profiles/            # Named agent profiles (each with SOUL.md + memories)
+    ├── memories/            # Default agent's learned context (USER.md, MEMORY.md)
+    ├── skills/              # Project-specific skills
+    └── knowledge/           # Project-specific knowledge
+```
+
+Both modes can coexist — agents discover USER-level skills/knowledge globally while maintaining project-scoped identity and memory in PROJECT mode.
+
 ## Structural Guardrails
 
 AgentFS enforces four guardrails to maintain consistency:
