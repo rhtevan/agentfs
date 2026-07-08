@@ -164,7 +164,7 @@ Test end-to-end through Headroom → LiteLLM → Vertex AI:
 ```bash
 curl -s -X POST http://localhost:8787/v1/chat/completions \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer sk-headroom' \
+  -H 'Authorization: Bearer sk-EXAMPLE-not-real' \
   -d '{
     "model": "claude-sonnet-4-6",
     "messages": [{"role": "user", "content": "Say hello in one word."}],

@@ -339,7 +339,7 @@ Common cause: the MetalLB CR does not exist. Verify with `oc get metallb -n meta
 
 ## Supporting Files
 
-Skill directory: /home/ezhang/.agents/skills/crc-ovn-frr-metallb-config
+Skill directory: ~/.agents/skills/crc-ovn-frr-metallb-config
 
 - verify.sh → load_skill(name: "crc-ovn-frr-metallb-config/verify.sh")
 

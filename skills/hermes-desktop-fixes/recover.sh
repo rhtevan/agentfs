@@ -4,8 +4,8 @@
 # Safe to run multiple times (idempotent).
 
 set -euo pipefail
-REPO="/home/ezhang/.hermes/hermes-agent"
-HERMES_HOME="/home/ezhang/.hermes"
+REPO="$HOME/.hermes/hermes-agent"
+HERMES_HOME="$HOME/.hermes"
 
 echo "=== Hermes Desktop Fixes Recovery ==="
 echo ""
@@ -38,9 +38,9 @@ APPLY="${HERMES_HOME}/hermes-apply-patches.sh"
 cat > "${APPLY}" << 'APPLYEOF'
 #!/usr/bin/env bash
 set -euo pipefail
-REPO="/home/ezhang/.hermes/hermes-agent"
-LAUNCHER="/home/ezhang/.local/bin/hermes"
-ENV_FILE="/home/ezhang/.hermes/hermes-env.sh"
+REPO="$HOME/.hermes/hermes-agent"
+LAUNCHER="$HOME/.local/bin/hermes"
+ENV_FILE="$HOME/.hermes/hermes-env.sh"
 
 # Launcher — ensure it sources hermes-env.sh
 if [ -f "${LAUNCHER}" ] && [ -f "${ENV_FILE}" ]; then
@@ -116,7 +116,7 @@ REVERT="${HERMES_HOME}/hermes-revert-patches.sh"
 cat > "${REVERT}" << 'REVERTEOF'
 #!/usr/bin/env bash
 set -euo pipefail
-REPO="/home/ezhang/.hermes/hermes-agent"
+REPO="$HOME/.hermes/hermes-agent"
 cd "${REPO}"
 FILES=(tui_gateway/server.py hermes_cli/main.py apps/desktop/scripts/patch-electron-builder-mac-binary.cjs)
 for f in "${FILES[@]}"; do
@@ -129,23 +129,23 @@ chmod +x "${REVERT}"
 echo "✓ Installed hermes-revert-patches.sh"
 
 # --- 5. Create/update the launcher ---
-LAUNCHER="/home/ezhang/.local/bin/hermes"
+LAUNCHER="$HOME/.local/bin/hermes"
 mkdir -p "$(dirname "${LAUNCHER}")"
 cat > "${LAUNCHER}" << 'LAUNCHEOF'
 #!/usr/bin/env bash
-[ -f "/home/ezhang/.hermes/hermes-env.sh" ] && . "/home/ezhang/.hermes/hermes-env.sh"
+[ -f "$HOME/.hermes/hermes-env.sh" ] && . "$HOME/.hermes/hermes-env.sh"
 unset PYTHONPATH
 unset PYTHONHOME
 
-HERMES_BIN="/home/ezhang/.hermes/hermes-agent/venv/bin/hermes"
+HERMES_BIN="$HOME/.hermes/hermes-agent/venv/bin/hermes"
 
 # Intercept "hermes update" — revert patched files so git pull succeeds,
 # then re-apply patches on the new upstream code afterward.
 if [ "$1" = "update" ]; then
-    bash /home/ezhang/.hermes/hermes-revert-patches.sh 2>/dev/null
+    bash $HOME/.hermes/hermes-revert-patches.sh 2>/dev/null
     "$HERMES_BIN" "$@"
     rc=$?
-    bash /home/ezhang/.hermes/hermes-apply-patches.sh 2>/dev/null
+    bash $HOME/.hermes/hermes-apply-patches.sh 2>/dev/null
     exit $rc
 fi
 
@@ -158,7 +158,7 @@ echo "✓ Installed launcher with update interception"
 HOOK="${REPO}/.git/hooks/post-merge"
 cat > "${HOOK}" << 'HOOKEOF'
 #!/usr/bin/env bash
-APPLY="/home/ezhang/.hermes/hermes-apply-patches.sh"
+APPLY="$HOME/.hermes/hermes-apply-patches.sh"
 [ -x "${APPLY}" ] && bash "${APPLY}"
 HOOKEOF
 chmod +x "${HOOK}"
@@ -170,7 +170,7 @@ echo "→ Applying patches..."
 bash "${APPLY}"
 
 # --- 8. Clear stale Desktop localStorage ---
-LEVELDB="/home/ezhang/.config/Hermes/Local Storage/leveldb"
+LEVELDB="$HOME/.config/Hermes/Local Storage/leveldb"
 if [ -d "${LEVELDB}" ]; then
     rm -rf "${LEVELDB}"
     echo "✓ Cleared stale Desktop localStorage"
@@ -179,7 +179,7 @@ fi
 # --- 9. Install health-check script ---
 cat > "${HERMES_HOME}/hermes-check-patches.sh" << 'CHECKEOF'
 #!/usr/bin/env bash
-REPO="/home/ezhang/.hermes/hermes-agent"
+REPO="$HOME/.hermes/hermes-agent"
 PASS=0; FAIL=0
 ok()   { echo "  ✓ $1"; PASS=$((PASS+1)); }
 fail() { echo "  ✗ $1"; FAIL=$((FAIL+1)); }
@@ -189,10 +189,10 @@ grep -q "ELECTRON_DISABLE_SANDBOX" "${REPO}/hermes_cli/main.py" 2>/dev/null && o
 grep -q "hermes-electron-workspace-symlink" "${REPO}/apps/desktop/scripts/patch-electron-builder-mac-binary.cjs" 2>/dev/null && ok "Electron symlink (prebuilder)" || fail "Electron symlink MISSING (prebuilder)"
 SW=$(cd "${REPO}" && git ls-files -v tui_gateway/server.py hermes_cli/main.py apps/desktop/scripts/patch-electron-builder-mac-binary.cjs 2>/dev/null | grep -c '^S')
 [ "$SW" = "3" ] && ok "Skip-worktree flags set (${SW}/3)" || fail "Skip-worktree flags incomplete (${SW}/3)"
-grep -q "hermes-env.sh" /home/ezhang/.local/bin/hermes 2>/dev/null && ok "Launcher sources hermes-env.sh" || fail "Launcher missing hermes-env.sh source"
-grep -q 'hermes-revert-patches' /home/ezhang/.local/bin/hermes 2>/dev/null && ok "Launcher intercepts 'hermes update'" || fail "Launcher missing update interception"
-[ -x /home/ezhang/.hermes/hermes-apply-patches.sh ] && ok "Apply-patches script present" || fail "Apply-patches script MISSING"
-[ -x /home/ezhang/.hermes/hermes-revert-patches.sh ] && ok "Revert-patches script present" || fail "Revert-patches script MISSING"
+grep -q "hermes-env.sh" $HOME/.local/bin/hermes 2>/dev/null && ok "Launcher sources hermes-env.sh" || fail "Launcher missing hermes-env.sh source"
+grep -q 'hermes-revert-patches' $HOME/.local/bin/hermes 2>/dev/null && ok "Launcher intercepts 'hermes update'" || fail "Launcher missing update interception"
+[ -x $HOME/.hermes/hermes-apply-patches.sh ] && ok "Apply-patches script present" || fail "Apply-patches script MISSING"
+[ -x $HOME/.hermes/hermes-revert-patches.sh ] && ok "Revert-patches script present" || fail "Revert-patches script MISSING"
 [ -x "${REPO}/.git/hooks/post-merge" ] && ok "Post-merge hook installed" || fail "Post-merge hook MISSING"
 echo
 [ "$FAIL" -eq 0 ] && echo "All patches healthy. (${PASS} checks passed)" || echo "WARNING: ${FAIL} check(s) failed! Run: bash ~/.hermes/hermes-apply-patches.sh"

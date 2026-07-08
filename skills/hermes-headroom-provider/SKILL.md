@@ -57,7 +57,7 @@ Then follow these steps in the wizard:
 
 1. Select **"Custom endpoint (enter URL manually)"**
 2. API base URL → `http://127.0.0.1:8787/v1`
-3. API key → `sk-headroom` (or press Enter to skip — Headroom doesn't require a real key by default)
+3. API key → `sk-EXAMPLE-not-real` (or press Enter to skip — Headroom doesn't require a real key by default)
 4. When it asks about `/v1` — decline if you already included it in the URL
 5. API mode → accept the default (auto-detect)
 6. Pick a default model from the discovered list
@@ -80,7 +80,7 @@ providers:
   headroom-proxy:
     api: http://127.0.0.1:8787/v1
     name: Headroom Proxy
-    api_key: sk-headroom
+    api_key: sk-EXAMPLE-not-real
     discover_models: true
     default_model: <chosen-model>
 ```
@@ -115,7 +115,7 @@ providers:
   headroom-proxy:
     api: http://127.0.0.1:8787/v1
     name: Headroom Proxy
-    api_key: sk-headroom
+    api_key: sk-EXAMPLE-not-real
     discover_models: true
     default_model: <preferred-model>
 ```
@@ -153,7 +153,7 @@ with `anthropic_messages` mode), you can safely re-enable `service_tier: fast`.
 | Setting | hermes-litellm-provider | hermes-headroom-provider |
 |---------|------------------------|-------------------------|
 | `base_url` | `http://127.0.0.1:4000/v1` | `http://127.0.0.1:8787/v1` |
-| `api_key` | `sk-litellm` | `sk-headroom` |
+| `api_key` | `sk-EXAMPLE-not-real` | `sk-EXAMPLE-not-real` |
 | Context optimization | None | ✅ Automatic compression |
 | Upstream path | Hermes → LiteLLM → Vertex AI | Hermes → Headroom → LiteLLM → Vertex AI |
 

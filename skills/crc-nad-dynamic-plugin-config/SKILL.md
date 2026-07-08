@@ -19,9 +19,9 @@ This plugin sets `KUBEVIRT_DYNAMIC=true` via a `console.flag/model` extension (7
 
 - CRC cluster is running (`crc status` shows Running)
 - `oc` is logged in as `kubeadmin`
-- Helm v3 is available — use `/home/ezhang/.local/bin/helm` (v3.21.0)
-  - Verify: `/home/ezhang/.local/bin/helm version`
-- The `nad-console-plugin` project is at `/home/ezhang/app/playground/nad-console-plugin/`
+- Helm v3 is available — use `~/.local/bin/helm` (v3.21.0)
+  - Verify: `~/.local/bin/helm version`
+- The `nad-console-plugin` project is at `~/app/playground/nad-console-plugin/`
 - Pre-built image: `quay.io/rhtevan/nad-console-plugin:latest`
 
 ## Step 1: Verify the NAD CRD Is Present
@@ -37,8 +37,8 @@ Expected: The CRD is present (it's part of CRC's default Multus CNI setup).
 ## Step 2: Deploy with Helm
 
 ```bash
-/home/ezhang/.local/bin/helm upgrade -i nad-console-plugin \
-  /home/ezhang/app/playground/nad-console-plugin/charts/openshift-console-plugin \
+~/.local/bin/helm upgrade -i nad-console-plugin \
+  ~/app/playground/nad-console-plugin/charts/openshift-console-plugin \
   -n nad-console-plugin \
   --create-namespace \
   --set plugin.image=quay.io/rhtevan/nad-console-plugin:latest \

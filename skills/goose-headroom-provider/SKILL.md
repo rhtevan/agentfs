@@ -105,7 +105,7 @@ providers:
 **File:** `~/.config/goose/.env`
 
 ```
-CUSTOM_HEADROOM_API_KEY=sk-headroom
+CUSTOM_HEADROOM_API_KEY=sk-EXAMPLE-not-real
 ```
 
 The API key value is a placeholder — Headroom does not require
@@ -165,7 +165,7 @@ Add the provider entry under `providers:` in `~/.config/goose/config.yaml`:
 Add to `~/.config/goose/.env`:
 
 ```
-CUSTOM_HEADROOM_API_KEY=sk-headroom
+CUSTOM_HEADROOM_API_KEY=sk-EXAMPLE-not-real
 ```
 
 ### Step 4 — Configure via `goose configure` CLI (Alternative)
@@ -260,7 +260,7 @@ If the Headroom custom provider is lost (e.g., after a config reset):
 3. **Add the provider entry** to `~/.config/goose/config.yaml` under
    `providers:`
 4. **Add API key** to `~/.config/goose/.env`:
-   `CUSTOM_HEADROOM_API_KEY=sk-headroom`
+   `CUSTOM_HEADROOM_API_KEY=sk-EXAMPLE-not-real`
 5. **Set `active_provider: custom_headroom`** in config.yaml
 6. **Restart Goose** — the Headroom provider will be available
 
@@ -332,7 +332,7 @@ EOF
 # Ensure .env has the API key
 ENV_FILE="$HOME/.config/goose/.env"
 if ! grep -q 'CUSTOM_HEADROOM_API_KEY' "$ENV_FILE" 2>/dev/null; then
-  echo 'CUSTOM_HEADROOM_API_KEY=sk-headroom' >> "$ENV_FILE"
+  echo 'CUSTOM_HEADROOM_API_KEY=sk-EXAMPLE-not-real' >> "$ENV_FILE"
 fi
 
 echo "✅ Headroom custom provider restored to: $PROVIDER_FILE"
@@ -358,7 +358,7 @@ echo "     systemctl --user status headroom-proxy"
 - [ ] Headroom proxy running and healthy (prerequisite)
 - [ ] `custom_headroom.json` exists in `~/.config/goose/custom_providers/`
 - [ ] `config.yaml` has `custom_headroom` in `providers:` with `enabled: true`
-- [ ] `CUSTOM_HEADROOM_API_KEY=sk-headroom` is in `~/.config/goose/.env`
+- [ ] `CUSTOM_HEADROOM_API_KEY=sk-EXAMPLE-not-real` is in `~/.config/goose/.env`
 - [ ] `goose configure` shows **Headroom** in the provider list
 - [ ] A test chat via Goose returns a valid LLM response
 

@@ -108,7 +108,7 @@ Apply post-setup configuration to an OpenShift Local (CRC) cluster. This skill c
 
 ## Supporting Files
 
-Skill directory: /home/ezhang/.agents/skills/crc-post-setup-config
+Skill directory: ~/.agents/skills/crc-post-setup-config
 
 - apply-monitoring-config.sh → load_skill(name: "crc-post-setup-config/apply-monitoring-config.sh")
 - apply-system-reserved.sh → load_skill(name: "crc-post-setup-config/apply-system-reserved.sh")

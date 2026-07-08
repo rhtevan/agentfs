@@ -51,7 +51,7 @@ Then follow these steps in the wizard:
 
 1. Select **"Custom endpoint (enter URL manually)"**
 2. API base URL → `http://127.0.0.1:4000/v1`
-3. API key → `sk-litellm` (or press Enter to skip — LiteLLM doesn't require a real key by default)
+3. API key → `sk-EXAMPLE-not-real` (or press Enter to skip — LiteLLM doesn't require a real key by default)
 4. When it asks about `/v1` — decline if you already included it in the URL
 5. API mode → accept the default (auto-detect)
 6. Pick a default model from the discovered list
@@ -108,12 +108,12 @@ model:
   default: <preferred-model>
   provider: custom
   base_url: http://127.0.0.1:4000/v1
-  api_key: "sk-litellm"
+  api_key: "sk-EXAMPLE-not-real"
 
 custom_providers:
   - name: LiteLLM Vertex AI
     base_url: http://127.0.0.1:4000/v1
-    api_key: "sk-litellm"
+    api_key: "sk-EXAMPLE-not-real"
     model: <preferred-model>
     discover_models: true
 ```
