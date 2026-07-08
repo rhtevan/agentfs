@@ -1,0 +1,237 @@
+{
+  "_comment": "A training batch requires MANY labeled incidents, not just one. Here are abbreviated examples of different fault types to show dataset diversity.",
+
+  "training_batch_summary": {
+    "total_incidents": 8,
+    "fault_type_distribution": {
+      "hardware_failure": 3,
+      "configuration_error": 2,
+      "software_bug": 1,
+      "congestion": 1,
+      "power_failure": 1
+    },
+    "domain_distribution": {
+      "transport": 4,
+      "RAN": 2,
+      "core": 2
+    }
+  },
+
+  "incidents": [
+    {
+      "incident_id": "INC00847291",
+      "fault_type": "hardware_failure",
+      "fault_subtype": "sfp_degradation",
+      "root_cause_node": "AGG-NYC-E-01",
+      "root_cause_component": "Gi0/0/0/3 SFP",
+      "total_alarms": 47,
+      "affected_nodes": 10,
+      "affected_ues": 5210,
+      "mttr_minutes": 155,
+      "domain_origin": "transport",
+      "domain_impact": ["transport", "RAN", "core"],
+      "_detail": "See files 01-06 for full dataset"
+    },
+
+    {
+      "incident_id": "INC00852104",
+      "fault_type": "configuration_error",
+      "fault_subtype": "ospf_cost_misconfiguration",
+      "root_cause_node": "AGG-BOS-W-03",
+      "root_cause_component": "OSPF process (config change CHG00198765)",
+      "total_alarms": 23,
+      "affected_nodes": 7,
+      "affected_ues": 3400,
+      "mttr_minutes": 45,
+      "domain_origin": "transport",
+      "domain_impact": ["transport", "RAN"],
+      "description": "During a maintenance window, an engineer changed OSPF cost on AGG-BOS-W-03's interface to CORE-RTR-BOS-01 from 10 to 10000 (intended to be temporary). Forgot to revert. Traffic rerouted through suboptimal path causing congestion. Three sites experienced throughput degradation.",
+      "node_labels": {
+        "AGG-BOS-W-03": {"label": "root_cause", "label_id": 0},
+        "CORE-RTR-BOS-01": {"label": "collateral", "label_id": 3},
+        "CSG-BOS-W-07": {"label": "primary_symptom", "label_id": 1},
+        "CSG-BOS-W-08": {"label": "primary_symptom", "label_id": 1},
+        "CSG-BOS-W-09": {"label": "collateral", "label_id": 3},
+        "gNB-BOS-W-07": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-BOS-W-08": {"label": "secondary_symptom", "label_id": 2}
+      },
+      "remediation": "Config rollback: restored OSPF cost to 10"
+    },
+
+    {
+      "incident_id": "INC00855678",
+      "fault_type": "hardware_failure",
+      "fault_subtype": "power_supply_unit",
+      "root_cause_node": "gNB-CHI-N-012",
+      "root_cause_component": "PSU-A (primary power supply)",
+      "total_alarms": 12,
+      "affected_nodes": 3,
+      "affected_ues": 2800,
+      "mttr_minutes": 210,
+      "domain_origin": "RAN",
+      "domain_impact": ["RAN"],
+      "description": "Primary PSU on gNB-CHI-N-012 failed. Redundant PSU-B took over but was already operating at 85% capacity. Under peak load, power draw exceeded PSU-B capacity causing thermal throttling and reduced transmit power. Coverage hole developed. Neighboring sites absorbed some UEs but experienced overload.",
+      "node_labels": {
+        "gNB-CHI-N-012": {"label": "root_cause", "label_id": 0},
+        "gNB-CHI-N-013": {"label": "collateral", "label_id": 3},
+        "gNB-CHI-N-011": {"label": "collateral", "label_id": 3}
+      },
+      "remediation": "PSU-A replacement"
+    },
+
+    {
+      "incident_id": "INC00861234",
+      "fault_type": "software_bug",
+      "fault_subtype": "vnf_memory_leak",
+      "root_cause_node": "UPF-DAL-01",
+      "root_cause_component": "UPF process (memory leak in GTP-U handler v4.2.1)",
+      "total_alarms": 35,
+      "affected_nodes": 9,
+      "affected_ues": 15000,
+      "mttr_minutes": 90,
+      "domain_origin": "core",
+      "domain_impact": ["core", "RAN"],
+      "description": "Memory leak in UPF GTP-U handler (introduced in patch v4.2.1 deployed 3 days ago). Memory usage grew 2%/hour until OOM killer triggered at 95%. UPF restarted automatically but lost all active PDU sessions (15,000). All connected gNBs reported S1-U failures. Mass re-registration storm hit AMF.",
+      "node_labels": {
+        "UPF-DAL-01": {"label": "root_cause", "label_id": 0},
+        "AMF-DAL-01": {"label": "primary_symptom", "label_id": 1},
+        "SMF-DAL-01": {"label": "primary_symptom", "label_id": 1},
+        "CORE-RTR-DAL-01": {"label": "collateral", "label_id": 3},
+        "gNB-DAL-N-001": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-DAL-N-002": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-DAL-N-003": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-DAL-N-004": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-DAL-N-005": {"label": "secondary_symptom", "label_id": 2}
+      },
+      "remediation": "VNF restart + rollback to v4.1.8"
+    },
+
+    {
+      "incident_id": "INC00867890",
+      "fault_type": "congestion",
+      "fault_subtype": "capacity_exhaustion",
+      "root_cause_node": "gNB-LA-S-045",
+      "root_cause_component": "PRB exhaustion (stadium event)",
+      "total_alarms": 18,
+      "affected_nodes": 5,
+      "affected_ues": 45000,
+      "mttr_minutes": 180,
+      "domain_origin": "RAN",
+      "domain_impact": ["RAN", "core"],
+      "description": "Major stadium event (75,000 attendees). gNB-LA-S-045 (closest macro) hit 98% PRB utilization. Massive RACH overload, RRC setup failures. UEs pushed to neighbors which also became congested. UPF saw session setup storms. This is a CAPACITY event not a FAULT — but still needs RCA to distinguish from hardware failure.",
+      "node_labels": {
+        "gNB-LA-S-045": {"label": "root_cause", "label_id": 0},
+        "gNB-LA-S-044": {"label": "collateral", "label_id": 3},
+        "gNB-LA-S-046": {"label": "collateral", "label_id": 3},
+        "SC-LA-S-045": {"label": "primary_symptom", "label_id": 1},
+        "UPF-LA-01": {"label": "secondary_symptom", "label_id": 2}
+      },
+      "remediation": "Temporary small cell deployment + PRB priority adjustment",
+      "_note": "Important training example: teaches GNN to distinguish capacity from fault"
+    },
+
+    {
+      "incident_id": "INC00873456",
+      "fault_type": "configuration_error",
+      "fault_subtype": "neighbor_list_error",
+      "root_cause_node": "gNB-SEA-W-022",
+      "root_cause_component": "ANR neighbor list (missing neighbor relation)",
+      "total_alarms": 8,
+      "affected_nodes": 3,
+      "affected_ues": 800,
+      "mttr_minutes": 30,
+      "domain_origin": "RAN",
+      "domain_impact": ["RAN"],
+      "description": "After a new site (gNB-SEA-W-025) was activated, ANR on gNB-SEA-W-022 failed to add it as neighbor. UEs moving from 022 to 025 coverage area experienced RLF (Radio Link Failure) instead of handover. Ping-pong effect between cells caused excessive signaling.",
+      "node_labels": {
+        "gNB-SEA-W-022": {"label": "root_cause", "label_id": 0},
+        "gNB-SEA-W-025": {"label": "primary_symptom", "label_id": 1},
+        "gNB-SEA-W-023": {"label": "collateral", "label_id": 3}
+      },
+      "remediation": "Manual neighbor relation addition + ANR parameter fix"
+    },
+
+    {
+      "incident_id": "INC00879012",
+      "fault_type": "power_failure",
+      "fault_subtype": "commercial_power_outage",
+      "root_cause_node": "CSG-MIA-E-05",
+      "root_cause_component": "Site power (commercial power + battery depleted)",
+      "total_alarms": 52,
+      "affected_nodes": 8,
+      "affected_ues": 8500,
+      "mttr_minutes": 320,
+      "domain_origin": "transport",
+      "domain_impact": ["transport", "RAN"],
+      "description": "Commercial power outage at site MIA-EAST-05 (hurricane-related). Battery backup lasted 4 hours then depleted. All equipment at site (CSG, gNB, eNB) went offline. Neighboring sites absorbed traffic but became overloaded. Interesting because root cause is EXTERNAL (power grid) but manifests first on CSG.",
+      "node_labels": {
+        "CSG-MIA-E-05": {"label": "root_cause", "label_id": 0},
+        "gNB-MIA-E-05": {"label": "primary_symptom", "label_id": 1},
+        "eNB-MIA-E-05": {"label": "primary_symptom", "label_id": 1},
+        "AGG-MIA-E-01": {"label": "primary_symptom", "label_id": 1},
+        "gNB-MIA-E-04": {"label": "collateral", "label_id": 3},
+        "gNB-MIA-E-06": {"label": "collateral", "label_id": 3},
+        "UPF-MIA-01": {"label": "secondary_symptom", "label_id": 2},
+        "AMF-MIA-01": {"label": "secondary_symptom", "label_id": 2}
+      },
+      "remediation": "Generator deployment + commercial power restoration"
+    },
+
+    {
+      "incident_id": "INC00885678",
+      "fault_type": "hardware_failure",
+      "fault_subtype": "line_card_failure",
+      "root_cause_node": "CORE-RTR-ATL-01",
+      "root_cause_component": "Line card LC-3 (slot 3)",
+      "total_alarms": 68,
+      "affected_nodes": 15,
+      "affected_ues": 25000,
+      "mttr_minutes": 240,
+      "domain_origin": "transport",
+      "domain_impact": ["transport", "RAN", "core"],
+      "description": "Line card failure on core router CORE-RTR-ATL-01 slot 3. This card carried 4x100G interfaces connecting to 4 AGG routers. All 4 AGG routers lost primary uplink. ECMP/backup paths available but couldn't handle full traffic load. Widespread degradation across the entire Atlanta metro. Largest incident in the training set — tests GNN's ability to handle large blast radius.",
+      "node_labels": {
+        "CORE-RTR-ATL-01": {"label": "root_cause", "label_id": 0},
+        "AGG-ATL-N-01": {"label": "primary_symptom", "label_id": 1},
+        "AGG-ATL-N-02": {"label": "primary_symptom", "label_id": 1},
+        "AGG-ATL-S-01": {"label": "primary_symptom", "label_id": 1},
+        "AGG-ATL-S-02": {"label": "primary_symptom", "label_id": 1},
+        "CORE-RTR-ATL-02": {"label": "collateral", "label_id": 3},
+        "CSG-ATL-001": {"label": "secondary_symptom", "label_id": 2},
+        "CSG-ATL-002": {"label": "secondary_symptom", "label_id": 2},
+        "CSG-ATL-003": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-ATL-001": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-ATL-002": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-ATL-003": {"label": "secondary_symptom", "label_id": 2},
+        "gNB-ATL-004": {"label": "secondary_symptom", "label_id": 2},
+        "UPF-ATL-01": {"label": "secondary_symptom", "label_id": 2},
+        "AMF-ATL-01": {"label": "secondary_symptom", "label_id": 2}
+      },
+      "remediation": "Line card replacement + traffic re-engineering"
+    }
+  ],
+
+  "dataset_statistics": {
+    "label_distribution_across_all_incidents": {
+      "root_cause": 8,
+      "primary_symptom": 18,
+      "secondary_symptom": 17,
+      "collateral": 15,
+      "unaffected": "varies (all other nodes in the network)"
+    },
+    "class_imbalance_ratio": "root_cause is ~8% of affected nodes — highly imbalanced",
+    "recommended_handling": [
+      "Focal loss (γ=2) to focus on hard-to-classify minority class",
+      "Cost-sensitive weighting: root_cause=10, primary=3, secondary=2, collateral=1, unaffected=1",
+      "Oversampling root_cause via fault injection in simulator",
+      "Evaluate with per-class metrics, especially root_cause precision/recall"
+    ],
+
+    "training_split_recommendation": {
+      "_comment": "Split by INCIDENT, not by node. All nodes from one incident go to same split.",
+      "train": "70% of incidents (diverse fault types)",
+      "validation": "15% of incidents",
+      "test": "15% of incidents (held-out fault types for generalization testing)"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+alarm_seq,timestamp,node_id,alarm_id,alarm_name,severity,probable_cause,specific_problem,affected_object,domain,is_cleared,clear_timestamp
+# ============================================================
+# CHRONOLOGICAL ALARM SEQUENCE — 47 alarms from the incident
+# Note the timing: root cause alarm (#1) appears first on AGG,
+# but is quickly buried in downstream alarm storm
+# ============================================================
+1,2025-03-14T01:48:12Z,AGG-NYC-E-01,ALM-001,opticalRxPowerDegraded,WARNING,signal-quality-evaluation-failure,SFP Rx power at -28.5dBm (threshold: -25dBm),Gi0/0/0/3,transport,true,2025-03-14T04:52:30Z
+2,2025-03-14T01:52:45Z,AGG-NYC-E-01,ALM-002,interfaceCrcErrors,MINOR,underlyingResourceUnavailable,CRC errors 847/interval on interface,Gi0/0/0/3,transport,true,2025-03-14T04:52:30Z
+3,2025-03-14T02:05:18Z,AGG-NYC-E-01,ALM-003,interfaceCrcErrors,MAJOR,underlyingResourceUnavailable,CRC errors 12500/interval on interface (escalated),Gi0/0/0/3,transport,true,2025-03-14T04:52:30Z
+4,2025-03-14T02:15:33Z,AGG-NYC-E-01,ALM-004,linkFlapping,CRITICAL,loss-of-signal,Interface flapping - 8 state changes in 60 seconds,Gi0/0/0/3,transport,true,2025-03-14T04:52:30Z
+5,2025-03-14T02:16:01Z,CSG-NYC-E-01,ALM-005,linkDown,CRITICAL,loss-of-signal,Link to upstream AGG-NYC-E-01 down,Gi0/0/0,transport,true,2025-03-14T04:52:45Z
+6,2025-03-14T02:16:03Z,AGG-NYC-E-01,ALM-006,linkDown,CRITICAL,loss-of-signal,Interface operationally down,Gi0/0/0/3,transport,true,2025-03-14T04:52:30Z
+7,2025-03-14T02:16:05Z,AGG-NYC-E-01,ALM-007,ospfNeighborLoss,MAJOR,routing-failure,OSPF adjacency lost with CSG-NYC-E-01,OSPF-area-0,transport,true,2025-03-14T04:52:35Z
+8,2025-03-14T02:16:08Z,CSG-NYC-E-01,ALM-008,ospfNeighborLoss,MAJOR,routing-failure,OSPF adjacency lost with AGG-NYC-E-01,OSPF-area-0,transport,true,2025-03-14T04:52:48Z
+9,2025-03-14T02:16:12Z,CSG-NYC-E-01,ALM-009,mplsLspDown,MAJOR,routing-failure,MPLS LSP to AGG-NYC-E-01 down - rerouting via backup,RSVP-LSP-to-AGG01,transport,true,2025-03-14T04:52:50Z
+10,2025-03-14T02:16:15Z,AGG-NYC-E-01,ALM-010,mplsLspDown,MAJOR,routing-failure,MPLS LSP to CSG-NYC-E-01 down,RSVP-LSP-to-CSG01,transport,true,2025-03-14T04:52:32Z
+11,2025-03-14T02:16:18Z,CSG-NYC-E-01,ALM-011,trafficRerouted,WARNING,equipment-malfunction,Traffic rerouted via backup path (increased latency expected),MPLS-backup-path,transport,true,2025-03-14T04:52:52Z
+12,2025-03-14T02:16:25Z,AGG-NYC-E-01,ALM-012,bgpPeerDown,MAJOR,routing-failure,BGP peer 10.10.47.1 (CSG-NYC-E-01) state changed to IDLE,BGP-peer-CSG01,transport,true,2025-03-14T04:52:33Z
+13,2025-03-14T02:16:42Z,gNB-NYC-E-047,ALM-013,s1LinkFailure,CRITICAL,communication-failure,S1/NG-C link to AMF-NYC-01 degraded - high latency,S1-link-1,RAN,true,2025-03-14T04:53:15Z
+14,2025-03-14T02:16:45Z,gNB-NYC-E-047,ALM-014,s1LinkFailure,CRITICAL,communication-failure,S1/NG-U link to UPF-NYC-01 degraded - packet loss >5%,S1-link-2,RAN,true,2025-03-14T04:53:15Z
+15,2025-03-14T02:16:48Z,eNB-NYC-E-047,ALM-015,s1LinkFailure,CRITICAL,communication-failure,S1-MME link degraded,S1-MME-link,RAN,true,2025-03-14T04:53:20Z
+16,2025-03-14T02:16:50Z,eNB-NYC-E-047,ALM-016,s1LinkFailure,CRITICAL,communication-failure,S1-U link to SGW degraded,S1-U-link,RAN,true,2025-03-14T04:53:20Z
+17,2025-03-14T02:17:01Z,gNB-NYC-E-047,ALM-017,sctpAssociationLost,CRITICAL,communication-failure,SCTP association to AMF-NYC-01 lost,SCTP-assoc-AMF,RAN,true,2025-03-14T04:53:18Z
+18,2025-03-14T02:17:05Z,gNB-NYC-E-047,ALM-018,cellUnavailable,CRITICAL,equipment-malfunction,Cell 047-S1 unavailable - no backhaul,NRCellDU-047-S1,RAN,true,2025-03-14T04:53:25Z
+19,2025-03-14T02:17:08Z,gNB-NYC-E-047,ALM-019,cellUnavailable,CRITICAL,equipment-malfunction,Cell 047-S2 unavailable - no backhaul,NRCellDU-047-S2,RAN,true,2025-03-14T04:53:25Z
+20,2025-03-14T02:17:10Z,gNB-NYC-E-047,ALM-020,cellUnavailable,CRITICAL,equipment-malfunction,Cell 047-S3 unavailable - no backhaul,NRCellDU-047-S3,RAN,true,2025-03-14T04:53:25Z
+21,2025-03-14T02:17:12Z,eNB-NYC-E-047,ALM-021,cellUnavailable,CRITICAL,equipment-malfunction,Cell 047-LTE-S1 unavailable,EUtranCellFDD-047-S1,RAN,true,2025-03-14T04:53:28Z
+22,2025-03-14T02:17:14Z,eNB-NYC-E-047,ALM-022,cellUnavailable,CRITICAL,equipment-malfunction,Cell 047-LTE-S2 unavailable,EUtranCellFDD-047-S2,RAN,true,2025-03-14T04:53:28Z
+23,2025-03-14T02:17:16Z,eNB-NYC-E-047,ALM-023,cellUnavailable,CRITICAL,equipment-malfunction,Cell 047-LTE-S3 unavailable,EUtranCellFDD-047-S3,RAN,true,2025-03-14T04:53:28Z
+24,2025-03-14T02:17:20Z,UPF-NYC-01,ALM-024,sessionDrops,MAJOR,quality-of-service-failure,Abnormal PDU session release rate - 340 sessions dropped,N3-interface,core,true,2025-03-14T04:53:40Z
+25,2025-03-14T02:17:22Z,AMF-NYC-01,ALM-025,ngapConnectionLoss,MAJOR,communication-failure,NGAP connection lost to gNB-NYC-E-047,NGAP-conn-047,core,true,2025-03-14T04:53:35Z
+26,2025-03-14T02:17:25Z,AMF-NYC-01,ALM-026,registrationFailureRate,MAJOR,quality-of-service-failure,Registration failure rate exceeded threshold (>20%),AMF-service,core,true,2025-03-14T04:53:38Z
+27,2025-03-14T02:17:33Z,CSG-NYC-E-02,ALM-027,highUtilization,WARNING,congestion,Interface utilization >80% due to rerouted traffic,Gi0/0/0,transport,true,2025-03-14T04:52:55Z
+28,2025-03-14T02:17:35Z,AGG-NYC-E-02,ALM-028,highUtilization,WARNING,congestion,Inter-AGG link utilization >75% due to rerouted traffic,Gi0/0/0/10,transport,true,2025-03-14T04:52:40Z
+29,2025-03-14T02:17:40Z,gNB-NYC-E-048,ALM-029,throughputDegraded,MAJOR,quality-of-service-failure,DL throughput dropped >50% from baseline,NRCellDU-048-S1,RAN,true,2025-03-14T04:53:45Z
+30,2025-03-14T02:17:42Z,gNB-NYC-E-048,ALM-030,throughputDegraded,MAJOR,quality-of-service-failure,DL throughput dropped >50% from baseline,NRCellDU-048-S2,RAN,true,2025-03-14T04:53:45Z
+31,2025-03-14T02:17:45Z,gNB-NYC-E-048,ALM-031,throughputDegraded,MAJOR,quality-of-service-failure,DL throughput dropped >50% from baseline,NRCellDU-048-S3,RAN,true,2025-03-14T04:53:45Z
+32,2025-03-14T02:17:48Z,gNB-NYC-E-048,ALM-032,handoverFailureRate,MINOR,quality-of-service-failure,Handover failure rate >30% (Xn handover to gNB-NYC-E-047 failing),Xn-HO-to-047,RAN,true,2025-03-14T04:53:48Z
+33,2025-03-14T02:18:05Z,gNB-NYC-E-047,ALM-033,excessiveUeRelease,MAJOR,quality-of-service-failure,Abnormal UE context release rate - 1530 UEs released,NRCellDU-047,RAN,true,2025-03-14T04:53:30Z
+34,2025-03-14T02:18:15Z,eNB-NYC-E-047,ALM-034,excessiveUeRelease,MAJOR,quality-of-service-failure,Abnormal UE context release rate - 1980 UEs released,EUtranCellFDD-047,RAN,true,2025-03-14T04:53:32Z
+35,2025-03-14T02:18:30Z,UPF-NYC-01,ALM-035,highCpuUtilization,WARNING,processing-error,CPU utilization >60% due to session re-establishment,UPF-process,core,true,2025-03-14T04:53:42Z
+36,2025-03-14T02:18:45Z,CORE-RTR-NYC-01,ALM-036,highUtilization,WARNING,congestion,Multiple interfaces showing increased utilization,bundle-1,transport,true,2025-03-14T04:52:38Z
+37,2025-03-14T02:19:00Z,AMF-NYC-01,ALM-037,highCpuUtilization,WARNING,processing-error,CPU utilization >55% due to registration storm,AMF-process,core,true,2025-03-14T04:53:40Z
+38,2025-03-14T02:20:15Z,UPF-NYC-01,ALM-038,qosViolation,MAJOR,quality-of-service-failure,QoS flow violations for QFI=5 (voice) - latency >150ms,QoS-flow-5,core,true,2025-03-14T04:53:44Z
+39,2025-03-14T02:20:30Z,UPF-NYC-01,ALM-039,qosViolation,MAJOR,quality-of-service-failure,QoS flow violations for QFI=9 (video) - packet loss >1%,QoS-flow-9,core,true,2025-03-14T04:53:44Z
+40,2025-03-14T02:22:00Z,gNB-NYC-E-047,ALM-040,rsrpDegraded,MINOR,signal-quality-evaluation-failure,Neighbor cell RSRP measurements degraded (handover targets unavailable),NRCellDU-047-S1,RAN,true,2025-03-14T04:53:50Z
+41,2025-03-14T02:22:05Z,gNB-NYC-E-047,ALM-041,rsrpDegraded,MINOR,signal-quality-evaluation-failure,Neighbor cell RSRP measurements degraded,NRCellDU-047-S2,RAN,true,2025-03-14T04:53:50Z
+42,2025-03-14T02:22:10Z,gNB-NYC-E-047,ALM-042,rsrpDegraded,MINOR,signal-quality-evaluation-failure,Neighbor cell RSRP measurements degraded,NRCellDU-047-S3,RAN,true,2025-03-14T04:53:50Z
+43,2025-03-14T02:25:00Z,gNB-NYC-E-048,ALM-043,rrcConnectionFailure,MINOR,quality-of-service-failure,RRC connection establishment failure rate >10%,NRCellDU-048,RAN,true,2025-03-14T04:53:52Z
+44,2025-03-14T02:25:30Z,CORE-RTR-NYC-01,ALM-044,ospfSpfRunsExceeded,WARNING,routing-failure,Excessive OSPF SPF calculations (8 runs in 5 minutes),OSPF-process,transport,true,2025-03-14T04:52:36Z
+45,2025-03-14T02:28:00Z,gNB-NYC-E-048,ALM-045,excessiveInterCellInterference,MINOR,signal-quality-evaluation-failure,Increased inter-cell interference from overloaded neighbor 047,NRCellDU-048-S1,RAN,true,2025-03-14T04:53:55Z
+46,2025-03-14T02:30:00Z,AGG-NYC-E-01,ALM-046,temperatureHigh,WARNING,environmental-alarm,Chassis temperature elevated (48.5C threshold: 50C),chassis,transport,true,2025-03-14T04:52:42Z
+47,2025-03-14T02:35:00Z,eNB-NYC-E-047,ALM-047,x2HandoverFailure,MINOR,quality-of-service-failure,X2 handover to neighbor eNBs failing consistently,X2-HO,RAN,true,2025-03-14T04:53:58Z

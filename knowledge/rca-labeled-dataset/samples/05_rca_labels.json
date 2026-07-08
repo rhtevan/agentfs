@@ -1,0 +1,303 @@
+{
+  "_comment": "GROUND TRUTH RCA LABELS — This is what the GNN learns to predict",
+  "_source": "Derived from trouble ticket INC00847291, validated by senior transport engineer",
+  "_confidence": "HIGH — confirmed by physical SFP replacement resolving all symptoms",
+
+  "incident_id": "INC00847291",
+  "incident_start": "2025-03-14T01:48:12Z",
+  "incident_detected": "2025-03-14T02:17:33Z",
+  "incident_resolved": "2025-03-14T04:52:30Z",
+  "mttr_minutes": 155,
+  "total_alarms": 47,
+  "affected_nodes": 10,
+  "affected_ues": 5210,
+
+  "node_labels": {
+    "_comment": "Per-node classification labels for GNN node classification task",
+    "_label_schema": {
+      "root_cause": "The originating faulty element — where the fix should be applied",
+      "primary_symptom": "Directly connected to root cause, first-order effect",
+      "secondary_symptom": "Affected by cascading propagation, second+ order effect",
+      "collateral": "Not directly in fault path but impacted by traffic rerouting or overload",
+      "unaffected": "Normal operation throughout the incident"
+    },
+
+    "gNB-NYC-E-047": {
+      "label": "primary_symptom",
+      "label_id": 1,
+      "reasoning": "Directly served by the failed backhaul path. Lost S1/NG connectivity, all 3 sectors went unavailable. First RAN element to show symptoms.",
+      "first_alarm_time": "2025-03-14T02:16:42Z",
+      "alarm_count": 12,
+      "impact": "3 NR cells unavailable, 1530 UEs disconnected",
+      "propagation_hop": 3
+    },
+
+    "gNB-NYC-E-048": {
+      "label": "collateral",
+      "label_id": 3,
+      "reasoning": "Connected to same AGG-NYC-E-01 via CSG-NYC-E-02 (different link). Experienced throughput degradation due to backhaul congestion from rerouted traffic, not direct fault path.",
+      "first_alarm_time": "2025-03-14T02:17:40Z",
+      "alarm_count": 6,
+      "impact": "Throughput degraded 50%, handover failures to site 047",
+      "propagation_hop": 4
+    },
+
+    "gNB-NYC-E-049": {
+      "label": "unaffected",
+      "label_id": 4,
+      "reasoning": "Connected to AGG-NYC-E-02 (different aggregation router). No direct or indirect impact from the SFP failure. Normal KPIs throughout.",
+      "first_alarm_time": null,
+      "alarm_count": 0,
+      "impact": "None",
+      "propagation_hop": null
+    },
+
+    "eNB-NYC-E-047": {
+      "label": "primary_symptom",
+      "label_id": 1,
+      "reasoning": "Co-located with gNB-NYC-E-047, shares same CSG-NYC-E-01 backhaul. Lost S1 connectivity to core. All 3 LTE sectors unavailable.",
+      "first_alarm_time": "2025-03-14T02:16:48Z",
+      "alarm_count": 7,
+      "impact": "3 LTE cells unavailable, 1980 UEs disconnected",
+      "propagation_hop": 3
+    },
+
+    "CSG-NYC-E-01": {
+      "label": "primary_symptom",
+      "label_id": 1,
+      "reasoning": "Directly connected to root cause element via the failed link E005. Lost OSPF adjacency, MPLS LSP down. All traffic from site 047 lost upstream path.",
+      "first_alarm_time": "2025-03-14T02:16:01Z",
+      "alarm_count": 5,
+      "impact": "Complete loss of upstream connectivity for site 047",
+      "propagation_hop": 1
+    },
+
+    "CSG-NYC-E-02": {
+      "label": "collateral",
+      "label_id": 3,
+      "reasoning": "Connected to same AGG-NYC-E-01 but via different interface (Gi0/0/0/4 — healthy). Experienced congestion from rerouted traffic, not from the fault itself.",
+      "first_alarm_time": "2025-03-14T02:17:33Z",
+      "alarm_count": 1,
+      "impact": "High utilization warning from rerouted traffic",
+      "propagation_hop": 2
+    },
+
+    "CSG-NYC-E-03": {
+      "label": "unaffected",
+      "label_id": 4,
+      "reasoning": "Connected to AGG-NYC-E-02, completely separate fault domain. No impact.",
+      "first_alarm_time": null,
+      "alarm_count": 0,
+      "impact": "None",
+      "propagation_hop": null
+    },
+
+    "AGG-NYC-E-01": {
+      "label": "root_cause",
+      "label_id": 0,
+      "reasoning": "Faulty SFP transceiver on interface Gi0/0/0/3 caused CRC errors → link flapping → link failure. This is the originating fault element. Replacing the SFP resolved all 47 alarms.",
+      "first_alarm_time": "2025-03-14T01:48:12Z",
+      "alarm_count": 8,
+      "impact": "Source of fault — cascaded to 9 other network elements",
+      "propagation_hop": 0,
+      "root_cause_detail": {
+        "element": "AGG-NYC-E-01",
+        "component": "SFP transceiver",
+        "interface": "Gi0/0/0/3",
+        "fault_type": "hardware_degradation",
+        "fault_category": "optics",
+        "fault_mechanism": "SFP optical power degradation leading to CRC errors, link flapping, and eventual link failure",
+        "contributing_factors": [
+          "SFP age: 5.2 years (typical lifespan 5-7 years)",
+          "Ambient temperature: 42.5°C (within spec but accelerates aging)",
+          "High utilization: 62% sustained load"
+        ],
+        "first_anomaly": "2025-03-14T01:48:12Z",
+        "failure_time": "2025-03-14T02:15:33Z",
+        "detection_delay_minutes": 29,
+        "remediation": {
+          "action": "replace_hardware",
+          "detail": "Replaced SFP-10G-LR module in slot Gi0/0/0/3",
+          "executed_by": "field_technician",
+          "execution_time": "2025-03-14T04:52:00Z"
+        }
+      }
+    },
+
+    "AGG-NYC-E-02": {
+      "label": "collateral",
+      "label_id": 3,
+      "reasoning": "Not in the direct fault path but received rerouted traffic via inter-AGG link E008. Experienced increased utilization.",
+      "first_alarm_time": "2025-03-14T02:17:35Z",
+      "alarm_count": 1,
+      "impact": "Increased utilization from traffic rerouting",
+      "propagation_hop": 1
+    },
+
+    "CORE-RTR-NYC-01": {
+      "label": "secondary_symptom",
+      "label_id": 2,
+      "reasoning": "Two hops from root cause. Experienced increased OSPF SPF calculations and elevated utilization from rerouted traffic and reconvergence events.",
+      "first_alarm_time": "2025-03-14T02:18:45Z",
+      "alarm_count": 2,
+      "impact": "OSPF reconvergence churn, elevated utilization",
+      "propagation_hop": 2
+    },
+
+    "UPF-NYC-01": {
+      "label": "secondary_symptom",
+      "label_id": 2,
+      "reasoning": "Core network function affected by loss of N3 path to gNB-NYC-E-047. Session drops and QoS violations are downstream effects of the backhaul failure.",
+      "first_alarm_time": "2025-03-14T02:17:20Z",
+      "alarm_count": 4,
+      "impact": "340 PDU sessions dropped, QoS violations for voice and video",
+      "propagation_hop": 4
+    },
+
+    "AMF-NYC-01": {
+      "label": "secondary_symptom",
+      "label_id": 2,
+      "reasoning": "Core network function affected by loss of NGAP connection to gNB-NYC-E-047. Registration failures and CPU spike from re-registration storm.",
+      "first_alarm_time": "2025-03-14T02:17:22Z",
+      "alarm_count": 3,
+      "impact": "NGAP connection lost, registration failure rate >20%, CPU spike",
+      "propagation_hop": 4
+    }
+  },
+
+  "propagation_graph": {
+    "_comment": "Directed graph showing how the fault propagated — the causal chain the GNN should learn",
+    "edges": [
+      {
+        "from": "AGG-NYC-E-01",
+        "to": "CSG-NYC-E-01",
+        "mechanism": "SFP failure on Gi0/0/0/3 → link down → CSG loses upstream OSPF adjacency",
+        "delay_seconds": 1669,
+        "type": "direct_failure"
+      },
+      {
+        "from": "CSG-NYC-E-01",
+        "to": "gNB-NYC-E-047",
+        "mechanism": "CSG upstream path lost → gNB loses S1/NG-C backhaul connectivity",
+        "delay_seconds": 41,
+        "type": "connectivity_loss"
+      },
+      {
+        "from": "CSG-NYC-E-01",
+        "to": "eNB-NYC-E-047",
+        "mechanism": "CSG upstream path lost → eNB loses S1 backhaul connectivity",
+        "delay_seconds": 47,
+        "type": "connectivity_loss"
+      },
+      {
+        "from": "gNB-NYC-E-047",
+        "to": "AMF-NYC-01",
+        "mechanism": "gNB SCTP/NGAP association lost → AMF detects connection loss",
+        "delay_seconds": 40,
+        "type": "protocol_timeout"
+      },
+      {
+        "from": "gNB-NYC-E-047",
+        "to": "UPF-NYC-01",
+        "mechanism": "gNB S1-U/N3 path lost → UPF detects session drops, QoS violations",
+        "delay_seconds": 38,
+        "type": "session_loss"
+      },
+      {
+        "from": "gNB-NYC-E-047",
+        "to": "gNB-NYC-E-048",
+        "mechanism": "Overloaded neighbor — UEs from 047 attempt handover to 048, Xn handovers fail, interference increases",
+        "delay_seconds": 58,
+        "type": "overload_spillover"
+      },
+      {
+        "from": "AGG-NYC-E-01",
+        "to": "AGG-NYC-E-02",
+        "mechanism": "Traffic from CSG-NYC-E-01 rerouted via inter-AGG link → increased utilization on AGG-02",
+        "delay_seconds": 83,
+        "type": "traffic_reroute"
+      },
+      {
+        "from": "AGG-NYC-E-01",
+        "to": "CSG-NYC-E-02",
+        "mechanism": "Rerouted traffic from site 047 passes through CSG-02's link to AGG-01 → congestion",
+        "delay_seconds": 81,
+        "type": "traffic_reroute"
+      },
+      {
+        "from": "AGG-NYC-E-01",
+        "to": "CORE-RTR-NYC-01",
+        "mechanism": "OSPF reconvergence events from link flapping → excessive SPF calculations on core router",
+        "delay_seconds": 93,
+        "type": "routing_reconvergence"
+      }
+    ]
+  },
+
+  "alarm_classification": {
+    "_comment": "Each alarm classified as root_cause_indicator, symptom, or noise",
+    "root_cause_indicators": [
+      "ALM-001: opticalRxPowerDegraded on AGG Gi0/0/0/3 — EARLIEST SIGNAL",
+      "ALM-002: interfaceCrcErrors (MINOR) on AGG Gi0/0/0/3",
+      "ALM-003: interfaceCrcErrors (MAJOR, escalated) on AGG Gi0/0/0/3",
+      "ALM-004: linkFlapping on AGG Gi0/0/0/3"
+    ],
+    "direct_symptoms": [
+      "ALM-005: linkDown on CSG-NYC-E-01 (first downstream alarm)",
+      "ALM-006: linkDown on AGG Gi0/0/0/3",
+      "ALM-007: ospfNeighborLoss on AGG",
+      "ALM-008: ospfNeighborLoss on CSG",
+      "ALM-009: mplsLspDown on CSG",
+      "ALM-010: mplsLspDown on AGG"
+    ],
+    "cascading_symptoms": [
+      "ALM-013 to ALM-023: RAN cell unavailability (10 alarms)",
+      "ALM-024 to ALM-026: Core session/registration failures (3 alarms)",
+      "ALM-033 to ALM-034: Excessive UE releases (2 alarms)",
+      "ALM-038 to ALM-039: QoS violations (2 alarms)"
+    ],
+    "collateral_noise": [
+      "ALM-011: trafficRerouted (informational, expected behavior)",
+      "ALM-027 to ALM-028: highUtilization from rerouting (expected)",
+      "ALM-029 to ALM-032: gNB-048 degradation from overload (collateral)",
+      "ALM-035 to ALM-037: CPU utilization (expected during storm)",
+      "ALM-040 to ALM-047: Various secondary effects (noise)"
+    ]
+  },
+
+  "training_target_formats": {
+    "_comment": "How these labels are used for different GNN tasks",
+
+    "node_classification": {
+      "description": "Classify each node as: 0=root_cause, 1=primary_symptom, 2=secondary_symptom, 3=collateral, 4=unaffected",
+      "num_classes": 5,
+      "labels": [3, 1, 0, 2, 2, 3, 4, 1, 4, 1, 1, 3],
+      "node_order": ["gNB-NYC-E-048", "gNB-NYC-E-047", "AGG-NYC-E-01", "CORE-RTR-NYC-01", "UPF-NYC-01", "CSG-NYC-E-02", "gNB-NYC-E-049", "CSG-NYC-E-01", "CSG-NYC-E-03", "eNB-NYC-E-047", "eNB-NYC-E-047", "AGG-NYC-E-02"]
+    },
+
+    "root_cause_detection": {
+      "description": "Binary classification: is this node the root cause? (0=no, 1=yes)",
+      "num_classes": 2,
+      "labels": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "node_order": ["gNB-NYC-E-048", "gNB-NYC-E-047", "AGG-NYC-E-01", "CORE-RTR-NYC-01", "UPF-NYC-01", "CSG-NYC-E-02", "gNB-NYC-E-049", "CSG-NYC-E-01", "CSG-NYC-E-03", "eNB-NYC-E-047", "eNB-NYC-E-047", "AGG-NYC-E-02"]
+    },
+
+    "root_cause_ranking": {
+      "description": "Regression target: probability/score that each node is the root cause. Used for ranking.",
+      "scores": {
+        "AGG-NYC-E-01": 0.95,
+        "CSG-NYC-E-01": 0.35,
+        "gNB-NYC-E-047": 0.15,
+        "eNB-NYC-E-047": 0.12,
+        "AGG-NYC-E-02": 0.08,
+        "CSG-NYC-E-02": 0.05,
+        "CORE-RTR-NYC-01": 0.04,
+        "UPF-NYC-01": 0.03,
+        "AMF-NYC-01": 0.02,
+        "gNB-NYC-E-048": 0.01,
+        "gNB-NYC-E-049": 0.00,
+        "CSG-NYC-E-03": 0.00
+      }
+    }
+  }
+}

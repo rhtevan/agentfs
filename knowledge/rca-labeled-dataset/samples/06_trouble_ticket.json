@@ -1,0 +1,117 @@
+{
+  "_comment": "Original trouble ticket — the raw source from which RCA labels are mined. Notice how much information is buried in free text, inconsistently structured, and how much expert interpretation is needed to extract clean labels.",
+
+  "ticket_id": "INC00847291",
+  "ticket_system": "ServiceNow",
+  "created": "2025-03-14T02:17:33Z",
+  "created_by": "NOC-AUTO (alarm correlation)",
+  "assigned_group": "RAN-Operations-NYC",
+  "reassigned_to": "Transport-Operations-NYC",
+  "reassigned_at": "2025-03-14T02:45:00Z",
+
+  "priority": "P1",
+  "severity": "1 - Critical",
+  "category": "Network",
+  "subcategory": "RAN",
+  "impact": "1 - Widespread",
+  "urgency": "1 - Critical",
+
+  "title": "CRITICAL: Multiple cell outages at NYC-EAST-047 - S1 disconnect alarms",
+
+  "description": "Auto-generated: 15+ CRITICAL alarms detected on gNB-NYC-E-047 and eNB-NYC-E-047. Multiple S1/NG disconnect alarms on sector 1, 2, and 3 for both NR and LTE. Cell unavailable alarms triggered. Estimated 5000+ subscribers affected in midtown east area. Customer complaints starting to come in via call center (ref: CC-20250314-0891).",
+
+  "work_notes": [
+    {
+      "timestamp": "2025-03-14T02:20:15Z",
+      "author": "jchen (NOC Operator L1)",
+      "note": "Acknowledged. Checking RAN dashboard. All 6 cells (3 NR + 3 LTE) at site 047 showing as unavailable. S1/SCTP associations down. Neighbor site 048 showing throughput degradation. Site 049 looks normal. Engaging RAN on-call."
+    },
+    {
+      "timestamp": "2025-03-14T02:28:30Z",
+      "author": "mrodriguez (RAN Engineer L2)",
+      "note": "Checked gNB-NYC-E-047 via Element Manager. RRU modules are all healthy, no hardware alarms on radio side. Issue appears to be backhaul-related — S1 link is down, not a radio fault. Need to check transport path. Reassigning to transport team."
+    },
+    {
+      "timestamp": "2025-03-14T02:45:00Z",
+      "author": "SYSTEM",
+      "note": "Ticket reassigned from RAN-Operations-NYC to Transport-Operations-NYC"
+    },
+    {
+      "timestamp": "2025-03-14T02:52:15Z",
+      "author": "asingh (Transport Engineer L2)",
+      "note": "Looking at transport. CSG-NYC-E-01 at site 047 lost OSPF adjacency with AGG-NYC-E-01 at 02:16:05. MPLS LSPs rerouted via backup path through AGG-02. Checking AGG-NYC-E-01 interface Gi0/0/0/3 (faces CSG-01). Found high CRC error count — 125,000+ CRC errors, interface has been flapping since ~02:15. Rx optical power reading -31.2 dBm, way below -25 dBm threshold. Looks like a bad SFP."
+    },
+    {
+      "timestamp": "2025-03-14T03:05:00Z",
+      "author": "asingh (Transport Engineer L2)",
+      "note": "Confirmed SFP failure on AGG-NYC-E-01 Gi0/0/0/3. SFP-10G-LR module, serial# FNS22481234, installed 2019-11-15 (5+ years old). Optical Rx power degraded from normal -8dBm to -31.2dBm. Checked far-end (CSG-01 Gi0/0/0) — SFP on that end is fine, Tx power normal. Issue is the SFP on the AGG side. Dispatching field tech for SFP replacement. ETA 04:30."
+    },
+    {
+      "timestamp": "2025-03-14T03:15:00Z",
+      "author": "asingh (Transport Engineer L2)",
+      "note": "As temporary mitigation, attempted to shut/no-shut the interface to stabilize. Interface came up briefly but CRC errors resumed within 2 minutes. Link is fundamentally degraded, need physical replacement. Leaving interface admin-down to stop flapping and reduce alarm noise while we wait for field tech."
+    },
+    {
+      "timestamp": "2025-03-14T04:35:00Z",
+      "author": "field-tech-887",
+      "note": "On site at NYC-EAST-HUB-01. Located AGG-NYC-E-01, rack B-12. Replacing SFP in Gi0/0/0/3 now."
+    },
+    {
+      "timestamp": "2025-03-14T04:52:00Z",
+      "author": "field-tech-887",
+      "note": "SFP replaced. New SFP-10G-LR serial# FNS24567890 inserted. Interface came up, Rx power now -7.8dBm (normal). OSPF adjacency reforming."
+    },
+    {
+      "timestamp": "2025-03-14T04:55:30Z",
+      "author": "asingh (Transport Engineer L2)",
+      "note": "Confirmed link E005 is back up. OSPF adjacency re-established between AGG-NYC-E-01 and CSG-NYC-E-01. MPLS LSPs reconverging. Checking RAN impact."
+    },
+    {
+      "timestamp": "2025-03-14T05:02:00Z",
+      "author": "mrodriguez (RAN Engineer L2)",
+      "note": "All 6 cells at site 047 have recovered. S1/SCTP associations re-established. UEs re-registering. KPIs trending back to normal. Will monitor for 30 minutes before closing."
+    },
+    {
+      "timestamp": "2025-03-14T05:35:00Z",
+      "author": "mrodriguez (RAN Engineer L2)",
+      "note": "KPIs stable. All alarms cleared. Closing ticket."
+    }
+  ],
+
+  "resolution": {
+    "code": "Hardware Failure",
+    "sub_code": "Optics/SFP",
+    "notes": "Faulty SFP-10G-LR transceiver on AGG-NYC-E-01 interface Gi0/0/0/3 (facing CSG-NYC-E-01 at site NYC-EAST-047). SFP optical receive power degraded from -8dBm to -31.2dBm causing CRC errors, link flapping, and eventual link failure. Cascaded to loss of backhaul connectivity for site 047 (3 NR cells + 3 LTE cells), affecting approximately 5,210 subscribers. Resolved by physical SFP replacement.",
+    "resolved_at": "2025-03-14T04:52:30Z",
+    "resolved_by": "field-tech-887 (physical) / asingh (remote verification)"
+  },
+
+  "sla_impact": {
+    "outage_duration_minutes": 155,
+    "affected_subscribers": 5210,
+    "subscriber_minutes": 807550,
+    "sla_breach": true,
+    "sla_target": "99.99% availability",
+    "actual_availability_24h": "99.89%"
+  },
+
+  "related_tickets": [
+    "CC-20250314-0891 (customer complaints)",
+    "CHG00123456 (SFP replacement change record)"
+  ],
+
+  "_nlp_extraction_challenges": {
+    "_comment": "Annotations showing why NLP label extraction from this ticket is hard",
+    "challenges": [
+      "Initial title says 'RAN' but root cause was in Transport domain",
+      "First work note focuses on RAN symptoms, not transport cause",
+      "Root cause element (AGG-NYC-E-01) not mentioned until 3rd work note (35 min after ticket creation)",
+      "Specific interface (Gi0/0/0/3) buried in free text, not a structured field",
+      "Contributing factors (SFP age, temperature) mentioned casually, not systematically",
+      "Resolution code 'Hardware Failure' is correct but too generic without sub_code",
+      "Would need NER to extract: equipment names, interface IDs, measurement values",
+      "Would need temporal reasoning to distinguish cause (CRC errors at 01:48) from symptom (cell outage at 02:17)",
+      "Requires domain knowledge to know that 'Rx power -31.2 dBm' is abnormal and indicates SFP failure"
+    ]
+  }
+}
