@@ -30,7 +30,7 @@ See [`skills/index.md`](skills/index.md) for the full list of 31 skills.
 
 ### Knowledge (`knowledge/`)
 
-Knowledge bundles follow the [Open Knowledge Format (OKF)](https://github.com/okf-spec) — each bundle contains concept documents, an `index.md` navigation hub, and a `log.md` changelog.
+Knowledge bundles follow the [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) — each bundle contains concept documents, an `index.md` navigation hub, and a `log.md` changelog.
 
 Current bundles:
 

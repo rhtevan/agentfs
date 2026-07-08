@@ -10,7 +10,7 @@ timestamp: 2026-06-25T00:00:00Z
 
 # Open Knowledge Format v0.1 — Quick Reference
 
-Source: [OKF SPEC.md](https://github.com/google/open-knowledge-format)
+Source: [OKF SPEC.md](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 
 ---
 

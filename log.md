@@ -1,6 +1,10 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 18:06
+
+- Fixed broken OKF spec links in `README.md` and `skills/okf-bundle-setup/references/okf-spec-summary.md` — now point to `https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md`
+
 ## 2026-07-08 17:49
 
 - Updated `skills/goose-setup/SKILL.md` — v1.1: added Git Push Safety guardrail
