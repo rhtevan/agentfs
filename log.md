@@ -1,6 +1,13 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 17:41
+
+- Created `skills/goose-setup/SKILL.md` — new skill for configuring Goose global persistent instructions and tool discovery
+- Regenerated `skills/index.md` — 32 skills indexed
+- Created `~/.config/goose/instructions.md` — persistent instructions file for cross-session tool discovery
+- Added `GOOSE_MOIM_MESSAGE_FILE` to `~/.config/goose/config.yaml`
+
 ## 2026-07-08 14:34
 
 - Deleted `okf-bundle-merge` skill — obsolete since okf-bundle-gen now writes directly to `~/.agents/knowledge/`
