@@ -32,6 +32,13 @@ Create `~/.config/goose/instructions.md` with your global instructions:
 
 - Use `$(which gh)` to find the `gh` CLI. It may be installed via devbox at a non-standard path.
 - When a tool is not found on `$PATH`, check `~/.local/share/devbox/global/default/.devbox/nix/profile/default/bin/` before giving up.
+
+## Git Push Safety
+
+- Before any push to GitHub, **DO NOT PUSH AUTOMATICALLY**.
+- Conduct a thorough security and risk evaluation on the changes (scan for secrets, credentials, hardcoded paths, PII, and sensitive data).
+- Show the full evaluation report to the user.
+- Wait for explicit go-ahead before executing the push.
 ```
 
 Add any other cross-project instructions you want Goose to always follow.
@@ -99,4 +106,5 @@ The instructions file supports any Markdown content. Common additions:
 
 | Date | Change |
 |------|--------|
+| 2026-07-08 17:49 | v1.1 — Added Git Push Safety guardrail: security evaluation required before any push |
 | 2026-07-08 17:40 | v1.0 — Initial skill: persistent instructions with devbox tool discovery |

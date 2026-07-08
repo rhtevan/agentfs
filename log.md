@@ -1,6 +1,11 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 17:49
+
+- Updated `skills/goose-setup/SKILL.md` — v1.1: added Git Push Safety guardrail
+- Updated `~/.config/goose/instructions.md` — added Git Push Safety section
+
 ## 2026-07-08 17:41
 
 - Created `skills/goose-setup/SKILL.md` — new skill for configuring Goose global persistent instructions and tool discovery
