@@ -4,7 +4,9 @@
 
 | Skill | Description | Updated |
 |-------|-------------|---------|
-| [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | Configure Goose for full AgentFS compatibility by adding CLAUDE.md and other agent context files to CONTEXT_FILE_NAMES, so Goose automatically discovers and loads cross-agent context files alongsid… | 2026-07-09 01:38 |
+| [okf-bundle-index](./okf-bundle-index/SKILL.md) | Check and fix links in index.md files recursively across an OKF knowledge bundle. Detects broken links, missing entries, and absent index.md files, then repairs them to restore full OKF conformance. | 2026-07-09 02:09 |
+| [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | Create or organize a directory into an OKF-conformant knowledge bundle. Scaffolds index.md, log.md, and concept documents with proper YAML frontmatter. Handles both fresh bundles and existing direc… | 2026-07-09 01:55 |
+| [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | Configure Goose for full AgentFS compatibility by adding CLAUDE.md and other agent context files to CONTEXT_FILE_NAMES, so Goose automatically discovers and loads cross-agent context files alongsid… | 2026-07-09 01:42 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | Harvest concepts from MEMORY.md files across one or more projects and distill them into OKF-compliant knowledge bundles under ~/.agents/knowledge/. Scans default agent and named profile memories, i… | 2026-07-09 01:36 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | Generate an OKF-compliant knowledge bundle from the current chat session context AND accumulated agent memories. Writes concept documents into ~/.agents/knowledge/ as the bundle root. Scans all MEM… | 2026-07-09 01:36 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.) | 2026-07-08 23:12 |
@@ -29,8 +31,6 @@
 | [crc-nmstate-config](./crc-nmstate-config/SKILL.md) | Install and configure the NMState Operator on OpenShift Local (CRC), verify the nmstate-console-plugin is functioning, and confirm NodeNetworkConfigurationPolicy (NNCP) and NodeNetworkState (NNS) m… | 2026-07-06 11:30 |
 | [crc-coo-config](./crc-coo-config/SKILL.md) | Install and configure the Cluster Observability Operator (COO) on OpenShift Local (CRC) with Perses dashboards and incident detection enabled | 2026-07-06 11:30 |
 | [goose-cli-fix](./goose-cli-fix/SKILL.md) | Fix the Goose CLI "Failed to parse projects.json file" warning by repairing malformed JSON in the project tracker file | 2026-07-06 11:30 |
-| [okf-bundle-index](./okf-bundle-index/SKILL.md) | Check and fix links in index.md files recursively across an OKF knowledge bundle. Detects broken links, missing entries, and absent index.md files, then repairs them to restore full OKF conformance. | 2026-07-06 11:30 |
-| [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | Create or organize a directory into an OKF-conformant knowledge bundle. Scaffolds index.md, log.md, and concept documents with proper YAML frontmatter. Handles both fresh bundles and existing direc… | 2026-07-06 11:30 |
 | [spec-kit-setup](./spec-kit-setup/SKILL.md) | Check the existence of GitHub's spec-kit (specify CLI) and then install or upgrade it to the latest release. Use when a user asks to install spec-kit, set up Spec-Driven Development, check for spec… | 2026-07-06 11:30 |
 | [crc-cmd](./crc-cmd/SKILL.md) | Install the crcstart and crcstop wrapper commands for OpenShift Local (CRC) that replace 'crc start' and 'crc stop' with more reliable alternatives | 2026-07-06 11:30 |
 | [openshift-lightspeed-crc](./crc-ols/SKILL.md) | Install and configure OpenShift Lightspeed on OpenShift Local (CRC), with specific guidance for Google Vertex AI Anthropic as the LLM provider and tunings to avoid known LLM invocation errors. | 2026-07-06 11:30 |
