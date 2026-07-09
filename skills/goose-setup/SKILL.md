@@ -1,14 +1,14 @@
 ---
 name: goose-setup
-description: "Configure Goose global persistent instructions and tool discovery settings for cross-project, cross-session use"
-version: 1.0
+description: "Configure Goose global persistent instructions for cross-project, cross-session use"
+version: 1.2
 metadata:
-    tags: [goose, config, instructions, persistent, devbox]
+    tags: [goose, config, instructions, persistent]
 ---
 
 # Goose Global Setup
 
-Configure Goose with persistent instructions that apply across all projects and sessions, including tool discovery for non-standard install paths (e.g., devbox/Nix).
+Configure Goose with persistent instructions that apply across all projects and sessions.
 
 ## What It Does
 
@@ -21,6 +21,15 @@ Configure Goose with persistent instructions that apply across all projects and 
 - Goose is installed and `~/.config/goose/config.yaml` exists
 - Familiarity with Goose's [persistent instructions](https://goose-docs.ai/docs/guides/context-engineering/using-persistent-instructions) feature
 
+## Note on Tool Discovery
+
+Previous versions of this skill included "Tool Discovery" instructions to help Goose find devbox/Nix-installed tools at non-standard paths. **This is no longer needed** if you have configured the `goose-shell` wrapper (`~/.local/bin/goose-shell`) and set `GOOSE_SHELL` in the Goose Desktop `.desktop` file. The wrapper sources `~/.bashrc` before executing commands, which sets up nix, devbox, crc/oc, sdkman, and all other PATH entries automatically — even for non-interactive shells.
+
+See the related files:
+- `~/.local/bin/goose-shell` — wrapper that sources `~/.bashrc`
+- `~/.local/share/applications/Goose.desktop` — passes `GOOSE_SHELL` to the Goose process
+- `~/.config/environment.d/60-goose-shell.conf` — sets `GOOSE_SHELL` for systemd user session
+
 ## Steps
 
 ### Step 1: Create the instructions file
@@ -28,11 +37,6 @@ Configure Goose with persistent instructions that apply across all projects and 
 Create `~/.config/goose/instructions.md` with your global instructions:
 
 ```markdown
-## Tool Discovery
-
-- Use `$(which gh)` to find the `gh` CLI. It may be installed via devbox at a non-standard path.
-- When a tool is not found on `$PATH`, check `~/.local/share/devbox/global/default/.devbox/nix/profile/default/bin/` before giving up.
-
 ## Git Push Safety
 
 - Before any push to GitHub, **DO NOT PUSH AUTOMATICALLY**.
@@ -55,13 +59,7 @@ GOOSE_MOIM_MESSAGE_FILE: ~/.config/goose/instructions.md
 
 ### Step 3: Verify
 
-Start a new Goose session and test:
-
-```
-You: where is gh?
-```
-
-Goose should use `$(which gh)` or check the devbox path rather than assuming `gh` is not installed.
+Start a new Goose session and test that your persistent instructions are active.
 
 ## Customization
 
@@ -93,7 +91,7 @@ The instructions file supports any Markdown content. Common additions:
 ## Key Files
 
 | File | Purpose |
-|------|---------|
+|------|--------|
 | `~/.config/goose/instructions.md` | Persistent instructions content |
 | `~/.config/goose/config.yaml` | Goose config — `GOOSE_MOIM_MESSAGE_FILE` entry |
 
@@ -106,5 +104,6 @@ The instructions file supports any Markdown content. Common additions:
 
 | Date | Change |
 |------|--------|
+| 2026-07-08 22:16 | v1.2 — Removed Tool Discovery instructions (obsoleted by goose-shell wrapper fix); updated description and examples |
 | 2026-07-08 17:49 | v1.1 — Added Git Push Safety guardrail: security evaluation required before any push |
 | 2026-07-08 17:40 | v1.0 — Initial skill: persistent instructions with devbox tool discovery |

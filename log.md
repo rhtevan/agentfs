@@ -1,6 +1,16 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 22:26
+
+- Created `~/.agents/skills/goose-desktop-env-fix/SKILL.md` v1.0: captures the full Goose Desktop shell environment fix (goose-shell wrapper, .desktop entry, environment.d, bashrc restructuring)
+- Regenerated `~/.agents/skills/index.md` (33 skills)
+
+## 2026-07-08 22:16
+
+- Updated `~/.agents/skills/goose-setup/SKILL.md` to v1.2: removed obsolete Tool Discovery instructions (replaced by goose-shell wrapper fix), updated description and examples
+- Regenerated `~/.agents/skills/index.md` (32 skills)
+
 ## 2026-07-08 18:06
 
 - Fixed broken OKF spec links in `README.md` and `skills/okf-bundle-setup/references/okf-spec-summary.md` — now point to `https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md`
