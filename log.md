@@ -1,6 +1,10 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+
+## 2026-07-09 17:43
+
+- Added Memory Architecture section to ~/.agents/README.md
 ## 2026-07-09 02:09
 - Updated `okf-bundle-index/scripts/rebuild-index.sh` — sub-bundle entries now include descriptions extracted from their `index.md` (first paragraph after heading, truncated to 120 chars)
 - Updated `okf-bundle-index/SKILL.md` v1.3 — documented sub-bundle description extraction

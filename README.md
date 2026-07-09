@@ -92,6 +92,81 @@ AgentFS enforces eight guardrails to maintain consistency:
 7. **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
 8. **Memory Scope** — `memories/` is PROJECT-only; NL-signal routing for experiences vs rules vs preferences; graduation path to OKF knowledge
 
+## Memory Architecture
+
+AgentFS implements a layered memory system inspired by cognitive science.
+Each layer serves a distinct purpose, scope, and mutability model.
+
+### The Full Memory Model
+
+| Memory Type | Cognitive Analogy | Scope | Location | Mutability |
+|-------------|-------------------|-------|----------|------------|
+| **MEMORY.md** | Episodic / experiential | PROJECT | `.agents/memories/` | Agent-written, session-to-session |
+| **OKF bundles** | Semantic / conceptual | USER | `~/.agents/knowledge/` | Distilled, graduated |
+| **SKILLs** | Procedural / SOP | Both | `~/.agents/skills/` or `.agents/skills/` | Human + agent authored |
+| **SOUL.md** | Identity | PROJECT | `.agents/SOUL.md` | Human-authored |
+| **USER.md** | User model | PROJECT | `.agents/memories/USER.md` | Agent-written |
+| **AGENTS.md** | Working agreements | PROJECT | `./AGENTS.md` | Human-authored + templated |
+| **instructions.md** | Agent instincts | USER (agent-specific) | e.g. `~/.config/goose/instructions.md` | Human-authored |
+
+### Layer Details
+
+#### Episodic Memory — `MEMORY.md`
+
+Concrete, project-specific observations and discoveries recorded by the
+agent during work. Each agent profile (default, named profiles) maintains
+its own `MEMORY.md`.
+
+- **Scope:** PROJECT only — lives under `.agents/memories/` (default agent)
+  or `.agents/profiles/<name>/memories/` (named profiles)
+- **Content:** "I found that X", "the build breaks when Y",
+  "this codebase prefers pattern W"
+- **Triggered by:** User signals ("remember this", "note that", "keep in mind")
+  or agent-initiated discovery during work
+- **Not here:** Rules → `AGENTS.md`; preferences → `USER.md`;
+  matured cross-project patterns → graduate to OKF
+
+#### Semantic Memory — OKF Knowledge Bundles
+
+Abstract concepts, patterns, and methodology distilled from episodic
+memories across one or more projects. Strictly USER-scoped to protect
+personal intellectual property — never committed to any project repository.
+
+- **Scope:** USER only — lives under `~/.agents/knowledge/`
+- **Content:** Methodology, design patterns, architectural principles,
+  cross-project insights
+- **Origin:** Graduated from `MEMORY.md` entries (single or multi-project)
+  or distilled from session context
+- **Managed by:** `okf-bundle-gen`, `okf-bundle-harvest`, `okf-bundle-setup`,
+  `okf-bundle-index` skills
+
+#### Procedural Memory — Skills
+
+Actionable, preferably idempotent workflows — standard operating procedures
+(SOPs), exercises, and automation functions.
+
+- **Scope:** Both USER (`~/.agents/skills/`, shared across projects) and
+  PROJECT (`.agents/skills/`, repo-specific)
+- **Structure:** `SKILL.md` (instructions) + `scripts/` (executable) +
+  `references/` (supporting docs)
+- **Default placement:** USER scope unless the user explicitly requests
+  project scope
+- **Portability:** `skill-merge` promotes PROJECT skills → USER skills
+  for cross-project reuse
+
+### Guardrail Layering
+
+Guardrails themselves exist at three levels:
+
+| Level | Location | Scope | Purpose |
+|-------|----------|-------|---------|
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 8 structural guardrails; projects are aligned to this template |
+| **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template guardrails, plus any project-specific additions |
+| **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
+
+When the AgentFS template is updated, existing projects are brought into
+alignment by re-running setup verification (`verify-setup.sh --mode project`).
+
 ## Getting Started
 
 ### With Goose
