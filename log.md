@@ -1,6 +1,11 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 22:34
+
+- Updated `~/.config/goose/instructions.md`: added Path Hygiene guardrail (never use explicit home directory paths)
+- Updated `~/.agents/skills/goose-setup/SKILL.md` to v1.3: added Path Hygiene to example instructions and changelog
+
 ## 2026-07-08 22:26
 
 - Created `~/.agents/skills/goose-desktop-env-fix/SKILL.md` v1.0: captures the full Goose Desktop shell environment fix (goose-shell wrapper, .desktop entry, environment.d, bashrc restructuring)

@@ -1,7 +1,7 @@
 ---
 name: goose-setup
 description: "Configure Goose global persistent instructions for cross-project, cross-session use"
-version: 1.2
+version: 1.3
 metadata:
     tags: [goose, config, instructions, persistent]
 ---
@@ -37,6 +37,12 @@ See the related files:
 Create `~/.config/goose/instructions.md` with your global instructions:
 
 ```markdown
+## Path Hygiene
+
+- **Never use explicit home directory paths** like `/home/<username>/` in scripts, configurations, or output.
+- Always use `~` or `$HOME` instead.
+- When displaying paths to the user, prefer `~/...` over `/home/<username>/...`.
+
 ## Git Push Safety
 
 - Before any push to GitHub, **DO NOT PUSH AUTOMATICALLY**.
@@ -104,6 +110,7 @@ The instructions file supports any Markdown content. Common additions:
 
 | Date | Change |
 |------|--------|
+| 2026-07-08 22:34 | v1.3 — Added Path Hygiene guardrail: never use explicit home directory paths, prefer ~ or $HOME |
 | 2026-07-08 22:16 | v1.2 — Removed Tool Discovery instructions (obsoleted by goose-shell wrapper fix); updated description and examples |
 | 2026-07-08 17:49 | v1.1 — Added Git Push Safety guardrail: security evaluation required before any push |
 | 2026-07-08 17:40 | v1.0 — Initial skill: persistent instructions with devbox tool discovery |
