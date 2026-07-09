@@ -1,6 +1,11 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 23:39
+
+- Updated `README.md`: removed `knowledge/` from PROJECT mode tree, added scope notes (knowledge=USER-only, memories=PROJECT-only), expanded guardrails list from 4→8, updated skill count 31→33, clarified knowledge path in Getting Started
+- Updated `skills/agentfs-setup/references/design-spec.md`: clarified prompt stacking item 4 (knowledge is USER-scoped, shared across projects)
+
 ## 2026-07-08 23:23
 
 - Regenerated `~/.agents/skills/index.md` — 33 skills indexed (completing workflow from stuck session `20260709_21`)

@@ -26,7 +26,7 @@ Each skill is a self-contained directory with a `SKILL.md` file that provides st
 | **Knowledge Mgmt** | OKF bundle creation, indexing, generation |
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes |
 
-See [`skills/index.md`](skills/index.md) for the full list of 31 skills.
+See [`skills/index.md`](skills/index.md) for the full list of 33 skills.
 
 ### Knowledge (`knowledge/`)
 
@@ -59,7 +59,7 @@ A **machine-wide shared library** of skills and knowledge visible to any agent a
 
 ### PROJECT Mode (`./.agents/` in a repo)
 
-A **per-repository agent workspace** that adds identity, memory, and multi-agent collaboration on top of skills and knowledge. Each project can have its own agent profiles with independent memories.
+A **per-repository agent workspace** that adds identity, memory, and multi-agent collaboration on top of skills. Each project can have its own agent profiles with independent memories.
 
 ```
 ./
@@ -69,19 +69,28 @@ A **per-repository agent workspace** that adds identity, memory, and multi-agent
     ├── profiles/            # Named agent profiles (each with SOUL.md + memories)
     ├── memories/            # Default agent's learned context (USER.md, MEMORY.md)
     ├── skills/              # Project-specific skills
-    └── knowledge/           # Project-specific knowledge
+    ├── index.md
+    └── log.md
 ```
 
-Both modes can coexist — agents discover USER-level skills/knowledge globally while maintaining project-scoped identity and memory in PROJECT mode.
+> **Note:** `knowledge/` is USER-scoped only — projects do NOT get a
+> local `knowledge/` directory. `memories/` is PROJECT-scoped only —
+> there is no `~/.agents/memories/`.
+
+Both modes can coexist — agents discover USER-level skills and knowledge globally while maintaining project-scoped identity and memory in PROJECT mode.
 
 ## Structural Guardrails
 
-AgentFS enforces four guardrails to maintain consistency:
+AgentFS enforces eight guardrails to maintain consistency:
 
 1. **Link Integrity** — No broken, obsolete, or missing links in `index.md` files
-2. **Log Currency** — All changes logged in reverse chronological order (ISO 8601)
+2. **Log Currency** — All changes logged in reverse chronological order (ISO 8601 timestamps)
 3. **Content Changelog** — Files with `Changelog` sections maintain reverse-chronological entries
 4. **Progressive Disclosure** — Browse `index.md` hubs before diving into individual files
+5. **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
+6. **Index Currency** — `skills/index.md` and `profiles/index.md` regenerated on every change
+7. **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
+8. **Memory Scope** — `memories/` is PROJECT-only; NL-signal routing for experiences vs rules vs preferences; graduation path to OKF knowledge
 
 ## Getting Started
 
@@ -102,7 +111,7 @@ Create a new directory under `skills/` with a `SKILL.md` file, then run the `ski
 
 ### Adding Knowledge
 
-Use the `okf-bundle-setup` skill to scaffold a new OKF-conformant knowledge bundle under `knowledge/`.
+Use the `okf-bundle-setup` skill to scaffold a new OKF-conformant knowledge bundle under `~/.agents/knowledge/` (USER scope — knowledge is shared across all projects).
 
 ## License
 

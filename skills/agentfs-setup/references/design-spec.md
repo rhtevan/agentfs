@@ -22,14 +22,15 @@ the intended stacking order is:
 1. SOUL.md           ← "Who am I?" — agent identity (human-authored)
 2. AGENTS.md         ← "How does this project work?" — project rules (human-authored)
 3. skills/           ← Available capabilities (shared across agents)
-4. knowledge/        ← Domain context (shared across agents)
+4. knowledge/        ← Domain context (USER-scoped, shared across projects)
 5. MEMORY.md         ← "What have I learned?" — project/env facts (agent-learned)
 6. USER.md           ← "Who are they?" — user profile (agent-learned)
 ```
 
 Items 1, 5, 6 are per-agent (default agent uses `.agents/` root;
 named agents use `.agents/profiles/<name>/`).
-Items 2, 3, 4 are shared across all agents in the project.
+Items 2, 3 are shared across all agents in the project.
+Item 4 (knowledge) is USER-scoped (`~/.agents/knowledge/`) — shared across all projects and agents.
 
 ## USER Mode — File Structure
 
