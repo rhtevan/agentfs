@@ -1,9 +1,9 @@
 ---
 name: goose-desktop-env-fix
 description: "Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.)"
-version: 1.0
+version: 1.1
 metadata:
-    tags: [goose, desktop, shell, environment, bashrc, devbox, nix]
+    tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---
 
 # Goose Desktop Environment Fix
@@ -45,6 +45,65 @@ that hardcodes `PATH` via `Exec=env PATH=...`, preventing
 3. **Desktop file override** — the user-level `.desktop` file's
    `Exec=env PATH=...` line overrides session environment variables
    set via `~/.config/environment.d/`
+4. **Devbox `shellenv` recursive fork bomb** — `devbox global shellenv`
+   spawns a bash subprocess to compute the environment. That subprocess
+   sources `~/.bashrc` (via `BASH_ENV` or the `goose-shell` wrapper),
+   which calls `devbox global shellenv` again, creating an infinite
+   recursion. This rapidly spawns thousands of processes (observed:
+   5,763+), consuming CPU and risking system instability.
+
+## Devbox Fork Bomb — Detailed Analysis
+
+### Trigger Chain
+
+```
+Goose Desktop
+  → goose-shell (sources ~/.bashrc)
+    → .bashrc: eval "$(devbox global shellenv)"
+      → devbox spawns bash subprocess
+        → bash sources ~/.bashrc (via goose-shell or BASH_ENV)
+          → .bashrc: eval "$(devbox global shellenv)"   ← RECURSION
+            → devbox spawns bash subprocess
+              → ... (infinite loop, 5,763+ processes observed)
+```
+
+### Symptoms
+
+- Thousands of `devbox global shellenv` processes visible in `ps aux`
+- Each process is a child of the previous, forming a deep nesting chain
+- CPU load rises (each process uses a small amount, but thousands add up)
+- `pstree` shows a deeply nested chain:
+  ```
+  systemd → bash → devbox → devbox → devbox → ... (thousands deep)
+  ```
+
+### Emergency Cleanup
+
+If the fork bomb is already running:
+```bash
+pkill -f 'devbox global shellenv'
+```
+
+### Prevention
+
+Add a recursion guard in `~/.bashrc` around the `devbox global shellenv`
+call. This is the **critical fix** — without it, the fork bomb will
+recur on every Goose Desktop restart:
+
+```bash
+# Guard against recursive devbox shellenv (prevents fork bomb in Goose Desktop)
+if [ -z "$__DEVBOX_SHELLENV_LOADED" ]; then
+  export __DEVBOX_SHELLENV_LOADED=1
+  eval "$(devbox global shellenv 2>/dev/null)"
+fi
+```
+
+**Why `__GOOSE_SHELL_SOURCED` alone is not enough:** The `goose-shell`
+wrapper's own guard (`__GOOSE_SHELL_SOURCED`) prevents re-sourcing
+`~/.bashrc` from the wrapper level, but it does NOT prevent the
+*internal* recursion caused by `devbox global shellenv` spawning child
+bash processes that re-enter `.bashrc` through a different code path.
+The `__DEVBOX_SHELLENV_LOADED` guard catches this inner recursion.
 
 ## Solution (3 files)
 
@@ -151,7 +210,11 @@ fi
 unset rc
 
 # Devbox environment
-eval "$(devbox global shellenv 2>/dev/null)"
+# Guard against recursive devbox shellenv (prevents fork bomb in Goose Desktop)
+if [ -z "$__DEVBOX_SHELLENV_LOADED" ]; then
+  export __DEVBOX_SHELLENV_LOADED=1
+  eval "$(devbox global shellenv 2>/dev/null)"
+fi
 
 # Other environment setup (crc/oc, exports, sdkman, etc.)
 # ... add your environment exports here ...
@@ -264,6 +327,10 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 - [ ] Environment variables are set (`CLOUD_ML_REGION`, `SDKMAN_DIR`, etc.)
 - [ ] Interactive bash sessions still work normally (completions, prompt)
 - [ ] No `eval` errors in shell output
+- [ ] No runaway `devbox global shellenv` processes after Goose Desktop restart
+      (`ps aux | grep 'devbox global shellenv' | grep -v grep | wc -l` should be 0)
+- [ ] `__DEVBOX_SHELLENV_LOADED` is set in the shell environment
+      (`echo $__DEVBOX_SHELLENV_LOADED` should print `1`)
 
 ## Affected Files
 
@@ -290,4 +357,5 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 
 | Date | Change |
 |------|--------|
+| 2026-07-08 23:12 | v1.1 — Added devbox fork bomb root cause analysis, trigger chain, symptoms, emergency cleanup, and `__DEVBOX_SHELLENV_LOADED` recursion guard as critical fix. Updated `.bashrc` example, verification checklist, and tags. |
 | 2026-07-08 22:24 | v1.0 — Initial skill capturing the full Goose Desktop environment fix |

@@ -4,9 +4,9 @@
 
 | Skill | Description | Updated |
 |-------|-------------|---------|
+| [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.) | 2026-07-08 23:12 |
 | [skill-index](./skill-index/SKILL.md) | Create an index.md at the skills root with entries linking to every skill's SKILL.md file alongside a short description. Scans all immediate subdirectories for SKILL.md files, extracts each skill's… | 2026-07-08 22:42 |
 | [goose-setup](./goose-setup/SKILL.md) | Configure Goose global persistent instructions for cross-project, cross-session use | 2026-07-08 22:34 |
-| [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.) | 2026-07-08 22:25 |
 | [crc-post-setup-config](./crc-post-setup-config/SKILL.md) | Post-setup configuration for OpenShift Local (CRC) — enables cluster monitoring with disk-safe Prometheus retention, tunes kubelet system-reserved resources to prevent the SystemMemoryExceedsReserv… | 2026-07-08 17:05 |
 | [crc-ovn-frr-metallb-config](./crc-ovn-frr-metallb-config/SKILL.md) | Set up OVN-Kubernetes FRR shared BGP backend and MetalLB Operator integration on an OpenShift Local (CRC) cluster. This skill re-establishes the full OVN-FRR and MetalLB integration after a `crc de… | 2026-07-08 17:05 |
 | [crc-nad-dynamic-plugin-config](./crc-nad-dynamic-plugin-config/SKILL.md) | Deploy the pre-built nad-console-plugin from quay.io to OpenShift Local (CRC) using Helm, and verify the plugin loads correctly and the NetworkAttachmentDefinitions menu item appears in the OpenShi… | 2026-07-08 17:05 |

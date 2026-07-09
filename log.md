@@ -1,6 +1,14 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 23:23
+
+- Regenerated `~/.agents/skills/index.md` — 33 skills indexed (completing workflow from stuck session `20260709_21`)
+
+## 2026-07-08 23:17
+
+- Updated `~/.agents/skills/goose-desktop-env-fix/SKILL.md` to v1.1: added root cause #4 (devbox fork bomb), detailed analysis section, updated .bashrc example with recursion guard, added verification checklist items, updated tags
+
 ## 2026-07-08 22:42
 
 - Updated `~/.agents/skills/skill-index/SKILL.md` to v1.6: clarified multi-line YAML scalar handling and improved fallback description extraction
