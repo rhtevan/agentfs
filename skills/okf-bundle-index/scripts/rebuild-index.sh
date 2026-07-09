@@ -84,11 +84,32 @@ for d in "$DIR"/*/; do
   [[ "$dname" == .* ]] && continue
   is_reserved "$dname" && continue
 
-  stitle=""
-  [[ -f "$d/index.md" ]] && stitle="$(grep -m1 '^#' "$d/index.md" | sed 's/^#\+[[:space:]]*//' || true)"
+  stitle="" sdesc=""
+  if [[ -f "$d/index.md" ]]; then
+    stitle="$(grep -m1 '^#' "$d/index.md" | sed 's/^#\+[[:space:]]*//' || true)"
+    # Extract first paragraph after the title as description (join continuation lines)
+    sdesc="$(awk '
+      /^#/ { found_title=1; next }
+      found_title && !started && /^[[:space:]]*$/ { next }
+      found_title && !started && /^[^#*\[]/ { started=1; desc=$0; next }
+      found_title && !started { exit }
+      started && /^[[:space:]]*$/ { exit }
+      started && /^[#*\[]/ { exit }
+      started { desc=desc " " $0 }
+      END { print desc }
+    ' "$d/index.md" || true)"
+    # Trim to a reasonable length for an index entry
+    if [[ ${#sdesc} -gt 120 ]]; then
+      sdesc="${sdesc:0:117}..."
+    fi
+  fi
   [[ -z "$stitle" ]] && stitle="$(title_case "$dname")"
 
-  subbundles+=("* [$stitle]($dname/index.md)")
+  if [[ -n "$sdesc" ]]; then
+    subbundles+=("* [$stitle]($dname/index.md) - $sdesc")
+  else
+    subbundles+=("* [$stitle]($dname/index.md)")
+  fi
 done
 shopt -u nullglob
 

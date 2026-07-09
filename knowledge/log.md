@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-09 02:02
+
+* **Update**: Audited index.md files — root index.md updated with 4 missing sub-bundle entries (agentfs-claude-compat, headroom-openai-compression-analysis, rca-labeled-dataset, telecom-gnn-rca)
+
 ## 2026-07-08 09:57
 
 * **Distill**: Rewrote `agentfs-claude-compat/claude-compat-analysis.md` — extracted cross-agent compatibility matrix and bridging patterns from 330-line session notes (now 112 lines)

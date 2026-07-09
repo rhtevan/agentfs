@@ -1,6 +1,30 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-09 02:09
+- Updated `okf-bundle-index/scripts/rebuild-index.sh` — sub-bundle entries now include descriptions extracted from their `index.md` (first paragraph after heading, truncated to 120 chars)
+- Updated `okf-bundle-index/SKILL.md` v1.3 — documented sub-bundle description extraction
+- Rebuilt `~/.agents/knowledge/index.md` with sub-bundle descriptions
+
+## 2026-07-09 01:55
+- Updated `okf-bundle-index/SKILL.md` changelog — added v1.2 entry for default path fix
+- Updated `okf-bundle-setup/SKILL.md` changelog — added v1.1 entry for default path fix
+
+## 2026-07-09 01:43
+- Updated USER skill `goose-agentfs-setup` v1.2: added global goosehints for knowledge discovery (--hints-check, --hints-install, --hints-remove)
+- Updated USER skill `okf-bundle-gen` v3.1: removed Phase 9 (SOUL.md pattern link injection), removed `update-soul-links.sh` script
+- Updated USER skill `okf-bundle-harvest` v1.1: removed Phase 9 (SOUL.md update), removed `update-soul-links.sh` dependency
+- Created `~/.config/goose/.goosehints` with knowledge index reference for progressive loading
+- Reverted `SOUL.md` from `CONTEXT_FILE_NAMES` (knowledge discovery now via global goosehints)
+- Regenerated `~/.agents/skills/index.md` — 34 skills indexed
+
+## 2026-07-09 00:56
+- Created USER skill `okf-bundle-harvest`: multi-project memory-to-knowledge distillation with graduation criteria, MEMORY.md pruning, OKF-compliant output
+- Created `~/.agents/skills/okf-bundle-harvest/scripts/prune-memory.sh` — removes graduated §-delimited entries from MEMORY.md
+- Created `~/.agents/skills/okf-bundle-harvest/scripts/harvest-summary.sh` — cross-project harvest candidate analysis
+- Updated USER skill `goose-agentfs-setup` v1.1: added memory collision avoidance (--memory-check, --memory-install, --memory-remove)
+- Regenerated `~/.agents/skills/index.md` — 34 skills indexed
+
 ## 2026-07-08 23:39
 
 - Updated `README.md`: removed `knowledge/` from PROJECT mode tree, added scope notes (knowledge=USER-only, memories=PROJECT-only), expanded guardrails list from 4→8, updated skill count 31→33, clarified knowledge path in Getting Started

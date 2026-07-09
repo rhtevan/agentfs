@@ -6,7 +6,6 @@ description: >
   ~/.agents/knowledge/ as the bundle root. Scans all MEMORY.md and USER.md
   files under ./.agents/ (default agent + named profiles) to extract
   higher-order patterns into a dedicated agent-patterns/ sub-bundle.
-  Updates ./.agents/SOUL.md with links to abstracted pattern concepts.
   Session-specific knowledge goes into per-session sub-bundles. Fully
   compliant with Open Knowledge Format v0.1.
 ---
@@ -19,8 +18,7 @@ OKF v0.1 knowledge bundle under `~/.agents/knowledge/`.
 Additionally, scan all **accumulated agent memories** (MEMORY.md and
 USER.md files under `./.agents/`) to extract higher-order patterns —
 abstract concepts that emerge from cross-session episodic observations.
-These patterns are written to a dedicated `agent-patterns/` sub-bundle
-and linked from `./.agents/SOUL.md`.
+These patterns are written to a dedicated `agent-patterns/` sub-bundle.
 
 This skill is a **knowledge-generation** companion to `okf-bundle-setup`
 (which organizes existing files). Here the agent is the knowledge
@@ -44,7 +42,6 @@ For the full OKF specification, see
 | Bundle root | `~/.agents/knowledge/` |
 | Session sub-bundle | `~/.agents/knowledge/<session-name>/` |
 | Patterns sub-bundle | `~/.agents/knowledge/agent-patterns/` |
-| SOUL.md | `./.agents/SOUL.md` |
 | Memories scan root | `./.agents/` |
 | OKF version | v0.1 |
 
@@ -504,67 +501,6 @@ All items should show `[✓]`. Fix any `[✗]` items:
 
 Re-run verification after fixes until the bundle is fully conformant.
 
-### Phase 9 — Update all SOUL.md files with pattern concept links
-
-If Phase 1d identified patterns and Phase 5 wrote them to
-`~/.agents/knowledge/agent-patterns/`, update **every** SOUL.md in
-the `.agents/` tree with a managed section linking to pattern concepts.
-
-Since `~/.agents/knowledge/` is shared across all agents, every agent should
-see the abstracted patterns. The script discovers and updates:
-
-| SOUL.md location | Link path prefix |
-|---|---|
-| `./.agents/SOUL.md` (default agent) | `~/.agents/knowledge/agent-patterns/...` (absolute) |
-| `./.agents/profiles/<name>/SOUL.md` (named profiles) | `~/.agents/knowledge/agent-patterns/...` (absolute) |
-
-#### 9a. Build the links content
-
-Construct a markdown list of all pattern concepts currently in
-`~/.agents/knowledge/agent-patterns/`. Since knowledge is now at a
-fixed user-level path, all SOUL.md files use the same absolute `~/` paths:
-
-```markdown
-Abstracted from accumulated agent memories and conversations.
-See each linked concept for full context.
-
-* [Design Philosophy](~/.agents/knowledge/agent-patterns/design-philosophy.md) - Prefers generalizable, standard, label-free approaches
-* [Reasoning Style](~/.agents/knowledge/agent-patterns/reasoning-style.md) - First-principles thinker; challenges conventions
-* [Domain Synthesis](~/.agents/knowledge/agent-patterns/domain-synthesis.md) - Bridges telecom operations with graph ML techniques
-```
-
-Include **all** pattern concepts in agent-patterns/, not just the ones
-created in this run — the managed section should be a complete listing.
-
-#### 9b. Update all SOUL.md files
-
-```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/update-soul-links.sh \
-  ./.agents \
-  "<links-content-from-9a>"
-```
-
-This discovers every SOUL.md under `./.agents/` (default agent +
-all named profiles) and for each one:
-
-- Adjusts link paths relative to that SOUL.md's directory
-- Inserts or updates the `<!-- OKFGEN CONCEPTS START/END -->` section
-- Preserves all human-authored content outside the markers
-- Skips profiles where SOUL.md does not exist (no error)
-
-Since knowledge is at a fixed user-level path (`~/.agents/knowledge/`),
-all SOUL.md files use identical absolute `~/` links — no relative path
-adjustment is needed.
-
-#### 9c. Verify SOUL.md files
-
-After updating, confirm for **each** updated SOUL.md:
-- The `<!-- OKFGEN CONCEPTS START/END -->` markers are present and
-  properly paired.
-- All links in the managed section resolve to existing concept files
-  (relative to that SOUL.md's location).
-- Human-authored content above or below the markers is untouched.
-
 ---
 
 ## Merge Semantics — Detailed Rules
@@ -646,13 +582,7 @@ Before completing, verify:
       table tracing back to source episodic entries.
 - [ ] **Pattern concepts** are derived from ≥2 distinct episodic entries
       (not single-entry restating).
-- [ ] **All SOUL.md files** (default + profiles) have
-      `<!-- OKFGEN CONCEPTS START/END -->` markers with links to all
-      pattern concepts (if any patterns were generated).
-- [ ] **All SOUL.md links** use `~/.agents/knowledge/agent-patterns/`
-      absolute paths.
-- [ ] **All SOUL.md files** — human-authored content outside markers
-      is untouched.
+
 
 ---
 
@@ -682,28 +612,6 @@ plus abstracting patterns from accumulated memories:
         ├── index.md
         └── file-placement.md          ← type: Convention
 ```
-
-And `./.agents/SOUL.md` (default agent) now contains:
-
-```markdown
-# Identity
-
-(existing human-authored content)
-
-## Learned Patterns
-
-<!-- OKFGEN CONCEPTS START -->
-Abstracted from accumulated agent memories and conversations.
-See each linked concept for full context.
-
-* [Design Philosophy](~/.agents/knowledge/agent-patterns/design-philosophy.md) - Prefers generalizable, standard, label-free approaches
-* [Reasoning Style](~/.agents/knowledge/agent-patterns/reasoning-style.md) - First-principles thinker; challenges conventions
-* [Domain Synthesis](~/.agents/knowledge/agent-patterns/domain-synthesis.md) - Bridges telecom operations with graph ML techniques
-<!-- OKFGEN CONCEPTS END -->
-```
-
-All SOUL.md files (default agent and named profiles) use the same
-`~/.agents/knowledge/` paths — no relative path adjustment needed.
 
 After a **second session**, the bundle grows with a new session
 sub-bundle, and `agent-patterns/` may gain new patterns or have
@@ -744,18 +652,7 @@ existing ones updated:
    AND user likes TypeScript" → bad (just a list). "User prefers
    typed languages with strong tooling ecosystems" → good (abstraction).
 
-4. **SOUL.md marker collision** — If a SOUL.md already has
-   `<!-- OKFGEN CONCEPTS START/END -->` markers from a prior run, the
-   update-soul-links.sh script replaces the content between them.
-   Make sure the links list is **complete** (all patterns in
-   agent-patterns/), not just the ones created in this run. The
-   script handles all SOUL.md files (default + profiles) in one call.
-
-5. **Consistent link paths** — Since knowledge lives at the fixed
-   user-level path `~/.agents/knowledge/`, all SOUL.md files use
-   identical absolute `~/` links. No relative path adjustment needed.
-
-6. **Empty memories directory** — If `./.agents/memories/` doesn't
+4. **Empty memories directory** — If `./.agents/memories/` doesn't
    exist yet (e.g., fresh PROJECT mode setup hasn't been run), Phase
    1c produces no entries. This is fine — skip Phase 1d and proceed
    with session-only knowledge extraction. Don't fail or warn loudly.
@@ -767,8 +664,6 @@ Skill directory: ~/.agents/skills/okf-bundle-gen
 - scripts/list-existing-concepts.sh → load_skill(name: "okf-bundle-gen/scripts/list-existing-concepts.sh")
 - scripts/merge-log-entry.sh → load_skill(name: "okf-bundle-gen/scripts/merge-log-entry.sh")
 - scripts/scan-memories.sh → load_skill(name: "okf-bundle-gen/scripts/scan-memories.sh")
-- scripts/update-soul-links.sh → load_skill(name: "okf-bundle-gen/scripts/update-soul-links.sh")
-
 Dependencies (from `okf-bundle-setup`):
 - scaffold-bundle.sh → load_skill(name: "okf-bundle-setup/scripts/scaffold-bundle.sh")
 - verify-bundle.sh → load_skill(name: "okf-bundle-setup/scripts/verify-bundle.sh")
@@ -778,7 +673,8 @@ Dependencies (from `okf-bundle-setup`):
 
 | Updated | Change |
 |---------|--------|
-| 2026-07-08 14:19 | v3.0 — Memory redesign: bundle root changed from `./.agents/knowledge/` (project-local staging) to `~/.agents/knowledge/` (user-level); removed project-local staging concept; SOUL.md links now use absolute `~/` paths (no relative path adjustment); memory scan is PROJECT-only (no `~/.agents/memories/`); `okf-bundle-merge` is now obsolete |
+| 2026-07-09 01:38 | v3.1 — Removed Phase 9 (SOUL.md pattern link injection) and update-soul-links.sh dependency; knowledge discovery now handled via global .goosehints progressive loading instead of SOUL.md markers |
+| 2026-07-08 14:19 | v3.0 — Memory redesign: bundle root changed from `./.agents/knowledge/` (project-local staging) to `~/.agents/knowledge/` (user-level); removed project-local staging concept; memory scan is PROJECT-only (no `~/.agents/memories/`); `okf-bundle-merge` is now obsolete |
 | 2026-06-30 23:49 | v2.2 — `merge-log-entry.sh` updated: `YYYY-MM-DD HH:MM` timestamps, `<!-- Append-only -->` comment, `- ` entry style |
 | 2026-06-30 23:36 | v2.1 — Changelog table uses `Updated` header and `YYYY-MM-DD HH:MM` timestamps, aligned with guardrail §3 |
 | 2026-06-30 16:46 | v2.0 — Memory scanning + pattern extraction + multi-agent SOUL.md linking. New phases: 1c (scan-memories.sh), 1d (pattern extraction to agent-patterns/ sub-bundle), 9 (update-soul-links.sh across default + profile SOUL.md files). New scripts: scan-memories.sh, update-soul-links.sh. Relative link depth auto-adjusted per SOUL.md location. |

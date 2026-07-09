@@ -30,17 +30,29 @@ usage() {
     cat <<'EOF'
 Usage: setup.sh [OPTIONS]
 
-Configure Goose CONTEXT_FILE_NAMES for cross-agent compatibility.
+Configure Goose CONTEXT_FILE_NAMES for cross-agent compatibility
+and manage AgentFS memory collision avoidance.
 
-Options:
-  (none)          Standard setup — add CLAUDE.md to context files
-  --check         Show current configuration and gaps
-  --add FILE...   Add specific file(s) to CONTEXT_FILE_NAMES
-  --remove FILE.. Remove specific file(s) from CONTEXT_FILE_NAMES
-  --all           Add all known cross-agent files (CLAUDE.md, .cursorrules, .windsurfrules)
-  --reset         Reset to Goose defaults (.goosehints, AGENTS.md)
-  --list          List all known cross-agent context files
-  --help          Show this help
+Context File Options:
+  (none)            Standard setup — add CLAUDE.md to context files
+  --check           Show current configuration and gaps
+  --add FILE...     Add specific file(s) to CONTEXT_FILE_NAMES
+  --remove FILE..   Remove specific file(s) from CONTEXT_FILE_NAMES
+  --all             Add all known cross-agent files
+  --reset           Reset to Goose defaults (.goosehints, AGENTS.md)
+  --list            List all known cross-agent context files
+
+Knowledge Discovery (Global Goosehints):
+  --hints-check     Check if global .goosehints has knowledge index reference
+  --hints-install   Install/update knowledge index reference in global .goosehints
+  --hints-remove    Remove knowledge index reference from global .goosehints
+
+Memory Collision Avoidance:
+  --memory-check    Check if memory routing override is installed
+  --memory-install  Install/update memory routing override in persistent instructions
+  --memory-remove   Remove memory routing override from persistent instructions
+
+  --help            Show this help
 
 Examples:
   setup.sh                           # Add CLAUDE.md (recommended)
@@ -49,6 +61,12 @@ Examples:
   setup.sh --remove .cursorrules     # Remove a file
   setup.sh --check                   # Diagnostic report
   setup.sh --reset                   # Restore Goose defaults
+  setup.sh --hints-check             # Check knowledge discovery setup
+  setup.sh --hints-install           # Install knowledge index in global hints
+  setup.sh --hints-remove            # Remove knowledge index from global hints
+  setup.sh --memory-check            # Check memory override status
+  setup.sh --memory-install          # Install memory collision avoidance
+  setup.sh --memory-remove           # Remove memory collision avoidance
 EOF
 }
 
@@ -291,16 +309,367 @@ do_list() {
     echo "doesn't map to CONTEXT_FILE_NAMES. Reference it via @-import in AGENTS.md."
 }
 
+# --- Global Goosehints for Knowledge Discovery ---
+
+GOOSE_GLOBAL_HINTS="${HOME}/.config/goose/.goosehints"
+KNOWLEDGE_INDEX_REF="Knowledge index: ~/.agents/knowledge/index.md"
+KNOWLEDGE_MARKER_START="## Knowledge Base"
+
+do_hints_check() {
+    echo "=== Global Goosehints Check ==="
+    echo
+    echo "Global hints file: $GOOSE_GLOBAL_HINTS"
+    if [[ ! -f "$GOOSE_GLOBAL_HINTS" ]]; then
+        warn "Global .goosehints does not exist"
+        echo "Run 'setup.sh --hints-install' to create it."
+        return
+    fi
+
+    info "Global .goosehints exists"
+    echo
+
+    if grep -qF "$KNOWLEDGE_INDEX_REF" "$GOOSE_GLOBAL_HINTS"; then
+        info "Knowledge index reference is present"
+    else
+        warn "Knowledge index reference is NOT present"
+        echo "Run 'setup.sh --hints-install' to add it."
+    fi
+    echo
+
+    if [[ -f "$HOME/.agents/knowledge/index.md" ]]; then
+        info "Knowledge index file exists at ~/.agents/knowledge/index.md"
+    else
+        warn "Knowledge index file not found at ~/.agents/knowledge/index.md"
+        echo "  Run okf-bundle-gen or okf-bundle-harvest to create knowledge bundles."
+    fi
+}
+
+do_hints_install() {
+    mkdir -p "$(dirname "$GOOSE_GLOBAL_HINTS")"
+
+    if [[ ! -f "$GOOSE_GLOBAL_HINTS" ]]; then
+        cat > "$GOOSE_GLOBAL_HINTS" << 'EOF'
+# Global Goose Hints
+
+## Knowledge Base
+
+Knowledge index: ~/.agents/knowledge/index.md
+EOF
+        info "Created $GOOSE_GLOBAL_HINTS with knowledge index reference."
+    elif grep -qF "$KNOWLEDGE_INDEX_REF" "$GOOSE_GLOBAL_HINTS"; then
+        info "Knowledge index reference already present in $GOOSE_GLOBAL_HINTS"
+    elif grep -qF "$KNOWLEDGE_MARKER_START" "$GOOSE_GLOBAL_HINTS"; then
+        # Section exists but reference is different — update it
+        local tmpfile
+        tmpfile=$(mktemp)
+        python3 - "$GOOSE_GLOBAL_HINTS" "$tmpfile" <<'PYEOF'
+import sys
+
+src = sys.argv[1]
+dst = sys.argv[2]
+marker = "## Knowledge Base"
+ref_line = "Knowledge index: ~/.agents/knowledge/index.md"
+
+with open(src) as f:
+    lines = f.readlines()
+
+new_lines = []
+i = 0
+while i < len(lines):
+    new_lines.append(lines[i])
+    if lines[i].strip() == marker:
+        # Skip old content until next heading or end
+        i += 1
+        while i < len(lines) and not lines[i].startswith('#'):
+            i += 1
+        new_lines.append('\n')
+        new_lines.append(ref_line + '\n')
+        new_lines.append('\n')
+        continue
+    i += 1
+
+with open(dst, 'w') as f:
+    f.writelines(new_lines)
+PYEOF
+        cp "$tmpfile" "$GOOSE_GLOBAL_HINTS"
+        rm -f "$tmpfile"
+        info "Updated knowledge index reference in $GOOSE_GLOBAL_HINTS"
+    else
+        # Append new section
+        echo -e "\n## Knowledge Base\n\n$KNOWLEDGE_INDEX_REF" >> "$GOOSE_GLOBAL_HINTS"
+        info "Appended knowledge index reference to $GOOSE_GLOBAL_HINTS"
+    fi
+    echo
+    info "Knowledge discovery configured. Restart your Goose session to apply."
+}
+
+do_hints_remove() {
+    if [[ ! -f "$GOOSE_GLOBAL_HINTS" ]]; then
+        warn "No global .goosehints file found at $GOOSE_GLOBAL_HINTS"
+        return
+    fi
+
+    if ! grep -qF "$KNOWLEDGE_INDEX_REF" "$GOOSE_GLOBAL_HINTS" && \
+       ! grep -qF "$KNOWLEDGE_MARKER_START" "$GOOSE_GLOBAL_HINTS"; then
+        warn "No knowledge index reference found in $GOOSE_GLOBAL_HINTS"
+        return
+    fi
+
+    local tmpfile
+    tmpfile=$(mktemp)
+    python3 - "$GOOSE_GLOBAL_HINTS" "$tmpfile" <<'PYEOF'
+import sys
+
+src = sys.argv[1]
+dst = sys.argv[2]
+marker = "## Knowledge Base"
+
+with open(src) as f:
+    content = f.read()
+
+idx = content.find(marker)
+if idx < 0:
+    with open(dst, 'w') as f:
+        f.write(content)
+else:
+    before = content[:idx].rstrip()
+    # Find next heading after the marker
+    rest = content[idx + len(marker):]
+    next_heading = -1
+    for i, ch in enumerate(rest):
+        if ch == '#' and (i == 0 or rest[i-1] == '\n'):
+            next_heading = i
+            break
+    if next_heading >= 0:
+        after = rest[next_heading:].lstrip()
+        result = before + '\n\n' + after if before else after
+    else:
+        result = before
+    with open(dst, 'w') as f:
+        f.write(result.strip() + '\n')
+PYEOF
+    cp "$tmpfile" "$GOOSE_GLOBAL_HINTS"
+    rm -f "$tmpfile"
+
+    # Remove file if empty
+    if [[ ! -s "$GOOSE_GLOBAL_HINTS" ]] || [[ "$(cat "$GOOSE_GLOBAL_HINTS" | tr -d '[:space:]')" == "" ]]; then
+        rm -f "$GOOSE_GLOBAL_HINTS"
+        info "Removed empty $GOOSE_GLOBAL_HINTS"
+    else
+        info "Removed knowledge index reference from $GOOSE_GLOBAL_HINTS"
+    fi
+    echo
+    info "Restart your Goose session to apply."
+}
+
+# --- Memory Collision Avoidance ---
+
+# The persistent instructions block that prevents the Goose memory extension
+# from hijacking AgentFS natural-language memory signals.
+MEMORY_MARKER_START="## Memory Routing Override (AgentFS)"
+MEMORY_MARKER_END="## End Memory Routing Override"
+
+MEMORY_INSTRUCTIONS='## Memory Routing Override (AgentFS)
+
+When the Goose memory extension is enabled alongside AgentFS (.agents/ directory),
+the following natural-language signals MUST route to AgentFS MEMORY.md files ONLY.
+Do NOT use the Goose memory extension tools (remember_memory, retrieve_memories,
+remove_memory_category, remove_specific_memory) in response to these signals.
+
+### Signals that route to AgentFS MEMORY.md
+
+| Signal words | AgentFS action |
+|---|---|
+| remember, remember this, remember that | Append to MEMORY.md |
+| save, save this, save that | Append to MEMORY.md |
+| note, note that, note this | Append to MEMORY.md |
+| keep in mind | Append to MEMORY.md |
+| forget, forget this, forget that | Remove entry from MEMORY.md |
+| memory (standalone) | Route to MEMORY.md |
+| remove memory | Remove entry from MEMORY.md |
+| clear memory | Clear entries from MEMORY.md |
+| search memory | Search within MEMORY.md |
+| find memory | Search within MEMORY.md |
+
+### Which MEMORY.md to use
+
+- Default agent: ./.agents/memories/MEMORY.md
+- Named profile (subagent): ./.agents/profiles/<name>/memories/MEMORY.md
+- If operating as a subagent under a named profile, ALWAYS use that profile MEMORY.md
+
+### When Goose memory extension tools ARE allowed
+
+ONLY when the user explicitly names the extension:
+- "save to goose memory"
+- "store in goose memory"
+- "use the memory extension to persist this"
+- "retrieve from goose memory"
+- "check goose memory"
+
+### Session bridge pattern
+
+The primary legitimate use of the Goose memory extension alongside AgentFS is as
+a session bridge: temporarily stash critical context so it survives into a new
+session, then at session start, retrieve the stashed content and commit it to
+the appropriate MEMORY.md file. After committing, clear the stashed entries from
+the Goose memory store.
+
+## End Memory Routing Override'
+
+GOOSE_INSTRUCTIONS="${GOOSE_MOIM_MESSAGE_FILE:-${HOME}/.config/goose/instructions.md}"
+
+do_memory_check() {
+    echo "=== Memory Collision Avoidance Check ==="
+    echo
+    echo "Instructions file: $GOOSE_INSTRUCTIONS"
+    if [[ ! -f "$GOOSE_INSTRUCTIONS" ]]; then
+        echo "Status: NOT FOUND"
+        echo
+        warn "No persistent instructions file. Run 'setup.sh --memory-install' to create."
+        return
+    fi
+
+    if grep -qF "$MEMORY_MARKER_START" "$GOOSE_INSTRUCTIONS"; then
+        info "Memory routing override is INSTALLED"
+    else
+        warn "Memory routing override is NOT installed"
+        echo "Run 'setup.sh --memory-install' to add it."
+    fi
+    echo
+
+    # Check if memory extension is enabled
+    if grep -A2 'memory:' "$GOOSE_CONFIG" 2>/dev/null | grep -q 'enabled: true'; then
+        warn "Goose memory extension is ENABLED — collision risk exists"
+        echo "  The routing override in persistent instructions will redirect"
+        echo "  natural-language signals to AgentFS MEMORY.md."
+    else
+        info "Goose memory extension is DISABLED — no collision risk"
+    fi
+}
+
+do_memory_install() {
+    if [[ ! -f "$GOOSE_INSTRUCTIONS" ]]; then
+        # Create the file with the override block
+        mkdir -p "$(dirname "$GOOSE_INSTRUCTIONS")"
+        echo -e "$MEMORY_INSTRUCTIONS" > "$GOOSE_INSTRUCTIONS"
+        info "Created $GOOSE_INSTRUCTIONS with memory routing override."
+    elif grep -qF "$MEMORY_MARKER_START" "$GOOSE_INSTRUCTIONS"; then
+        # Replace existing block
+        local tmpfile
+        tmpfile=$(mktemp)
+        python3 - "$GOOSE_INSTRUCTIONS" "$tmpfile" <<'PYEOF'
+import sys
+
+src = sys.argv[1]
+dst = sys.argv[2]
+start_marker = "## Memory Routing Override (AgentFS)"
+end_marker = "## End Memory Routing Override"
+
+with open(src) as f:
+    content = f.read()
+
+start_idx = content.find(start_marker)
+end_idx = content.find(end_marker)
+if start_idx >= 0 and end_idx >= 0:
+    end_idx = end_idx + len(end_marker)
+    # Preserve content before and after
+    before = content[:start_idx].rstrip()
+    after = content[end_idx:].lstrip()
+    with open(dst, 'w') as f:
+        f.write(before)
+    # Signal to caller to append new block + after content
+    with open(dst + '.after', 'w') as f:
+        f.write(after)
+else:
+    # No markers found, write original
+    with open(dst, 'w') as f:
+        f.write(content)
+PYEOF
+        if [[ -f "${tmpfile}.after" ]]; then
+            local after_content
+            after_content=$(cat "${tmpfile}.after")
+            {
+                cat "$tmpfile"
+                [[ -s "$tmpfile" ]] && echo -e "\n"
+                echo -e "$MEMORY_INSTRUCTIONS"
+                [[ -n "$after_content" ]] && echo -e "\n$after_content"
+            } > "$GOOSE_INSTRUCTIONS"
+            rm -f "$tmpfile" "${tmpfile}.after"
+        else
+            rm -f "$tmpfile"
+        fi
+        info "Updated memory routing override in $GOOSE_INSTRUCTIONS"
+    else
+        # Append to existing file
+        echo -e "\n\n$MEMORY_INSTRUCTIONS" >> "$GOOSE_INSTRUCTIONS"
+        info "Appended memory routing override to $GOOSE_INSTRUCTIONS"
+    fi
+    echo
+    info "Memory collision avoidance installed. Restart your Goose session to apply."
+}
+
+do_memory_remove() {
+    if [[ ! -f "$GOOSE_INSTRUCTIONS" ]]; then
+        warn "No persistent instructions file found at $GOOSE_INSTRUCTIONS"
+        return
+    fi
+
+    if ! grep -qF "$MEMORY_MARKER_START" "$GOOSE_INSTRUCTIONS"; then
+        warn "No memory routing override found in $GOOSE_INSTRUCTIONS"
+        return
+    fi
+
+    local tmpfile
+    tmpfile=$(mktemp)
+    python3 - "$GOOSE_INSTRUCTIONS" "$tmpfile" <<'PYEOF'
+import sys
+
+src = sys.argv[1]
+dst = sys.argv[2]
+start_marker = "## Memory Routing Override (AgentFS)"
+end_marker = "## End Memory Routing Override"
+
+with open(src) as f:
+    content = f.read()
+
+start_idx = content.find(start_marker)
+end_idx = content.find(end_marker)
+if start_idx >= 0 and end_idx >= 0:
+    end_idx = end_idx + len(end_marker)
+    before = content[:start_idx].rstrip()
+    after = content[end_idx:].lstrip()
+    result = before
+    if after:
+        result = result + "\n\n" + after if result else after
+    with open(dst, 'w') as f:
+        f.write(result.strip() + "\n")
+else:
+    with open(dst, 'w') as f:
+        f.write(content)
+PYEOF
+    cp "$tmpfile" "$GOOSE_INSTRUCTIONS"
+    rm -f "$tmpfile"
+    info "Removed memory routing override from $GOOSE_INSTRUCTIONS"
+    echo
+    info "Restart your Goose session to apply."
+}
+
 # --- Main ---
 
 case "${1:-}" in
-    --check)    do_check ;;
-    --add)      shift; do_add "$@" ;;
-    --remove)   shift; do_remove "$@" ;;
-    --all)      do_all ;;
-    --reset)    do_reset ;;
-    --list)     do_list ;;
-    --help|-h)  usage ;;
-    "")         do_add "${STANDARD_FILES[@]}" ;;
-    *)          error "Unknown option: $1"; usage; exit 1 ;;
+    --check)           do_check ;;
+    --add)             shift; do_add "$@" ;;
+    --remove)          shift; do_remove "$@" ;;
+    --all)             do_all ;;
+    --reset)           do_reset ;;
+    --list)            do_list ;;
+    --hints-check)    do_hints_check ;;
+    --hints-install)   do_hints_install ;;
+    --hints-remove)    do_hints_remove ;;
+    --memory-check)    do_memory_check ;;
+    --memory-install)  do_memory_install ;;
+    --memory-remove)   do_memory_remove ;;
+    --help|-h)         usage ;;
+    "")                do_add "${STANDARD_FILES[@]}" ;;
+    *)                 error "Unknown option: $1"; usage; exit 1 ;;
 esac

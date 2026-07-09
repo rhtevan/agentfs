@@ -26,7 +26,7 @@ The skill accepts an **optional** bundle root path argument:
 
 | Input | Example | Behaviour |
 |-------|---------|-----------|
-| *(none)* | `"check my bundle index links"` | Use `./.agents/knowledge/` as the bundle root |
+| *(none)* | `"check my bundle index links"` | Use `~/.agents/knowledge/` as the bundle root |
 | Explicit path | `"fix index links in docs/catalog"` | Use the given path as the bundle root |
 
 ---
@@ -58,7 +58,7 @@ Execute these phases **in order**.
 
 ### Phase 1 — Resolve the bundle root
 
-1. If no path was given, set `BUNDLE_ROOT` to `./.agents/knowledge/`.
+1. If no path was given, set `BUNDLE_ROOT` to `~/.agents/knowledge/`.
 2. If an explicit path was given, resolve it against the current
    working directory.
 3. Verify the directory exists:
@@ -124,7 +124,8 @@ The rebuild script:
 - Derives a title from the directory name (or an existing heading)
 - Lists all concept `.md` files with titles and descriptions
   extracted from their YAML frontmatter
-- Lists all sub-bundle directories with titles from their `index.md`
+- Lists all sub-bundle directories with titles and descriptions
+  extracted from their `index.md` (first paragraph after the heading)
 - Outputs a complete, **no-frontmatter** `index.md` to stdout
 
 After generating, review the output and adjust if needed (e.g., add
@@ -247,7 +248,7 @@ After completing all phases, confirm:
 ### Before
 
 ```
-./.agents/knowledge/
+~/.agents/knowledge/
 ├── index.md              ← links to deleted-concept.md (broken)
 │                           missing entry for new-concept.md
 ├── new-concept.md        ← not listed in index.md
@@ -261,7 +262,7 @@ After completing all phases, confirm:
 ### Audit output
 
 ```
-=== AUDIT: ./.agents/knowledge ===
+=== AUDIT: ~/.agents/knowledge ===
 INDEX: EXISTS
 
 --- BROKEN LINKS ---
@@ -270,7 +271,7 @@ deleted-concept.md
 --- MISSING ENTRIES ---
 CONCEPT|new-concept.md|New Concept|A recently added concept
 
-=== AUDIT: ./.agents/knowledge/session-alpha ===
+=== AUDIT: ~/.agents/knowledge/session-alpha ===
 INDEX: EXISTS
 
 --- BROKEN LINKS ---
@@ -283,7 +284,7 @@ CONCEPT|design.md|Design|System design decisions
 ### After
 
 ```
-./.agents/knowledge/
+~/.agents/knowledge/
 ├── index.md              ← broken link removed, new-concept.md added
 ├── new-concept.md
 ├── log.md                ← updated with audit entry
@@ -310,16 +311,16 @@ Skill directory: ~/.agents/skills/okf-bundle-index
 
 ### Recommended workflow
 
-Run `okf-bundle-index` on a local bundle **before** running
-`okf-bundle-merge` to push it to `~/.agents/knowledge/`. This
-ensures all index entries are present and links are valid before
-the merge copies content to the global knowledge base. Missing
-entries in the local source (e.g. a new sub-bundle not listed in
-the root `index.md`) will propagate as gaps to the destination if
-not fixed first.
+Run `okf-bundle-index` after `okf-bundle-gen` or `okf-bundle-harvest`
+to ensure all index entries are present and links are valid in
+`~/.agents/knowledge/`. This catches gaps such as a new sub-bundle
+not listed in the root `index.md`, or concept files added without
+corresponding index entries.
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-09 02:09 | v1.3 — `rebuild-index.sh` now extracts sub-bundle descriptions from their `index.md` (first paragraph after heading), truncated to 120 chars |
+| 2026-07-09 01:55 | v1.2 — Fixed default path to `~/.agents/knowledge/` (USER scope), removed obsolete `okf-bundle-merge` reference |
 | 2026-06-25 23:20 | v1.0 — Initial skill |

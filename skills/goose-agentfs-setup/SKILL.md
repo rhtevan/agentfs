@@ -4,6 +4,13 @@ description: >
   Configure Goose for full AgentFS compatibility by adding CLAUDE.md and
   other agent context files to CONTEXT_FILE_NAMES, so Goose automatically
   discovers and loads cross-agent context files alongside AGENTS.md.
+  Also manages memory collision avoidance — installs persistent instruction
+  overrides that prevent the Goose memory extension from hijacking AgentFS
+  natural-language memory signals (remember, save, forget, etc.), routing
+  them to the correct MEMORY.md file (default agent or named profile).
+  Also manages global goosehints for progressive knowledge discovery —
+  references ~/.agents/knowledge/index.md so Goose can find and load
+  knowledge bundles on demand.
 argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, .cursorrules)"
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
@@ -142,6 +149,92 @@ bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --reset
 bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --list
 ```
 
+## Global Goosehints for Knowledge Discovery
+
+AgentFS knowledge bundles live at `~/.agents/knowledge/` (USER-scoped).
+To make Goose aware of available knowledge without context bloat, this
+skill can set up a global `.goosehints` file at `~/.config/goose/.goosehints`
+that references the knowledge index.
+
+This enables **progressive loading**: Goose sees the knowledge index
+path in every session, and can read it on-demand when a task would
+benefit from accumulated knowledge. The agent then follows links from
+the index to specific concept documents — loading only what's relevant.
+
+### Check Global Goosehints
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --hints-check
+```
+
+Reports whether global `.goosehints` exists and whether it references
+the knowledge index.
+
+### Install Global Goosehints
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --hints-install
+```
+
+Creates or updates `~/.config/goose/.goosehints` with a reference to
+`~/.agents/knowledge/index.md`. Preserves any existing content.
+
+### Remove Knowledge Reference
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --hints-remove
+```
+
+Removes the knowledge index reference from global `.goosehints`,
+preserving other content.
+
+## Memory Collision Avoidance
+
+When the Goose memory extension is enabled alongside AgentFS, natural-language
+signals like "remember this" or "save that" collide — both the extension and
+AgentFS guardrails try to handle the same intent. This causes duplicate storage,
+context bloat, data drift, and loss of cross-agent portability.
+
+The memory collision avoidance feature installs a routing override in Goose's
+persistent instructions (`~/.config/goose/instructions.md`) that:
+
+- Routes all natural-language memory signals (`remember`, `save`, `forget`,
+  `memory`, `note`, `keep in mind`, `clear memory`, `search memory`,
+  `find memory`) to AgentFS `MEMORY.md` files exclusively
+- Routes to the correct `MEMORY.md` — default agent's
+  (`./.agents/memories/MEMORY.md`) or the active profile's
+  (`./.agents/profiles/<name>/memories/MEMORY.md`) for subagents
+- Allows Goose memory extension tools ONLY when the user explicitly
+  names the extension (e.g., "save to goose memory")
+- Documents the session bridge pattern for legitimate cross-session use
+
+### Check Memory Override Status
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --memory-check
+```
+
+Reports whether the override is installed and whether the memory
+extension is enabled (collision risk).
+
+### Install Memory Override
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --memory-install
+```
+
+Appends (or updates) the routing override block in persistent
+instructions. Idempotent — safe to run multiple times.
+
+### Remove Memory Override
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --memory-remove
+```
+
+Cleanly removes the override block, preserving all other persistent
+instructions content.
+
 ## Important Notes
 
 ### Session Restart Required
@@ -213,4 +306,6 @@ read and update `~/.config/goose/config.yaml`. It:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-09 01:42 | v1.2 — Added global goosehints for knowledge discovery: --hints-check, --hints-install, --hints-remove; progressive knowledge loading via plain reference to ~/.agents/knowledge/index.md |
+| 2026-07-09 00:52 | v1.1 — Added memory collision avoidance: --memory-check, --memory-install, --memory-remove; routing override for Goose memory extension trigger words; profile-scoped MEMORY.md support for subagents |
 | 2026-07-07 16:49 | v1.0 — Initial skill: --check, --add, --remove, --all, --reset, --list |

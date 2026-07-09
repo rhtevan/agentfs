@@ -28,7 +28,7 @@ The skill accepts an **optional** bundle path argument:
 
 | Input | Example | Behaviour |
 |-------|---------|-----------|
-| *(none)* | `"set up an okf bundle"` | Create `./.agents/knowledge/` in the current working directory and use it as the bundle root |
+| *(none)* | `"set up an okf bundle"` | Use `~/.agents/knowledge/` as the bundle root |
 | Explicit path | `"create an okf bundle at docs/data-catalog"` | Use the given path as the bundle root |
 
 ---
@@ -66,7 +66,7 @@ are by definition).
 
 ### Phase 1 — Resolve the bundle root
 
-1. If no path was given, set `BUNDLE_ROOT` to `./.agents/knowledge/`.
+1. If no path was given, set `BUNDLE_ROOT` to `~/.agents/knowledge/`.
 2. If an explicit path was given, set `BUNDLE_ROOT` to that path
    (resolve relative paths against the current working directory).
 3. **Normalize the directory name** to lowercase kebab-case. If the
@@ -97,7 +97,7 @@ as input for Phases 3–6.
 ### Phase 3 — Semantic directory rename (explicit path only)
 
 > **Skip this phase** if no explicit path was given (the default
-> `.agents/knowledge/` name is intentional) **or** if the directory is empty.
+> `~/.agents/knowledge/` name is intentional) **or** if the directory is empty.
 
 When an explicit path was provided **and** the directory contains files:
 
@@ -411,7 +411,7 @@ Per OKF v0.1 §9, a bundle is conformant when:
 ## Example: Fresh bundle (no path given)
 
 ```
-./.agents/knowledge/            ← created as bundle root
+~/.agents/knowledge/            ← created as bundle root
 ├── index.md                    ← directory listing, no frontmatter
 └── log.md                      ← initialized with today's date
 ```
@@ -502,4 +502,5 @@ Skill directory: ~/.agents/skills/okf-bundle-setup
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-09 01:55 | v1.1 — Fixed default path to `~/.agents/knowledge/` (USER scope), updated examples |
 | 2026-06-25 22:52 | v1.0 — Initial skill |
