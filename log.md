@@ -1,6 +1,11 @@
 # Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
+## 2026-07-08 22:42
+
+- Updated `~/.agents/skills/skill-index/SKILL.md` to v1.6: clarified multi-line YAML scalar handling and improved fallback description extraction
+- Regenerated `~/.agents/skills/index.md` (33 skills) — all descriptions now correctly populated
+
 ## 2026-07-08 22:34
 
 - Updated `~/.config/goose/instructions.md`: added Path Hygiene guardrail (never use explicit home directory paths)

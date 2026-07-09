@@ -56,14 +56,19 @@ the default. If the user signals project scope (see table above), use
 
    a. If the file begins with YAML frontmatter (`---` delimiters), read
       the `name` and `description` fields from it.
-      - For multi-line YAML scalars (e.g., `description: >`), join the
-        continuation lines into a single sentence.
+      - **Multi-line YAML scalars:** When `description:` is followed by
+        a folding/literal indicator (`>`, `|`, `>-`, `|-`), the actual
+        text is on the subsequent indented lines. Collect all indented
+        continuation lines and join them into a single sentence.
+        Shell `sed` one-liners **cannot** handle this — use Python or
+        a multi-step approach.
       - Strip surrounding quotes from values if present.
 
    b. If there is **no** YAML frontmatter, derive the metadata:
       - `name` — the subdirectory name.
-      - `description` — the first non-heading, non-blank paragraph line
-        in the file.
+      - `description` — the first non-heading, non-blank, non-table,
+        non-rule paragraph line in the file. Skip lines starting with
+        `#`, `|`, `---`, or `>`.
 
 4. **Extract timestamp for each skill**
    Use the last-modified timestamp of each `SKILL.md` file
@@ -112,6 +117,7 @@ the default. If the user signals project scope (see table above), use
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-08 22:42 | v1.6 — Clarified multi-line YAML scalar handling (description: > requires collecting indented continuation lines; sed cannot do this); improved fallback to skip table/rule/blockquote lines |
 | 2026-07-01 00:07 | v1.5 — Generated index now shows total skill count in summary line (`> N skills | Sorted by…`) |
 | 2026-06-30 23:36 | v1.4 — Changelog table uses `Updated` header and `YYYY-MM-DD HH:MM` timestamps, aligned with guardrail §3 |
 | 2026-06-30 23:31 | v1.3 — Renamed column `Added` → `Updated`; timestamp precision `YYYY-MM-DD HH:MM` |
