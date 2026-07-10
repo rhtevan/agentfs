@@ -3,7 +3,7 @@
 #
 # Usage: bash create-profile.sh <profile-name> [ROOT_DIR]
 #
-#   profile-name   Name of the agent profile (e.g., hermes, claude, coder)
+#   profile-name   Name of the agent profile (e.g., coder, researcher, verifier)
 #   ROOT_DIR       Project root directory (default: .)
 #
 # Creates:

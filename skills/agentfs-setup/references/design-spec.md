@@ -13,6 +13,89 @@ Two modes serve different scopes:
 | **USER** | `~` | Shared skills & knowledge visible across projects and agents | Not involved |
 | **PROJECT** | `.` (repo root) | Per-project agent context with multi-agent collaboration | Optional, independent |
 
+## Scope Definitions
+
+AgentFS operates in two scopes. These definitions are canonical —
+all guardrails, skills, and documentation reference them.
+
+| Scope | Root Path | Resolves To | Purpose |
+|-------|-----------|-------------|----------|
+| **USER** | `~/.agents/` | `/home/<user>/.agents/` | Machine-wide shared library: skills and knowledge visible across all projects and agents |
+| **PROJECT** | `./.agents/` | `<repo-root>/.agents/` | Per-repository agent workspace: identity, profiles, memories, and project-scoped skills |
+
+### What Lives Where
+
+| Resource | USER (`~/.agents/`) | PROJECT (`./.agents/`) |
+|----------|:-------------------:|:----------------------:|
+| `skills/` | ✅ shared | ✅ project-specific |
+| `knowledge/` | ✅ shared | ❌ never |
+| `memories/` | ❌ never | ✅ per-agent |
+| `profiles/` | ❌ never | ✅ multi-agent |
+| `SOUL.md` | ❌ never | ✅ agent identity |
+| `AGENTS.md` | ❌ never | ✅ (at repo root `./`) |
+| `index.md` | ✅ | ✅ |
+| `log.md` | ✅ | ✅ |
+
+> **Rule of thumb:** If the agent says "USER scope", it means
+> `~/.agents/`. If it says "PROJECT scope", it means `./.agents/`
+> relative to the current repository root.
+
+## Installation Paths
+
+USER scope (`~/.agents/`) must be set up before PROJECT scope can work,
+since PROJECT mode skills and scripts are typically invoked from the
+USER-scoped skill library.
+
+### Path A: Full Install (recommended)
+
+Clone the published AgentFS repository directly into `~/.agents/`:
+
+```bash
+git clone https://github.com/rhtevan/agentfs.git ~/.agents
+```
+
+This gives the user the complete skill library, knowledge bundles,
+and structural scaffolding — ready to use immediately.
+
+### Path B: Minimal Install
+
+For users who want a clean, empty `~/.agents/` and prefer to
+cherry-pick skills selectively:
+
+1. Clone the repo to a **staging location** (not `~/.agents/`):
+   ```bash
+   git clone https://github.com/rhtevan/agentfs.git ~/repos/agentfs
+   ```
+2. Make the staging location visible to the agent (e.g., add
+   `~/repos/agentfs/skills/` to the agent's skill search paths
+   — see the relevant agent setup skill for details).
+3. Ask the agent to run the `agentfs-setup` skill with USER scope:
+   > *"Set up AgentFS in USER mode"*
+
+   The agent loads the skill, recognises the USER scope hint, and
+   scaffolds an empty `~/.agents/` with `skills/`, `knowledge/`,
+   `index.md`, and `log.md`.
+4. Cherry-pick specific skills using the `skill-merge` skill or
+   manual copy.
+
+### After USER Setup: Agent Configuration
+
+Each agent needs its own setup to discover AgentFS context files:
+
+| Agent | Setup Skill |
+|-------|-------------|
+| Goose | `goose-agentfs-setup` |
+| Hermes | `hermes-agentfs-setup` |
+
+### After USER Setup: PROJECT Setup
+
+In any git repository, ask the agent to run the `agentfs-setup` skill:
+
+> *"Set up AgentFS for this project"*
+
+Since PROJECT is the default mode, no additional scope hint is needed.
+The agent scaffolds `.agents/` and creates `AGENTS.md` at the repo root.
+
 ## Prompt Stacking Order
 
 When an agent assembles its system prompt from `.agents/` resources,
@@ -143,17 +226,11 @@ defined in `AGENTS.md` at the project root. This ensures coherent
 collaboration: a "verifier" agent and a "coder" agent both see the
 same project rules but bring different expertise and perspectives.
 
-This design is **compatible with Hermes Agent out of the box**:
-
-| Hermes Agent | DotAgents Profile |
-|--------------|-------------------|
-| `~/.hermes/SOUL.md` | `.agents/profiles/<name>/SOUL.md` |
-| `~/.hermes/memories/USER.md` | `.agents/profiles/<name>/memories/USER.md` |
-| `~/.hermes/memories/MEMORY.md` | `.agents/profiles/<name>/memories/MEMORY.md` |
-
-The key difference: Hermes profiles are user-level (each is a separate
-Hermes instance), while DotAgents profiles are project-level (multiple
-agents collaborate on the same project with shared capabilities).
+The profile structure uses a well-known convention (`SOUL.md`,
+`memories/USER.md`, `memories/MEMORY.md`) that maps naturally to any
+agent framework's native profile concept. Agent-specific compatibility
+details belong in the corresponding agent setup skill (e.g.,
+`hermes-agentfs-setup`, `goose-agentfs-setup`).
 
 ## Layer Descriptions
 
@@ -162,7 +239,7 @@ Entry point for coding agents. Contains operational guardrails, build/test
 commands, code style. Points to `.agents/`. Carries `<!-- SPECKIT START/END -->`
 markers for Spec-kit's agent-context extension to manage automatically.
 
-Defines eight structural guardrails that all agents MUST follow:
+Defines nine structural guardrails that all agents MUST follow:
 1. **Link Integrity** — no broken, obsolete, or missing links
 2. **Log Currency** — append-only `log.md` in reverse chronological order
 3. **Content File Currency** — changelogs in reverse chronological order
@@ -176,6 +253,13 @@ Defines eight structural guardrails that all agents MUST follow:
 7. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
 8. **Memory Scope** — memories are PROJECT-only; NL-signal routing;
    graduation path to OKF
+9. **Memory Signal Routing** — decision table mapping NL signals to
+   memory actions (file edits, skills, knowledge bundles); includes
+   Executor column clarifying LLM-direct vs skill-delegated actions;
+   agent-specific override tables (e.g., agent persistent instructions)
+   take priority when their tools are available; skill creation
+   defaults to USER scope; harvest scans current project MEMORY.md
+   files and routes to `skill-harvest` or `okf-bundle-harvest`
 
 Includes an **Agent Profiles** table — an agent-agnostic registry of all
 profiles in the project:
@@ -186,7 +270,7 @@ profiles in the project:
 | Agent | Identity | Memories |
 |-------|----------|----------|
 | default | [SOUL](./.agents/SOUL.md) | [memories/](./.agents/memories/MEMORY.md) |
-| hermes | [SOUL](./.agents/profiles/hermes/SOUL.md) | [memories/](./.agents/profiles/hermes/memories/MEMORY.md) |
+| coder | [SOUL](./.agents/profiles/coder/SOUL.md) | [memories/](./.agents/profiles/coder/memories/MEMORY.md) |
 ```
 
 The `default` row is seeded by `seed-agents-md.sh` during initial setup.
@@ -204,8 +288,8 @@ any agent reading `AGENTS.md` — framework-independent.
   - Entries: `- ` (dash prefix)
 
 ### 3. Identity Layer — SOUL.md
-Human-authored agent personality and communication defaults. Analogous to
-Hermes Agent's `SOUL.md`. The default agent's SOUL lives at `.agents/SOUL.md`;
+Human-authored agent personality and communication defaults. The default
+agent's SOUL lives at `.agents/SOUL.md`;
 named profiles have their own at `.agents/profiles/<name>/SOUL.md`.
 
 ### 4. Profiles Layer — .agents/profiles/ (PROJECT only)
@@ -216,11 +300,10 @@ The `profiles/` directory serves two complementary purposes:
 Named agent profiles enable multiple AI agents to collaborate on the same
 project while maintaining distinct identities and memory spaces. Each
 profile is a self-contained agent persona with its own SOUL.md (identity)
-and `memories/` directory (USER.md + MEMORY.md). This design is
-**compatible with Hermes Agent out of the box** — the file structure maps
-directly to Hermes's own profile concept (`SOUL.md`, `memories/USER.md`,
-`memories/MEMORY.md`), making it possible to use DotAgents profiles with
-Hermes without adaptation.
+and `memories/` directory (USER.md + MEMORY.md). The profile structure
+uses a well-known convention (`SOUL.md`, `memories/USER.md`,
+`memories/MEMORY.md`) that maps naturally to any agent framework's
+native profile concept.
 
 **2. ROLE-Based Agent Specialization**
 Each profile is equivalent to defining a different **ROLE**. A profile
@@ -301,6 +384,8 @@ agent-context extension uses to write the active plan reference.
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-10 18:07 | v3.0 — Added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`); added Installation Paths section (Full vs Minimal USER setup); PROJECT is now the primary skill workflow |
+| 2026-07-10 16:10 | v2.11 — Added Guardrail #9 (Memory Signal Routing): NL signal → route decision table with Executor column; two-layer override architecture (agent-agnostic AGENTS.md + agent-specific instructions.md); skill creation defaults to USER scope; harvest signal routes to skill-harvest or okf-bundle-harvest; priority-based runtime resolution via tool availability check |
 | 2026-07-08 13:38 | v2.10 — Memory redesign: knowledge USER-only, memories PROJECT-only, 8 guardrails, MEMORY.md="experiences", removed `.agents/knowledge/` from PROJECT tree |
 | 2026-06-30 23:49 | v2.7 — Expanded guardrail §2: explicit USER/PROJECT/sub-bundle scope; mandatory skill/concept change logging; standardized `log.md` format |
 | 2026-06-30 23:36 | v2.6 — Changelog tables now use `Updated` header and `YYYY-MM-DD HH:MM` timestamps, aligned with guardrail §3 |

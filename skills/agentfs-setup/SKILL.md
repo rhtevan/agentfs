@@ -1,9 +1,9 @@
 ---
 name: agentfs-setup
 description: >
-  Configure Goose for full AgentFS compatibility by scaffolding the
-  .agents/ directory tree in USER or PROJECT mode, seeding AGENTS.md
-  with eight structural guardrails, and verifying setup integrity.
+  Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode,
+  seed AGENTS.md with scope definitions and nine structural guardrails,
+  and verify setup integrity. Default mode is PROJECT.
 ---
 
 # AgentFS Setup
@@ -16,36 +16,90 @@ AI coding agents.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 2.10 |
-| **Modes** | `user` (shared library) · `project` (per-repo context) |
+| **Version** | 3.0 |
+| **Default mode** | `project` |
+| **Modes** | `project` (per-repo context) · `user` (shared library) |
 | **Scripts** | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
 | **Design spec** | [references/design-spec.md](./references/design-spec.md) |
 
-### Two Modes
+## Scope Definitions
 
-| Mode | Root | Creates |
-|------|------|---------|
-| **USER** | `~` | `skills/`, `knowledge/` — shared across projects |
-| **PROJECT** | `.` | `skills/`, `profiles/`, `memories/` — per-repo context |
+AgentFS operates in two scopes. These definitions are canonical.
 
-> **Note:** `knowledge/` is USER-scoped only. Projects do NOT get a
-> local `knowledge/` directory. `memories/` is PROJECT-scoped only.
-> There is no `~/. agents/memories/`.
+| Scope | Root Path | Resolves To | Purpose |
+|-------|-----------|-------------|----------|
+| **USER** | `~/.agents/` | `/home/<user>/.agents/` | Machine-wide shared library: skills and knowledge visible across all projects and agents |
+| **PROJECT** | `./.agents/` | `<repo-root>/.agents/` | Per-repository agent workspace: identity, profiles, memories, and project-scoped skills |
+
+### What Lives Where
+
+| Resource | USER (`~/.agents/`) | PROJECT (`./.agents/`) |
+|----------|:-------------------:|:----------------------:|
+| `skills/` | ✅ shared | ✅ project-specific |
+| `knowledge/` | ✅ shared | ❌ never |
+| `memories/` | ❌ never | ✅ per-agent |
+| `profiles/` | ❌ never | ✅ multi-agent |
+| `SOUL.md` | ❌ never | ✅ agent identity |
+| `AGENTS.md` | ❌ never | ✅ (at repo root `./`) |
+| `index.md` | ✅ | ✅ |
+| `log.md` | ✅ | ✅ |
+
+## Prerequisites: USER Scope Setup
+
+Before running PROJECT mode, `~/.agents/` must exist. There are two
+paths to set it up:
+
+### Path A: Full Install (recommended)
+
+Clone the published AgentFS repository directly into `~/.agents/`:
+
+```bash
+git clone https://github.com/rhtevan/agentfs.git ~/.agents
+```
+
+This gives the complete skill library, knowledge bundles, and
+structural scaffolding — ready to use immediately.
+
+### Path B: Minimal Install
+
+For users who want a clean, empty `~/.agents/` and prefer to
+cherry-pick skills selectively:
+
+1. Clone the repo to a **staging location** (not `~/.agents/`):
+   ```bash
+   git clone https://github.com/rhtevan/agentfs.git ~/repos/agentfs
+   ```
+2. Make the staging location visible to the agent (e.g., add
+   `~/repos/agentfs/skills/` to the agent's skill search paths
+   — see the relevant agent setup skill for details).
+3. Ask the agent to run this skill with USER scope:
+   > *"Set up AgentFS in USER mode"*
+
+   The agent loads this skill, recognises the USER scope hint, and
+   scaffolds an empty `~/.agents/` with `skills/`, `knowledge/`,
+   `index.md`, and `log.md`.
+4. Cherry-pick specific skills using the `skill-merge` skill or
+   manual copy.
+
+### After USER Setup: Agent Configuration
+
+Each agent needs its own setup to discover AgentFS context files:
+
+| Agent | Setup Skill |
+|-------|-------------|
+| Goose | `goose-agentfs-setup` |
+| Hermes | `hermes-agentfs-setup` |
 
 ## Usage
 
-### USER mode (run once per machine)
+### PROJECT mode (default — run once per repo)
 
-```bash
-bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh --mode user
-```
+Ask the agent to run this skill in the target repo:
 
-Creates:
-- `~/.agents/skills/` — shared agent workflows
-- `~/.agents/knowledge/` — shared OKF knowledge bundles
-- `~/.agents/index.md`, `log.md`
+> *"Set up AgentFS for this project"*
 
-### PROJECT mode (run once per repo)
+Since PROJECT is the default mode, no additional scope hint is needed.
+The agent runs the following scripts:
 
 ```bash
 # 1. Scaffold .agents/ directory
@@ -61,20 +115,44 @@ Creates:
 - `.agents/memories/` — default agent's experiences and user model
 - `.agents/SOUL.md` — default agent identity
 - `.agents/index.md`, `log.md`
-- `AGENTS.md` — workspace entry point with eight structural guardrails
+- `AGENTS.md` — workspace entry point with scope definitions and nine
+  structural guardrails
+
+### USER mode (minimal install only)
+
+Ask the agent to run this skill with a USER scope hint:
+
+> *"Set up AgentFS in USER mode"*
+
+The agent runs:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh --mode user
+```
+
+Creates an empty structural skeleton:
+- `~/.agents/skills/` — shared agent workflows (initially empty)
+- `~/.agents/knowledge/` — shared OKF knowledge bundles (initially empty)
+- `~/.agents/index.md`, `log.md`
+
+> **Note:** If you used Path A (full clone), this step is unnecessary —
+> the clone already contains the complete structure.
 
 ### Verification
+
+The agent can verify the setup by running:
 
 ```bash
 bash ~/.agents/skills/agentfs-setup/scripts/verify-setup.sh [--mode user|project] [--fix]
 ```
 
-Checks all expected files/directories exist. With `--fix`, creates
-missing ones.
+Checks all expected files/directories exist (including the Scope
+Definitions section in AGENTS.md for PROJECT mode). With `--fix`,
+creates missing ones.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with eight guardrails:
+The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails:
 
 1. **Link Integrity** — no broken, obsolete, or missing links
 2. **Log Currency** — append-only `log.md` in reverse chronological order
@@ -85,10 +163,12 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with eight guardrails:
 7. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
 8. **Memory Scope** — memories are PROJECT-only; NL-signal routing for
    experiences vs rules vs preferences; graduation path to OKF
+9. **Memory Signal Routing** — decision table mapping NL signals to
+   memory actions; agent-specific overrides take priority
 
 ## Layer Reference
 
-| Layer | USER (`~`) | PROJECT (`.`) |
+| Layer | USER (`~/.agents/`) | PROJECT (`./.agents/`) |
 |-------|-----------|---------------|
 | Identity | — | `.agents/SOUL.md` |
 | Profiles | — | `.agents/profiles/` |
@@ -109,11 +189,14 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with eight guardrails:
 - **`agentfs-profile`** — Create named agent profiles under `.agents/profiles/`
 - **`goose-agentfs-setup`** — Configure Goose's `CONTEXT_FILE_NAMES` for
   cross-agent context file discovery
+- **`hermes-agentfs-setup`** — Configure Hermes's `skills.external_dirs`
+  for AgentFS skill discovery
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-10 18:07 | v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; AGENTS.md template now includes Scope Definitions; nine guardrails (was eight) |
 | 2026-07-08 13:38 | v2.10 — Recreated SKILL.md after accidental deletion; reflects memory redesign (knowledge USER-only, memories PROJECT-only, 8 guardrails, updated layer reference) |
 | 2026-07-07 16:52 | v2.9 — Added Cross-Agent Context Discovery guardrail (§7) to AGENTS.md template |
 | 2026-06-30 23:49 | v2.7 — Expanded guardrail §2: explicit USER/PROJECT/sub-bundle scope; mandatory skill/concept change logging |

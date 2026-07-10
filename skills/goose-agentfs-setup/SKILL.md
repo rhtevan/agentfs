@@ -188,24 +188,29 @@ bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --hints-remove
 Removes the knowledge index reference from global `.goosehints`,
 preserving other content.
 
-## Memory Collision Avoidance
+## Memory Signal Routing (Layer 2 — Goose-Specific)
 
-When the Goose memory extension is enabled alongside AgentFS, natural-language
-signals like "remember this" or "save that" collide — both the extension and
-AgentFS guardrails try to handle the same intent. This causes duplicate storage,
-context bloat, data drift, and loss of cross-agent portability.
+When multiple memory systems are active (Goose Memory, Chat Recall, Cognee,
+AgentFS), natural-language signals like "remember this" create ambiguity.
+This skill implements **Layer 2** of the two-layer decision table architecture
+defined in AGENTS.md Guardrail #9.
 
-The memory collision avoidance feature installs a routing override in Goose's
-persistent instructions (`~/.config/goose/instructions.md`) that:
+The memory routing override installs a **static, priority-based decision table**
+in Goose's persistent instructions (`~/.config/goose/instructions.md`) that:
 
-- Routes all natural-language memory signals (`remember`, `save`, `forget`,
-  `memory`, `note`, `keep in mind`, `clear memory`, `search memory`,
-  `find memory`) to AgentFS `MEMORY.md` files exclusively
-- Routes to the correct `MEMORY.md` — default agent's
-  (`./.agents/memories/MEMORY.md`) or the active profile's
-  (`./.agents/profiles/<name>/memories/MEMORY.md`) for subagents
-- Allows Goose memory extension tools ONLY when the user explicitly
-  names the extension (e.g., "save to goose memory")
+- Maps natural-language signals to specific Goose extension tools with
+  explicit priorities: **Cognee (1) > Memory (2) > Chat Recall (3)**
+- Resolves dynamically at runtime — the LLM checks whether each
+  referenced tool exists in the current session's available tools list.
+  Tool existence = extension enabled (no config file inspection needed).
+- Falls through to AGENTS.md Guardrail #9 when no Goose tool matches
+- When Cognee is enabled, it subsumes Memory's role — effectively
+  rendering Memory redundant for storage signals
+- Routes to the correct `MEMORY.md` on AGENTS.md fallthrough —
+  default agent's (`./.agents/memories/MEMORY.md`) or the active
+  profile's (`./.agents/profiles/<name>/memories/MEMORY.md`)
+- Includes ambiguity resolution (ask user when "forget" is unclear)
+  and routing announcement (state which system and why before executing)
 - Documents the session bridge pattern for legitimate cross-session use
 
 ### Check Memory Override Status
@@ -306,6 +311,7 @@ read and update `~/.config/goose/config.yaml`. It:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-10 16:14 | v1.3 — Replaced flat signal→action table with priority-based decision table supporting Cognee (pri 1), Memory (pri 2), Chat Recall (pri 3); added runtime resolution rule (check tool existence in available tools list); static table adapts to dynamic extension enable/disable; added ambiguity resolution and routing announcement rules; aligns with AGENTS.md Guardrail #9 two-layer architecture |
 | 2026-07-09 01:42 | v1.2 — Added global goosehints for knowledge discovery: --hints-check, --hints-install, --hints-remove; progressive knowledge loading via plain reference to ~/.agents/knowledge/index.md |
 | 2026-07-09 00:52 | v1.1 — Added memory collision avoidance: --memory-check, --memory-install, --memory-remove; routing override for Goose memory extension trigger words; profile-scoped MEMORY.md support for subagents |
 | 2026-07-07 16:49 | v1.0 — Initial skill: --check, --add, --remove, --all, --reset, --list |

@@ -2,6 +2,29 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-10 18:08
+
+- `agentfs-setup` v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`) to SKILL.md, AGENTS.md template, design-spec, and README; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; nine guardrails (was eight); verify-setup.sh now checks for Scope Definitions in AGENTS.md; all user-facing instructions now say "ask your agent to run the skill" instead of directing users to execute bash scripts; Path B (minimal install) references the skill with USER scope hint; README reordered: Scope Definitions → Getting Started → Directory Structure → Modes → Guardrails → Memory Architecture
+- Updated `README.md` — Scope Definitions and Getting Started moved to top; all instructions agent-centric (not bash-centric); step 3 needs no scope hint since PROJECT is default
+- Updated this project's `AGENTS.md` — added Scope Definitions section between Quick Orientation and Structural Guardrails
+
+## 2026-07-10 17:05
+
+- Created `skill-creator` proxy skill — two modes (simple scaffold + advanced Anthropic upstream), AgentFS post-creation checklist, agent compatibility notes, fetch-upstream.sh for caching complete upstream file structure
+- Updated AGENTS.md Guardrail #9 decision table — "create a skill" row now routes to `skill-creator` skill instead of LLM intrinsic
+- Updated `agentfs-setup` seed template — same Guardrail #9 update
+
+## 2026-07-10 16:15
+
+- Updated `goose-agentfs-setup` skill (`scripts/setup.sh`) — replaced flat signal→action memory override with priority-based decision table: Cognee (pri 1) > Memory (pri 2) > Chat Recall (pri 3); runtime resolution via tool existence check; aligns with AGENTS.md Guardrail #9 Layer 2
+- Updated `goose-agentfs-setup` SKILL.md — rewrote Memory Collision Avoidance section as Memory Signal Routing (Layer 2); added v1.3 changelog entry
+
+## 2026-07-10 16:10
+
+- Added Guardrail #9 (Memory Signal Routing) to `agentfs-setup` skill seed template (`scripts/seed-agents-md.sh`)
+- Updated `agentfs-setup` design spec (`references/design-spec.md`) — v2.11: guardrail count 8→9, added §9 description and changelog entry
+- Updated `README.md` — guardrail count 8→9, added Memory Signal Routing section under Memory Architecture with two-layer decision table architecture
+
 ## 2026-07-09 20:07
 
 - Skill Harvest: Created crc-ctl skill v1.0 from 3 MEMORY.md entries (goofing-around project)

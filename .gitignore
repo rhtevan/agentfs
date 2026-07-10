@@ -1,1 +1,4 @@
 .obsidian
+
+# Skill caches (fetched upstream content, not source-controlled)
+skills/*/.cache/

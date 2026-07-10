@@ -12,18 +12,18 @@
 #
 # Interactive mode (no --agent flag):
 #   Presents a numbered list of available integrations.
-#   Waits 15 seconds for input; defaults to 'goose' on timeout.
+#   Waits 15 seconds for input; defaults to the DEFAULT_AGENT on timeout.
 #
 # Non-interactive mode (--agent flag):
 #   Skips the menu entirely and uses the specified agent.
-#   This is how an agent (e.g., Goose) should call the script after
-#   presenting the choices to the user in the chat and getting a response.
+#   This is how an agent should call the script after presenting the
+#   choices to the user in the chat and getting a response.
 #
 # Prerequisites: `specify` CLI must be on PATH.
 
 set -euo pipefail
 
-DEFAULT_AGENT="goose"
+DEFAULT_AGENT="generic"
 TIMEOUT=15
 
 # ── Agent integration list ───────────────────────────────────────────

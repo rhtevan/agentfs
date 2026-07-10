@@ -3,9 +3,17 @@
 #
 # Usage: bash scaffold-dotagents.sh [--mode user|project] [ROOT_DIR]
 #
-#   --mode user     Scaffold under ~ with skills/ and knowledge/ only
-#   --mode project  Scaffold under ROOT_DIR with all layers (default)
-#   ROOT_DIR        Defaults to ~ for user mode, . for project mode
+#   --mode project  Scaffold ./.agents/ with all layers (default)
+#                   Creates: skills/, profiles/, memories/, SOUL.md, index.md, log.md
+#                   This is the primary workflow — run once per repo.
+#
+#   --mode user     Scaffold ~/.agents/ with skills/ and knowledge/ only
+#                   Creates an empty structural skeleton for selective skill adoption.
+#                   Only needed for "minimal install" users who did NOT clone the
+#                   AgentFS repo directly into ~/.agents/ (Path B).
+#                   Users who cloned the repo to ~/.agents/ (Path A) do NOT need this.
+#
+#   ROOT_DIR        Defaults to . for project mode, ~ for user mode
 #
 # The script is idempotent — it skips files that already exist.
 

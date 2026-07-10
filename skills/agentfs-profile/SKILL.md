@@ -3,9 +3,9 @@ name: agentfs-profile
 description: >
   Create named agent profiles under .agents/profiles/ in PROJECT mode.
   Each profile gets its own SOUL.md (identity), memories/USER.md (user model),
-  and memories/MEMORY.md (project experiences). Compatible with Hermes Agent's
-  profile concept. Requires agentfs-setup to have been run in PROJECT mode
-  first. Skills remain shared across all agents at the project level.
+  and memories/MEMORY.md (project experiences). Requires agentfs-setup to
+  have been run in PROJECT mode first. Skills remain shared across all
+  agents at the project level.
 ---
 
 # Agent FS Profile
@@ -54,9 +54,6 @@ bash <skill-dir>/scripts/create-profile.sh <profile-name> <project-root>
 Examples:
 
 ```bash
-# Create a profile for Hermes Agent
-bash <skill-dir>/scripts/create-profile.sh hermes .
-
 # Create a profile for a specialized coding agent
 bash <skill-dir>/scripts/create-profile.sh coder .
 
@@ -67,7 +64,6 @@ bash <skill-dir>/scripts/create-profile.sh researcher .
 ### Natural-language signals
 
 When the user says things like:
-- "create a profile for hermes"
 - "add an agent called coder"
 - "set up a researcher profile"
 
@@ -102,7 +98,7 @@ Profiles** table in `AGENTS.md`:
 | Agent | Identity | Memories |
 |-------|----------|----------|
 | default | [SOUL](./.agents/SOUL.md) | [memories/](./.agents/memories/MEMORY.md) |
-| hermes | [SOUL](./.agents/profiles/hermes/SOUL.md) | [memories/](./.agents/profiles/hermes/memories/MEMORY.md) |
+| coder | [SOUL](./.agents/profiles/coder/SOUL.md) | [memories/](./.agents/profiles/coder/memories/MEMORY.md) |
 ```
 
 This makes profiles **discoverable by any agent** that reads `AGENTS.md`
@@ -118,19 +114,11 @@ registration step is silently skipped.
 
 ## Compatibility
 
-This profile structure is designed to be compatible with
-[Hermes Agent's profile concept](https://docs.hermes.nousresearch.com/user-guide/profiles):
-
-| Hermes | DotAgents Profile |
-|--------|-------------------|
-| `~/.hermes/SOUL.md` | `.agents/profiles/<name>/SOUL.md` |
-| `~/.hermes/memories/USER.md` | `.agents/profiles/<name>/memories/USER.md` |
-| `~/.hermes/memories/MEMORY.md` | `.agents/profiles/<name>/memories/MEMORY.md` |
-
-The key difference: Hermes profiles are user-level (each profile is a
-separate Hermes instance), while DotAgents profiles are project-level
-(multiple agents collaborate on the same project with shared skills
-and knowledge).
+The profile structure uses a well-known convention (`SOUL.md`,
+`memories/USER.md`, `memories/MEMORY.md`) that maps naturally to any
+agent framework's native profile concept. Agent-specific compatibility
+details belong in the corresponding agent setup skill (e.g.,
+`hermes-agentfs-setup`, `goose-agentfs-setup`).
 
 ## Changelog
 

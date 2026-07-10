@@ -33,6 +33,41 @@ if [[ -f "$TARGET" ]]; then
     fi
     echo "  ✓ Added Agent Profiles table to existing AGENTS.md"
   fi
+  # Ensure Scope Definitions section exists even in a pre-existing file
+  if ! grep -q '## Scope Definitions' "$TARGET"; then
+    # Insert after Quick Orientation if it exists, otherwise after the first heading
+    if grep -q '## Quick Orientation' "$TARGET"; then
+      sed -i '/## AgentFS Structural Guardrails/i \
+## Scope Definitions\
+\
+AgentFS operates in two scopes. These definitions are canonical —\
+all guardrails, skills, and documentation reference them.\
+\
+| Scope | Root Path | Resolves To | Purpose |\
+|-------|-----------|-------------|----------|\
+| **USER** | `~\/.agents\/` | `\/home\/<user>\/.agents\/` | Machine-wide shared library: skills and knowledge visible across all projects and agents |\
+| **PROJECT** | `.\/\.agents\/` | `<repo-root>\/.agents\/` | Per-repository agent workspace: identity, profiles, memories, and project-scoped skills |\
+\
+### What Lives Where\
+\
+| Resource | USER (`~\/.agents\/`) | PROJECT (`.\/\.agents\/`) |\
+|----------|:-------------------:|:----------------------:|\
+| `skills\/` | ✅ shared | ✅ project-specific |\
+| `knowledge\/` | ✅ shared | ❌ never |\
+| `memories\/` | ❌ never | ✅ per-agent |\
+| `profiles\/` | ❌ never | ✅ multi-agent |\
+| `SOUL.md` | ❌ never | ✅ agent identity |\
+| `AGENTS.md` | ❌ never | ✅ (at repo root `.\/`) |\
+| `index.md` | ✅ | ✅ |\
+| `log.md` | ✅ | ✅ |\
+\
+> **Rule of thumb:** If the agent says "USER scope", it means\
+> `~\/.agents\/`. If it says "PROJECT scope", it means `.\/\.agents\/`\
+> relative to the current repository root.\
+' "$TARGET"
+    fi
+    echo "  ✓ Added Scope Definitions section to existing AGENTS.md"
+  fi
   exit 0
 fi
 
@@ -49,6 +84,33 @@ cat > "$TARGET" << 'AGENTSEOF'
 |----------|------|---------------|
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
+
+## Scope Definitions
+
+AgentFS operates in two scopes. These definitions are canonical —
+all guardrails, skills, and documentation reference them.
+
+| Scope | Root Path | Resolves To | Purpose |
+|-------|-----------|-------------|----------|
+| **USER** | `~/.agents/` | `/home/<user>/.agents/` | Machine-wide shared library: skills and knowledge visible across all projects and agents |
+| **PROJECT** | `./.agents/` | `<repo-root>/.agents/` | Per-repository agent workspace: identity, profiles, memories, and project-scoped skills |
+
+### What Lives Where
+
+| Resource | USER (`~/.agents/`) | PROJECT (`./.agents/`) |
+|----------|:-------------------:|:----------------------:|
+| `skills/` | ✅ shared | ✅ project-specific |
+| `knowledge/` | ✅ shared | ❌ never |
+| `memories/` | ❌ never | ✅ per-agent |
+| `profiles/` | ❌ never | ✅ multi-agent |
+| `SOUL.md` | ❌ never | ✅ agent identity |
+| `AGENTS.md` | ❌ never | ✅ (at repo root `./`) |
+| `index.md` | ✅ | ✅ |
+| `log.md` | ✅ | ✅ |
+
+> **Rule of thumb:** If the agent says "USER scope", it means
+> `~/.agents/`. If it says "PROJECT scope", it means `./.agents/`
+> relative to the current repository root.
 
 ## AgentFS Structural Guardrails
 
@@ -163,7 +225,7 @@ When starting a session in this project, check for and read these files
 if they exist — treat their content as supplementary project guidelines:
 
 | File | Purpose |
-|------|---------|
+|------|----------|
 | `CLAUDE.md` or `.claude/CLAUDE.md` | Claude Code project instructions |
 | `.cursorrules` or `.cursor/rules/` | Cursor coding rules |
 | `.windsurfrules` | Windsurf workspace rules |
@@ -192,6 +254,50 @@ guidelines in `AGENTS.md` take precedence.
   cross-project knowledge worth preserving, graduate it to an OKF
   knowledge bundle under `~/.agents/knowledge/` and remove the
   original entry.
+
+### 9. Memory Signal Routing
+
+When a user expresses memory-related intent, the agent MUST consult
+the decision table below to determine the correct action. This table
+covers agent-agnostic routing only — agent-specific overrides (e.g.,
+agent memory extensions) take priority when present and their tools are
+available in the current session.
+
+#### Signal → Route Decision Table
+
+| Signal / Keyword | Intent | Route To | Executor | Scope |
+|---|---|---|---|---|
+| "remember this", "note that", "keep in mind", "save this for later" | Store project observation | `.agents/memories/MEMORY.md` | LLM direct (file edit) | PROJECT |
+| "always do X", "never do Y", "enforce Z", "this is a rule" | Structural rule/guardrail | Propose as `AGENTS.md` guardrail | LLM direct (propose edit, human approval) | PROJECT |
+| "I prefer", "I like", "my style is" | User preference | `.agents/memories/USER.md` | LLM direct (file edit) | PROJECT |
+| "learn this document", "ingest this file", "add to knowledge base" | Knowledge ingestion | OKF bundle under `~/.agents/knowledge/` | `okf-bundle-gen` or `okf-bundle-harvest` skill | USER |
+| "how do I", "what's the procedure for" | Procedural lookup | Matching skill from `~/.agents/skills/` | `load_skill` | USER |
+| "forget this", "remove that note" | Delete observation | Edit `MEMORY.md`, remove entry | LLM direct (file edit) | PROJECT |
+| "create a skill for this", "make this reusable" | Skill creation/update | `~/.agents/skills/<name>/SKILL.md` | `skill-creator` skill (simple mode default; advanced with evals on request) | USER (default) |
+| "what do you remember about", "check your notes on" | Retrieve observations | Read `.agents/memories/MEMORY.md` | LLM direct (file read) | PROJECT |
+| "harvest", "scan memories", "graduate patterns" | Extract reusable knowledge from MEMORY.md | Skills → `skill-harvest`; Knowledge → `okf-bundle-harvest` | Named skill (scan current project or explicit location) | USER |
+
+#### Routing Rules
+
+- **Agent-specific overrides take priority.** If the agent has its own
+  decision table (e.g., in its persistent instructions), and the referenced
+  tool exists in the current session's available tools, the
+  agent-specific route wins.
+- **Skill creation defaults to USER scope.** When creating or updating
+  skills, default to `~/.agents/skills/` (USER) unless the user
+  explicitly says "project skill", "for this project", or "local skill".
+- **Harvest scans the current project by default.** When signaling
+  "harvest" or similar, scan `MEMORY.md` files at the current project
+  (`.agents/memories/` and `.agents/profiles/*/memories/`). If the
+  user names a specific location, scan there instead. Route to
+  `skill-harvest` for procedural patterns or `okf-bundle-harvest`
+  for declarative/semantic knowledge, following existing graduation
+  guidelines in Guardrail #8.
+- **Executor clarifies agency.** "LLM direct" means the agent performs
+  the file operation itself. A named skill means the agent MUST
+  `load_skill` first and follow its instructions. "LLM intrinsic
+  capability or agent Skills extension" means use whatever skill
+  creation mechanism the agent natively supports.
 
 ## Agent Profiles
 

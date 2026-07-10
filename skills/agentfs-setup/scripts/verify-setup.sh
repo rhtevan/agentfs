@@ -319,6 +319,11 @@ else
     # AGENTS.md is complex — do not auto-seed in fix mode; agent should
     # run seed-agents-md.sh explicitly if missing.
 
+  check "AGENTS.md has Scope Definitions" \
+    "grep -q '## Scope Definitions' '$ROOT/AGENTS.md'"
+    # Scope Definitions is complex — do not auto-seed in fix mode.
+    # Agent should re-run seed-agents-md.sh or add manually.
+
   check "AGENTS.md has SPECKIT markers" \
     "grep -q 'SPECKIT START' '$ROOT/AGENTS.md'" \
     "printf '\n<!-- SPECKIT START -->\n<!-- SPECKIT END -->\n' >> '$ROOT/AGENTS.md'"
