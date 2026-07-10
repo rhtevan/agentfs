@@ -1,13 +1,15 @@
 # Skills Index
 
-> 34 skills | Sorted by reverse chronological order (newest first).
+> 36 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Description | Updated |
 |-------|-------------|---------|
+| [crc-ctl](./crc-ctl/SKILL.md) | Operational skill for starting and stopping the OpenShift Local (CRC) cluster using the custom crcstart/crcstop wrapper scripts. Includes pre-start version check, post-stop process cleanup, and cor… | 2026-07-09 20:06 |
+| [skill-harvest](./skill-harvest/SKILL.md) | Harvest procedural knowledge from MEMORY.md files across one or more projects and distill them into reusable USER-scoped skills under ~/.agents/skills/. Scans default agent and named profile memori… | 2026-07-09 19:54 |
+| [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | Harvest concepts from MEMORY.md files across one or more projects and distill them into OKF-compliant knowledge bundles under ~/.agents/knowledge/. Scans default agent and named profile memories, i… | 2026-07-09 19:41 |
 | [okf-bundle-index](./okf-bundle-index/SKILL.md) | Check and fix links in index.md files recursively across an OKF knowledge bundle. Detects broken links, missing entries, and absent index.md files, then repairs them to restore full OKF conformance. | 2026-07-09 02:09 |
 | [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | Create or organize a directory into an OKF-conformant knowledge bundle. Scaffolds index.md, log.md, and concept documents with proper YAML frontmatter. Handles both fresh bundles and existing direc… | 2026-07-09 01:55 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | Configure Goose for full AgentFS compatibility by adding CLAUDE.md and other agent context files to CONTEXT_FILE_NAMES, so Goose automatically discovers and loads cross-agent context files alongsid… | 2026-07-09 01:42 |
-| [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | Harvest concepts from MEMORY.md files across one or more projects and distill them into OKF-compliant knowledge bundles under ~/.agents/knowledge/. Scans default agent and named profile memories, i… | 2026-07-09 01:36 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | Generate an OKF-compliant knowledge bundle from the current chat session context AND accumulated agent memories. Writes concept documents into ~/.agents/knowledge/ as the bundle root. Scans all MEM… | 2026-07-09 01:36 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.) | 2026-07-08 23:12 |
 | [skill-index](./skill-index/SKILL.md) | Create an index.md at the skills root with entries linking to every skill's SKILL.md file alongside a short description. Scans all immediate subdirectories for SKILL.md files, extracts each skill's… | 2026-07-08 22:42 |

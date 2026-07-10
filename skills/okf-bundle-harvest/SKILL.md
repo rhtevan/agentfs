@@ -12,7 +12,7 @@ argument-hint: "Optionally specify project paths: 'harvest from ~/projects/foo a
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.2"
   tags: [agentfs, okf, knowledge, memory, distillation, graduation]
 user-invocable: true
 disable-model-invocation: false
@@ -155,6 +155,7 @@ Do NOT graduate entries that are:
 - **Project-specific**: "The `inventory` service uses Redis 7.2.1" — only relevant to that project
 - **Ephemeral**: "CI is broken this week due to infra migration" — temporary
 - **Personal task reminders**: "TODO: refactor auth module" — action items, not knowledge
+- **System/environment-specific**: "Use `crcstart` instead of `crc start` on this machine" — tied to a specific host, workstation, or local environment, not generalizable across systems
 - **Already graduated**: Check `~/.agents/knowledge/` to avoid duplicating existing concepts
 
 #### Output of Phase 2
@@ -504,5 +505,6 @@ Dependencies (from `okf-bundle-setup`):
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-09 19:41 | v1.2 — Added system/environment-specific as a non-graduation criterion |
 | 2026-07-09 01:40 | v1.1 — Removed Phase 9 (SOUL.md pattern link injection); knowledge discovery now via global .goosehints progressive loading |
 | 2026-07-09 00:53 | v1.0 — Initial skill: multi-project memory scanning, graduation criteria, concept distillation, MEMORY.md pruning, OKF-compliant output |

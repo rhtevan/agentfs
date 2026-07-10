@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-09 20:07
+
+- Skill Harvest: Created crc-ctl skill v1.0 from 3 MEMORY.md entries (goofing-around project)
+
+## 2026-07-09 19:55
+
+- Created skill-harvest skill v1.0 — procedural memory-to-skill graduation (complements okf-bundle-harvest)
+
+## 2026-07-09 19:41
+
+- Updated okf-bundle-harvest SKILL.md v1.2 — added system/environment-specific non-graduation criterion
+
 ## 2026-07-09 17:43
 
 - Added Memory Architecture section to ~/.agents/README.md
