@@ -8,6 +8,8 @@ description: >
   higher-order patterns into a dedicated agent-patterns/ sub-bundle.
   Session-specific knowledge goes into per-session sub-bundles. Fully
   compliant with Open Knowledge Format v0.1.
+metadata:
+  tags: [agentfs, okf, knowledge, generation, session]
 ---
 
 # OKF Bundle Generation from Session Context

@@ -1,6 +1,8 @@
 ---
 name: crc-post-setup-config
 description: Post-setup configuration for OpenShift Local (CRC) — enables cluster monitoring with disk-safe Prometheus retention, tunes kubelet system-reserved resources to prevent the SystemMemoryExceedsReservation alert, and silences noisy dev-irrelevant alerts
+metadata:
+  tags: [openshift, crc, monitoring, configuration, alerts]
 ---
 
 # CRC Post-Setup Configuration

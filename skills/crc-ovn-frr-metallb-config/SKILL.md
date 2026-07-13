@@ -5,6 +5,8 @@ description: >
   integration on an OpenShift Local (CRC) cluster. This skill
   re-establishes the full OVN-FRR and MetalLB integration after a
   `crc delete && crc start` cycle.
+metadata:
+  tags: [openshift, crc, networking, ovn, bgp, metallb]
 ---
 
 # CRC OVN-K FRR + MetalLB Integration Configuration

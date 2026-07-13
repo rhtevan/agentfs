@@ -5,6 +5,8 @@ description: >
   knowledge bundle. Detects broken links, missing entries, and absent
   index.md files, then repairs them to restore full OKF conformance.
   Fully compliant with Open Knowledge Format v0.1.
+metadata:
+  tags: [agentfs, okf, knowledge, index, links]
 ---
 
 # OKF Bundle Index

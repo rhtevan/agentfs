@@ -5,6 +5,8 @@ description: >
   upgrade it to the latest release. Use when a user asks to install spec-kit,
   set up Spec-Driven Development, check for spec-kit updates, upgrade specify,
   or when another skill or workflow requires spec-kit as a prerequisite.
+metadata:
+  tags: [speckit, specify, cli, setup, installation]
 ---
 
 # Spec-kit Setup

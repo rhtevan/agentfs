@@ -7,6 +7,8 @@ description: >
   USER skills with the same name are NOT overwritten unless the user
   explicitly signals force/overwrite. After merging, refreshes the
   USER skills index.
+metadata:
+  tags: [agentfs, skills, merge, project, user]
 ---
 
 # Skill Merge

@@ -1,6 +1,8 @@
 ---
 name: crc-coo-config
 description: Install and configure the Cluster Observability Operator (COO) on OpenShift Local (CRC) with Perses dashboards and incident detection enabled
+metadata:
+  tags: [openshift, crc, observability, operator, perses]
 ---
 
 # Install and Configure COO on CRC

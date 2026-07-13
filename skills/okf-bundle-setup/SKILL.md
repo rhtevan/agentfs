@@ -7,6 +7,8 @@ description: >
   files — scanning content to derive a semantic bundle name, creating
   concept docs for non-md assets, and recursing into subdirectories as
   sub-bundles. Fully compliant with Open Knowledge Format v0.1.
+metadata:
+  tags: [agentfs, okf, knowledge, scaffolding, setup]
 ---
 
 # OKF Bundle Setup

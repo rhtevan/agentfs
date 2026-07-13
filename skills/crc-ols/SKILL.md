@@ -1,6 +1,8 @@
 ---
 name: openshift-lightspeed-crc
 description: Install and configure OpenShift Lightspeed on OpenShift Local (CRC), with specific guidance for Google Vertex AI Anthropic as the LLM provider and tunings to avoid known LLM invocation errors.
+metadata:
+  tags: [openshift, crc, lightspeed, llm, operator]
 ---
 
 # OpenShift Lightspeed on CRC with Google Vertex AI

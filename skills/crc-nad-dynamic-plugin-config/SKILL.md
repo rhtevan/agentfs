@@ -1,6 +1,8 @@
 ---
 name: crc-nad-dynamic-plugin-config
 description: Deploy the pre-built nad-console-plugin from quay.io to OpenShift Local (CRC) using Helm, and verify the plugin loads correctly and the NetworkAttachmentDefinitions menu item appears in the OpenShift Console Networking section.
+metadata:
+  tags: [openshift, crc, networking, console-plugin, helm]
 ---
 
 # CRC NAD Console Plugin Deployment
