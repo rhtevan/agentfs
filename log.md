@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-13 16:44
+
+- Added `LICENSE` file: Apache License 2.0
+- Updated `README.md`: replaced placeholder license disclaimer with Apache 2.0 boilerplate and link to LICENSE file
+
 ## 2026-07-13 16:11
 
 - Updated `README.md`: added "Skill Design Principles" section (non-interactive scripts, agent-as-orchestrator pattern, business process modeling) between Skills and Knowledge subsections
