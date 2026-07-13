@@ -1,7 +1,7 @@
 ---
 name: goose-setup
 description: "Configure Goose global persistent instructions for cross-project, cross-session use"
-version: 1.3
+version: 1.4
 metadata:
     tags: [goose, config, instructions, persistent]
 ---
@@ -45,10 +45,20 @@ Create `~/.config/goose/instructions.md` with your global instructions:
 
 ## Git Push Safety
 
-- Before any push to GitHub, **DO NOT PUSH AUTOMATICALLY**.
-- Conduct a thorough security and risk evaluation on the changes (scan for secrets, credentials, hardcoded paths, PII, and sensitive data).
-- Show the full evaluation report to the user.
-- Wait for explicit go-ahead before executing the push.
+Before any `git push`, follow these steps **in order**. Do NOT skip
+any step, even if the user says "go ahead", "push it", or "yes".
+
+1. **STOP** — do NOT push yet. The user's "go ahead" authorizes the
+   *intent* to push, not the push itself. The preflight must run first.
+2. **Scan** the commits to be pushed for:
+   - Secrets, credentials, API keys, tokens, private keys
+   - Hardcoded user paths (`/home/<user>/`, `/Users/<user>/`)
+   - PII (personal emails, phone numbers, addresses)
+   - Sensitive data (internal IPs, hostnames, URLs)
+3. **Present** the evaluation report to the user in table format,
+   with a clear CLEAN / ISSUES FOUND verdict.
+4. **Wait** for explicit approval **after** the report is shown.
+5. **Then** — and only then — execute `git push`.
 ```
 
 Add any other cross-project instructions you want Goose to always follow.
@@ -110,6 +120,7 @@ The instructions file supports any Markdown content. Common additions:
 
 | Date | Change |
 |------|--------|
+| 2026-07-13 17:06 | v1.4 — Strengthened Git Push Safety from bullet list to 5-step procedural checklist; clarifies that "go ahead" authorizes intent, not the push itself; preflight scan must complete before approval is requested |
 | 2026-07-08 22:34 | v1.3 — Added Path Hygiene guardrail: never use explicit home directory paths, prefer ~ or $HOME |
 | 2026-07-08 22:16 | v1.2 — Removed Tool Discovery instructions (obsoleted by goose-shell wrapper fix); updated description and examples |
 | 2026-07-08 17:49 | v1.1 — Added Git Push Safety guardrail: security evaluation required before any push |

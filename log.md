@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-13 17:06
+
+- Updated `skills/goose-setup/SKILL.md` v1.3→v1.4: strengthened Git Push Safety from bullet list to 5-step procedural checklist
+
 ## 2026-07-13 16:44
 
 - Added `LICENSE` file: Apache License 2.0

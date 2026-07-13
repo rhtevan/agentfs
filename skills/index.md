@@ -4,6 +4,7 @@
 
 | Skill | Description | Tags | Updated |
 |-------|-------------|------|---------|
+| [goose-setup](./goose-setup/SKILL.md) | Configure Goose global persistent instructions for cross-project, cross-session use | goose, config, instructions, persistent | 2026-07-13 17:06 |
 | [skill-gen](./skill-gen/SKILL.md) | Create new skills, modify and improve existing skills. Operates in two modes: simple (quick scaffold with AgentFS conventions) and advanced (full eval/iterate/optimize loop using upstream Anthropic… | agentfs, skills, creation, scaffolding, evaluation | 2026-07-13 16:11 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode, seed AGENTS.md with scope definitions and nine structural guardrails, and verify setup integrity. Default mode is PROJECT. | agentfs, setup, scaffolding, guardrails | 2026-07-13 15:44 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) |  | agentfs, eval, maturity, guardrails, audit | 2026-07-13 15:39 |
@@ -33,7 +34,6 @@
 | [skill-harvest](./skill-harvest/SKILL.md) | Harvest procedural knowledge from MEMORY.md files across one or more projects and distill them into reusable USER-scoped skills under ~/.agents/skills/. Scans default agent and named profile memori… | agentfs, skills, memory, procedural, graduation, harvest | 2026-07-09 19:54 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | Harvest concepts from MEMORY.md files across one or more projects and distill them into OKF-compliant knowledge bundles under ~/.agents/knowledge/. Scans default agent and named profile memories, i… | agentfs, okf, knowledge, memory, distillation, graduation | 2026-07-09 19:41 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | 2026-07-08 23:12 |
-| [goose-setup](./goose-setup/SKILL.md) | Configure Goose global persistent instructions for cross-project, cross-session use | goose, config, instructions, persistent | 2026-07-08 22:34 |
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | Install the Headroom context-optimization proxy and configure it as a systemd user service chained to a local LiteLLM upstream | headroom, proxy, litellm, systemd, compression, context-optimization, installation | 2026-07-08 17:05 |
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | Configure Goose to use the Headroom context-optimization proxy as a custom provider, chained to LiteLLM for upstream LLM access | goose, headroom, custom-provider, context-optimization, compression, configuration | 2026-07-08 17:05 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | Configure Hermes Agent to use a local LiteLLM proxy as its custom LLM provider, with model discovery and verification | hermes, litellm, custom-provider, configuration | 2026-07-08 17:05 |
