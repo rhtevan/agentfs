@@ -1,5 +1,5 @@
 ---
-name: skill-creator
+name: skill-gen
 description: >
   Create new skills, modify and improve existing skills. Operates in two
   modes: simple (quick scaffold with AgentFS conventions) and advanced
@@ -12,13 +12,13 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.2"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
 ---
 
-# Skill Creator
+# Skill Gen
 
 Create new skills or improve existing ones with built-in AgentFS conventions.
 
@@ -40,6 +40,61 @@ Detect mode from user's language:
 
 When in doubt, ask: *"Do you want a quick skill scaffold, or a
 thorough process with test cases and evaluation?"*
+
+---
+
+## Skill Design Principles
+
+Before creating any skill, understand the three foundational principles
+that govern skill architecture. These apply to both Simple and Advanced
+modes.
+
+### Non-Interactive Scripts
+
+Scripts under `scripts/` MUST be non-interactive — they MUST NOT use
+`read`, `select`, interactive prompts, or any mechanism that blocks
+waiting for stdin. All inputs MUST be accepted via CLI arguments,
+environment variables, or input files.
+
+- **Why:** Skills can be triggered by scheduled jobs, other skills,
+  or automated pipelines where no human is at the terminal. A
+  blocking `read` call will hang or fail.
+- **How:** Use positional args (`$1`, `$2`) or named flags
+  (`--name "$NAME"`). Validate inputs with usage errors (exit 2)
+  rather than interactive fallbacks.
+
+### Agent-as-Orchestrator
+
+Skills implement a three-layer separation of concerns:
+
+| Layer | Responsibility | Interactive? |
+|---|---|---|
+| **SKILL.md** | Defines the process — steps, decision points, gates | N/A (blueprint) |
+| **Agent** | Orchestrates flow, mediates user interaction, feeds data between steps | ✅ Conversationally |
+| **Scripts** | Execute deterministic, repeatable actions | ❌ Never |
+
+The agent handles ambiguous inputs, clarifications, approvals, and
+error explanations. Scripts handle validation, API calls, and data
+transformations. SKILL.md is the contract between them.
+
+### Business Process Modeling
+
+Skills can model multi-step processes with human interaction points.
+Interactivity belongs in the **agent ↔ user conversation**, not in
+script execution. A process skill defines:
+
+- **Action steps** — deterministic scripts the agent runs
+- **Interaction steps** — the agent gathers input, presents results,
+  or requests approval from the user
+- **Decision points** — branching based on script exit codes or
+  user responses
+- **External gates** — steps that wait for external input
+  (approvals, reference numbers, third-party data)
+
+This preserves all guardrails — scripts stay idempotent
+(Guardrail #10), the SKILL.md *is* the process documentation,
+each script is independently testable, and the same scripts can
+be reused by other skills or automated jobs with pre-known inputs.
 
 ---
 
@@ -153,7 +208,10 @@ set -euo pipefail
 - [ ] **Scope verification** — skill is in the correct directory
       (USER `~/.agents/skills/` or PROJECT `./.agents/skills/`)
 - [ ] **Frontmatter validation** — YAML frontmatter includes:
-      `name`, `description`, `metadata.tags`, `user-invocable`
+      `name`, `description`, `metadata.tags` (bracket notation,
+      e.g., `tags: [domain, function, artifact]`), `user-invocable`.
+      A skill without tags is invisible to tag-based discovery
+      (Guardrail #6).
 - [ ] **Changelog** — Changelog table exists with at least a v1.0 entry
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
@@ -172,18 +230,18 @@ draft → test → evaluate → iterate → optimize.
 Ensure the upstream skill-creator is cached locally:
 
 ```bash
-bash ~/.agents/skills/skill-creator/scripts/fetch-upstream.sh
+bash ~/.agents/skills/skill-gen/scripts/fetch-upstream.sh
 ```
 
 This downloads the complete Anthropic skill-creator file structure
-into `~/.agents/skills/skill-creator/.cache/upstream/`.
+into `~/.agents/skills/skill-gen/.cache/upstream/`.
 
 ### Step 2 — Load Upstream Instructions
 
 Load the full upstream SKILL.md for detailed instructions:
 
 ```
-load_skill(name: "skill-creator/.cache/upstream/SKILL.md")
+load_skill(name: "skill-gen/.cache/upstream/SKILL.md")
 ```
 
 ### Step 3 — Follow Upstream Workflow
@@ -252,11 +310,13 @@ For both modes:
 | Repository | [anthropics/skills](https://github.com/anthropics/skills) |
 | Path | `skills/skill-creator/` |
 | License | See `LICENSE.txt` in cached upstream |
-| Cache location | `~/.agents/skills/skill-creator/.cache/upstream/` |
+| Cache location | `~/.agents/skills/skill-gen/.cache/upstream/` |
 | Cache refresh | Every 7 days, or `fetch-upstream.sh --force` |
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-13 16:11 | v1.2 — Added "Skill Design Principles" section: non-interactive scripts, agent-as-orchestrator pattern, business process modeling |
+| 2026-07-13 11:19 | v1.1 — Renamed from `skill-creator` to `skill-gen` for naming consistency with `okf-bundle-gen`, `bash-completion-gen`; updated all internal path references |
 | 2026-07-10 17:05 | v1.0 — Initial proxy skill: simple + advanced modes, upstream Anthropic skill-creator integration, AgentFS post-creation checklist, agent compatibility notes |
