@@ -8,6 +8,8 @@ description: >
   after adding or removing skills. Defaults to USER skills
   (~/.agents/skills/); use PROJECT skills (./.agents/skills/) only when
   the user explicitly signals project scope.
+metadata:
+  tags: [agentfs, skills, index, discovery]
 ---
 
 # Skill Index Generator
@@ -55,13 +57,17 @@ the default. If the user signals project scope (see table above), use
    For each discovered `SKILL.md`:
 
    a. If the file begins with YAML frontmatter (`---` delimiters), read
-      the `name` and `description` fields from it.
+      the `name`, `description`, and `metadata.tags` fields from it.
       - **Multi-line YAML scalars:** When `description:` is followed by
         a folding/literal indicator (`>`, `|`, `>-`, `|-`), the actual
         text is on the subsequent indented lines. Collect all indented
         continuation lines and join them into a single sentence.
         Shell `sed` one-liners **cannot** handle this — use Python or
         a multi-step approach.
+      - **Tags:** Extract the `tags:` field under `metadata:`. Tags are
+        typically a YAML list in bracket notation, e.g.,
+        `tags: [agentfs, memory, harvest]`. Parse the bracket contents
+        and split on commas. Strip whitespace from each tag.
       - Strip surrounding quotes from values if present.
 
    b. If there is **no** YAML frontmatter, derive the metadata:
@@ -69,6 +75,7 @@ the default. If the user signals project scope (see table above), use
       - `description` — the first non-heading, non-blank, non-table,
         non-rule paragraph line in the file. Skip lines starting with
         `#`, `|`, `---`, or `>`.
+      - `tags` — empty (no tags available).
 
 4. **Extract timestamp for each skill**
    Use the last-modified timestamp of each `SKILL.md` file
@@ -87,9 +94,9 @@ the default. If the user signals project scope (see table above), use
 
    > <N> skills | Sorted by reverse chronological order (newest first).
 
-   | Skill | Description | Updated |
-   |-------|-------------|---------|
-   | [<name>](./<dir>/SKILL.md) | <short description> | YYYY-MM-DD HH:MM |
+   | Skill | Description | Tags | Updated |
+   |-------|-------------|------|---------|
+   | [<name>](./<dir>/SKILL.md) | <short description> | tag1, tag2, … | YYYY-MM-DD HH:MM |
    …
    ```
 
@@ -99,6 +106,8 @@ the default. If the user signals project scope (see table above), use
    - `<dir>` is the subdirectory name (relative link).
    - `<short description>` is a single-line summary (truncated to ~200
      characters if needed, ending with `…`).
+   - `Tags` is a comma-separated list of tags from `metadata.tags`
+     (empty cell if no tags found).
    - `Updated` is the last-modified timestamp of the `SKILL.md` file.
 
 7. **Report**
@@ -110,6 +119,7 @@ the default. If the user signals project scope (see table above), use
 - [ ] Every subdirectory containing a `SKILL.md` has a corresponding row.
 - [ ] Each link resolves to the correct `SKILL.md` file.
 - [ ] Descriptions are concise single-line summaries.
+- [ ] A `Tags` column is present showing each skill's metadata tags (comma-separated, or empty if none).
 - [ ] An `Updated` column is present showing each skill's last-modified timestamp (`YYYY-MM-DD HH:MM`).
 - [ ] Rows are sorted newest-first (reverse chronological order).
 
@@ -117,6 +127,7 @@ the default. If the user signals project scope (see table above), use
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-13 13:30 | v1.7 — Added Tags column to generated index; extract `metadata.tags` from YAML frontmatter; supports tag-based skill discovery for Guardrail #9 fallback routing |
 | 2026-07-08 22:42 | v1.6 — Clarified multi-line YAML scalar handling (description: > requires collecting indented continuation lines; sed cannot do this); improved fallback to skip table/rule/blockquote lines |
 | 2026-07-01 00:07 | v1.5 — Generated index now shows total skill count in summary line (`> N skills | Sorted by…`) |
 | 2026-06-30 23:36 | v1.4 — Changelog table uses `Updated` header and `YYYY-MM-DD HH:MM` timestamps, aligned with guardrail §3 |

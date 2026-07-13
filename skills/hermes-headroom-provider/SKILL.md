@@ -1,3 +1,18 @@
+---
+name: hermes-headroom-provider
+description: >
+  Configure Hermes Agent to use the local Headroom context-optimization
+  proxy as its custom LLM provider, with model discovery and verification.
+argument-hint: "Run when setting up Hermes to use Headroom proxy"
+compatibility: "Requires Hermes Agent, Headroom proxy, and LiteLLM proxy"
+metadata:
+  author: agentfs
+  version: "1.2"
+  tags: [hermes, headroom, proxy, provider, llm]
+user-invocable: true
+disable-model-invocation: false
+---
+
 # Skill: hermes-headroom-provider
 
 Configure Hermes Agent to use the local Headroom context-optimization proxy as its custom LLM provider, with model discovery and verification.
@@ -6,6 +21,7 @@ Configure Hermes Agent to use the local Headroom context-optimization proxy as i
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-13 13:40 | v1.2.1 — Added YAML frontmatter with metadata tags |
 | 2026-07-06 22:17 | v1.2 — Added `service_tier: fast` incompatibility warning and troubleshooting; `speed` kwarg rejected by OpenAI-compat transport |
 | 2026-07-06 22:06 | v1.1 — Aligned config structure with actual Hermes `providers:` map format (not `custom_providers` list); provider named `headroom-proxy` |
 | 2026-07-06 22:00 | v1.0 — Initial skill |

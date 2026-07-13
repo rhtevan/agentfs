@@ -2,6 +2,44 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-13 16:11
+
+- Updated `README.md`: added "Skill Design Principles" section (non-interactive scripts, agent-as-orchestrator pattern, business process modeling) between Skills and Knowledge subsections
+- Updated `skills/skill-gen/SKILL.md` v1.1→v1.2: added "Skill Design Principles" section before Simple Mode with same three principles
+
+## 2026-07-13 15:46
+- Created `agentfs-eval` skill — three-layer maturity assessment (structural, behavioral, semantic) with L0–L5 maturity levels
+- Created `scripts/agentfs-check.sh` (Layer 1: 7 structural assertions)
+- Created `scripts/agentfs-behavior.sh` (Layer 2: 5 behavioral assertions)
+- Created `rubrics/` directory with 4 semantic rubrics (memory-classification, reference-verification, sycophancy-detection, skill-accuracy)
+- Created `templates/report.md` (eval output format)
+- Created `references/design-decisions.md` (design rationale from design session)
+- Updated `agentfs-setup` — scaffold-dotagents.sh now calls init-git.sh in PROJECT mode by default
+- Updated `agentfs-setup/scripts/init-git.sh` — .gitignore no longer excludes .agents/memories/
+- Updated `agentfs-setup/references/design-spec.md` — added Evaluation section, guardrails #10–12, git audit infrastructure
+- Updated `README.md` — added Evaluation section with three-layer model, maturity levels, design decisions
+
+## 2026-07-13 13:45
+- Backfilled `metadata.tags` for 21 skills that were missing tags (including adding YAML frontmatter to `hermes-headroom-provider`)
+- Regenerated `skills/index.md` — 38 skills, all with tags
+- Added mandatory tags guardrail to Guardrail #6 in AGENTS.md and `agentfs-setup` seed template
+- Updated `skill-gen` SKILL.md post-creation checklist — frontmatter validation now explains tags requirement and links to Guardrail #6
+
+## 2026-07-13 13:33
+- Updated `skill-index` SKILL.md v1.7 — added Tags column extraction from `metadata.tags` frontmatter; updated index template, verification checklist, and changelog
+- Regenerated `skills/index.md` with Tags column — 38 skills indexed (17 with tags, 21 without)
+- Updated `agentfs-setup/scripts/seed-agents-md.sh` — added skill resolution chain routing rule; renamed `skill-creator` → `skill-gen` in decision table
+
+## 2026-07-13 11:20
+- Renamed `skills/skill-creator/` → `skills/skill-gen/` for naming consistency with `okf-bundle-gen`, `bash-completion-gen`
+- Updated SKILL.md: name, title, all internal path references, changelog (v1.1)
+- Regenerated `skills/index.md`
+
+## 2026-07-13 10:49
+
+- Created `bash-completion-gen` skill under USER scope (`~/.agents/skills/bash-completion-gen/SKILL.md`) — generates bash completion scripts for any CLI command via systematic subcommand/option discovery, build, and validation
+- Regenerated `~/.agents/skills/index.md` — 38 skills indexed
+
 ## 2026-07-10 18:08
 
 - `agentfs-setup` v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`) to SKILL.md, AGENTS.md template, design-spec, and README; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; nine guardrails (was eight); verify-setup.sh now checks for Scope Definitions in AGENTS.md; all user-facing instructions now say "ask your agent to run the skill" instead of directing users to execute bash scripts; Path B (minimal install) references the skill with USER scope hint; README reordered: Scope Definitions → Getting Started → Directory Structure → Modes → Guardrails → Memory Architecture

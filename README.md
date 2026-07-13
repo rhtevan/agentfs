@@ -113,6 +113,127 @@ Skills cover topics like:
 
 See [`skills/index.md`](skills/index.md) for the full list.
 
+### Skill Design Principles
+
+Skills follow three foundational design principles that govern how
+interactivity, determinism, and orchestration are separated across
+architectural layers.
+
+#### 1. Non-Interactive Scripts
+
+Scripts under `scripts/` MUST be non-interactive. They MUST NOT use
+`read`, `select`, interactive prompts, or any mechanism that blocks
+waiting for stdin. All inputs MUST be accepted via command-line
+arguments, environment variables, or input files.
+
+```bash
+# ✅ Correct — inputs as arguments
+bash scripts/provision.sh --name "$NAME" --email "$EMAIL"
+
+# ❌ Wrong — blocks on stdin
+read -p "Enter name: " NAME
+```
+
+This ensures scripts remain testable, composable, and executable in
+automated contexts (scheduled jobs, skill chaining, CI pipelines)
+where no human is present at the terminal.
+
+#### 2. Agent-as-Orchestrator Pattern
+
+Skills implement a three-layer architecture that cleanly separates
+concerns:
+
+```
+┌────────────────────────────────────────┐
+│              SKILL.md                  │
+│       (Process Definition)             │
+│  Defines steps, decision points,       │
+│  interaction gates, and script calls   │
+└──────────────┬─────────────────────────┘
+               │ instructs
+               ▼
+┌──────────────────────┐       ┌──────────────┐
+│       Agent          │◄─────►│     User     │
+│   (Orchestrator)     │ conversation  (External │
+│                      │  context      Input)    │
+│  Mediates human      │       └──────────────┘
+│  interaction,        │
+│  holds state,        │
+│  feeds data between  │
+│  steps               │
+└──────────┬───────────┘
+           │ executes
+           ▼
+┌──────────────────────┐
+│  Deterministic       │
+│  Scripts (Actions)   │
+│                      │
+│  Non-interactive,    │
+│  idempotent,         │
+│  args in → exit      │
+│  code out            │
+└──────────────────────┘
+```
+
+| Layer | Responsibility | Interactive? |
+|---|---|---|
+| **SKILL.md** | Defines the process — sequence, decision points, gates | N/A (blueprint) |
+| **Agent** | Orchestrates flow, mediates user interaction, translates between human language and script arguments | ✅ Conversationally |
+| **Scripts** | Execute deterministic, repeatable actions | ❌ Never |
+
+The agent handles the "messy human stuff" — ambiguous inputs,
+clarifications, approvals, error explanations. The scripts handle
+the "precise machine stuff" — validation, API calls, data
+transformations. The SKILL.md is the contract between them.
+
+#### 3. Skills as Business Process Definitions
+
+Skills can model multi-step business processes that include human
+interaction points. The key insight is that **interactivity belongs
+in the agent ↔ user conversation layer**, not in script execution.
+
+A business process skill defines:
+- **Action steps** — deterministic scripts the agent runs
+- **Interaction steps** — points where the agent gathers input,
+  presents results, or requests approval from the user
+- **Decision points** — conditional branching based on script
+  exit codes or user responses
+- **External gates** — steps that wait for external input
+  (approvals, reference numbers, third-party responses)
+
+Example pattern in a SKILL.md:
+
+```markdown
+## Steps
+
+1. **Collect requirements**
+   Ask the user for: name, department, role.
+
+2. **Validate input**
+   Run: `bash scripts/validate.sh --name "$NAME" --dept "$DEPT"`
+   If exit code 1 → report errors, return to Step 1.
+
+3. **Present plan and confirm**
+   Show the provisioning plan. Ask for user confirmation.
+
+4. **Execute**
+   Run: `bash scripts/provision.sh --config /tmp/plan.json`
+
+5. **External approval gate**
+   Tell the user: "Manager approval required. Provide the
+   approval reference when ready."
+   Run: `bash scripts/verify-approval.sh --ref "$REF"`
+
+6. **Finalize and report**
+   Run: `bash scripts/finalize.sh --id "$ID"`
+```
+
+This pattern preserves all structural guardrails — scripts stay
+idempotent (Guardrail #10), the process is documented (SKILL.md
+*is* the documentation), each script is independently testable,
+and the same scripts can be reused by other skills or automated
+jobs with pre-known inputs.
+
 ### Knowledge (`knowledge/`)
 
 Knowledge bundles follow the [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) — each bundle contains concept documents, an `index.md` navigation hub, and a `log.md` changelog.
@@ -303,6 +424,92 @@ Guardrails themselves exist at three levels:
 
 When the AgentFS template is updated, existing projects are brought into
 alignment by re-running setup verification (`verify-setup.sh --mode project`).
+
+## Evaluation
+
+AgentFS includes an evaluation skill (`agentfs-eval`) that assesses the
+health and maturity of an AgentFS workspace through three progressively
+deeper verification layers.
+
+### The Problem
+
+Guardrails in `AGENTS.md` are **prescriptive** — they tell the agent
+what to do. But nothing verifies the agent actually followed them.
+This is equivalent to having coding standards without a linter. The
+guardrails rely entirely on the agent's willingness and ability to
+follow instructions — which is exactly what AI model flaws undermine.
+
+### Guiding Principles
+
+Two sets of non-negotiable principles drive the evaluation design:
+
+**Safe Agent Actions:**
+
+| Property | Requirement |
+|----------|-------------|
+| Idempotency | Actions can be retried without catastrophic consequences |
+| Resumability | A series of actions can be resumed or reverted after interruptions |
+| Auditability | An audit trail exists for all actions |
+
+**AI Flaw Mitigation:**
+
+| Flaw | Risk to AgentFS |
+|------|------------------|
+| Hallucination | Agent invents files, references, or observations that don't exist |
+| Stochasticity | Same skill produces inconsistent workspace structures across runs |
+| Sycophancy | Agent silently complies with requests that violate guardrails |
+
+### Three-Layer Verification
+
+| Layer | Paradigm | LLM Required? | What It Verifies |
+|-------|----------|:-:|------------------|
+| **L1: Structural** | Filesystem assertions (shell scripts) | No | Links, log ordering, index completeness, frontmatter, scope correctness, orphans |
+| **L2: Behavioral** | Forensic evidence correlation | No | Action-log correlation, timestamp alignment, scope leakage, idempotency, rule-in-memory |
+| **L3: Semantic** | Constrained LLM classification | Yes | Memory content classification, reference verification, sycophancy detection, skill accuracy |
+
+Layer 3 uses the LLM as a **classifier** with closed-ended questions
+and majority voting — not as an open-ended judge. This resists the
+very AI flaws being evaluated.
+
+### Maturity Levels
+
+| Level | Name | Requirements |
+|-------|------|--------------|
+| L0 | Absent | No `.agents/` directory |
+| L1 | Scaffolded | `.agents/` exists with valid structure |
+| L2 | Structurally Sound | All Layer 1 assertions pass |
+| L3 | Behaviorally Safe | Layer 1 + Layer 2 pass |
+| L4 | Semantically Accurate | Layer 1 + Layer 2 + Layer 3 pass |
+| L5 | Self-Correcting | Agent detects and fixes its own violations |
+
+### Usage
+
+Run `agentfs-eval` explicitly by asking any agent:
+
+> "Run agentfs eval" or "Run agentfs eval against /path/to/project"
+
+For the most reliable results, run in a **fresh session** with a
+capable model to eliminate self-evaluation bias.
+
+### Key Design Decisions
+
+- **No golden test cases** — eval tests real workspace content, not
+  synthetic scenarios
+- **Explicit trigger only** — no hooks, cron, or automated triggers
+  in v1.0
+- **Graceful degradation** — checks report N/A when evidence is
+  insufficient (fresh projects) rather than failing
+- **Git provides audit evidence** — `agentfs-setup` initializes git
+  in PROJECT mode by default; `.agents/memories/` is tracked for
+  full audit trail
+- **L3 → L2 graduation is human-driven** — patterns observed in
+  semantic eval reports are manually codified as deterministic
+  heuristics over time
+
+See [`skills/agentfs-eval/SKILL.md`](skills/agentfs-eval/SKILL.md)
+for full details and
+[`skills/agentfs-eval/references/design-decisions.md`](skills/agentfs-eval/references/design-decisions.md)
+for the complete design rationale.
 
 ## License
 
