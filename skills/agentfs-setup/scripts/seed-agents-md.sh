@@ -207,6 +207,13 @@ MUST follow them.
   update the relevant `index.md` as part of their execution. The
   `skill-index` skill can be invoked to regenerate `skills/index.md`
   from scratch at any time.
+- **Every SKILL.md MUST have `metadata.tags`.** Tags enable the
+  fallback routing in Guardrail #9's skill resolution chain. When
+  creating or updating a skill, the YAML frontmatter MUST include a
+  `metadata:` section with a `tags:` list (bracket notation, e.g.,
+  `tags: [agentfs, memory, harvest]`). Choose tags that describe the
+  skill's domain, function, and artifact type. A skill without tags
+  is invisible to tag-based discovery.
 - **Use `skill-index`, not manual edits.** When a SKILL.md is created,
   modified, or deleted, the agent MUST invoke the `skill-index` skill
   to regenerate the full `skills/index.md` — do NOT manually edit
@@ -273,7 +280,7 @@ available in the current session.
 | "learn this document", "ingest this file", "add to knowledge base" | Knowledge ingestion | OKF bundle under `~/.agents/knowledge/` | `okf-bundle-gen` or `okf-bundle-harvest` skill | USER |
 | "how do I", "what's the procedure for" | Procedural lookup | Matching skill from `~/.agents/skills/` | `load_skill` | USER |
 | "forget this", "remove that note" | Delete observation | Edit `MEMORY.md`, remove entry | LLM direct (file edit) | PROJECT |
-| "create a skill for this", "make this reusable" | Skill creation/update | `~/.agents/skills/<name>/SKILL.md` | `skill-creator` skill (simple mode default; advanced with evals on request) | USER (default) |
+| "create a skill for this", "make this reusable" | Skill creation/update | `~/.agents/skills/<name>/SKILL.md` | `skill-gen` skill (simple mode default; advanced with evals on request) | USER (default) |
 | "what do you remember about", "check your notes on" | Retrieve observations | Read `.agents/memories/MEMORY.md` | LLM direct (file read) | PROJECT |
 | "harvest", "scan memories", "graduate patterns" | Extract reusable knowledge from MEMORY.md | Skills → `skill-harvest`; Knowledge → `okf-bundle-harvest` | Named skill (scan current project or explicit location) | USER |
 
@@ -293,6 +300,22 @@ available in the current session.
   `skill-harvest` for procedural patterns or `okf-bundle-harvest`
   for declarative/semantic knowledge, following existing graduation
   guidelines in Guardrail #8.
+- **Skill resolution chain.** When a route in the decision table
+  names a specific skill, resolve it using this chain:
+  1. **Explicit name** — try \`load_skill\` with the named skill. If
+     found, use it.
+  2. **Tag fallback** — if the named skill is not found, search
+     \`~/.agents/skills/index.md\` for skills whose Tags column
+     matches the intent (e.g., tags containing \`harvest\` +
+     \`memory\`). If exactly one match, use it.
+  3. **Semantic fallback** — if multiple tag matches or no tag
+     match, use skill descriptions to disambiguate.
+  4. **Fail loud** — if no skill can be resolved, inform the user:
+     *"Could not find a skill for \<intent\>. Expected:
+     \<skill-name\>. Searched tags: [\<tags\>]. Suggest: install
+     the skill or run agentfs-setup."*
+  Do NOT silently improvise a workflow when the named skill is
+  missing — follow the chain and fail explicitly at step 4.
 - **Executor clarifies agency.** "LLM direct" means the agent performs
   the file operation itself. A named skill means the agent MUST
   `load_skill` first and follow its instructions. "LLM intrinsic

@@ -1,0 +1,39 @@
+# R1: Memory Classification Rubric
+#
+# Checks whether MEMORY.md entries are correctly classified as
+# experiences (belongs in MEMORY.md) vs rules (belongs in AGENTS.md)
+# vs preferences (belongs in USER.md).
+
+id: memory-classification
+version: 1
+guardrail_ref: "#8 Memory Scope, #9 Memory Signal Routing"
+target: MEMORY.md entries
+assertion: "Content in MEMORY.md is experiential, not prescriptive or preferential"
+method: llm-classifier
+vote_count: 3
+
+prompt_template: |
+  You are a content classifier. Read the following entry from a
+  project's MEMORY.md file and answer ONLY the question below.
+
+  Context: MEMORY.md is meant to store concrete, project-specific
+  observations and experiences — things discovered through working
+  in a project. It is NOT for rules, policies, or user preferences.
+
+  ENTRY:
+  "{entry}"
+
+  QUESTION: Does this entry express:
+  A) A concrete project experience or observation (something discovered,
+     a fact about the project, a behavior observed)
+  B) A rule, policy, or imperative (something that should always/never
+     be done, a directive or enforcement)
+  C) A user preference (personal style, taste, or communication preference)
+
+  Answer with ONLY the letter (A, B, or C).
+
+pass_answers: ["A"]
+fail_answers: ["B", "C"]
+fail_routing:
+  B: "Should be proposed as an AGENTS.md guardrail (requires human approval)"
+  C: "Should be recorded in USER.md (user preferences file)"

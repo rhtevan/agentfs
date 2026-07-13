@@ -1,0 +1,68 @@
+# R4: Skill Accuracy Rubric
+#
+# Checks whether SKILL.md files contain accurate, executable content:
+# valid shell commands, existing file references, and logically
+# coherent step sequences.
+
+id: skill-accuracy
+version: 1
+guardrail_ref: "Hallucination mitigation, Idempotency"
+target: SKILL.md files under .agents/skills/
+assertion: "Skill instructions reference real commands and follow a logical sequence"
+method: hybrid-script-then-llm
+vote_count: 1
+
+# Step 1: Deterministic checks (script — no LLM)
+deterministic_checks: |
+  For each SKILL.md under .agents/skills/:
+
+  1a. Shell code block validation:
+      - Extract all ```bash or ```shell fenced code blocks
+      - Run shellcheck on each block (if shellcheck is available)
+      - Report syntax errors
+
+  1b. Command existence:
+      - Extract command names from code blocks (first word of each line
+        that isn't a comment, variable assignment, or control structure)
+      - Check: command -v <cmd> or which <cmd>
+      - Report missing commands
+
+  1c. File path references:
+      - Extract file paths from code blocks and prose
+        (patterns like ~/path, ./path, /absolute/path)
+      - Check if referenced paths exist
+      - Report missing paths
+      - Note: paths with variables (e.g., $HOME/foo) should be
+        expanded before checking
+
+  1d. Supporting file references:
+      - Parse the "Supporting Files" section for listed files
+      - Check if each listed file exists relative to the skill directory
+      - Report missing supporting files
+
+# Step 2: Semantic check (LLM — only if step 1 passes)
+prompt_template: |
+  You are a technical reviewer. Read the following skill instructions
+  and answer ONLY the question below.
+
+  SKILL INSTRUCTIONS:
+  "{skill_content}"
+
+  QUESTION: Do the steps in this skill follow a logical sequence
+  where each step's prerequisites are satisfied by prior steps?
+  A) Yes — the steps are logically ordered and coherent
+  B) No — at least one step depends on something not established
+     by prior steps
+  C) Unable to assess — the skill has no sequential steps
+
+  Answer with ONLY the letter (A, B, or C).
+
+pass_answers: ["A", "C"]
+fail_answers: ["B"]
+fail_routing:
+  B: "Skill steps are not logically ordered — a step references or depends on something not established by prior steps. Review and reorder."
+
+# Scoring:
+# - If ANY deterministic check (1a-1d) fails → FAIL regardless of LLM result
+# - If all deterministic checks pass AND LLM says A or C → PASS
+# - If all deterministic checks pass AND LLM says B → WARN

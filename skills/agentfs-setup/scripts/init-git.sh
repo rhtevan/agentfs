@@ -34,8 +34,9 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Agent memories (agent-managed, not for version control)
-.agents/memories/
+# Agent checkpoint files (eval-managed, transient)
+.agents/.checkpoint
+.agents/.session-marker
 EOF
     echo "  ✓ Created .gitignore"
   fi

@@ -228,4 +228,14 @@ EOF
 
 fi
 
+# ── PROJECT mode: initialize git if not already a repo ────────────────
+if [[ "$MODE" == "project" ]]; then
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  if [[ -f "$SCRIPT_DIR/init-git.sh" ]]; then
+    bash "$SCRIPT_DIR/init-git.sh" "$ROOT"
+  else
+    echo "  ⚠ init-git.sh not found at $SCRIPT_DIR — skipping git init"
+  fi
+fi
+
 echo "[agentfs-setup] .agents/ scaffold complete (mode: $MODE)."

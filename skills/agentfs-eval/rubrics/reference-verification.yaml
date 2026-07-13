@@ -1,0 +1,49 @@
+# R2: Reference Verification Rubric
+#
+# Checks whether MEMORY.md entries that reference project artifacts
+# (file paths, function names, module names) refer to things that
+# actually exist in the project.
+
+id: reference-verification
+version: 1
+guardrail_ref: "Hallucination mitigation"
+target: MEMORY.md entries containing artifact references
+assertion: "References in MEMORY.md point to real project artifacts"
+method: llm-extractor-then-script
+vote_count: 1
+
+# Step 1: LLM extracts references (extraction, not judgment)
+prompt_template: |
+  You are a reference extractor. Read the following entry from a
+  project's MEMORY.md file. List each concrete project artifact
+  reference found in the entry — one per line. Include:
+  - File paths (e.g., src/models/gnn.py)
+  - Function or method names (e.g., build_graph())
+  - Module or package names (e.g., the networkx module)
+  - API endpoints (e.g., /api/v1/users)
+  - Command names (e.g., make test)
+
+  If the entry contains NO concrete artifact references, write
+  exactly: NONE
+
+  ENTRY:
+  "{entry}"
+
+  REFERENCES:
+
+# Step 2: Script verifies each extracted reference (deterministic)
+verification_script: |
+  # For each reference extracted by the LLM:
+  #   File paths   → check: [ -e "$TARGET/$ref" ]
+  #   Functions     → check: grep -r "def $func\|function $func" "$TARGET/"
+  #   Commands      → check: which "$cmd" or command -v "$cmd"
+  #
+  # The agent runs these checks and reports:
+  #   FOUND     → reference exists
+  #   NOT FOUND → possible hallucination in MEMORY.md
+  #   UNKNOWN   → reference type not verifiable
+
+pass_condition: "All extracted references resolve to existing artifacts"
+fail_condition: "One or more references do not exist in the project"
+fail_routing:
+  default: "MEMORY.md entry may contain hallucinated references — verify and correct or remove"

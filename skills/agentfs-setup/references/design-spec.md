@@ -380,10 +380,106 @@ handles slash command installation. The only connection is the
 `<!-- SPECKIT START/END -->` markers in `AGENTS.md` that Spec-kit's
 agent-context extension uses to write the active plan reference.
 
+## Evaluation
+
+AgentFS enforces guardrails through prescriptive rules in `AGENTS.md`,
+but prescriptive rules alone are insufficient — they rely on the
+agent's compliance, which is undermined by the very AI model flaws
+(hallucination, stochasticity, sycophancy) the guardrails aim to
+control. The `agentfs-eval` skill closes this gap with assertive
+verification.
+
+### Challenges
+
+**Safe Agent Actions:**
+- **Idempotency** — skills and workflows must produce the same
+  filesystem state when re-run. Without verification, agents may
+  append duplicates, create conflicting files, or corrupt state.
+- **Resumability** — interrupted agent sessions can leave partial
+  state. Without checkpoints, there's no way to detect or recover.
+- **Auditability** — `log.md` records what the agent claims happened,
+  but nothing cross-references claims against actual filesystem
+  changes. The audit trail is only as trustworthy as the agent.
+
+**AI Model Flaws:**
+- **Hallucination** — agents may create MEMORY.md entries referencing
+  files, functions, or APIs that don't exist in the project.
+- **Stochasticity** — the same skill invoked twice may produce
+  different directory structures, different frontmatter formats,
+  or different log entry styles.
+- **Sycophancy** — agents may silently comply with user requests
+  that violate guardrails (e.g., creating `~/.agents/memories/`
+  when the user asks, despite scope rules forbidding it).
+
+### Three-Layer Verification Architecture
+
+The eval uses three progressively deeper verification layers, each
+with a fundamentally different paradigm:
+
+| Layer | Paradigm | LLM? | Assertions |
+|-------|----------|:----:|------------|
+| **L1: Structural** | Filesystem assertions | No | Link integrity, log monotonicity, index completeness, frontmatter validity, scope correctness, changelog monotonicity, orphan detection |
+| **L2: Behavioral** | Forensic evidence correlation | No | Action-log correlation, log-git timestamp alignment, scope leakage, idempotency spot-check, rule-in-memory heuristic |
+| **L3: Semantic** | Constrained LLM classification | Yes | Memory content classification, reference verification, sycophancy detection, skill accuracy |
+
+**Key design choices:**
+- Layer 3 uses closed-ended classification questions with majority
+  voting, not open-ended LLM judgment — resisting the very flaws
+  being evaluated
+- No golden test cases — eval tests real workspace content
+- Checks gracefully degrade to N/A when evidence is insufficient
+  (e.g., fresh projects with no behavioral history)
+- Git provides tamper-resistant forensic evidence for Layer 2
+  (initialized by default in PROJECT mode)
+
+### Maturity Levels
+
+| Level | Name | Requirements |
+|-------|------|--------------|
+| L0 | Absent | No `.agents/` directory |
+| L1 | Scaffolded | `.agents/` exists with basic structure |
+| L2 | Structurally Sound | All Layer 1 assertions pass |
+| L3 | Behaviorally Safe | Layer 1 + Layer 2 assertions pass |
+| L4 | Semantically Accurate | All three layers pass |
+| L5 | Self-Correcting | Agent detects and fixes its own violations |
+
+### Git as Audit Infrastructure
+
+`agentfs-setup` initializes git in the project directory (parent of
+`.agents/`) by default in PROJECT mode. The `.gitignore` tracks
+everything under `.agents/` including `memories/` — privacy is the
+user's decision at push time, not gitignore time. Git provides:
+
+- Content-level diffing for action-log correlation (L2)
+- Tamper-resistant history (log.md can be edited; git history can't)
+- Free checkpoint/revert via `git checkout`
+- Per-file change attribution across sessions
+
+### L3 → L2 Graduation
+
+Over time, patterns observed in Layer 3 semantic results can be
+codified as Layer 2 deterministic heuristics (e.g., a grep check
+for imperative language in MEMORY.md). This graduation is
+**human-driven** — the eval skill is updated manually after a human
+observes recurring patterns in eval reports. Eval never modifies
+itself.
+
+### Guardrails #10–12 (Eval-Driven)
+
+The evaluation work motivated three additional guardrails:
+
+- **#10 Idempotency** — skills must be re-runnable safely (existence
+  checks, upsert patterns, no append-without-dedup)
+- **#11 Checkpoints & Resumability** — record state before destructive
+  operations in `.agents/.checkpoint`
+- **#12 Anti-Sycophancy** — agent must flag conflicts with existing
+  guardrails, not silently comply; overrides logged with `[OVERRIDE]`
+
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-13 15:45 | v3.1 — Added Evaluation section: three-layer verification architecture, maturity levels L0–L5, git as audit infrastructure, L3→L2 graduation, guardrails #10–12; git init now default in PROJECT mode; memories/ no longer excluded from .gitignore |
 | 2026-07-10 18:07 | v3.0 — Added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`); added Installation Paths section (Full vs Minimal USER setup); PROJECT is now the primary skill workflow |
 | 2026-07-10 16:10 | v2.11 — Added Guardrail #9 (Memory Signal Routing): NL signal → route decision table with Executor column; two-layer override architecture (agent-agnostic AGENTS.md + agent-specific instructions.md); skill creation defaults to USER scope; harvest signal routes to skill-harvest or okf-bundle-harvest; priority-based runtime resolution via tool availability check |
 | 2026-07-08 13:38 | v2.10 — Memory redesign: knowledge USER-only, memories PROJECT-only, 8 guardrails, MEMORY.md="experiences", removed `.agents/knowledge/` from PROJECT tree |

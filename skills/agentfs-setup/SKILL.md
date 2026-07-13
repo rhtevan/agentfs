@@ -4,6 +4,8 @@ description: >
   Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode,
   seed AGENTS.md with scope definitions and nine structural guardrails,
   and verify setup integrity. Default mode is PROJECT.
+metadata:
+  tags: [agentfs, setup, scaffolding, guardrails]
 ---
 
 # AgentFS Setup
@@ -196,6 +198,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-13 15:44 | v3.1 — Git init now runs by default in PROJECT mode (calls init-git.sh at project root); .gitignore no longer excludes .agents/memories/ (full audit trail); updated for agentfs-eval compatibility |
 | 2026-07-10 18:07 | v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; AGENTS.md template now includes Scope Definitions; nine guardrails (was eight) |
 | 2026-07-08 13:38 | v2.10 — Recreated SKILL.md after accidental deletion; reflects memory redesign (knowledge USER-only, memories PROJECT-only, 8 guardrails, updated layer reference) |
 | 2026-07-07 16:52 | v2.9 — Added Cross-Agent Context Discovery guardrail (§7) to AGENTS.md template |

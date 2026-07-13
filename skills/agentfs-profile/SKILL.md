@@ -6,6 +6,8 @@ description: >
   and memories/MEMORY.md (project experiences). Requires agentfs-setup to
   have been run in PROJECT mode first. Skills remain shared across all
   agents at the project level.
+metadata:
+  tags: [agentfs, profiles, multi-agent, identity]
 ---
 
 # Agent FS Profile
