@@ -77,16 +77,29 @@ the default. If the user signals project scope (see table above), use
         `#`, `|`, `---`, or `>`.
       - `tags` — empty (no tags available).
 
-4. **Extract timestamp for each skill**
+4. **Validate name-directory consistency**
+   For each skill, verify that the `name` field from the YAML
+   frontmatter exactly matches the parent directory name. This is
+   required by the Agent Skills open standard
+   ([agentskills.io/specification](https://agentskills.io/specification)).
+
+   - If `name` does NOT match the directory name, emit a warning:
+     `WARNING: name mismatch — dir=[<dir>] name=[<name>]`
+   - Still include the skill in the index (using the frontmatter
+     `name`), but the warning alerts the user to fix it.
+   - If the skill has no `name` field, emit:
+     `WARNING: missing name field — dir=[<dir>]`
+
+5. **Extract timestamp for each skill**
    Use the last-modified timestamp of each `SKILL.md` file
    (`stat --format='%Y' <file>` on Linux) and format it as
    `YYYY-MM-DD HH:MM`.
 
-5. **Sort skills**
+6. **Sort skills**
    Sort the collected entries in **reverse chronological order**
    (newest first) by the date obtained in step 4.
 
-6. **Generate `index.md`**
+7. **Generate `index.md`**
    Write `<skills_root>/index.md` with the following structure:
 
    ```markdown
@@ -110,7 +123,7 @@ the default. If the user signals project scope (see table above), use
      (empty cell if no tags found).
    - `Updated` is the last-modified timestamp of the `SKILL.md` file.
 
-7. **Report**
+8. **Report**
    Print the number of skills indexed and the path to the generated file.
 
 ## Verification
@@ -122,11 +135,14 @@ the default. If the user signals project scope (see table above), use
 - [ ] A `Tags` column is present showing each skill's metadata tags (comma-separated, or empty if none).
 - [ ] An `Updated` column is present showing each skill's last-modified timestamp (`YYYY-MM-DD HH:MM`).
 - [ ] Rows are sorted newest-first (reverse chronological order).
+- [ ] **Name consistency** — No warnings about `name` vs directory mismatches.
+      If warnings were emitted, they should be reported to the user.
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-14 14:56 | v1.8 — Added name-directory consistency validation (step 4): warns when `name` field doesn't match directory name per Agent Skills open standard (agentskills.io/specification). Added verification check. Fixed step numbering. |
 | 2026-07-13 13:30 | v1.7 — Added Tags column to generated index; extract `metadata.tags` from YAML frontmatter; supports tag-based skill discovery for Guardrail #9 fallback routing |
 | 2026-07-08 22:42 | v1.6 — Clarified multi-line YAML scalar handling (description: > requires collecting indented continuation lines; sed cannot do this); improved fallback to skip table/rule/blockquote lines |
 | 2026-07-01 00:07 | v1.5 — Generated index now shows total skill count in summary line (`> N skills | Sorted by…`) |

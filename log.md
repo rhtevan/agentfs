@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-14 14:56
+
+- Updated `skills/skill-index/SKILL.md` v1.7→v1.8: added name-directory consistency validation step and verification check per Agent Skills open standard
+
 ## 2026-07-14 14:51
 
 - Fixed `skills/crc-ols/SKILL.md` `name` field: `openshift-lightspeed-crc` → `crc-ols` to match directory name per Agent Skills open standard
