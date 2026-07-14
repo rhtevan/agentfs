@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-14 14:51
+
+- Fixed `skills/crc-ols/SKILL.md` `name` field: `openshift-lightspeed-crc` → `crc-ols` to match directory name per Agent Skills open standard
+- Fixed `skills/agentfs-eval/SKILL.md` frontmatter: moved `name` and `description` to top-level (were nested under `metadata:`)
+- Updated `skills/skill-gen/SKILL.md` v1.2→v1.3: added "Name consistency" check to post-creation checklist enforcing directory-name match rule
+- Regenerated `skills/index.md` (39 skills, 0 empty names)
+
 ## 2026-07-14 13:55
 
 - Updated `skills/crc-ols/SKILL.md` v2.0→v2.1: credential security hardening — replaced `--from-literal` with file-based secret creation, added security warnings and 401 troubleshooting guidance. Validated full add-provider + switch-default workflow against live MaaS LiteLLM endpoint.

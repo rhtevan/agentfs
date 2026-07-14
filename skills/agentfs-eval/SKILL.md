@@ -1,13 +1,13 @@
 ---
+name: agentfs-eval
+description: >-
+  Assess the maturity of an AgentFS workspace through three layers of
+  verification: structural assertions (deterministic), behavioral
+  assertions (forensic), and semantic assertions (constrained LLM
+  classification). Produces a maturity report with levels L0–L5.
 metadata:
-  name: agentfs-eval
   version: "1.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
-  description: >
-    Assess the maturity of an AgentFS workspace through three layers of
-    verification: structural assertions (deterministic), behavioral
-    assertions (forensic), and semantic assertions (constrained LLM
-    classification). Produces a maturity report with levels L0–L5.
 ---
 
 # AgentFS Eval

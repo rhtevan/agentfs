@@ -212,6 +212,13 @@ set -euo pipefail
       e.g., `tags: [domain, function, artifact]`), `user-invocable`.
       A skill without tags is invisible to tag-based discovery
       (Guardrail #6).
+- [ ] **Name consistency** — The `name` field in the YAML frontmatter
+      MUST exactly match the skill's parent directory name. This is
+      required by the Agent Skills open standard
+      ([agentskills.io/specification](https://agentskills.io/specification)).
+      For example, a skill in `crc-ols/SKILL.md` must have `name: crc-ols`.
+      The name must be lowercase alphanumeric + hyphens only, no
+      consecutive hyphens, and must not start or end with a hyphen.
 - [ ] **Changelog** — Changelog table exists with at least a v1.0 entry
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
@@ -317,6 +324,7 @@ For both modes:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-14 14:51 | v1.3 — Added "Name consistency" check to post-creation checklist: `name` field must match directory name per Agent Skills open standard (agentskills.io/specification) |
 | 2026-07-13 16:11 | v1.2 — Added "Skill Design Principles" section: non-interactive scripts, agent-as-orchestrator pattern, business process modeling |
 | 2026-07-13 11:19 | v1.1 — Renamed from `skill-creator` to `skill-gen` for naming consistency with `okf-bundle-gen`, `bash-completion-gen`; updated all internal path references |
 | 2026-07-10 17:05 | v1.0 — Initial proxy skill: simple + advanced modes, upstream Anthropic skill-creator integration, AgentFS post-creation checklist, agent compatibility notes |
