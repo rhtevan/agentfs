@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-14 13:55
+
+- Updated `skills/crc-ols/SKILL.md` v2.0→v2.1: credential security hardening — replaced `--from-literal` with file-based secret creation, added security warnings and 401 troubleshooting guidance. Validated full add-provider + switch-default workflow against live MaaS LiteLLM endpoint.
+- Regenerated `skills/index.md` (39 skills)
+
 ## 2026-07-13 17:06
 
 - Updated `skills/goose-setup/SKILL.md` v1.3→v1.4: strengthened Git Push Safety from bullet list to 5-step procedural checklist
