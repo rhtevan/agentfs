@@ -2,7 +2,7 @@
 name: agentfs-setup
 description: >
   Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode,
-  seed AGENTS.md with scope definitions and thirteen structural guardrails,
+  seed AGENTS.md with scope definitions and nine structural guardrails,
   and verify setup integrity. Default mode is PROJECT.
 metadata:
   tags: [agentfs, setup, scaffolding, guardrails]
@@ -117,8 +117,8 @@ Creates:
 - `.agents/memories/` — default agent's experiences and user model
 - `.agents/SOUL.md` — default agent identity
 - `.agents/index.md`, `log.md`
-- `AGENTS.md` — workspace entry point with scope definitions and nine
-  structural guardrails
+- `AGENTS.md` — workspace entry point with scope definitions, progressive
+  loading (SOUL.md, knowledge index), and nine structural guardrails
 
 ### USER mode (minimal install only)
 
@@ -154,24 +154,22 @@ creates missing ones.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with thirteen guardrails:
+The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails
+(reordered by usage frequency):
 
-1. **Link Integrity** — no broken, obsolete, or missing links
-2. **Log Currency** — append-only `log.md` in reverse chronological order
-3. **Content File Currency** — changelogs in reverse chronological order
-4. **Progressive Disclosure** — browse `index.md` before opening files
-5. **Skill Placement** — default to USER, PROJECT only when explicit
-6. **Index Currency** — `skills/index.md` and `profiles/index.md` stay current
-7. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
-8. **Memory Scope** — memories are PROJECT-only; NL-signal routing for
-   experiences vs rules vs preferences; graduation path to OKF
-9. **Memory Signal Routing** — decision table mapping NL signals to
-   memory actions; agent-specific overrides take priority
-10. **Idempotency** — every skill and workflow must be idempotent
-11. **Checkpoints & Resumability** — checkpoint before destructive ops
-12. **Anti-Sycophancy** — refuse conflicting requests, log overrides
-13. **Git Push Safety** — mandatory 5-step preflight before any
-    `git push`: stop → scan → present report → wait for approval → push
+1. **Progressive Disclosure** — browse `index.md` before opening files
+2. **Memory Scope & Signal Routing** — memories are PROJECT-only;
+   decision table mapping NL signals to memory actions; graduation
+   path to OKF; agent-specific overrides take priority
+3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
+4. **Skill Placement** — default to USER, PROJECT only when explicit
+5. **Filesystem Integrity** — link integrity, log currency, content
+   file currency, and index currency in a single guardrail
+6. **Idempotency** — every skill and workflow must be idempotent
+7. **Anti-Sycophancy** — refuse conflicting requests, log overrides
+8. **Checkpoints & Resumability** — checkpoint before destructive ops
+9. **Git Push Safety** — mandatory 5-step preflight before any
+   `git push`: stop → scan → present report → wait for approval → push
 
 ## Layer Reference
 
@@ -203,6 +201,8 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with thirteen guardrails:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-14 19:26 | v3.4 — AGENTS.md template compacted 277→207 lines (25%): removed Resolves To column and Rule of Thumb blockquote from Scope Definitions; dropped Executor/Scope columns from routing table; collapsed Skill Resolution Chain; merged Content File Currency into Log & Changelog Currency; replaced Git Push Safety verbose template with compact 5-step list; updated sed insertion block for Scope Definitions |
+| 2026-07-14 17:49 | v3.3 — AGENTS.md template consolidated from 13 to 9 guardrails (reordered by usage frequency): merged Memory Scope + Signal Routing into #2, merged Link/Log/Changelog/Index integrity into #5 (Filesystem Integrity); Quick Orientation now includes SOUL.md and knowledge index for agent-agnostic progressive loading; removed redundant skill-placement and log-scope restatements |
 | 2026-07-14 15:22 | v3.2 — AGENTS.md template now includes thirteen guardrails (was nine): added #10 Idempotency, #11 Checkpoints & Resumability, #12 Anti-Sycophancy, #13 Git Push Safety (mandatory 5-step preflight before any git push) |
 | 2026-07-13 15:44 | v3.1 — Git init now runs by default in PROJECT mode (calls init-git.sh at project root); .gitignore no longer excludes .agents/memories/ (full audit trail); updated for agentfs-eval compatibility |
 | 2026-07-10 18:07 | v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; AGENTS.md template now includes Scope Definitions; nine guardrails (was eight) |

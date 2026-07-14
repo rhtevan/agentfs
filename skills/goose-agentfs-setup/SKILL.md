@@ -193,25 +193,25 @@ preserving other content.
 When multiple memory systems are active (Goose Memory, Chat Recall, Cognee,
 AgentFS), natural-language signals like "remember this" create ambiguity.
 This skill implements **Layer 2** of the two-layer decision table architecture
-defined in AGENTS.md Guardrail #9.
+defined in AGENTS.md Guardrail #2.
 
-The memory routing override installs a **static, priority-based decision table**
-in Goose's persistent instructions (`~/.config/goose/instructions.md`) that:
+The memory routing override installs a **compact stub** in Goose's persistent
+instructions (`~/.config/goose/instructions.md`) that:
 
-- Maps natural-language signals to specific Goose extension tools with
-  explicit priorities: **Cognee (1) > Memory (2) > Chat Recall (3)**
-- Resolves dynamically at runtime — the LLM checks whether each
-  referenced tool exists in the current session's available tools list.
-  Tool existence = extension enabled (no config file inspection needed).
-- Falls through to AGENTS.md Guardrail #9 when no Goose tool matches
-- When Cognee is enabled, it subsumes Memory's role — effectively
-  rendering Memory redundant for storage signals
-- Routes to the correct `MEMORY.md` on AGENTS.md fallthrough —
-  default agent's (`./.agents/memories/MEMORY.md`) or the active
-  profile's (`./.agents/profiles/<name>/memories/MEMORY.md`)
-- Includes ambiguity resolution (ask user when "forget" is unclear)
-  and routing announcement (state which system and why before executing)
-- Documents the session bridge pattern for legitimate cross-session use
+- Lists the Goose memory tool names to detect at runtime
+- When any memory tool is detected, directs the agent to load the full
+  routing table from `references/memory-routing.md` (on-demand)
+- When no Goose memory tool exists, falls through directly to AGENTS.md
+  Guardrail #2 with MEMORY.md defaults
+
+The full routing table in `references/memory-routing.md` contains:
+
+- Priority-based decision table: **Cognee (1) > Memory (2) > Chat Recall (3)**
+- Runtime resolution rules (tool existence = extension enabled)
+- MEMORY.md fallthrough defaults (default agent vs named profile)
+- Ambiguity resolution (ask user when "forget" is unclear)
+- Routing announcement (state which system and why before executing)
+- Session bridge pattern for legitimate cross-session use
 
 ### Check Memory Override Status
 
@@ -311,6 +311,7 @@ read and update `~/.config/goose/config.yaml`. It:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-14 19:17 | v1.4 — Moved full memory routing table to on-demand `references/memory-routing.md`; instructions.md stub now lists tool names to detect and loads full table only when memory tools are present; reduces auto-loaded context by ~57 lines per turn |
 | 2026-07-10 16:14 | v1.3 — Replaced flat signal→action table with priority-based decision table supporting Cognee (pri 1), Memory (pri 2), Chat Recall (pri 3); added runtime resolution rule (check tool existence in available tools list); static table adapts to dynamic extension enable/disable; added ambiguity resolution and routing announcement rules; aligns with AGENTS.md Guardrail #9 two-layer architecture |
 | 2026-07-09 01:42 | v1.2 — Added global goosehints for knowledge discovery: --hints-check, --hints-install, --hints-remove; progressive knowledge loading via plain reference to ~/.agents/knowledge/index.md |
 | 2026-07-09 00:52 | v1.1 — Added memory collision avoidance: --memory-check, --memory-install, --memory-remove; routing override for Goose memory extension trigger words; profile-scoped MEMORY.md support for subagents |

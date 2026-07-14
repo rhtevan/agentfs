@@ -39,9 +39,9 @@ Create `~/.config/goose/instructions.md` with your global instructions:
 ```markdown
 ## Path Hygiene
 
-- **Never use explicit home directory paths** like `/home/<username>/` in scripts, configurations, or output.
+- **Never use explicit home directory paths** like `/home/<user>/` in scripts, configurations, or output.
 - Always use `~` or `$HOME` instead.
-- When displaying paths to the user, prefer `~/...` over `/home/<username>/...`.
+- When displaying paths to the user, prefer `~/...` over `/home/<user>/...`.
 
 ## Git Push Safety
 

@@ -24,7 +24,7 @@ Harvest procedural knowledge from project-scoped `MEMORY.md` files and
 distill them into reusable skills under `~/.agents/skills/`.
 
 This skill completes the **graduation path** defined in AgentFS
-Guardrail #8, targeting **procedural memory** — the counterpart to
+Guardrail #2 (Memory Scope & Signal Routing), targeting **procedural memory** — the counterpart to
 `okf-bundle-harvest` which handles declarative/semantic knowledge.
 
 > When episodic memories accumulate into repeatable action sequences,
@@ -490,7 +490,7 @@ After harvest:
    in the SKILL.md.
 
 5. **Hardcoded paths** — Scripts must use `$HOME`, `~`, or parameters.
-   Never hardcode `/home/<username>/` or machine-specific paths.
+   Never hardcode `/home/<user>/` or machine-specific paths.
 
 6. **System-specific procedures** — If a workflow only works on one
    machine (e.g., uses a custom binary), either abstract it with

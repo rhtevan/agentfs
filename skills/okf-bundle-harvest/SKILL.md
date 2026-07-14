@@ -7,7 +7,7 @@ description: >
   candidates (generalizable patterns that transcend a single project),
   creates or merges concept documents, and removes graduated entries from
   source MEMORY.md files. Implements the graduation path defined in
-  AgentFS Guardrail #8. Fully compliant with Open Knowledge Format v0.1.
+  AgentFS Guardrail #2 (Memory Scope & Signal Routing). Fully compliant with Open Knowledge Format v0.1.
 argument-hint: "Optionally specify project paths: 'harvest from ~/projects/foo and ~/projects/bar'"
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
@@ -23,7 +23,7 @@ disable-model-invocation: false
 Harvest generalizable concepts from project-scoped `MEMORY.md` files and
 distill them into OKF-compliant knowledge bundles under `~/.agents/knowledge/`.
 
-This skill implements the **graduation path** defined in AgentFS Guardrail #8:
+This skill implements the **graduation path** defined in AgentFS Guardrail #2 (Memory Scope & Signal Routing):
 
 > When an observation in `MEMORY.md` matures into cross-project knowledge
 > worth preserving, graduate it to an OKF knowledge bundle under

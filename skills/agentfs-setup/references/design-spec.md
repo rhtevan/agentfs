@@ -239,27 +239,20 @@ Entry point for coding agents. Contains operational guardrails, build/test
 commands, code style. Points to `.agents/`. Carries `<!-- SPECKIT START/END -->`
 markers for Spec-kit's agent-context extension to manage automatically.
 
-Defines nine structural guardrails that all agents MUST follow:
-1. **Link Integrity** — no broken, obsolete, or missing links
-2. **Log Currency** — append-only `log.md` in reverse chronological order
-3. **Content File Currency** — changelogs in reverse chronological order
-4. **Progressive Disclosure** — browse `index.md` before opening files
-5. **Skill Placement** — default to USER, PROJECT only when explicit
-6. **Index Currency** — `skills/index.md` and `profiles/index.md` MUST
-   stay current whenever skills or profiles are created, renamed, moved,
-   or deleted; entries MUST include an ISO 8601 timestamp
-   (`YYYY-MM-DD HH:MM`) and be sorted newest-first (reverse
-   chronological order)
-7. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
-8. **Memory Scope** — memories are PROJECT-only; NL-signal routing;
-   graduation path to OKF
-9. **Memory Signal Routing** — decision table mapping NL signals to
-   memory actions (file edits, skills, knowledge bundles); includes
-   Executor column clarifying LLM-direct vs skill-delegated actions;
-   agent-specific override tables (e.g., agent persistent instructions)
-   take priority when their tools are available; skill creation
-   defaults to USER scope; harvest scans current project MEMORY.md
-   files and routes to `skill-harvest` or `okf-bundle-harvest`
+Defines nine structural guardrails (reordered by usage frequency):
+1. **Progressive Disclosure** — browse `index.md` before opening files
+2. **Memory Scope & Signal Routing** — memories are PROJECT-only;
+   decision table mapping NL signals to memory actions; graduation
+   path to OKF; agent-specific overrides take priority
+3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
+4. **Skill Placement** — default to USER, PROJECT only when explicit
+5. **Filesystem Integrity** — link integrity, log currency, content
+   file currency, and index currency in a single guardrail
+6. **Idempotency** — every skill and workflow must be idempotent
+7. **Anti-Sycophancy** — refuse conflicting requests, log overrides
+8. **Checkpoints & Resumability** — checkpoint before destructive ops
+9. **Git Push Safety** — mandatory 5-step preflight before any
+   `git push`: stop → scan → present report → wait for approval → push
 
 Includes an **Agent Profiles** table — an agent-agnostic registry of all
 profiles in the project:
@@ -464,21 +457,24 @@ for imperative language in MEMORY.md). This graduation is
 observes recurring patterns in eval reports. Eval never modifies
 itself.
 
-### Guardrails #10–12 (Eval-Driven)
+### Eval-Driven Guardrails
 
-The evaluation work motivated three additional guardrails:
+The evaluation work motivated three additional guardrails (now numbered
+#6 Idempotency, #7 Anti-Sycophancy, #8 Checkpoints & Resumability
+after the v3.3 consolidation from 13 → 9 guardrails):
 
-- **#10 Idempotency** — skills must be re-runnable safely (existence
+- **Idempotency** — skills must be re-runnable safely (existence
   checks, upsert patterns, no append-without-dedup)
-- **#11 Checkpoints & Resumability** — record state before destructive
+- **Checkpoints & Resumability** — record state before destructive
   operations in `.agents/.checkpoint`
-- **#12 Anti-Sycophancy** — agent must flag conflicts with existing
+- **Anti-Sycophancy** — agent must flag conflicts with existing
   guardrails, not silently comply; overrides logged with `[OVERRIDE]`
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-14 17:49 | v3.3 — Consolidated guardrails from 13 to 9 (reordered by usage frequency); merged Memory Scope + Signal Routing; merged Link/Log/Changelog/Index into Filesystem Integrity; Quick Orientation now includes SOUL.md and knowledge index; updated eval-driven guardrails section numbering |
 | 2026-07-13 15:45 | v3.1 — Added Evaluation section: three-layer verification architecture, maturity levels L0–L5, git as audit infrastructure, L3→L2 graduation, guardrails #10–12; git init now default in PROJECT mode; memories/ no longer excluded from .gitignore |
 | 2026-07-10 18:07 | v3.0 — Added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`); added Installation Paths section (Full vs Minimal USER setup); PROJECT is now the primary skill workflow |
 | 2026-07-10 16:10 | v2.11 — Added Guardrail #9 (Memory Signal Routing): NL signal → route decision table with Executor column; two-layer override architecture (agent-agnostic AGENTS.md + agent-specific instructions.md); skill creation defaults to USER scope; harvest signal routes to skill-harvest or okf-bundle-harvest; priority-based runtime resolution via tool availability check |

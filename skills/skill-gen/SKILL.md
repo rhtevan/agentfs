@@ -92,7 +92,7 @@ script execution. A process skill defines:
   (approvals, reference numbers, third-party data)
 
 This preserves all guardrails — scripts stay idempotent
-(Guardrail #10), the SKILL.md *is* the process documentation,
+(Guardrail #6), the SKILL.md *is* the process documentation,
 each script is independently testable, and the same scripts can
 be reused by other skills or automated jobs with pre-known inputs.
 
@@ -211,7 +211,7 @@ set -euo pipefail
       `name`, `description`, `metadata.tags` (bracket notation,
       e.g., `tags: [domain, function, artifact]`), `user-invocable`.
       A skill without tags is invisible to tag-based discovery
-      (Guardrail #6).
+      (Guardrail #5, Index Currency).
 - [ ] **Name consistency** — The `name` field in the YAML frontmatter
       MUST exactly match the skill's parent directory name. This is
       required by the Agent Skills open standard

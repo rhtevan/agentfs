@@ -2,6 +2,43 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-14 19:26
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh` — compacted AGENTS.md template from 277→207 lines (25%): removed Resolves To column, dropped Executor/Scope columns from routing table, collapsed Skill Resolution Chain, merged Content File/Log Currency, replaced verbose Git Push Safety with 5-step list; updated sed insertion block
+- Updated `skills/agentfs-setup/SKILL.md` v3.3→v3.4 — documented compaction
+- Regenerated `skills/index.md` — 40 skills
+
+## 2026-07-14 19:18
+
+- Created `skills/goose-agentfs-setup/references/memory-routing.md` — full Goose memory routing table moved to on-demand reference file (74 lines)
+- Updated `skills/goose-agentfs-setup/scripts/setup.sh` — replaced 76-line inline MEMORY_INSTRUCTIONS with 19-line compact stub that directs agent to load `references/memory-routing.md` on-demand
+- Updated `skills/goose-agentfs-setup/SKILL.md` v1.3→v1.4 — documented on-demand memory routing architecture
+- Updated `~/.config/goose/instructions.md` — 89→32 lines; replaced full memory routing table with compact stub referencing on-demand file
+
+## 2026-07-14 18:35
+
+- Updated `skills/agentfs-ctx-chk/SKILL.md` v1.0→v1.1: added Directionality Rule (USER scope is canonical, PROJECT is fix target); updated Step 7 root cause table with Fix Direction column
+- Updated `skills/agentfs-ctx-chk/references/checklist.md` v1.1: added Directionality Rule section before Phase 2; updated Phase 7 Decision Table
+
+## 2026-07-14 18:14
+- Created `skills/agentfs-ctx-chk/SKILL.md` v1.0 — context engineering audit skill: 8-phase methodology (inventory, redundancy, ambiguity, conflicts, effectiveness, cross-references, root causes, report+fix)
+- Created `skills/agentfs-ctx-chk/references/checklist.md` — detailed audit checklist with patterns from first real audit
+- Updated `skills/goose-setup/SKILL.md`: `<username>`→`<user>` (2 occurrences)
+- Updated `skills/skill-harvest/SKILL.md`: `<username>`→`<user>` (1 occurrence)
+- Regenerated `skills/index.md` — 40 skills indexed
+
+## 2026-07-14 17:49
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: AGENTS.md template consolidated from 13 to 9 guardrails; Quick Orientation now includes SOUL.md and knowledge index rows for agent-agnostic progressive loading
+- Updated `skills/agentfs-setup/SKILL.md` v3.2→v3.3: guardrail list and description updated to 9 guardrails
+- Updated `skills/agentfs-setup/references/design-spec.md`: guardrail list updated, eval-driven guardrails section renumbered
+- Updated `skills/goose-agentfs-setup/SKILL.md`: Guardrail #9→#2 cross-references
+- Updated `skills/goose-agentfs-setup/scripts/setup.sh`: Guardrail #9→#2 cross-references
+- Updated `skills/okf-bundle-harvest/SKILL.md`: Guardrail #8→#2 cross-references
+- Updated `skills/skill-gen/SKILL.md`: Guardrail #10→#6, #6→#5 cross-references
+- Updated `skills/skill-harvest/SKILL.md`: Guardrail #8→#2 cross-references; `<username>`→`<user>` placeholder
+- Updated `skills/goose-setup/SKILL.md`: `<username>`→`<user>` placeholder (2 occurrences)
+- Removed guardrails section from `index.md` — replaced with pointer to project-level `AGENTS.md`
+
 ## 2026-07-14 15:48
 
 - Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added entry relevancy rule to Guardrail #2 (Log Currency) in template
