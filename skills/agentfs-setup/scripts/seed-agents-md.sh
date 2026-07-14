@@ -151,11 +151,29 @@ MUST follow them.
   - **PROJECT** `./.agents/log.md` — when PROJECT-scope files change
   - **Sub-bundles** `.agents/knowledge/<bundle>/log.md` — when concept
     files within a knowledge bundle change
-- **Consistent format:** All `log.md` files MUST use:
-  - Title: `# Directory Update Log`
-  - Comment: `<!-- Append-only. Newest entries at top. -->`
-  - Headings: `## YYYY-MM-DD HH:MM`
-  - Entries: `- ` (dash prefix, plain text or inline code)
+- **Entry relevancy.** Each entry in a \`log.md\` MUST only describe
+  changes to files **within that log's scope**:
+  - \`~/.agents/log.md\` (USER) — only changes to files under
+    \`~/.agents/\` or user-level config (e.g., \`~/.config/\`)
+  - \`./.agents/log.md\` (PROJECT) — only changes to files under
+    \`./.agents/\` or project root (e.g., \`./AGENTS.md\`)
+  - Sub-bundle \`log.md\` — only changes within that bundle
+
+  When a single action affects **both** scopes (e.g., harvesting
+  project memories into a USER skill), log the relevant portion
+  in each scope's \`log.md\`:
+  - USER log: "Created skill \`crc-ctl\` v1.0"
+  - PROJECT log: "Graduated 3 MEMORY.md entries; MEMORY.md pruned"
+
+  Do NOT cross-reference the other scope's files in a log entry.
+  Noting the *source* or *reason* is acceptable (e.g., "from
+  goofing-around project"), but the entry's primary subject must
+  be a file within the log's own scope.
+- **Consistent format:** All \`log.md\` files MUST use:
+  - Title: \`# Directory Update Log\`
+  - Comment: \`<!-- Append-only. Newest entries at top. -->\`
+  - Headings: \`## YYYY-MM-DD HH:MM\`
+  - Entries: \`- \` (dash prefix, plain text or inline code)
 
 ### 3. Content File Currency (Changelog)
 
@@ -321,6 +339,96 @@ available in the current session.
   `load_skill` first and follow its instructions. "LLM intrinsic
   capability or agent Skills extension" means use whatever skill
   creation mechanism the agent natively supports.
+
+### 10. Idempotency
+
+Every skill and automated workflow MUST be idempotent — running it
+twice with the same inputs MUST produce the same filesystem state.
+Skills MUST use existence checks (`[ -f ... ]`, `[ -d ... ]`),
+upsert patterns (create-or-update), and avoid append-without-dedup.
+When a skill modifies a file, it MUST check whether the modification
+already exists before applying it.
+
+### 11. Checkpoints & Resumability
+
+Before any destructive or multi-step operation (file deletion, bulk
+rename, multi-file edit), the agent MUST create a checkpoint by
+recording the list of affected files and their content hashes in
+`.agents/.checkpoint`. After successful completion, the checkpoint
+is cleared. If a session starts and a non-empty `.checkpoint` exists,
+the agent MUST report it and offer to resume or revert.
+
+### 12. Anti-Sycophancy
+
+When a user request conflicts with an existing guardrail in `AGENTS.md`,
+the agent MUST NOT silently comply. Instead it MUST:
+1. Quote the conflicting guardrail
+2. Explain the conflict
+3. Ask for explicit confirmation before proceeding
+4. If confirmed, log the override in `log.md` with the tag `[OVERRIDE]`
+
+The agent MUST NOT add content to `MEMORY.md` that reads as a rule or
+guardrail (contains "always", "never", "must", "enforce") — such
+content belongs in `AGENTS.md` and requires human approval.
+
+### 13. Git Push Safety
+
+Before executing any `git push`, the agent MUST follow these steps
+**in order**. No step may be skipped, even if the user says "go ahead",
+"push it", or "yes". The user's approval authorizes the *intent* to
+push, not the push itself. The preflight MUST complete and be
+explicitly approved before pushing.
+
+#### Step 1: STOP
+
+Do NOT execute `git push`. Proceed to Step 2.
+
+#### Step 2: Scan
+
+Run `git diff` (for staged changes) or `git diff HEAD~N HEAD` (for
+already-committed changes) and scan the output for:
+
+- Secrets, credentials, API keys, tokens, private keys
+- Hardcoded user paths (`/home/<user>/`, `/Users/<user>/`)
+- PII (personal emails, phone numbers, addresses)
+- Sensitive data (internal IPs, hostnames, URLs containing
+  authentication parameters)
+
+#### Step 3: Present the Report
+
+Show the user a **Pre-Push Security Report** in this exact format:
+
+```
+### Pre-Push Security Report
+
+| Check                | Result                       |
+|----------------------|------------------------------|
+| Secrets / API keys   | ✅ Clean — or ⚠️ FOUND: ... |
+| Hardcoded user paths | ✅ Clean — or ⚠️ FOUND: ... |
+| PII                  | ✅ Clean — or ⚠️ FOUND: ... |
+| Sensitive URLs/IPs   | ✅ Clean — or ⚠️ FOUND: ... |
+
+**Verdict: ✅ CLEAN** (or **⚠️ ISSUES FOUND**)
+
+Proceed with push? (yes/no)
+```
+
+#### Step 4: WAIT
+
+Do NOT proceed until the user explicitly responds to the report.
+No assumptions. No auto-proceeding. No combining Step 3 and Step 5
+into a single action. Full stop here.
+
+#### Step 5: Push
+
+Only after receiving explicit approval in response to the report,
+execute `git push`.
+
+#### Override Logging
+
+If the user acknowledges issues from the report but still requests
+the push proceed, log the override in `log.md` with the tag
+`[OVERRIDE]` per Guardrail #12 (Anti-Sycophancy).
 
 ## Agent Profiles
 

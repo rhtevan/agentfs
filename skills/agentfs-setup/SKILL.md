@@ -2,7 +2,7 @@
 name: agentfs-setup
 description: >
   Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode,
-  seed AGENTS.md with scope definitions and nine structural guardrails,
+  seed AGENTS.md with scope definitions and thirteen structural guardrails,
   and verify setup integrity. Default mode is PROJECT.
 metadata:
   tags: [agentfs, setup, scaffolding, guardrails]
@@ -154,7 +154,7 @@ creates missing ones.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails:
+The `seed-agents-md.sh` script creates `AGENTS.md` with thirteen guardrails:
 
 1. **Link Integrity** — no broken, obsolete, or missing links
 2. **Log Currency** — append-only `log.md` in reverse chronological order
@@ -167,6 +167,11 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails:
    experiences vs rules vs preferences; graduation path to OKF
 9. **Memory Signal Routing** — decision table mapping NL signals to
    memory actions; agent-specific overrides take priority
+10. **Idempotency** — every skill and workflow must be idempotent
+11. **Checkpoints & Resumability** — checkpoint before destructive ops
+12. **Anti-Sycophancy** — refuse conflicting requests, log overrides
+13. **Git Push Safety** — mandatory 5-step preflight before any
+    `git push`: stop → scan → present report → wait for approval → push
 
 ## Layer Reference
 
@@ -198,6 +203,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-14 15:22 | v3.2 — AGENTS.md template now includes thirteen guardrails (was nine): added #10 Idempotency, #11 Checkpoints & Resumability, #12 Anti-Sycophancy, #13 Git Push Safety (mandatory 5-step preflight before any git push) |
 | 2026-07-13 15:44 | v3.1 — Git init now runs by default in PROJECT mode (calls init-git.sh at project root); .gitignore no longer excludes .agents/memories/ (full audit trail); updated for agentfs-eval compatibility |
 | 2026-07-10 18:07 | v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; AGENTS.md template now includes Scope Definitions; nine guardrails (was eight) |
 | 2026-07-08 13:38 | v2.10 — Recreated SKILL.md after accidental deletion; reflects memory redesign (knowledge USER-only, memories PROJECT-only, 8 guardrails, updated layer reference) |

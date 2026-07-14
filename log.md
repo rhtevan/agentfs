@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-14 15:48
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added entry relevancy rule to Guardrail #2 (Log Currency) in template
+- Removed 4 cross-scope log entries that described PROJECT-scope changes (project AGENTS.md, project MEMORY.md)
+
+## 2026-07-14 15:22
+
+- Updated `skills/agentfs-setup/SKILL.md` v3.1→v3.2: AGENTS.md template now includes thirteen guardrails (added #10–#13)
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added guardrails #10–#13 to heredoc template
+
 ## 2026-07-14 14:56
 
 - Updated `skills/skill-index/SKILL.md` v1.7→v1.8: added name-directory consistency validation step and verification check per Agent Skills open standard
@@ -69,7 +79,7 @@
 
 - `agentfs-setup` v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`) to SKILL.md, AGENTS.md template, design-spec, and README; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; nine guardrails (was eight); verify-setup.sh now checks for Scope Definitions in AGENTS.md; all user-facing instructions now say "ask your agent to run the skill" instead of directing users to execute bash scripts; Path B (minimal install) references the skill with USER scope hint; README reordered: Scope Definitions → Getting Started → Directory Structure → Modes → Guardrails → Memory Architecture
 - Updated `README.md` — Scope Definitions and Getting Started moved to top; all instructions agent-centric (not bash-centric); step 3 needs no scope hint since PROJECT is default
-- Updated this project's `AGENTS.md` — added Scope Definitions section between Quick Orientation and Structural Guardrails
+
 
 ## 2026-07-10 17:05
 
@@ -182,7 +192,7 @@
 
 - Modified `okf-bundle-gen/SKILL.md`: v3.0 — bundle root changed to `~/.agents/knowledge/` (user-level), removed project-local staging, SOUL.md links use absolute paths, memory scan PROJECT-only
 - Modified `okf-bundle-merge/SKILL.md`: marked **OBSOLETE** — no longer needed since okf-bundle-gen writes directly to user-level knowledge
-- Updated live MEMORY.md headers to "Project Experiences" (default + verifier + watchdog profiles)
+
 ## 2026-07-08 13:38
 
 - Recreated `agentfs-setup/SKILL.md` — was missing; reflects v2.10 with memory redesign (8 guardrails, knowledge USER-only, memories PROJECT-only)
@@ -192,7 +202,7 @@
 - Modified `agentfs-setup/references/design-spec.md`: removed knowledge from PROJECT tree, 8 guardrails, updated layer descriptions
 - Modified `agentfs-profile/SKILL.md`: v1.8 — updated description, removed knowledge references
 - Modified `agentfs-profile/scripts/create-profile.sh`: MEMORY.md template updated to "Project Experiences" with scope/NL-signal guidance
-- Added guardrail §8 (Memory Scope) to live project AGENTS.md
+
 ## 2026-07-08 10:11
 
 * **Memory**: Added OKF non-concept type guideline to user-level MEMORY.md — distinguishes concept bundles from reference dataset bundles, documents valid use of Dataset/Script/Ground Truth types for companion data metadata
@@ -216,7 +226,7 @@
 
 - Updated `skills/agentfs-setup/SKILL.md` to v2.8 — added guardrails §6 bullets: mandatory `skill-index` invocation, scope-aware `log.md` updates; clarified skill-index requirement in Maintaining the Layers section
 - Updated `skills/agentfs-setup/scripts/seed-agents-md.sh` AGENTS.md template with new §6 guardrail bullets
-- Updated live project `AGENTS.md` with same §6 guardrail additions
+
 - Regenerated `skills/index.md` via `skill-index` (31 skills)
 ## 2026-07-07 15:58
 
