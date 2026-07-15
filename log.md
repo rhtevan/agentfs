@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-15 13:57
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added Post-Edit Completeness sub-section to Guardrail #5 in AGENTS.md seed template
+- Updated `skills/goose-desktop-env-fix/SKILL.md`: restored rendered Changelog section at bottom of file (was dropped during v1.2 rewrite)
+
+## 2026-07-15 13:00
+
+- Updated `skills/goose-desktop-env-fix/SKILL.md` v1.1→v1.2: changed devbox shellenv guard from exported `__DEVBOX_SHELLENV_LOADED` to shell-local `__devbox_shellenv_done` — fixes `refresh-global` alias missing in `devbox shell` sessions while preserving fork-bomb protection
+
 ## 2026-07-14 19:26
 
 - Updated `skills/agentfs-setup/scripts/seed-agents-md.sh` — compacted AGENTS.md template from 277→207 lines (25%): removed Resolves To column, dropped Executor/Scope columns from routing table, collapsed Skill Resolution Chain, merged Content File/Log Currency, replaced verbose Git Push Safety with 5-step list; updated sed insertion block

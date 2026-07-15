@@ -232,6 +232,18 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
   is invisible to tag-based discovery.
 - Entries MUST include ISO 8601 timestamps and be sorted newest-first.
 
+#### Post-Edit Completeness
+
+- **Prefer incremental edits over full rewrites** of files under
+  \`.agents/\` — full rewrites risk dropping sections (e.g., rendered
+  Changelog tables, verification checklists).
+- **After modifying any file under \`.agents/\`** (either scope), verify:
+  1. All existing sections in the file are preserved (especially
+     rendered Changelog sections — never drop during rewrites).
+  2. Corresponding \`index.md\` is regenerated if applicable.
+  3. Changes are logged in the appropriate \`log.md\` (both scopes
+     if both are affected by a single action).
+
 ### 6. Idempotency
 
 Every skill and automated workflow MUST be idempotent — running it

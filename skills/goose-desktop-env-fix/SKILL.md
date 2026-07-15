@@ -1,9 +1,26 @@
 ---
 name: goose-desktop-env-fix
 description: "Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.)"
-version: 1.1
+version: 1.2
 metadata:
     tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
+    changelog:
+      - version: "1.2"
+        date: "2026-07-15"
+        changes:
+          - "Changed devbox shellenv guard from exported `__DEVBOX_SHELLENV_LOADED` to shell-local `__devbox_shellenv_done`"
+          - "Fixes `refresh-global` alias missing inside `devbox shell` sessions"
+          - "Shell-local variable prevents re-eval in same process but does not propagate to child shells"
+      - version: "1.1"
+        date: "2026-07-08"
+        changes:
+          - "Added devbox fork bomb root cause analysis, trigger chain, symptoms, emergency cleanup"
+          - "Added `__DEVBOX_SHELLENV_LOADED` recursion guard as critical fix"
+          - "Updated `.bashrc` example, verification checklist, and tags"
+      - version: "1.0"
+        date: "2026-07-08"
+        changes:
+          - "Initial skill capturing the full Goose Desktop environment fix"
 ---
 
 # Goose Desktop Environment Fix
@@ -19,7 +36,7 @@ shells (`bash -c "<command>"`). Bash only sources `~/.bashrc` for
 **interactive** shells, so all user environment setup is missing:
 
 | Shell Type                  | Files Sourced               |
-|-----------------------------|-----------------------------|
+|-----------------------------|-------------------------------|
 | Login + Interactive         | `~/.bash_profile` → `~/.bashrc` |
 | Interactive (non-login)     | `~/.bashrc`                 |
 | Non-interactive, non-login  | **Only `$BASH_ENV`** (if set) |
@@ -84,26 +101,46 @@ If the fork bomb is already running:
 pkill -f 'devbox global shellenv'
 ```
 
-### Prevention
+### Prevention: Shell-Local Guard
 
 Add a recursion guard in `~/.bashrc` around the `devbox global shellenv`
 call. This is the **critical fix** — without it, the fork bomb will
-recur on every Goose Desktop restart:
+recur on every Goose Desktop restart.
+
+**v1.2 pattern** — uses a **shell-local** (non-exported) variable:
 
 ```bash
-# Guard against recursive devbox shellenv (prevents fork bomb in Goose Desktop)
-if [ -z "$__DEVBOX_SHELLENV_LOADED" ]; then
-  export __DEVBOX_SHELLENV_LOADED=1
+# Shell-local guard: prevents re-eval within the same shell process, but does NOT
+# propagate to child shells (e.g. devbox shell), so they get a fresh eval and the
+# refresh-global alias is properly created. Safe against fork bombs because
+# devbox global shellenv just prints text — it doesn't spawn a shell.
+if [ -z "$__devbox_shellenv_done" ]; then
+  __devbox_shellenv_done=1
   eval "$(devbox global shellenv 2>/dev/null)"
 fi
 ```
+
+**Why shell-local, not exported?**
+- An exported guard (like the old `export __DEVBOX_SHELLENV_LOADED=1`)
+  is inherited by child shell processes such as `devbox shell`.
+- When `devbox shell` starts a new bash, that bash sources `~/.bashrc`,
+  sees the inherited guard, and skips `devbox global shellenv` entirely.
+- This means the `refresh-global` alias is never created in `devbox shell`.
+- A shell-local variable (`__devbox_shellenv_done=1` without `export`)
+  prevents re-eval within the same process but does NOT propagate to
+  child processes, so `devbox shell` gets a fresh eval and the alias works.
+- **Fork bomb safety is maintained** because `devbox global shellenv`
+  just prints text to stdout — it does not spawn a shell. The `eval`
+  evaluates that text in the current shell. Additionally, devbox's own
+  output includes `export __DEVBOX_SHELLENV_LOADED=1`, providing a
+  secondary layer of protection.
 
 **Why `__GOOSE_SHELL_SOURCED` alone is not enough:** The `goose-shell`
 wrapper's own guard (`__GOOSE_SHELL_SOURCED`) prevents re-sourcing
 `~/.bashrc` from the wrapper level, but it does NOT prevent the
 *internal* recursion caused by `devbox global shellenv` spawning child
 bash processes that re-enter `.bashrc` through a different code path.
-The `__DEVBOX_SHELLENV_LOADED` guard catches this inner recursion.
+The shell-local guard catches this inner recursion.
 
 ## Solution (3 files)
 
@@ -210,9 +247,11 @@ fi
 unset rc
 
 # Devbox environment
-# Guard against recursive devbox shellenv (prevents fork bomb in Goose Desktop)
-if [ -z "$__DEVBOX_SHELLENV_LOADED" ]; then
-  export __DEVBOX_SHELLENV_LOADED=1
+# Shell-local guard: prevents re-eval within same process, but does NOT
+# propagate to child shells (e.g. devbox shell), so they get a fresh
+# eval and the refresh-global alias is properly created.
+if [ -z "$__devbox_shellenv_done" ]; then
+  __devbox_shellenv_done=1
   eval "$(devbox global shellenv 2>/dev/null)"
 fi
 
@@ -240,6 +279,24 @@ eval "$(hermes completion bash 2>/dev/null)"
 **Key principle:** Everything above `[[ $- != *i* ]] && return` runs
 for ALL shells. Everything below runs only in interactive terminals.
 
+**Caution with `crc oc-env`:** The output of `crc oc-env` contains
+a comment line with an unmatched single quote (`# eval $(crc oc-env)`).
+Using `eval "$(crc oc-env)"` in non-interactive shells causes a
+parsing error. Replace it with a direct `export PATH=` statement:
+
+```bash
+# Instead of: eval "$(crc oc-env 2>/dev/null)"
+export PATH="$HOME/.crc/bin/oc:$PATH"
+```
+
+## Guard Variables — Summary
+
+| Variable | Scope | Set By | Purpose |
+|----------|-------|--------|---------|
+| `__GOOSE_SHELL_SOURCED` | Exported | `goose-shell` wrapper | Prevents `~/.bashrc` from being re-sourced at the wrapper level |
+| `__devbox_shellenv_done` | Shell-local (NOT exported) | `~/.bashrc` | Prevents devbox shellenv re-eval within same process; does NOT propagate to child shells so `devbox shell` gets `refresh-global` |
+| `__DEVBOX_SHELLENV_LOADED` | Exported | devbox's own output | Secondary safety net — devbox's built-in recursion guard |
+
 ## Steps to Apply
 
 ### Step 1: Create the goose-shell wrapper
@@ -265,17 +322,8 @@ chmod +x ~/.local/bin/goose-shell
 Move all environment setup (PATH, exports, devbox shellenv, sdkman)
 **above** the interactive guard. Move completions and prompt
 integration **below** it. Add `[[ $- != *i* ]] && return` as the
-separator.
-
-**Caution with `crc oc-env`:** The output of `crc oc-env` contains
-a comment line with an unmatched single quote (`# eval $(crc oc-env)`).
-Using `eval "$(crc oc-env)"` in non-interactive shells causes a
-parsing error. Replace it with a direct `export PATH=` statement:
-
-```bash
-# Instead of: eval "$(crc oc-env 2>/dev/null)"
-export PATH="$HOME/.crc/bin/oc:$PATH"
-```
+separator. Use the **shell-local** `__devbox_shellenv_done` guard
+(not exported) for the devbox shellenv block.
 
 ### Step 3: Set GOOSE_SHELL in desktop entry
 
@@ -329,8 +377,8 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 - [ ] No `eval` errors in shell output
 - [ ] No runaway `devbox global shellenv` processes after Goose Desktop restart
       (`ps aux | grep 'devbox global shellenv' | grep -v grep | wc -l` should be 0)
-- [ ] `__DEVBOX_SHELLENV_LOADED` is set in the shell environment
-      (`echo $__DEVBOX_SHELLENV_LOADED` should print `1`)
+- [ ] `refresh-global` alias is available inside `devbox shell` sessions
+      (run `devbox shell` then `type refresh-global`)
 
 ## Affected Files
 
@@ -339,7 +387,7 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 | `~/.local/bin/goose-shell` | Wrapper: sources ~/.bashrc for non-interactive shells |
 | `~/.local/share/applications/Goose.desktop` | Desktop entry: passes GOOSE_SHELL to Goose process |
 | `~/.config/environment.d/60-goose-shell.conf` | Systemd user env: sets GOOSE_SHELL as fallback |
-| `~/.bashrc` | Restructured: env setup for all shells, interactive guard |
+| `~/.bashrc` | Restructured: env setup for all shells, interactive guard, shell-local devbox guard |
 
 ## Platform Notes
 
@@ -357,5 +405,6 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 
 | Date | Change |
 |------|--------|
-| 2026-07-08 23:12 | v1.1 — Added devbox fork bomb root cause analysis, trigger chain, symptoms, emergency cleanup, and `__DEVBOX_SHELLENV_LOADED` recursion guard as critical fix. Updated `.bashrc` example, verification checklist, and tags. |
-| 2026-07-08 22:24 | v1.0 — Initial skill capturing the full Goose Desktop environment fix |
+| 2026-07-15 | v1.2 — Changed devbox shellenv guard from exported `__DEVBOX_SHELLENV_LOADED` to shell-local `__devbox_shellenv_done`. Fixes `refresh-global` alias missing inside `devbox shell` sessions while preserving fork-bomb protection. Added Guard Variables summary table. Added `refresh-global` to verification checklist. |
+| 2026-07-08 | v1.1 — Added devbox fork bomb root cause analysis, trigger chain, symptoms, emergency cleanup, and `__DEVBOX_SHELLENV_LOADED` recursion guard as critical fix. Updated `.bashrc` example, verification checklist, and tags. |
+| 2026-07-08 | v1.0 — Initial skill capturing the full Goose Desktop environment fix |
