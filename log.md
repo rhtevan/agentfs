@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-15 16:50
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added Guardrail Quick Reference table to AGENTS.md seed template
+- Updated `skills/agentfs-setup/SKILL.md` v3.5→v3.6: documented Guardrail Quick Reference addition
+
+## 2026-07-15 15:18
+
+- Updated `skills/agentfs-setup/SKILL.md` v3.4→v3.5: documented all seed template changes (Signal Routing promotion, Memory Scope rename, "hey git" signal, Post-Edit Completeness, log insertion anchor, knowledge index backtick fix)
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: knowledge index link changed to backtick format
+
+## 2026-07-15 15:00
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: moved Signal Routing section to top (after Quick Orientation); removed duplicate at bottom; added log insertion anchor rule to Guardrail #5
+
+## 2026-07-15 14:45
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: restructured Signal Routing as standalone section after guardrails; renamed Guardrail #2 to "Memory Scope"; added "hey git" signal
+
 ## 2026-07-15 14:10
 
 - Fixed `skills/litellm-vertex-ai-proxy/SKILL.md`: added `metadata.tags` alongside vendor-nested `metadata.hermes.tags` so index generator can discover tags

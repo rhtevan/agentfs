@@ -75,9 +75,58 @@ cat > "$TARGET" << 'AGENTSEOF'
 | Resource | Path | What's Inside |
 |----------|------|---------------|
 | Agent identity | [.agents/SOUL.md](./.agents/SOUL.md) | Tone, style, communication defaults |
-| Knowledge index | [~/.agents/knowledge/index.md](~/.agents/knowledge/index.md) | Cross-project knowledge bundles (USER scope) |
+| Knowledge index | \`~/.agents/knowledge/index.md\` | Cross-project knowledge bundles (USER scope) |
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
+
+## Signal Routing
+
+When a user expresses a recognized intent signal, the agent MUST
+consult this table before acting. Agent-specific overrides (e.g.,
+agent memory extensions) take priority when present and their tools
+are available.
+
+| Signal / Keyword | Intent | Route To |
+|---|---|---|
+| "remember this", "note that", "keep in mind", "save this for later" | Store project observation | \`.agents/memories/MEMORY.md\` |
+| "always do X", "never do Y", "enforce Z", "this is a rule" | Structural rule/guardrail | Propose as \`AGENTS.md\` guardrail (human approval) |
+| "I prefer", "I like", "my style is" | User preference | \`.agents/memories/USER.md\` |
+| "learn this document", "ingest this file", "add to knowledge base" | Knowledge ingestion | OKF bundle under \`~/.agents/knowledge/\` via \`okf-bundle-gen\` or \`okf-bundle-harvest\` |
+| "how do I", "what's the procedure for" | Procedural lookup | Matching skill via \`load_skill\` |
+| "forget this", "remove that note" | Delete observation | Edit \`MEMORY.md\`, remove entry |
+| "create a skill for this", "make this reusable" | Skill creation/update | \`~/.agents/skills/<name>/SKILL.md\` via \`skill-gen\` (default USER — see Guardrail #4) |
+| "what do you remember about", "check your notes on" | Retrieve observations | Read \`.agents/memories/MEMORY.md\` |
+| "harvest", "scan memories", "graduate patterns" | Extract reusable knowledge | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) |
+| "hey git", "complete git", "git actions" | Stage, commit, scan, push | Stage changes, commit with descriptive message, run Guardrail #9 (Git Push Safety), push after approval |
+
+### Routing Rules
+
+- **Agent-specific overrides take priority.** If the agent has its own
+  decision table (e.g., in persistent instructions), and the referenced
+  tool exists in the current session's available tools, the
+  agent-specific route wins.
+- **Harvest scans the current project by default.** Scan \`MEMORY.md\`
+  files at \`.agents/memories/\` and \`.agents/profiles/*/memories/\`.
+  Route to \`skill-harvest\` for procedural patterns or
+  \`okf-bundle-harvest\` for declarative/semantic knowledge.
+- **Skill resolution chain.** When the decision table names a skill:
+  try \`load_skill\` by name → tag fallback via \`~/.agents/skills/index.md\`
+  → semantic fallback via descriptions → **fail loud** (do NOT
+  silently improvise when the named skill is missing).
+
+## Guardrail Quick Reference
+
+| # | Rule | Key Action |
+|---|------|------------|
+| [1](#1-progressive-disclosure) | Progressive Disclosure | Browse \`index.md\` first, follow links |
+| [2](#2-memory-scope) | Memory Scope | \`memories/\` is PROJECT-only; experiences not rules |
+| [3](#3-cross-agent-context-discovery) | Cross-Agent Discovery | Check \`CLAUDE.md\`, \`.cursorrules\`, etc. on session start |
+| [4](#4-skill-placement) | Skill Placement | Default to USER \`~/.agents/skills/\` |
+| [5](#5-filesystem-integrity) | Filesystem Integrity | After every \`.agents/\` edit: preserve sections, regenerate index, update changelog, log in both scopes |
+| [6](#6-idempotency) | Idempotency | Same inputs → same state |
+| [7](#7-anti-sycophancy) | Anti-Sycophancy | Quote conflicting guardrail, ask before overriding |
+| [8](#8-checkpoints--resumability) | Checkpoints | Record affected files before destructive ops |
+| [9](#9-git-push-safety) | Git Push Safety | STOP → Scan → Report → WAIT → Push |
 
 ## Scope Definitions
 
@@ -117,9 +166,7 @@ MUST follow them.
 - Follow links from `index.md` → concept docs → referenced assets,
   rather than scanning directories directly.
 
-### 2. Memory Scope & Signal Routing
-
-#### Scope Rules
+### 2. Memory Scope
 
 - **`memories/` is PROJECT-scoped only.** Memory files (`MEMORY.md`,
   `USER.md`) live under `./.agents/memories/` (default agent) or
@@ -134,39 +181,6 @@ MUST follow them.
   cross-project knowledge worth preserving, graduate it to an OKF
   knowledge bundle under `~/.agents/knowledge/` and remove the
   original entry.
-
-#### Signal → Route Decision Table
-
-When a user expresses memory-related intent, the agent MUST consult
-this table. Agent-specific overrides (e.g., agent memory extensions)
-take priority when present and their tools are available.
-
-| Signal / Keyword | Intent | Route To |
-|---|---|---|
-| "remember this", "note that", "keep in mind", "save this for later" | Store project observation | `.agents/memories/MEMORY.md` |
-| "always do X", "never do Y", "enforce Z", "this is a rule" | Structural rule/guardrail | Propose as `AGENTS.md` guardrail (human approval) |
-| "I prefer", "I like", "my style is" | User preference | `.agents/memories/USER.md` |
-| "learn this document", "ingest this file", "add to knowledge base" | Knowledge ingestion | OKF bundle under `~/.agents/knowledge/` via `okf-bundle-gen` or `okf-bundle-harvest` |
-| "how do I", "what's the procedure for" | Procedural lookup | Matching skill via `load_skill` |
-| "forget this", "remove that note" | Delete observation | Edit `MEMORY.md`, remove entry |
-| "create a skill for this", "make this reusable" | Skill creation/update | `~/.agents/skills/<name>/SKILL.md` via `skill-gen` (default USER — see Guardrail #4) |
-| "what do you remember about", "check your notes on" | Retrieve observations | Read `.agents/memories/MEMORY.md` |
-| "harvest", "scan memories", "graduate patterns" | Extract reusable knowledge | `skill-harvest` (procedural) or `okf-bundle-harvest` (semantic) |
-
-#### Routing Rules
-
-- **Agent-specific overrides take priority.** If the agent has its own
-  decision table (e.g., in persistent instructions), and the referenced
-  tool exists in the current session's available tools, the
-  agent-specific route wins.
-- **Harvest scans the current project by default.** Scan `MEMORY.md`
-  files at `.agents/memories/` and `.agents/profiles/*/memories/`.
-  Route to `skill-harvest` for procedural patterns or
-  `okf-bundle-harvest` for declarative/semantic knowledge.
-- **Skill resolution chain.** When the decision table names a skill:
-  try `load_skill` by name → tag fallback via `~/.agents/skills/index.md`
-  → semantic fallback via descriptions → **fail loud** (do NOT
-  silently improvise when the named skill is missing).
 
 ### 3. Cross-Agent Context Discovery
 
@@ -213,6 +227,9 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
 - **ISO 8601 timestamp headings** — `## YYYY-MM-DD HH:MM`.
 - **Log every material change** — file creation, renames, deletions,
   structural updates.
+- **Insertion anchor.** When appending a new log entry, always insert
+  immediately after the \`<!-- Append-only. Newest entries at top. -->\`
+  comment line — never relative to an existing dated entry.
 - **Never modify or delete** existing log or changelog entries.
 - **Scope:** Each `log.md` MUST only describe changes within its scope
   (`~/.agents/log.md` for USER, `./.agents/log.md` for PROJECT).
