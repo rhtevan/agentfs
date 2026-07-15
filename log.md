@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-15 14:10
+
+- Fixed `skills/litellm-vertex-ai-proxy/SKILL.md`: added `metadata.tags` alongside vendor-nested `metadata.hermes.tags` so index generator can discover tags
+- Regenerated `skills/index.md`
+
 ## 2026-07-15 13:57
 
 - Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added Post-Edit Completeness sub-section to Guardrail #5 in AGENTS.md seed template

@@ -4,6 +4,7 @@ description: "Set up a local LiteLLM proxy for GCP Vertex AI with systemd auto-s
 version: 1.0.0
 platforms: [linux]
 metadata:
+  tags: [litellm, vertex-ai, gcp, proxy, systemd]
   hermes:
     tags: [litellm, vertex-ai, gcp, proxy, systemd]
     related_skills: []

@@ -4,6 +4,7 @@
 
 | Skill | Description | Tags | Updated |
 |-------|-------------|------|---------|
+| [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | Set up a local LiteLLM proxy for GCP Vertex AI with systemd auto-start and service account credentials | litellm, vertex-ai, gcp, proxy, systemd | 2026-07-15 14:10 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | 2026-07-15 13:58 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode, seed AGENTS.md with scope definitions and nine structural guardrails, and verify setup integrity. Default mode is PROJECT. | agentfs, setup, scaffolding, guardrails | 2026-07-14 19:29 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | Configure Goose for full AgentFS compatibility by adding CLAUDE.md and other agent context files to CONTEXT_FILE_NAMES, so Goose automatically discovers and loads cross-agent context files alongside A | goose, agentfs, configuration, compatibility | 2026-07-14 19:18 |
@@ -41,6 +42,5 @@
 | [headroom-proxy-status](./headroom-proxy-status/SKILL.md) | Check the health, configuration, and runtime status of the local Headroom context-optimization proxy service | headroom, proxy, status, health, systemd, compression, context-optimization | 2026-07-07 15:54 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | Configure Goose to use a remote MaaS (Model as a Service) LiteLLM instance, with API key setup, reasoning model fixes, and troubleshooting | goose, maas, litellm, custom-provider, reasoning, configuration | 2026-07-06 20:06 |
 | [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | Configure Goose to use a local LiteLLM proxy as a custom provider, with model discovery and verification | goose, litellm, custom-provider, redhat, configuration | 2026-07-06 19:27 |
-| [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | Set up a local LiteLLM proxy for GCP Vertex AI with systemd auto-start and service account credentials |  | 2026-07-06 14:37 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | Configure Hermes Agent for AgentFS compatibility by registering ~/.agents/skills (USER) and per-project .agents/skills/ (PROJECT) in skills.external_dirs | hermes, agentfs, configuration, skills, compatibility | 2026-07-06 11:30 |
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | Check the health, configuration, and runtime status of the local LiteLLM proxy service | litellm, proxy, status, health, systemd | 2026-07-06 11:30 |
