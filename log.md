@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-16 11:12
+- Created skill `crc-aap-demo-config` at `~/.agents/skills/crc-aap-demo-config/SKILL.md` — clone aap-demo repo, pre-flight checks against local CRC, apply protective config to prevent preset/resource override
+- Regenerated `~/.agents/skills/index.md` (41 skills)
+
 ## 2026-07-15 16:50
 
 - Updated `skills/agentfs-setup/scripts/seed-agents-md.sh`: added Guardrail Quick Reference table to AGENTS.md seed template
