@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-20 17:24
+
+* **Creation**: Added session sub-bundle `skupper-v2-concepts/` with 11 concept documents across 4 sub-bundles (core-concepts, security, advanced-features, operations).
+* **Update**: Updated root index.md with new entry.
+
 ## 2026-07-09 02:02
 
 * **Update**: Audited index.md files — root index.md updated with 4 missing sub-bundle entries (agentfs-claude-compat, headroom-openai-compression-analysis, rca-labeled-dataset, telecom-gnn-rca)

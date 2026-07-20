@@ -2,6 +2,19 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-20 17:36
+
+* **Update**: Regenerated `skills/index.md` (41 skills) — okf-bundle-gen timestamp updated to 2026-07-20 17:33 after v3.2 edit.
+
+## 2026-07-20 17:33
+
+* **Update**: Updated `skills/okf-bundle-gen/SKILL.md` v3.1→v3.2: Added Phase 7c (USER scope log.md entry) to fix Guardrail #5 compliance gap.
+
+## 2026-07-20 17:31
+
+* **Creation**: Generated OKF knowledge bundle `knowledge/skupper-v2-concepts/` with 11 concept documents across 4 sub-bundles (core-concepts, security, advanced-features, operations).
+* **Update**: Updated `knowledge/index.md` with new bundle entry.
+
 ## 2026-07-16 11:12
 - Created skill `crc-aap-demo-config` at `~/.agents/skills/crc-aap-demo-config/SKILL.md` — clone aap-demo repo, pre-flight checks against local CRC, apply protective config to prevent preset/resource override
 - Regenerated `~/.agents/skills/index.md` (41 skills)

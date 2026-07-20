@@ -440,7 +440,7 @@ its description if the content has changed.
 If the session sub-bundle entry already exists (from a prior run),
 update its description if the content has changed.
 
-### Phase 7 — Update log.md (both levels)
+### Phase 7 — Update log.md (all three levels)
 
 #### 7a. Session sub-bundle log.md
 
@@ -482,6 +482,33 @@ bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
 
 Both entries are automatically prepended under today's date heading in
 reverse chronological order.
+
+#### 7c. USER scope log.md
+
+The knowledge bundle resides under `~/.agents/` (USER scope). Per
+Guardrail #5 (Filesystem Integrity), any change within USER scope must
+be logged in the USER-scope root log at `~/.agents/log.md`.
+
+This is **separate** from the knowledge bundle's own `log.md` (Phase
+7b) — the bundle root log tracks knowledge-internal changes, while
+the USER scope log tracks all changes under `~/.agents/` including
+skills, knowledge, and other USER-scope resources.
+
+```bash
+bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+  ~/.agents/log.md \
+  "* **Creation**: Generated knowledge bundle \`knowledge/<session-name>/\` with N concept(s).
+* **Update**: Updated \`knowledge/index.md\`."
+```
+
+Or, if merging into an existing session sub-bundle:
+
+```bash
+bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+  ~/.agents/log.md \
+  "* **Update**: Merged new knowledge into \`knowledge/<session-name>/\` — N created, M updated.
+* **Update**: Updated \`knowledge/index.md\`."
+```
 
 ### Phase 8 — Verify conformance
 
@@ -675,6 +702,7 @@ Dependencies (from `okf-bundle-setup`):
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-20 17:33 | v3.2 — Added Phase 7c: USER scope log.md entry. Fixes omission where changes to `~/.agents/knowledge/` were logged in the bundle's own log.md but not in the USER-scope root `~/.agents/log.md` per Guardrail #5 (Filesystem Integrity). Phase 7 heading updated from "both levels" to "all three levels". |
 | 2026-07-09 01:38 | v3.1 — Removed Phase 9 (SOUL.md pattern link injection) and update-soul-links.sh dependency; knowledge discovery now handled via global .goosehints progressive loading instead of SOUL.md markers |
 | 2026-07-08 14:19 | v3.0 — Memory redesign: bundle root changed from `./.agents/knowledge/` (project-local staging) to `~/.agents/knowledge/` (user-level); removed project-local staging concept; memory scan is PROJECT-only (no `~/.agents/memories/`); `okf-bundle-merge` is now obsolete |
 | 2026-06-30 23:49 | v2.2 — `merge-log-entry.sh` updated: `YYYY-MM-DD HH:MM` timestamps, `<!-- Append-only -->` comment, `- ` entry style |
