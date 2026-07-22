@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 19:06
+
+* **Creation**: Added `migration/v1-to-v2-changes.md` — V1 deprecated concepts, changed commands, and new V2 features.
+* **Creation**: Added `platform-details/linux-systemd-architecture.md` — native skrouterd, bootstrap container, systemd templates.
+* **Creation**: Added `platform-details/site-bundles.md` — generate-bundle, install.sh, remote deployment without CLI.
+* **Creation**: Added `platform-details/multiple-sites-per-host.md` — namespace-scoped services, port conflicts.
+* **Creation**: Added `platform-details/skupper-router-installation.md` — Red Hat repos, COPR, build from source on Fedora 44.
+* **Creation**: Added `operations/firewall-rules.md` — ports, proxy tunneling, relay pattern.
+* **Update**: Updated `index.md` at session root, operations, and new sub-bundle indexes.
+
 ## 2026-07-22 15:41
 
 * **Update**: Updated `security/application-tls.md` — added TLS Passthrough section (end-to-end encryption, observer settings, double encryption, model comparison).

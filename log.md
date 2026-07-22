@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 19:06
+
+* **Update**: Updated `knowledge/skupper-v2-concepts/` — added migration (V1→V2), platform-details (Linux architecture, site bundles, multi-site, skrouterd install), and firewall rules. 6 new concept docs, 2 new sub-bundles.
+
 ## 2026-07-22 15:41
 
 * **Update**: Updated `knowledge/skupper-v2-concepts/security/` — added TLS passthrough, inter-router mTLS enforcement, and link port documentation to existing concepts.

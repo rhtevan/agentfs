@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 19:06
+
+* **Update**: Merged new knowledge into `skupper-v2-concepts/` — 6 created, 3 indexes updated. New sub-bundles: migration/, platform-details/.
+
 ## 2026-07-22 15:41
 
 * **Update**: Merged new knowledge into `skupper-v2-concepts/` — 0 created, 2 updated (application-tls.md, router-access.md).
