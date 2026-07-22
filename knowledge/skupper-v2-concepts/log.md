@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 15:41
+
+* **Update**: Updated `security/application-tls.md` — added TLS Passthrough section (end-to-end encryption, observer settings, double encryption, model comparison).
+* **Update**: Updated `security/router-access.md` — added Inter-Site Link Ports section (55671/45671, port roles, protocol) and Inter-Router mTLS Always On section (cannot disable, customizable certs).
+* **Update**: Updated `security/index.md` descriptions to reflect new content.
+
 ## 2026-07-20 17:24
 
 * **Creation**: Generated 11 concept documents from session context across 4 sub-bundles.

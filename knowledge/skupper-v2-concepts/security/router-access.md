@@ -1,9 +1,9 @@
 ---
 type: Reference
 title: RouterAccess — Router Network Exposure
-description: How RouterAccess controls the external accessibility of the Skupper router for incoming links
-tags: [skupper, router-access, linking, ingress, tls]
-timestamp: 2026-07-20T17:19:00-04:00
+description: How RouterAccess controls the external accessibility of the Skupper router, including ports, mTLS enforcement, and access types
+tags: [skupper, router-access, linking, ingress, tls, mtls, ports]
+timestamp: 2026-07-22T15:39:00-04:00
 ---
 
 # RouterAccess
@@ -80,3 +80,76 @@ spec:
 | `loadbalancer` | ✅ Yes | `loadbalancer` |
 
 You can also create RouterAccess resources **directly** for more fine-grained control than Site `linkAccess` provides — for example, to use `ingress-nginx` or `local` access types.
+
+## Inter-Site Link Ports
+
+Two port roles define how sites connect:
+
+| Role | Default Port | Purpose | Used By |
+|------|:------------:|---------|--------|
+| `inter-router` | **55671** | Links between interior routers | Interior ↔ Interior |
+| `edge` | **45671** | Links from edge routers to interior routers | Edge → Interior |
+
+### Which Port Gets Used
+
+| Link Direction | Port | Possible? |
+|---------------|:-----:|:---------:|
+| Interior → Interior | 55671 | ✅ |
+| Interior ← Interior | 55671 | ✅ |
+| Edge → Interior | 45671 | ✅ |
+| Edge → Edge | — | ❌ Edges can't accept links |
+| Interior → Edge | — | ❌ Edges can't accept links |
+
+Ports are **configurable** on the RouterAccess resource — they are not hardcoded. However, the linking site doesn't need to know the port in advance: the **AccessGrant/Token** flow carries the connection endpoint (host + port) automatically.
+
+### Protocol
+
+Both ports carry **AMQPS** (AMQP over TLS) — the Skupper router's inter-router protocol. These are not HTTP ports. All communication is always encrypted with mutual TLS.
+
+## Inter-Router mTLS — Always On
+
+Inter-router mTLS is **enabled by default and cannot be disabled**. This is a deliberate security design decision.
+
+### Why It's Mandatory
+
+- `tlsCredentials` is a **required** field on RouterAccess — there is no way to omit it
+- The AccessGrant/Token workflow **structurally enforces** mTLS: the token receives a signed certificate, and the resulting link uses it for mutual authentication
+- Skupper connects services across **untrusted network boundaries** (public internet, cloud interconnects) — plaintext would undermine the core security promise
+
+### What You CAN Customize
+
+While mTLS cannot be disabled, the **certificate infrastructure** is fully customizable:
+
+```yaml
+# Use your own CA
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: my-site
+spec:
+  defaultIssuer: my-corporate-ca    # Your own CA secret
+
+---
+# Use your own certs for RouterAccess
+apiVersion: skupper.io/v2alpha1
+kind: RouterAccess
+metadata:
+  name: skupper-router
+spec:
+  roles:
+    - name: inter-router
+      port: 55671
+  tlsCredentials: my-custom-certs           # Your own cert bundle
+  generateTlsCredentials: false             # Don't auto-generate
+  subjectAlternativeNames:
+    - router.example.com                    # Custom SANs
+```
+
+### mTLS Summary
+
+| Question | Answer |
+|----------|--------|
+| Enabled by default? | **Yes — always** |
+| Can you disable it? | **No** |
+| Can you use your own certificates? | **Yes** — via `tlsCredentials` and `defaultIssuer` |
+| Can you use plaintext inter-router links? | **No** — `tlsCredentials` is required |

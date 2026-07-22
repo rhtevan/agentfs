@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 15:41
+
+* **Update**: Updated `knowledge/skupper-v2-concepts/security/` — added TLS passthrough, inter-router mTLS enforcement, and link port documentation to existing concepts.
+
 ## 2026-07-20 17:36
 
 * **Update**: Regenerated `skills/index.md` (41 skills) — okf-bundle-gen timestamp updated to 2026-07-20 17:33 after v3.2 edit.

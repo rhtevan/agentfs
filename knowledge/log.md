@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 15:41
+
+* **Update**: Merged new knowledge into `skupper-v2-concepts/` — 0 created, 2 updated (application-tls.md, router-access.md).
+* **Update**: Updated security/index.md descriptions.
+
 ## 2026-07-20 17:24
 
 * **Creation**: Added session sub-bundle `skupper-v2-concepts/` with 11 concept documents across 4 sub-bundles (core-concepts, security, advanced-features, operations).
