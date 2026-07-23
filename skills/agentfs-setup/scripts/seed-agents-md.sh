@@ -311,8 +311,18 @@ Before executing any `git push`, the agent MUST follow these steps
      in code or documentation examples
 3. **Report** — present a Pre-Push Security Report table showing each
    check category with ✅ Clean or ⚠️ FOUND status, plus a verdict.
-4. **WAIT** — do NOT proceed until the user explicitly responds.
-5. **Push** — only after explicit approval, execute `git push`.
+4. **README Staleness Check** (soft gate) — if the commit touches
+   `skills/`, `knowledge/`, or guardrail-related files, append a
+   notice to the report:
+   ```
+   📝 README Notice: This commit adds/modifies skills or knowledge.
+      Consider updating README.md. Update now? [y/n/skip]
+   ```
+   - **y** — propose README edits, user reviews, amend the commit
+   - **n / skip** — proceed without updating (no override logging
+     needed — this is advisory, not a hard gate)
+5. **WAIT** — do NOT proceed until the user explicitly responds.
+6. **Push** — only after explicit approval, execute `git push`.
 
 If the user acknowledges issues but still requests the push, log the
 override in `log.md` with `[OVERRIDE]` per Guardrail #7.

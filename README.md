@@ -108,10 +108,11 @@ Skills cover topics like:
 | **Agent Setup** | AgentFS scaffolding, Goose/Hermes configuration, agent profiles |
 | **LLM Providers** | LiteLLM proxy, Headroom proxy, Vertex AI, MaaS providers |
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster config |
-| **Knowledge Mgmt** | OKF bundle creation, indexing, generation |
+| **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
+| **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes |
 
-See [`skills/index.md`](skills/index.md) for the full list.
+See [`skills/index.md`](skills/index.md) for the full catalog (42 skills).
 
 ### Skill Design Principles
 
@@ -229,10 +230,24 @@ Example pattern in a SKILL.md:
 ```
 
 This pattern preserves all structural guardrails — scripts stay
-idempotent (Guardrail #10), the process is documented (SKILL.md
+idempotent (Guardrail #6), the process is documented (SKILL.md
 *is* the documentation), each script is independently testable,
 and the same scripts can be reused by other skills or automated
 jobs with pre-known inputs.
+
+#### 4. Parameter Binding for Multi-Argument Skills
+
+Skills with three or more parameters SHOULD use the **Parameter
+Binding Pattern** (see [`knowledge/agentfs-skill-patterns/parameter-binding-pattern.md`](knowledge/agentfs-skill-patterns/parameter-binding-pattern.md)):
+
+- **`parameters:` block** in YAML frontmatter with `binding-cues` —
+  natural-language phrases the agent matches against user input
+- **`argument-hint`** with CLI-style usage syntax — shown when
+  required parameters are missing
+- **Confirmation flow** — agent presents resolved bindings before
+  executing
+- **Script argument mapping table** — explicit `$1`, `$2`, etc.
+  mapping per script, eliminating positional guesswork
 
 ### Knowledge (`knowledge/`)
 
@@ -240,10 +255,14 @@ Knowledge bundles follow the [Open Knowledge Format (OKF)](https://github.com/Go
 
 Current bundles:
 
+- **Skupper V2 Concepts** — Comprehensive Skupper V2 (Red Hat Service Interconnect) concepts, resources, security, operations
+- **AgentFS Skill Patterns** — Reusable skill design patterns (parameter binding with semantic cues, CLI hints, confirmation flow)
 - **Telecom GNN-Based Root Cause Analysis** — GNN and DRL for autonomous telecom network fault diagnosis
 - **RCA Labeled Dataset** — Realistic labeled dataset for training GNNs on telecom network faults
 - **AgentFS ↔ Claude Compatibility** — Cross-agent context discovery gap analysis
 - **Headroom Compression Analysis** — Proxy compression analysis for OpenAI-compatible endpoints
+
+See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Modes
 
@@ -291,17 +310,20 @@ mode.
 
 ## Structural Guardrails
 
-AgentFS enforces nine guardrails to maintain consistency:
+AgentFS enforces structural guardrails to maintain consistency:
 
-1. **Link Integrity** — No broken, obsolete, or missing links in `index.md` files
-2. **Log Currency** — All changes logged in reverse chronological order (ISO 8601 timestamps)
-3. **Content Changelog** — Files with `Changelog` sections maintain reverse-chronological entries
-4. **Progressive Disclosure** — Browse `index.md` hubs before diving into individual files
-5. **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
-6. **Index Currency** — `skills/index.md` and `profiles/index.md` regenerated on every change
-7. **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
-8. **Memory Scope** — `memories/` is PROJECT-only; NL-signal routing for experiences vs rules vs preferences; graduation path to OKF knowledge
-9. **Memory Signal Routing** — Decision table mapping natural-language signals to memory actions; agent-specific override tables take priority when their tools are available
+1. **Progressive Disclosure** — Browse `index.md` hubs before diving into individual files
+2. **Memory Scope** — `memories/` is PROJECT-only; experiences not rules; graduation path to OKF knowledge
+3. **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
+4. **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
+5. **Filesystem Integrity** — Link integrity, log currency, index currency, post-edit completeness
+6. **Idempotency** — Same inputs → same filesystem state
+7. **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
+8. **Checkpoints & Resumability** — Record affected files before destructive ops
+9. **Git Push Safety** — STOP → Scan (secrets, usernames, IPs, PII) → Report → README Staleness Check → WAIT → Push
+
+The canonical source for guardrails is the `agentfs-setup` skill template (`seed-agents-md.sh`).
+See [AGENTS.md](./AGENTS.md) in any project for the full rendered guardrails.
 
 ## Memory Architecture
 

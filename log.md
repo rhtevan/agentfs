@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 21:49
+
+- Updated `agentfs-setup` skill template Guardrail #9 — added README Staleness Check (soft gate, step 4) to pre-push flow
+
 ## 2026-07-22 21:34
 
 - Updated USER skill `skupper-linux-two-site` to v1.3 — replaced environment-specific examples (ezhang-work, rhtevan-work) with generic placeholders (my-hub, my-edge)
