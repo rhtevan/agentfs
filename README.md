@@ -205,8 +205,8 @@ Each layer serves a distinct purpose, scope, and mutability model.
   ┌─────────────────────────────────────────────────┐
   │      MEMORY.md  (episodic, per-project)         │
   │                                                 │
-  │  NOT auto-loaded — read on-demand for recall     │
-  │  or graduation only                              │
+  │  NOT auto-loaded — read on-demand for recall    │
+  │  or graduation only                             │
   └──────────┬──────────────────────────────────────┘
              │
              │ on-demand graduation
@@ -436,8 +436,8 @@ concerns:
                ▼
 ┌──────────────────────┐       ┌──────────────┐
 │       Agent          │◄─────►│     User     │
-│   (Orchestrator)     │ conversation  (External │
-│                      │  context      Input)    │
+│   (Orchestrator)     │       | conversation │
+│                      │       |    context   │
 │  Mediates human      │       └──────────────┘
 │  interaction,        │
 │  holds state,        │
