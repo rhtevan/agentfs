@@ -2,6 +2,34 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 21:34
+
+- Updated USER skill `skupper-linux-two-site` to v1.3 — replaced environment-specific examples (ezhang-work, rhtevan-work) with generic placeholders (my-hub, my-edge)
+- Updated `agentfs-setup` skill template Guardrail #9 — expanded scan patterns: username leakage, SSH host aliases, local IPs, PII (email, phone, real names)
+- Updated project `./AGENTS.md` Guardrail #9 with same expanded scan patterns
+
+## 2026-07-22 21:22
+
+- Updated USER skill `skupper-linux-two-site` to v1.2 — added Invocation Example section
+- Created knowledge bundle `agentfs-skill-patterns` at `~/.agents/knowledge/agentfs-skill-patterns/`
+- Added concept doc `parameter-binding-pattern.md` — reusable pattern for multi-parameter skill binding
+- Updated `~/.agents/knowledge/index.md` with new bundle entry
+
+## 2026-07-22 21:11
+
+- Updated USER skill `skupper-linux-two-site` to v1.1
+- Added structured `parameters:` block in YAML frontmatter with `binding-cues` for semantic argument resolution
+- Added `argument-hint` with CLI-style usage syntax
+- Added Agent Binding Rules section: cue matching, missing-param prompts, default application, confirmation flow, script argument mapping table
+- Regenerated `~/.agents/skills/index.md` (42 skills)
+
+## 2026-07-22 19:57
+
+- Created USER skill `skupper-linux-two-site` at `~/.agents/skills/skupper-linux-two-site/`
+- SKILL.md: Two-site Skupper V2 Linux/systemd setup with parameterized site names, IPs, namespace
+- Scripts: verify-prerequisites.sh, create-site.sh, link-sites.sh, test-nc.sh, teardown.sh
+- Regenerated `~/.agents/skills/index.md` (42 skills)
+
 ## 2026-07-22 19:06
 
 * **Update**: Updated `knowledge/skupper-v2-concepts/` — added migration (V1→V2), platform-details (Linux architecture, site bundles, multi-site, skrouterd install), and firewall rules. 6 new concept docs, 2 new sub-bundles.

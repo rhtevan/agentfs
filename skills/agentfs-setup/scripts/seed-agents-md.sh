@@ -296,8 +296,19 @@ Before executing any `git push`, the agent MUST follow these steps
 **in order**. No step may be skipped, even if the user says "go ahead".
 
 1. **STOP** — do NOT execute `git push` yet.
-2. **Scan** — run `git diff` and scan for: secrets/API keys, hardcoded
-   user paths (`/home/<user>/`), PII, sensitive URLs/IPs.
+2. **Scan** — run `git diff --cached` (or `git diff` for unstaged) and
+   scan for ALL of the following patterns:
+   - **Secrets/API keys** — `secret`, `api_key`, `apikey`, `password`,
+     `passwd`, `bearer`, `authorization`
+   - **Hardcoded user paths** — `/home/<user>/`, `/Users/<user>/`
+   - **Username leakage** — the current username (`$USER`, `whoami`)
+     appearing in non-path contexts (e.g., in examples, comments,
+     hostnames). Also check for SSH host aliases from `~/.ssh/config`.
+   - **IP addresses** — local interface IPs (`hostname -I`), RFC 1918
+     addresses that appear to be site-specific
+   - **Sensitive URLs** — internal hostnames, intranet URLs
+   - **PII** — email addresses, phone numbers, real names embedded
+     in code or documentation examples
 3. **Report** — present a Pre-Push Security Report table showing each
    check category with ✅ Clean or ⚠️ FOUND status, plus a verdict.
 4. **WAIT** — do NOT proceed until the user explicitly responds.
