@@ -2,7 +2,7 @@
 
 **Shared agent scaffolding with skills, knowledge bundles, and cross-agent context.**
 
-AgentFS is a structured filesystem convention for AI coding agents (Goose, Hermes, Claude Code, etc.) that enables persistent memory, reusable skills, and shared knowledge across agents and sessions.
+AgentFS is a structured filesystem convention for AI agents (Goose, Hermes, Claude Code, etc.) that enables persistent memory, reusable skills, and shared knowledge across agents and sessions.
 
 ## Scope Definitions
 
@@ -46,7 +46,7 @@ For a clean, empty `~/.agents/` where you cherry-pick skills:
    `~/repos/agentfs/skills/` to the agent's skill search paths
    — see the relevant agent setup skill for details).
 3. Ask your agent to run the `agentfs-setup` skill with USER scope:
-   > *"Set up AgentFS in USER mode"*
+   > *"Set up AgentFS in USER scope"*
 
    The agent will load the `agentfs-setup` skill and scaffold an
    empty `~/.agents/` with `skills/`, `knowledge/`, `index.md`,
@@ -74,7 +74,7 @@ In any git repository, ask your agent to run the `agentfs-setup` skill:
 
 The agent will scaffold `.agents/` (with skills, profiles, memories,
 SOUL.md) and create `AGENTS.md` at the repo root. Since PROJECT is the
-default mode, no additional scope hint is needed.
+default scope, no additional hint is needed.
 
 ### Adding Skills
 
@@ -89,13 +89,47 @@ scope — knowledge is shared across all projects).
 
 ## Directory Structure
 
+### USER Scope (`~/.agents/`)
+
+A **machine-wide shared library** of skills and knowledge visible to
+any agent across all projects. No agent identity, memories, or
+profiles — purely a capability and knowledge store.
+
 ```
 ~/.agents/
-├── skills/          # Reusable agent workflows (SKILL.md format)
-├── knowledge/       # Shared knowledge base (Open Knowledge Format)
+├── skills/          # Shared agent workflows (SKILL.md format)
+├── knowledge/       # Shared knowledge bundles (Open Knowledge Format)
 ├── index.md         # Navigation hub — start here
 └── log.md           # Activity log (reverse chronological)
 ```
+
+### PROJECT Scope (`./.agents/` in a repo)
+
+A **per-repository agent workspace** that adds identity, memory, and
+multi-agent collaboration on top of skills. Each project can have its
+own agent profiles with independent memories.
+
+```
+./
+├── AGENTS.md                # Workspace entry point
+└── .agents/
+    ├── SOUL.md              # Default agent identity
+    ├── profiles/            # Named agent profiles (each with SOUL.md + memories)
+    ├── memories/            # Default agent's learned context (USER.md, MEMORY.md)
+    ├── skills/              # Project-specific skills
+    ├── index.md
+    └── log.md
+```
+
+### Scope Boundaries
+
+> - `knowledge/` is **USER-scoped only** — projects do NOT get a
+>   local `knowledge/` directory.
+> - `memories/` is **PROJECT-scoped only** — there is no
+>   `~/.agents/memories/`.
+>
+> Both scopes coexist — agents discover USER-level skills and knowledge
+> globally while maintaining project-scoped identity and memory.
 
 ### Skills (`skills/`)
 
@@ -114,141 +148,6 @@ Skills cover topics like:
 
 See [`skills/index.md`](skills/index.md) for the full catalog (42 skills).
 
-### Skill Design Principles
-
-Skills follow three foundational design principles that govern how
-interactivity, determinism, and orchestration are separated across
-architectural layers.
-
-#### 1. Non-Interactive Scripts
-
-Scripts under `scripts/` MUST be non-interactive. They MUST NOT use
-`read`, `select`, interactive prompts, or any mechanism that blocks
-waiting for stdin. All inputs MUST be accepted via command-line
-arguments, environment variables, or input files.
-
-```bash
-# ✅ Correct — inputs as arguments
-bash scripts/provision.sh --name "$NAME" --email "$EMAIL"
-
-# ❌ Wrong — blocks on stdin
-read -p "Enter name: " NAME
-```
-
-This ensures scripts remain testable, composable, and executable in
-automated contexts (scheduled jobs, skill chaining, CI pipelines)
-where no human is present at the terminal.
-
-#### 2. Agent-as-Orchestrator Pattern
-
-Skills implement a three-layer architecture that cleanly separates
-concerns:
-
-```
-┌────────────────────────────────────────┐
-│              SKILL.md                  │
-│       (Process Definition)             │
-│  Defines steps, decision points,       │
-│  interaction gates, and script calls   │
-└──────────────┬─────────────────────────┘
-               │ instructs
-               ▼
-┌──────────────────────┐       ┌──────────────┐
-│       Agent          │◄─────►│     User     │
-│   (Orchestrator)     │ conversation  (External │
-│                      │  context      Input)    │
-│  Mediates human      │       └──────────────┘
-│  interaction,        │
-│  holds state,        │
-│  feeds data between  │
-│  steps               │
-└──────────┬───────────┘
-           │ executes
-           ▼
-┌──────────────────────┐
-│  Deterministic       │
-│  Scripts (Actions)   │
-│                      │
-│  Non-interactive,    │
-│  idempotent,         │
-│  args in → exit      │
-│  code out            │
-└──────────────────────┘
-```
-
-| Layer | Responsibility | Interactive? |
-|---|---|---|
-| **SKILL.md** | Defines the process — sequence, decision points, gates | N/A (blueprint) |
-| **Agent** | Orchestrates flow, mediates user interaction, translates between human language and script arguments | ✅ Conversationally |
-| **Scripts** | Execute deterministic, repeatable actions | ❌ Never |
-
-The agent handles the "messy human stuff" — ambiguous inputs,
-clarifications, approvals, error explanations. The scripts handle
-the "precise machine stuff" — validation, API calls, data
-transformations. The SKILL.md is the contract between them.
-
-#### 3. Skills as Business Process Definitions
-
-Skills can model multi-step business processes that include human
-interaction points. The key insight is that **interactivity belongs
-in the agent ↔ user conversation layer**, not in script execution.
-
-A business process skill defines:
-- **Action steps** — deterministic scripts the agent runs
-- **Interaction steps** — points where the agent gathers input,
-  presents results, or requests approval from the user
-- **Decision points** — conditional branching based on script
-  exit codes or user responses
-- **External gates** — steps that wait for external input
-  (approvals, reference numbers, third-party responses)
-
-Example pattern in a SKILL.md:
-
-```markdown
-## Steps
-
-1. **Collect requirements**
-   Ask the user for: name, department, role.
-
-2. **Validate input**
-   Run: `bash scripts/validate.sh --name "$NAME" --dept "$DEPT"`
-   If exit code 1 → report errors, return to Step 1.
-
-3. **Present plan and confirm**
-   Show the provisioning plan. Ask for user confirmation.
-
-4. **Execute**
-   Run: `bash scripts/provision.sh --config /tmp/plan.json`
-
-5. **External approval gate**
-   Tell the user: "Manager approval required. Provide the
-   approval reference when ready."
-   Run: `bash scripts/verify-approval.sh --ref "$REF"`
-
-6. **Finalize and report**
-   Run: `bash scripts/finalize.sh --id "$ID"`
-```
-
-This pattern preserves all structural guardrails — scripts stay
-idempotent (Guardrail #6), the process is documented (SKILL.md
-*is* the documentation), each script is independently testable,
-and the same scripts can be reused by other skills or automated
-jobs with pre-known inputs.
-
-#### 4. Parameter Binding for Multi-Argument Skills
-
-Skills with three or more parameters SHOULD use the **Parameter
-Binding Pattern** (see [`knowledge/agentfs-skill-patterns/parameter-binding-pattern.md`](knowledge/agentfs-skill-patterns/parameter-binding-pattern.md)):
-
-- **`parameters:` block** in YAML frontmatter with `binding-cues` —
-  natural-language phrases the agent matches against user input
-- **`argument-hint`** with CLI-style usage syntax — shown when
-  required parameters are missing
-- **Confirmation flow** — agent presents resolved bindings before
-  executing
-- **Script argument mapping table** — explicit `$1`, `$2`, etc.
-  mapping per script, eliminating positional guesswork
-
 ### Knowledge (`knowledge/`)
 
 Knowledge bundles follow the [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) — each bundle contains concept documents, an `index.md` navigation hub, and a `log.md` changelog.
@@ -263,50 +162,6 @@ Current bundles:
 - **Headroom Compression Analysis** — Proxy compression analysis for OpenAI-compatible endpoints
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
-
-## Modes
-
-AgentFS operates in two modes:
-
-### USER Mode (`~/.agents/`)
-
-A **machine-wide shared library** of skills and knowledge visible to
-any agent across all projects. No agent identity, memories, or
-profiles — purely a capability and knowledge store.
-
-```
-~/.agents/
-├── skills/          # Shared agent workflows
-├── knowledge/       # Shared knowledge bundles
-├── index.md
-└── log.md
-```
-
-### PROJECT Mode (`./.agents/` in a repo)
-
-A **per-repository agent workspace** that adds identity, memory, and
-multi-agent collaboration on top of skills. Each project can have its
-own agent profiles with independent memories.
-
-```
-./
-├── AGENTS.md                # Workspace entry point
-└── .agents/
-    ├── SOUL.md              # Default agent identity
-    ├── profiles/            # Named agent profiles (each with SOUL.md + memories)
-    ├── memories/            # Default agent's learned context (USER.md, MEMORY.md)
-    ├── skills/              # Project-specific skills
-    ├── index.md
-    └── log.md
-```
-
-> **Note:** `knowledge/` is USER-scoped only — projects do NOT get a
-> local `knowledge/` directory. `memories/` is PROJECT-scoped only —
-> there is no `~/.agents/memories/`.
-
-Both modes can coexist — agents discover USER-level skills and knowledge
-globally while maintaining project-scoped identity and memory in PROJECT
-mode.
 
 ## Structural Guardrails
 
@@ -330,10 +185,53 @@ See [AGENTS.md](./AGENTS.md) in any project for the full rendered guardrails.
 AgentFS implements a layered memory system inspired by cognitive science.
 Each layer serves a distinct purpose, scope, and mutability model.
 
+### Memory Lifecycle
+
+```
+  ┌─────────────────────────────────────────────────┐
+  │              Working Memory                     │
+  │  (runtime-managed, persisted by agent runtime)  │
+  │                                                 │
+  │  auto-loaded at session start:                  │
+  │    AGENTS.md, .goosehints, CLAUDE.md, ...       │
+  │    + agent persistent instructions              │
+  │  read on first use (agent-initiated):           │
+  │    SOUL.md, USER.md                             │
+  └──────────┬──────────────────────────────────────┘
+             │
+             │ on-demand capture
+             │ (user-triggered: "remember this")
+             ▼
+  ┌─────────────────────────────────────────────────┐
+  │      MEMORY.md  (episodic, per-project)         │
+  │                                                 │
+  │  NOT auto-loaded — read on-demand for recall     │
+  │  or graduation only                              │
+  └──────────┬──────────────────────────────────────┘
+             │
+             │ on-demand graduation
+             │ (user-triggered: "harvest memories")
+             ▼
+  ┌──────────┴──────────┐
+  │                     │
+  │                     │
+  ▼                     ▼
+  ┌───────────────┐    ┌───────────────┐
+  │  knowledge/   │    │   skills/     │
+  │  (semantic)   │    │ (procedural)  │
+  └───────────────┘    └───────────────┘
+```
+
+All transitions are **on-demand and human-gated** — nothing is automatic.
+The user explicitly triggers capture ("remember this") and graduation
+("harvest memories"). This is by design: human gating ensures quality
+control over what persists and what graduates.
+
 ### The Full Memory Model
 
 | Memory Type | Cognitive Analogy | Scope | Location | Mutability |
 |-------------|-------------------|-------|----------|------------|
+| **Working memory** | Short-term / active | SESSION | Agent runtime (context window + persistent session store, e.g. SQLite) | Runtime-persisted; opaque to AgentFS |
 | **MEMORY.md** | Episodic / experiential | PROJECT | `.agents/memories/` | Agent-written, session-to-session |
 | **OKF bundles** | Semantic / conceptual | USER | `~/.agents/knowledge/` | Distilled, graduated |
 | **SKILLs** | Procedural / SOP | Both | `~/.agents/skills/` or `.agents/skills/` | Human + agent authored |
@@ -343,6 +241,55 @@ Each layer serves a distinct purpose, scope, and mutability model.
 | **instructions.md** | Agent instincts | USER (agent-specific) | e.g. `~/.config/goose/instructions.md` | Human-authored |
 
 ### Layer Details
+
+#### Working Memory — Runtime-Managed
+
+The agent's active context window during a session: current conversation,
+loaded files, in-flight goals, scratch reasoning, and tool results. This
+is the "RAM" of the agent — everything the model can attend to right now.
+
+- **Scope:** SESSION only — owned and managed by the agent runtime
+- **Content:** Current conversation turns, loaded context files, intermediate
+  tool results, active reasoning chains
+- **Capacity:** Bounded by the model's context window; managed through
+  compaction, summarisation, or eviction by the runtime
+- **Persistence:** Most agent runtimes persist working memory in their own
+  session store (e.g. Goose uses a SQLite database). This enables session
+  resume/recall but is opaque to AgentFS — the format, retention policy,
+  and cross-session sharing are runtime-specific concerns.
+
+**What gets loaded into working memory at session start:**
+- **Auto-loaded** (by agent runtime): workspace-level context files
+  configured in `CONTEXT_FILE_NAMES` — typically `AGENTS.md`,
+  `.goosehints`, `CLAUDE.md`; plus agent persistent instructions
+  (e.g. `~/.config/goose/instructions.md`)
+- **Read on first use** (agent-initiated, not auto-loaded): `SOUL.md`,
+  `USER.md` — referenced from AGENTS.md but loaded by the agent when
+  it needs identity or user preferences
+- **On-demand** (progressive disclosure, Guardrail #1): skills, knowledge
+  bundles — loaded only when relevant to the current task
+- **NOT loaded at session start**: `MEMORY.md` — not auto-loaded into
+  context, but readable on-demand when the user explicitly requests
+  recall ("what do you remember about X") or graduation ("harvest")
+
+**What AgentFS does NOT manage:**
+- Session store format or persistence (that is the runtime's job —
+  e.g. Goose SQLite, Claude project memory)
+- Cross-session working memory sharing
+- Session retention or eviction policies
+
+**Boundary interactions with AgentFS:**
+- **Inbound:** AgentFS files are loaded into working memory through the
+  layered mechanism described above (auto-load → first-use → on-demand)
+- **Outbound:** Noteworthy observations are *captured from* working memory
+  into MEMORY.md on demand (user-triggered: "remember this") — this is
+  the episodic capture boundary
+
+**External systems:** Agent runtimes, MCP-based session stores (e.g. Hindsite),
+or agentic RAG systems (e.g. Cognee) may provide their own working memory
+persistence, retrieval, or cross-session sharing. These are external to
+AgentFS. When such systems coexist, AgentFS files remain the canonical
+source of truth; external systems are accelerators, not replacements.
 
 #### Episodic Memory — `MEMORY.md`
 
@@ -446,6 +393,142 @@ Guardrails themselves exist at three levels:
 
 When the AgentFS template is updated, existing projects are brought into
 alignment by re-running setup verification (`verify-setup.sh --mode project`).
+
+
+## Skill Design Principles
+
+Skills follow three foundational design principles that govern how
+interactivity, determinism, and orchestration are separated across
+architectural layers.
+
+### 1. Non-Interactive Scripts
+
+Scripts under `scripts/` MUST be non-interactive. They MUST NOT use
+`read`, `select`, interactive prompts, or any mechanism that blocks
+waiting for stdin. All inputs MUST be accepted via command-line
+arguments, environment variables, or input files.
+
+```bash
+# ✅ Correct — inputs as arguments
+bash scripts/provision.sh --name "$NAME" --email "$EMAIL"
+
+# ❌ Wrong — blocks on stdin
+read -p "Enter name: " NAME
+```
+
+This ensures scripts remain testable, composable, and executable in
+automated contexts (scheduled jobs, skill chaining, CI pipelines)
+where no human is present at the terminal.
+
+### 2. Agent-as-Orchestrator Pattern
+
+Skills implement a three-layer architecture that cleanly separates
+concerns:
+
+```
+┌────────────────────────────────────────┐
+│              SKILL.md                  │
+│       (Process Definition)             │
+│  Defines steps, decision points,       │
+│  interaction gates, and script calls   │
+└──────────────┬─────────────────────────┘
+               │ instructs
+               ▼
+┌──────────────────────┐       ┌──────────────┐
+│       Agent          │◄─────►│     User     │
+│   (Orchestrator)     │ conversation  (External │
+│                      │  context      Input)    │
+│  Mediates human      │       └──────────────┘
+│  interaction,        │
+│  holds state,        │
+│  feeds data between  │
+│  steps               │
+└──────────┬───────────┘
+           │ executes
+           ▼
+┌──────────────────────┐
+│  Deterministic       │
+│  Scripts (Actions)   │
+│                      │
+│  Non-interactive,    │
+│  idempotent,         │
+│  args in → exit      │
+│  code out            │
+└──────────────────────┘
+```
+
+| Layer | Responsibility | Interactive? |
+|---|---|---|
+| **SKILL.md** | Defines the process — sequence, decision points, gates | N/A (blueprint) |
+| **Agent** | Orchestrates flow, mediates user interaction, translates between human language and script arguments | ✅ Conversationally |
+| **Scripts** | Execute deterministic, repeatable actions | ❌ Never |
+
+The agent handles the "messy human stuff" — ambiguous inputs,
+clarifications, approvals, error explanations. The scripts handle
+the "precise machine stuff" — validation, API calls, data
+transformations. The SKILL.md is the contract between them.
+
+### 3. Skills as Business Process Definitions
+
+Skills can model multi-step business processes that include human
+interaction points. The key insight is that **interactivity belongs
+in the agent ↔ user conversation layer**, not in script execution.
+
+A business process skill defines:
+- **Action steps** — deterministic scripts the agent runs
+- **Interaction steps** — points where the agent gathers input,
+  presents results, or requests approval from the user
+- **Decision points** — conditional branching based on script
+  exit codes or user responses
+- **External gates** — steps that wait for external input
+  (approvals, reference numbers, third-party responses)
+
+Example pattern in a SKILL.md:
+
+```markdown
+## Steps
+
+1. **Collect requirements**
+   Ask the user for: name, department, role.
+
+2. **Validate input**
+   Run: `bash scripts/validate.sh --name "$NAME" --dept "$DEPT"`
+   If exit code 1 → report errors, return to Step 1.
+
+3. **Present plan and confirm**
+   Show the provisioning plan. Ask for user confirmation.
+
+4. **Execute**
+   Run: `bash scripts/provision.sh --config /tmp/plan.json`
+
+5. **External approval gate**
+   Tell the user: "Manager approval required. Provide the
+   approval reference when ready."
+   Run: `bash scripts/verify-approval.sh --ref "$REF"`
+
+6. **Finalize and report**
+   Run: `bash scripts/finalize.sh --id "$ID"`
+```
+
+This pattern preserves all structural guardrails — scripts stay
+idempotent (Guardrail #6), the process is documented (SKILL.md
+*is* the documentation), each script is independently testable,
+and the same scripts can be reused by other skills or automated
+jobs with pre-known inputs.
+
+### 4. Parameter Binding for Multi-Argument Skills
+
+Skills with three or more parameters SHOULD use the **Parameter
+Binding Pattern** (see [`knowledge/agentfs-skill-patterns/parameter-binding-pattern.md`](knowledge/agentfs-skill-patterns/parameter-binding-pattern.md)):
+
+- **`parameters:` block** in YAML frontmatter with `binding-cues` —
+  natural-language phrases the agent matches against user input
+- **`argument-hint`** with CLI-style usage syntax — shown when
+  required parameters are missing
+- **Confirmation flow** — agent presents resolved bindings before
+  executing
+- **Script argument mapping table** — explicit `$1`, `$2`, etc.
+  mapping per script, eliminating positional guesswork
 
 ## Evaluation
 

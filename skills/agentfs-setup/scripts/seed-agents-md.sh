@@ -96,6 +96,7 @@ are available.
 | "forget this", "remove that note" | Delete observation | Edit \`MEMORY.md\`, remove entry |
 | "create a skill for this", "make this reusable" | Skill creation/update | \`~/.agents/skills/<name>/SKILL.md\` via \`skill-gen\` (default USER — see Guardrail #4) |
 | "what do you remember about", "check your notes on" | Retrieve observations | Read \`.agents/memories/MEMORY.md\` |
+| "reflect", "reflect on this project", "what have I learned" | Harvest triage | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) — same triage as harvest |
 | "harvest", "scan memories", "graduate patterns" | Extract reusable knowledge | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) |
 | "hey git", "complete git", "git actions" | Stage, commit, scan, push | Stage changes, commit with descriptive message, run Guardrail #9 (Git Push Safety), push after approval |
 

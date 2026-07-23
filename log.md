@@ -2,6 +2,35 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-22 23:51
+
+- Merged `## Modes` into `## Directory Structure` — eliminated terminology
+  duplication ("scope" vs "mode"); Directory Structure now shows both USER
+  and PROJECT scope trees with a Scope Boundaries note; replaced remaining
+  "mode" references with "scope" in Getting Started
+- Final section order: Scope Definitions → Getting Started → Directory
+  Structure → Structural Guardrails → Memory Architecture → Skill Design
+  Principles → Evaluation → License
+
+## 2026-07-22 23:37
+
+- Reordered `README.md` top-level sections; promoted `## Skill Design
+  Principles` from subsection under Skills (#### to ###); moved after
+  Memory Architecture
+
+## 2026-07-22 23:13
+
+- Updated `README.md` — Memory Architecture: added Working Memory as a
+  first-class memory type (runtime-managed, SESSION-scoped); added Memory
+  Lifecycle vertical ASCII diagram showing auto-load → on-demand capture →
+  on-demand graduation flow; all transitions human-gated by design; MEMORY.md
+  is NOT auto-loaded but readable on-demand for recall or graduation (Option B);
+  documented what gets loaded at session start (auto-load, first-use, on-demand
+  tiers); acknowledged external systems (Hindsite, Cognee) as accelerators
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh` — Signal Routing:
+  added "reflect" keyword row, routed to harvest triage (skill-harvest or
+  okf-bundle-harvest)
+
 ## 2026-07-22 21:49
 
 - Updated `agentfs-setup` skill template Guardrail #9 — added README Staleness Check (soft gate, step 4) to pre-push flow
