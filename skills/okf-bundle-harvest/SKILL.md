@@ -14,6 +14,7 @@ metadata:
   author: agentfs
   version: "1.2"
   tags: [agentfs, okf, knowledge, memory, distillation, graduation]
+  signals: ["harvest knowledge", "harvest concepts", "graduate knowledge"]
 user-invocable: true
 disable-model-invocation: false
 ---

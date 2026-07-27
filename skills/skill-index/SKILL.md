@@ -10,6 +10,7 @@ description: >
   the user explicitly signals project scope.
 metadata:
   tags: [agentfs, skills, index, discovery]
+  signals: ["refresh skill index", "index skills", "regenerate skill index"]
 ---
 
 # Skill Index Generator
@@ -57,7 +58,8 @@ the default. If the user signals project scope (see table above), use
    For each discovered `SKILL.md`:
 
    a. If the file begins with YAML frontmatter (`---` delimiters), read
-      the `name`, `description`, and `metadata.tags` fields from it.
+      the `name`, `description`, `metadata.tags`, and `metadata.signals`
+      fields from it.
       - **Multi-line YAML scalars:** When `description:` is followed by
         a folding/literal indicator (`>`, `|`, `>-`, `|-`), the actual
         text is on the subsequent indented lines. Collect all indented
@@ -68,6 +70,11 @@ the default. If the user signals project scope (see table above), use
         typically a YAML list in bracket notation, e.g.,
         `tags: [agentfs, memory, harvest]`. Parse the bracket contents
         and split on commas. Strip whitespace from each tag.
+      - **Signals:** Extract the `signals:` field under `metadata:`.
+        Signals are a YAML list of natural-language trigger phrases,
+        e.g., `signals: ["sync agentfs", "update agentfs"]`. Parse
+        the bracket contents and split on commas. Strip surrounding
+        quotes and whitespace from each signal.
       - Strip surrounding quotes from values if present.
 
    b. If there is **no** YAML frontmatter, derive the metadata:
@@ -76,6 +83,7 @@ the default. If the user signals project scope (see table above), use
         non-rule paragraph line in the file. Skip lines starting with
         `#`, `|`, `---`, or `>`.
       - `tags` — empty (no tags available).
+      - `signals` — empty (no signals available).
 
 4. **Validate name-directory consistency**
    For each skill, verify that the `name` field from the YAML
@@ -107,9 +115,9 @@ the default. If the user signals project scope (see table above), use
 
    > <N> skills | Sorted by reverse chronological order (newest first).
 
-   | Skill | Description | Tags | Updated |
-   |-------|-------------|------|---------|
-   | [<name>](./<dir>/SKILL.md) | <short description> | tag1, tag2, … | YYYY-MM-DD HH:MM |
+   | Skill | Tags | Signals | Updated |
+   |-------|------|---------|---------|
+   | [<name>](./<dir>/SKILL.md) | tag1, tag2, … | signal1, signal2, … | YYYY-MM-DD HH:MM |
    …
    ```
 
@@ -117,11 +125,15 @@ the default. If the user signals project scope (see table above), use
 
    - `<name>` is the skill name from the frontmatter (or directory name).
    - `<dir>` is the subdirectory name (relative link).
-   - `<short description>` is a single-line summary (truncated to ~200
-     characters if needed, ending with `…`).
    - `Tags` is a comma-separated list of tags from `metadata.tags`
      (empty cell if no tags found).
+   - `Signals` is a comma-separated list of trigger phrases from
+     `metadata.signals` (empty cell if no signals found).
    - `Updated` is the last-modified timestamp of the `SKILL.md` file.
+
+   **Note:** The Description column is intentionally omitted — skill
+   descriptions are already loaded into the agent's context via the
+   built-in skills listing. Including them here would duplicate tokens.
 
 8. **Report**
    Print the number of skills indexed and the path to the generated file.
@@ -131,8 +143,9 @@ the default. If the user signals project scope (see table above), use
 - [ ] `index.md` exists at the skills root.
 - [ ] Every subdirectory containing a `SKILL.md` has a corresponding row.
 - [ ] Each link resolves to the correct `SKILL.md` file.
-- [ ] Descriptions are concise single-line summaries.
+- [ ] No Description column is present (descriptions are in built-in skills listing).
 - [ ] A `Tags` column is present showing each skill's metadata tags (comma-separated, or empty if none).
+- [ ] A `Signals` column is present showing each skill's metadata signals (comma-separated, or empty if none).
 - [ ] An `Updated` column is present showing each skill's last-modified timestamp (`YYYY-MM-DD HH:MM`).
 - [ ] Rows are sorted newest-first (reverse chronological order).
 - [ ] **Name consistency** — No warnings about `name` vs directory mismatches.
@@ -142,6 +155,8 @@ the default. If the user signals project scope (see table above), use
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-27 18:25 | v2.0 — Removed Description column from generated index (already in built-in skills listing; avoids token duplication); Signals column now primary discovery mechanism; every skill MUST have signals |
+| 2026-07-27 17:15 | v1.9 — Added Signals column to generated index; extract `metadata.signals` from YAML frontmatter; supports signal-based skill discovery for non-obvious intent routing |
 | 2026-07-14 14:56 | v1.8 — Added name-directory consistency validation (step 4): warns when `name` field doesn't match directory name per Agent Skills open standard (agentskills.io/specification). Added verification check. Fixed step numbering. |
 | 2026-07-13 13:30 | v1.7 — Added Tags column to generated index; extract `metadata.tags` from YAML frontmatter; supports tag-based skill discovery for Guardrail #9 fallback routing |
 | 2026-07-08 22:42 | v1.6 — Clarified multi-line YAML scalar handling (description: > requires collecting indented continuation lines; sed cannot do this); improved fallback to skip table/rule/blockquote lines |

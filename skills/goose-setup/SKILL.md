@@ -4,6 +4,7 @@ description: "Configure Goose global persistent instructions for cross-project, 
 version: 1.4
 metadata:
     tags: [goose, config, instructions, persistent]
+    signals: ["setup goose", "goose global instructions", "goose persistent instructions"]
 ---
 
 # Goose Global Setup

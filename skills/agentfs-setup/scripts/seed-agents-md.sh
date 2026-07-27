@@ -68,6 +68,7 @@ all guardrails, skills, and documentation reference them.\
 fi
 
 cat > "$TARGET" << 'AGENTSEOF'
+<!-- agentfs-template-version: 3.7 -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -75,6 +76,7 @@ cat > "$TARGET" << 'AGENTSEOF'
 | Resource | Path | What's Inside |
 |----------|------|---------------|
 | Agent identity | [.agents/SOUL.md](./.agents/SOUL.md) | Tone, style, communication defaults |
+| Skills index | \`~/.agents/skills/index.md\` | Signal-based skill routing lookup (read on session start) |
 | Knowledge index | \`~/.agents/knowledge/index.md\` | Cross-project knowledge bundles (USER scope) |
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
@@ -92,13 +94,16 @@ are available.
 | "always do X", "never do Y", "enforce Z", "this is a rule" | Structural rule/guardrail | Propose as \`AGENTS.md\` guardrail (human approval) |
 | "I prefer", "I like", "my style is" | User preference | \`.agents/memories/USER.md\` |
 | "learn this document", "ingest this file", "add to knowledge base" | Knowledge ingestion | OKF bundle under \`~/.agents/knowledge/\` via \`okf-bundle-gen\` or \`okf-bundle-harvest\` |
-| "how do I", "what's the procedure for" | Procedural lookup | Matching skill via \`load_skill\` |
 | "forget this", "remove that note" | Delete observation | Edit \`MEMORY.md\`, remove entry |
-| "create a skill for this", "make this reusable" | Skill creation/update | \`~/.agents/skills/<name>/SKILL.md\` via \`skill-gen\` (default USER — see Guardrail #4) |
 | "what do you remember about", "check your notes on" | Retrieve observations | Read \`.agents/memories/MEMORY.md\` |
-| "reflect", "reflect on this project", "what have I learned" | Harvest triage | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) — same triage as harvest |
-| "harvest", "scan memories", "graduate patterns" | Extract reusable knowledge | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) |
-| "hey git", "complete git", "git actions" | Stage, commit, scan, push | Stage changes, commit with descriptive message, run Guardrail #9 (Git Push Safety), push after approval |
+| "harvest", "reflect", "scan memories", "graduate patterns" | Extract reusable knowledge | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) |
+| "hey git", "git" | Commit & push USER AgentFS | \`cd ~/.agents\` (or explicit path if specified), stage all, commit, then trigger Guardrail #9 (Git Push Safety) |
+
+For skill-routed signals (e.g., "setup agentfs", "create a skill"),
+the agent discovers skills via the skills listing and
+\`~/.agents/skills/index.md\` — including \`metadata.signals\` in
+SKILL.md frontmatter. Only LLM-direct routes and genuinely ambiguous
+multi-skill triage entries belong in this table.
 
 ### Routing Rules
 
@@ -106,6 +111,11 @@ are available.
   decision table (e.g., in persistent instructions), and the referenced
   tool exists in the current session's available tools, the
   agent-specific route wins.
+- **Skill signal resolution.** On session start, read
+  \`~/.agents/skills/index.md\` to load the signal-to-skill mapping.
+  When user intent doesn't match an LLM-direct route in the table
+  above, match against the Signals column in the skills index before
+  falling back to default skill name/description matching.
 - **Harvest scans the current project by default.** Scan \`MEMORY.md\`
   files at \`.agents/memories/\` and \`.agents/profiles/*/memories/\`.
   Route to \`skill-harvest\` for procedural patterns or
@@ -261,6 +271,9 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
   2. Corresponding \`index.md\` is regenerated if applicable.
   3. Changes are logged in the appropriate \`log.md\` (both scopes
      if both are affected by a single action).
+  4. If the change affects AgentFS design, guardrails, skills schema,
+     or template structure, update \`~/.agents/README.md\` in the
+     same session.
 
 ### 6. Idempotency
 
@@ -327,6 +340,9 @@ Before executing any `git push`, the agent MUST follow these steps
 
 If the user acknowledges issues but still requests the push, log the
 override in `log.md` with `[OVERRIDE]` per Guardrail #7.
+
+<!-- PROJECT-OWNED sections below. Everything above is template-owned
+     and will be overwritten by agentfs-setup --sync. -->
 
 ## Agent Profiles
 

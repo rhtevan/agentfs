@@ -12,6 +12,7 @@ metadata:
   author: agentfs
   version: "1.0"
   tags: [bash, completion, cli, shell, automation]
+  signals: ["bash completion", "generate completion", "tab completion"]
 user-invocable: true
 disable-model-invocation: false
 ---

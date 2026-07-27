@@ -7,6 +7,7 @@ description: >
   or when another skill or workflow requires spec-kit as a prerequisite.
 metadata:
   tags: [speckit, specify, cli, setup, installation]
+  signals: ["install spec-kit", "setup specify", "upgrade spec-kit"]
 ---
 
 # Spec-kit Setup

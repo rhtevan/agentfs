@@ -4,6 +4,7 @@ description: "Fix Goose Desktop shell environment so that shell commands have ac
 version: 1.2
 metadata:
     tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
+    signals: ["fix goose desktop", "goose shell environment", "goose env fix"]
     changelog:
       - version: "1.2"
         date: "2026-07-15"

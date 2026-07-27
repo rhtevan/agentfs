@@ -3,6 +3,7 @@ name: crc-cmd
 description: Install the crcstart and crcstop wrapper commands for OpenShift Local (CRC) that replace 'crc start' and 'crc stop' with more reliable alternatives
 metadata:
   tags: [openshift, crc, wrapper, shell]
+  signals: ["install crcstart", "install crcstop", "crc wrapper"]
 ---
 
 # CRC Wrapper Commands

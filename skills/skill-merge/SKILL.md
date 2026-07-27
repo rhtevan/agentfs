@@ -9,6 +9,7 @@ description: >
   USER skills index.
 metadata:
   tags: [agentfs, skills, merge, project, user]
+  signals: ["merge skills", "copy skills to user", "promote skills"]
 ---
 
 # Skill Merge

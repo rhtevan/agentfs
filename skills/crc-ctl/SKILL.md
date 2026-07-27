@@ -11,6 +11,7 @@ metadata:
   author: agentfs
   version: "1.0"
   tags: [crc, openshift, openshift-local, cluster, operations]
+  signals: ["start crc", "stop crc", "crc start", "crc stop"]
 user-invocable: true
 disable-model-invocation: false
 ---

@@ -2,10 +2,12 @@
 name: agentfs-setup
 description: >
   Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode,
-  seed AGENTS.md with scope definitions and nine structural guardrails,
-  and verify setup integrity. Default mode is PROJECT.
+  seed AGENTS.md with scope definitions and structural guardrails,
+  sync existing AGENTS.md with latest template, and verify setup
+  integrity. Default mode is PROJECT.
 metadata:
-  tags: [agentfs, setup, scaffolding, guardrails]
+  tags: [agentfs, setup, scaffolding, guardrails, sync]
+  signals: ["sync agentfs", "update agentfs", "upgrade agentfs"]
 ---
 
 # AgentFS Setup
@@ -18,7 +20,7 @@ AI coding agents.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 3.0 |
+| **Version** | 3.7 |
 | **Default mode** | `project` |
 | **Modes** | `project` (per-repo context) · `user` (shared library) |
 | **Scripts** | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
@@ -140,6 +142,32 @@ Creates an empty structural skeleton:
 > **Note:** If you used Path A (full clone), this step is unnecessary —
 > the clone already contains the complete structure.
 
+### Sync mode (update existing project AGENTS.md)
+
+When a project's AGENTS.md was created by an older template version,
+use sync to bring it up to date:
+
+> *"sync agentfs"* or *"update agentfs"*
+
+The agent performs these steps:
+
+1. **Read the current AGENTS.md** and extract the template version
+   from `<!-- agentfs-template-version: X.Y -->` (if absent, assume
+   pre-versioning).
+2. **Compare** against the current template version in
+   `seed-agents-md.sh`.
+3. **If versions match** — report "already up to date" and stop.
+4. **If versions differ** — extract project-owned sections:
+   - Agent Profiles table rows (below `## Agent Profiles`)
+   - SPECKIT block content (between `<!-- SPECKIT START/END -->`)
+5. **Regenerate** AGENTS.md from the current template via
+   `seed-agents-md.sh` (delete the old file first so the script
+   generates a fresh one).
+6. **Re-inject** the preserved project-owned sections into the
+   newly generated file.
+7. **Report** what changed (old version → new version, sections
+   updated).
+
 ### Verification
 
 The agent can verify the setup by running:
@@ -201,6 +229,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-27 17:10 | v3.7 — Added `metadata.signals` frontmatter field spec to design-spec; slimmed Signal Routing table to LLM-direct + ambiguous routes only (11→9 rows); added skill discovery note for signal-routed intents; added template version stamp (`<!-- agentfs-template-version: X.Y -->`); added `--sync` mode for updating existing AGENTS.md from latest template; added project-owned section markers; added `metadata.signals` to SKILL.md frontmatter |
 | 2026-07-15 16:50 | v3.6 — Added Guardrail Quick Reference table after Signal Routing: one-line scannable checklist with anchor links to detailed guardrail sections; promotes post-edit discipline and all 9 guardrails to high-attention position |
 | 2026-07-15 15:00 | v3.5 — AGENTS.md template: promoted Signal Routing to standalone section after Quick Orientation (was under Guardrail #2); renamed Guardrail #2 to "Memory Scope"; added "hey git" signal; added Post-Edit Completeness sub-section to Guardrail #5; added log insertion anchor rule; changed knowledge index link to backtick format (no more `[blocked]` in renderers) |
 | 2026-07-14 19:26 | v3.4 — AGENTS.md template compacted 277→207 lines (25%): removed Resolves To column and Rule of Thumb blockquote from Scope Definitions; dropped Executor/Scope columns from routing table; collapsed Skill Resolution Chain; merged Content File Currency into Log & Changelog Currency; replaced Git Push Safety verbose template with compact 5-step list; updated sed insertion block for Scope Definitions |

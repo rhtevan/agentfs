@@ -8,6 +8,7 @@ version: 1.1.0
 platforms: [linux]
 metadata:
   tags: [hermes, agentfs, configuration, skills, compatibility]
+  signals: ["configure hermes agentfs", "hermes skills dirs", "hermes agentfs"]
   related_skills: [agentfs-setup, hermes-litellm-provider, hermes-desktop-fixes]
 ---
 

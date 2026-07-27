@@ -5,6 +5,7 @@ version: 1.0.0
 platforms: [linux]
 metadata:
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
+  signals: ["litellm vertex", "vertex ai proxy", "setup litellm vertex"]
   hermes:
     tags: [litellm, vertex-ai, gcp, proxy, systemd]
     related_skills: []

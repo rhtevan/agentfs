@@ -14,6 +14,7 @@ metadata:
   author: agentfs
   version: "1.2"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
+  signals: ["create skill", "new skill", "make skill", "edit skill"]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -133,15 +134,16 @@ Generate a SKILL.md with this exact structure:
 ---
 name: <skill-name>
 description: >
-  <One-paragraph description. Include WHAT it does AND WHEN to use it.
-  Be slightly "pushy" — list specific trigger contexts so the agent
-  invokes it reliably.>
+  <Concise description — WHAT it does and WHEN to use it. Keep short;
+  this is loaded into every session via the built-in skills listing.
+  Avoid repeating information available in the SKILL.md body.>
 argument-hint: "<usage hint>"
 compatibility: "<requirements, if any>"
 metadata:
   author: agentfs
   version: "1.0"
   tags: [<relevant-tags>]
+  signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -209,9 +211,18 @@ set -euo pipefail
       (USER `~/.agents/skills/` or PROJECT `./.agents/skills/`)
 - [ ] **Frontmatter validation** — YAML frontmatter includes:
       `name`, `description`, `metadata.tags` (bracket notation,
-      e.g., `tags: [domain, function, artifact]`), `user-invocable`.
+      e.g., `tags: [domain, function, artifact]`), `metadata.signals`
+      (list of natural-language trigger phrases, e.g.,
+      `signals: ["create skill", "new skill"]`), `user-invocable`.
       A skill without tags is invisible to tag-based discovery
-      (Guardrail #5, Index Currency).
+      (Guardrail #5, Index Currency). A skill without signals is
+      invisible to signal-based routing via `skills/index.md`.
+- [ ] **Signal quality** — Signals should capture how users
+      naturally express intent for this skill. If the skill name
+      and description are self-explanatory, signals can mirror the
+      key phrases. If the mapping is non-obvious (e.g., "sync
+      agentfs" → `agentfs-setup`), signals are critical for
+      discoverability.
 - [ ] **Name consistency** — The `name` field in the YAML frontmatter
       MUST exactly match the skill's parent directory name. This is
       required by the Agent Skills open standard
@@ -324,6 +335,7 @@ For both modes:
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-27 18:35 | v1.4 — Added `metadata.signals` to SKILL.md template and post-creation checklist; added signal quality check; updated description guidance to emphasize conciseness (loaded every session via built-in skills listing) |
 | 2026-07-14 14:51 | v1.3 — Added "Name consistency" check to post-creation checklist: `name` field must match directory name per Agent Skills open standard (agentskills.io/specification) |
 | 2026-07-13 16:11 | v1.2 — Added "Skill Design Principles" section: non-interactive scripts, agent-as-orchestrator pattern, business process modeling |
 | 2026-07-13 11:19 | v1.1 — Renamed from `skill-creator` to `skill-gen` for naming consistency with `okf-bundle-gen`, `bash-completion-gen`; updated all internal path references |

@@ -5,6 +5,7 @@ version: 1.1.0
 platforms: [linux]
 metadata:
   tags: [headroom, proxy, litellm, systemd, compression, context-optimization, installation]
+  signals: ["install headroom", "headroom proxy setup", "headroom service"]
   related_skills: [headroom-proxy-status, litellm-proxy-status, litellm-vertex-ai-proxy, goose-headroom-provider]
 ---
 

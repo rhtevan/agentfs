@@ -9,6 +9,7 @@ description: >-
 metadata:
   version: "1.1"
   tags: [agentfs, context, audit, optimization, guardrails]
+  signals: ["check agentfs", "audit context", "context check"]
 user-invocable: true
 disable-model-invocation: false
 ---

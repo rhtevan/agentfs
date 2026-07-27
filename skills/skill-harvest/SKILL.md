@@ -14,6 +14,7 @@ metadata:
   author: agentfs
   version: "1.0"
   tags: [agentfs, skills, memory, procedural, graduation, harvest]
+  signals: ["harvest skills", "harvest procedures", "graduate skills"]
 user-invocable: true
 disable-model-invocation: false
 ---

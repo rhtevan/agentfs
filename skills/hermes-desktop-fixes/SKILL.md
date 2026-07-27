@@ -4,6 +4,7 @@ description: Diagnose and maintain Hermes Agent Desktop fixes for custom provide
 version: 2
 metadata:
   tags: [hermes, desktop, electron, fix, provider]
+  signals: ["fix hermes desktop", "hermes electron fix", "hermes identity fix"]
 ---
 
 # Hermes Desktop Fixes

@@ -7,6 +7,7 @@ description: >
   Fully compliant with Open Knowledge Format v0.1.
 metadata:
   tags: [agentfs, okf, knowledge, index, links]
+  signals: ["fix knowledge index", "check knowledge links", "okf index fix"]
 ---
 
 # OKF Bundle Index

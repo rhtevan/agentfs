@@ -5,6 +5,7 @@ version: 1.3.0
 platforms: [linux]
 metadata:
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
+  signals: ["goose maas", "configure goose maas", "goose remote provider"]
   related_skills: [goose-litellm-provider, litellm-proxy-status]
 ---
 

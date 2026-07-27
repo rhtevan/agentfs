@@ -5,6 +5,7 @@ version: 1.0.0
 platforms: [linux]
 metadata:
   tags: [hermes, litellm, custom-provider, configuration]
+  signals: ["hermes litellm", "configure hermes litellm"]
   related_skills: [litellm-vertex-ai-proxy]
 ---
 

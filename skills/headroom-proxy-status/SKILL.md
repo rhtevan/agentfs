@@ -5,6 +5,7 @@ version: 1.1.0
 platforms: [linux]
 metadata:
   tags: [headroom, proxy, status, health, systemd, compression, context-optimization]
+  signals: ["headroom status", "check headroom", "headroom health"]
   related_skills: [litellm-proxy-status, goose-litellm-provider]
 ---
 

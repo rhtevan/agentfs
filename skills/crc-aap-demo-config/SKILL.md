@@ -9,6 +9,7 @@ description: >
   pull secret.
 metadata:
   tags: [openshift, crc, aap-demo, configuration, safety, preflight]
+  signals: ["aap demo", "configure aap demo", "setup aap demo"]
 ---
 
 # CRC AAP Demo Configuration

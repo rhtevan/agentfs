@@ -5,6 +5,7 @@ version: 1.2.0
 platforms: [linux]
 metadata:
   tags: [goose, litellm, custom-provider, redhat, configuration]
+  signals: ["goose litellm", "configure goose litellm"]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
 ---
 

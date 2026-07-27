@@ -60,6 +60,7 @@ metadata:
   author: agentfs
   version: "1.3"
   tags: [skupper, linux, systemd, two-site, van, networking, skrouterd]
+  signals: ["skupper linux", "skupper two site", "skupper systemd"]
 user-invocable: true
 disable-model-invocation: false
 ---

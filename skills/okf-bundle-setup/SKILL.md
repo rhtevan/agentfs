@@ -9,6 +9,7 @@ description: >
   sub-bundles. Fully compliant with Open Knowledge Format v0.1.
 metadata:
   tags: [agentfs, okf, knowledge, scaffolding, setup]
+  signals: ["setup knowledge bundle", "scaffold knowledge bundle", "okf setup"]
 ---
 
 # OKF Bundle Setup

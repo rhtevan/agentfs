@@ -5,6 +5,7 @@ version: 2.0.0
 platforms: [linux]
 metadata:
   tags: [goose, headroom, custom-provider, context-optimization, compression, configuration]
+  signals: ["goose headroom", "configure goose headroom"]
   related_skills: [headroom-litellm-proxy, headroom-proxy-status, goose-litellm-provider, litellm-proxy-status]
 ---
 

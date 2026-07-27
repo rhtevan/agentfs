@@ -7,6 +7,7 @@ description: >
   `crc delete && crc start` cycle.
 metadata:
   tags: [openshift, crc, networking, ovn, bgp, metallb]
+  signals: ["ovn frr", "metallb setup", "bgp metallb"]
 ---
 
 # CRC OVN-K FRR + MetalLB Integration Configuration

@@ -5,6 +5,7 @@ version: 1.0.0
 platforms: [linux]
 metadata:
   tags: [litellm, proxy, status, health, systemd]
+  signals: ["litellm status", "check litellm", "litellm health"]
   related_skills: [litellm-vertex-ai-proxy, hermes-litellm-provider]
 ---
 

@@ -8,6 +8,7 @@ description: >
   agents at the project level.
 metadata:
   tags: [agentfs, profiles, multi-agent, identity]
+  signals: ["create profile", "add agent profile", "new agent"]
 ---
 
 # Agent FS Profile

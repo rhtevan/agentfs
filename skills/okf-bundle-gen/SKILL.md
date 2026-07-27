@@ -10,6 +10,7 @@ description: >
   compliant with Open Knowledge Format v0.1.
 metadata:
   tags: [agentfs, okf, knowledge, generation, session]
+  signals: ["generate knowledge bundle", "create knowledge bundle", "okf generate"]
 ---
 
 # OKF Bundle Generation from Session Context

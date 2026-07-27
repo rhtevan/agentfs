@@ -8,6 +8,7 @@ description: >-
 metadata:
   version: "1.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
+  signals: ["eval agentfs", "agentfs health", "maturity check"]
 ---
 
 # AgentFS Eval

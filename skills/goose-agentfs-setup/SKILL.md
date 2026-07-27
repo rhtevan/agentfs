@@ -17,6 +17,7 @@ metadata:
   author: agentfs
   version: "1.0"
   tags: [goose, agentfs, configuration, compatibility]
+  signals: ["configure goose agentfs", "goose context files", "goose agentfs"]
 user-invocable: true
 disable-model-invocation: false
 ---

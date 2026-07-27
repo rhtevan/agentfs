@@ -9,6 +9,7 @@ metadata:
   author: agentfs
   version: "1.2"
   tags: [hermes, headroom, proxy, provider, llm]
+  signals: ["hermes headroom", "configure hermes headroom"]
 user-invocable: true
 disable-model-invocation: false
 ---

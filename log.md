@@ -2,6 +2,35 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-27 18:40
+
+- Added `metadata.signals` to all 43 skills (38 new, 5 existing)
+- Updated `skill-gen/SKILL.md`: v1.4 — added `metadata.signals` to template and post-creation checklist, concise description guidance
+- Updated `skill-index/SKILL.md`: v2.0 — removed Description column, Signals is primary discovery column
+- Regenerated `~/.agents/skills/index.md` with new format (no Description, with Signals)
+- Updated `design-spec.md`: v3.7 — signal routing architecture, template versioning, `--sync`, README sync rule
+- Updated `seed-agents-md.sh`: added Skills index to Quick Orientation, Skill signal resolution routing rule, README sync in Post-Edit step 4
+- Updated `README.md`: skills frontmatter schema, signal routing flow, template versioning, README sync rule, 43 skills count
+
+## 2026-07-27 17:20
+
+- Updated `agentfs-setup` SKILL.md: v3.7 — added `metadata.signals` frontmatter field, `--sync` mode, template version stamping, project-owned section markers
+- Updated `agentfs-setup/references/design-spec.md`: added SKILL.md Frontmatter Schema section with `metadata.signals` field spec
+- Updated `agentfs-setup/scripts/seed-agents-md.sh`: slimmed Signal Routing table (11→9 rows), added template version stamp, added project-owned marker, added skill discovery note
+- Updated `skill-index` SKILL.md: v1.9 — added Signals column extraction and display
+- Added `metadata.signals` to: `agentfs-setup`, `agentfs-eval`, `agentfs-ctx-chk`, `skill-harvest`, `okf-bundle-harvest`
+- Regenerated `~/.agents/skills/index.md` with Signals column (43 skills, 5 with signals)
+
+## 2026-07-27 15:49
+
+- Updated `seed-agents-md.sh` template: refined "hey git" signal row — shortened keywords to `"hey git", "git"`, clarified route as `cd ~/.agents` (or explicit path), stage, commit, trigger Guardrail #9
+
+## 2026-07-27 15:10
+- Created skill: fuseki — Install and manage Apache Jena Fuseki as a systemd user service
+- Scripts: setup-fuseki.sh, start-fuseki.sh, stop-fuseki.sh, status-fuseki.sh
+- Regenerated skills/index.md (43 skills)
+
+
 ## 2026-07-22 23:51
 
 - Merged `## Modes` into `## Directory Structure` — eliminated terminology
