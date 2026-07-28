@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-28 16:45
+
+- Updated `hermes-desktop-fixes/SKILL.md`: v2.1 — added fix #4 (duplicate taskbar icon on Fedora/GNOME Wayland, `StartupWMClass` case mismatch); renumbered electron-builder fix to #5; added `.desktop` file to "Files outside git" table
+- Regenerated `~/.agents/skills/index.md` (43 skills)
+
 ## 2026-07-27 18:40
 
 - Added `metadata.signals` to all 43 skills (38 new, 5 existing)

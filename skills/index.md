@@ -3,10 +3,11 @@
 > 43 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Signals | Updated |
-|-------|------|---------|---------| 
+|-------|------|---------|---------|
+| [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-07-28 09:39 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill | 2026-07-27 18:28 |
 | [spec-kit-setup](./spec-kit-setup/SKILL.md) | speckit, specify, cli, setup, installation | install spec-kit, setup specify, upgrade spec-kit | 2026-07-27 18:27 |
-| [skupper-linux-two-site](./skupper-linux-two-site/SKILL.md) | skupper, linux, systemd, two-site, van, networking, skrouterd | skupper linux, skupper two site, skupper systemd | 2026-07-27 18:27 |
+| [skupper-linux-two-site](./skupper-linux-two-site/SKILL.md) |  |  | 2026-07-27 18:27 |
 | [skill-merge](./skill-merge/SKILL.md) | agentfs, skills, merge, project, user | merge skills, copy skills to user, promote skills | 2026-07-27 18:27 |
 | [skill-index](./skill-index/SKILL.md) | agentfs, skills, index, discovery | refresh skill index, index skills, regenerate skill index | 2026-07-27 18:27 |
 | [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | agentfs, okf, knowledge, scaffolding, setup | setup knowledge bundle, scaffold knowledge bundle, okf setup | 2026-07-27 18:27 |
@@ -16,7 +17,6 @@
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health | 2026-07-27 18:27 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | hermes litellm, configure hermes litellm | 2026-07-27 18:27 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | hermes headroom, configure hermes headroom | 2026-07-27 18:27 |
-| [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-07-27 18:27 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-07-27 18:27 |
 | [headroom-proxy-status](./headroom-proxy-status/SKILL.md) | headroom, proxy, status, health, systemd, compression, context-optimization | headroom status, check headroom, headroom health | 2026-07-27 18:27 |
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | headroom, proxy, litellm, systemd, compression, context-optimization, installation | install headroom, headroom proxy setup, headroom service | 2026-07-27 18:27 |

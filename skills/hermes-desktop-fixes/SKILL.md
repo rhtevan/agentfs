@@ -35,7 +35,12 @@ metadata:
 **Root cause:** `_desktop_linux_sandbox_fixup()` in `hermes_cli/main.py` requires root.
 **Fix:** Early return when `ELECTRON_DISABLE_SANDBOX=1` is set. Env var set in `hermes-env.sh` and `.env`.
 
-### 4. electron-builder Can't Find Electron
+### 4. Duplicate Taskbar Icon on Fedora/GNOME Wayland
+**Symptom:** Two Hermes icons appear in the GNOME launch bar — one for the pinned `.desktop` entry and a second for the running window.
+**Root cause:** The hand-crafted `~/.local/share/applications/hermes-desktop.desktop` had `StartupWMClass=hermes` (lowercase), but the Electron binary reports `WM_CLASS=Hermes` (capital H, matching `productName` / `executableName` in `builder-effective-config.yaml`). GNOME Wayland does a **case-sensitive** match, so the running window couldn't be associated with the pinned launcher.
+**Fix:** `StartupWMClass=Hermes` (capital H) in the `.desktop` file, then `update-desktop-database ~/.local/share/applications/`.
+
+### 5. electron-builder Can't Find Electron
 **Symptom:** Build fails looking for `../../node_modules/electron/dist`.
 **Root cause:** npm workspace hoisting puts electron in `apps/desktop/node_modules/electron/`, not repo root.
 **Fix:** Inject symlink creation into `apps/desktop/scripts/patch-electron-builder-mac-binary.cjs`.
@@ -61,6 +66,7 @@ The key challenge: `git pull --ff-only` refuses to merge when skip-worktree file
 | `~/.hermes/hermes-revert-patches.sh` | Reverts patched files to clean upstream before update |
 | `~/.hermes/hermes-check-patches.sh` | Health check (9 checks) |
 | `~/.hermes/.env` | `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE=en_US.UTF-8` (loaded by `load_hermes_dotenv()`) |
+| `~/.local/share/applications/hermes-desktop.desktop` | GNOME desktop entry (`StartupWMClass=Hermes`) |
 | `~/.local/bin/hermes` | Launcher: sources env, intercepts update |
 | `~/.hermes/hermes-agent/.git/hooks/post-merge` | Calls hermes-apply-patches.sh |
 
@@ -91,4 +97,5 @@ rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-28 | v2.1 — Added fix #4: duplicate taskbar icon on Fedora/GNOME Wayland (`StartupWMClass` case mismatch); renumbered electron-builder fix to #5; added `.desktop` file to "Files outside git" table |
 | 2026-06-26 14:07 | v1.0 — Initial skill |
