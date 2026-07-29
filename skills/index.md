@@ -1,13 +1,14 @@
 # Skills Index
 
-> 43 skills | Sorted by reverse chronological order (newest first).
+> 44 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Signals | Updated |
 |-------|------|---------|---------|
+| [fedora-dns-cache](./fedora-dns-cache/SKILL.md) | fedora, dns, network, systemd, terminal, offline | dns cache, terminal stuck offline, terminal hangs no internet, dns timeout, fedora dns cache, shell hangs network drop | 2026-07-29 10:27 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-07-28 09:39 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill | 2026-07-27 18:28 |
 | [spec-kit-setup](./spec-kit-setup/SKILL.md) | speckit, specify, cli, setup, installation | install spec-kit, setup specify, upgrade spec-kit | 2026-07-27 18:27 |
-| [skupper-linux-two-site](./skupper-linux-two-site/SKILL.md) |  |  | 2026-07-27 18:27 |
+| [skupper-linux-two-site](./skupper-linux-two-site/SKILL.md) | skupper, linux, systemd, two-site, van, networking, skrouterd | skupper linux, skupper two site, skupper systemd | 2026-07-27 18:27 |
 | [skill-merge](./skill-merge/SKILL.md) | agentfs, skills, merge, project, user | merge skills, copy skills to user, promote skills | 2026-07-27 18:27 |
 | [skill-index](./skill-index/SKILL.md) | agentfs, skills, index, discovery | refresh skill index, index skills, regenerate skill index | 2026-07-27 18:27 |
 | [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | agentfs, okf, knowledge, scaffolding, setup | setup knowledge bundle, scaffold knowledge bundle, okf setup | 2026-07-27 18:27 |

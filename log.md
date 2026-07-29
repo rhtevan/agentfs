@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-29 10:28
+
+- Created USER skill `fedora-dns-cache` at `~/.agents/skills/fedora-dns-cache/`
+- Added `SKILL.md` and `scripts/setup.sh` for systemd-resolved stale DNS caching
+- Regenerated `~/.agents/skills/index.md` (44 skills)
+
 ## 2026-07-28 16:45
 
 - Updated `hermes-desktop-fixes/SKILL.md`: v2.1 — added fix #4 (duplicate taskbar icon on Fedora/GNOME Wayland, `StartupWMClass` case mismatch); renumbered electron-builder fix to #5; added `.desktop` file to "Files outside git" table
