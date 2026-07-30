@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-30 14:14
+
+- Updated `goose-recipe-session-cleanup` to v3.0 — Desktop sessions now eligible for cleanup on explicit request; Hidden sessions deletable; added `SKIP_TRACKED` safety for projects.json sessions; signal routing table for category selection; "clean all sessions" support
+- Regenerated `~/.agents/skills/index.md` (45 skills)
+
+## 2026-07-30 13:54
+
+- Updated `goose-recipe-session-cleanup` to v2.0 — report now shows 4 distinct sections (Recipe, Terminal, Hidden, Desktop reference); added optional `before_date` filter for targeted cleanup; improved deletion script with configurable flags; VACUUM only on bulk deletes
+- Regenerated `~/.agents/skills/index.md` (45 skills)
+
+## 2026-07-30 13:39
+
+- Created USER skill `goose-recipe-session-cleanup` at `~/.agents/skills/goose-recipe-session-cleanup/SKILL.md`
+- Identifies and removes orphaned session records from ad-hoc `goose session run --recipe` commands in SQLite DB
+- Regenerated `~/.agents/skills/index.md` (44 → 45 skills)
+
 ## 2026-07-29 10:28
 
 - Created USER skill `fedora-dns-cache` at `~/.agents/skills/fedora-dns-cache/`
