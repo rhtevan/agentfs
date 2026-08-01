@@ -20,7 +20,7 @@ AI coding agents.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 3.7 |
+| **Version** | 3.8 |
 | **Default mode** | `project` |
 | **Modes** | `project` (per-repo context) · `user` (shared library) |
 | **Scripts** | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
@@ -120,7 +120,7 @@ Creates:
 - `.agents/SOUL.md` — default agent identity
 - `.agents/index.md`, `log.md`
 - `AGENTS.md` — workspace entry point with scope definitions, progressive
-  loading (SOUL.md, knowledge index), and nine structural guardrails
+  loading (SOUL.md, knowledge index), and ten structural guardrails
 
 ### USER mode (minimal install only)
 
@@ -182,7 +182,7 @@ creates missing ones.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails
+The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 (reordered by usage frequency):
 
 1. **Progressive Disclosure** — browse `index.md` before opening files
@@ -195,9 +195,11 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails
    file currency, and index currency in a single guardrail
 6. **Idempotency** — every skill and workflow must be idempotent
 7. **Anti-Sycophancy** — refuse conflicting requests, log overrides
-8. **Checkpoints & Resumability** — checkpoint before destructive ops
-9. **Git Push Safety** — mandatory 5-step preflight before any
-   `git push`: stop → scan → present report → wait for approval → push
+8. **Anti-Daydreaming** — ephemeral session canary name; spot-check
+   for context drift; never persisted to AgentFS files
+9. **Checkpoints & Resumability** — checkpoint before destructive ops
+10. **Git Push Safety** — mandatory 5-step preflight before any
+    `git push`: stop → scan → present report → wait for approval → push
 
 ## Layer Reference
 
@@ -229,6 +231,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with nine guardrails
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated design-spec and all cross-references |
 | 2026-07-27 17:10 | v3.7 — Added `metadata.signals` frontmatter field spec to design-spec; slimmed Signal Routing table to LLM-direct + ambiguous routes only (11→9 rows); added skill discovery note for signal-routed intents; added template version stamp (`<!-- agentfs-template-version: X.Y -->`); added `--sync` mode for updating existing AGENTS.md from latest template; added project-owned section markers; added `metadata.signals` to SKILL.md frontmatter |
 | 2026-07-15 16:50 | v3.6 — Added Guardrail Quick Reference table after Signal Routing: one-line scannable checklist with anchor links to detailed guardrail sections; promotes post-edit discipline and all 9 guardrails to high-attention position |
 | 2026-07-15 15:00 | v3.5 — AGENTS.md template: promoted Signal Routing to standalone section after Quick Orientation (was under Guardrail #2); renamed Guardrail #2 to "Memory Scope"; added "hey git" signal; added Post-Edit Completeness sub-section to Guardrail #5; added log insertion anchor rule; changed knowledge index link to backtick format (no more `[blocked]` in renderers) |

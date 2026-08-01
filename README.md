@@ -201,8 +201,9 @@ AgentFS enforces structural guardrails to maintain consistency:
 5. **Filesystem Integrity** — Link integrity, log currency, index currency, post-edit completeness
 6. **Idempotency** — Same inputs → same filesystem state
 7. **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
-8. **Checkpoints & Resumability** — Record affected files before destructive ops
-9. **Git Push Safety** — STOP → Scan (secrets, usernames, IPs, PII) → Report → README Staleness Check → WAIT → Push
+8. **Anti-Daydreaming** — Ephemeral session canary name; spot-check for context drift; never persisted to AgentFS files
+9. **Checkpoints & Resumability** — Record affected files before destructive ops
+10. **Git Push Safety** — STOP → Scan (secrets, usernames, IPs, PII) → Report → README Staleness Check → WAIT → Push
 
 The canonical source for guardrails is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered guardrails.
@@ -380,7 +381,7 @@ contains only **LLM-direct routes** (no skill involved) and
 - "I prefer" → `USER.md` (LLM direct)
 - "learn this document" → OKF bundle (`okf-bundle-gen`/`okf-bundle-harvest` — ambiguous triage)
 - "harvest" → `skill-harvest` (procedural) or `okf-bundle-harvest` (semantic — ambiguous triage)
-- "hey git" → stage, commit, trigger Git Push Safety (LLM direct + Guardrail #9)
+- "hey git" → stage, commit, trigger Git Push Safety (LLM direct + Guardrail #10)
 
 **Skill-routed signals** (e.g., "create a skill" → `skill-gen`) do NOT
 live in the AGENTS.md table. They live in each SKILL.md's
@@ -422,7 +423,7 @@ Guardrails themselves exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 9 structural guardrails; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 10 structural guardrails; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template guardrails, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 

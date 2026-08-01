@@ -2,6 +2,23 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-07-31 21:57
+
+- Updated Index Currency sub-guardrail in seed-agents-md.sh template: clarified that metadata-only changes also trigger index regeneration
+- Regenerated skills/index.md (45 skills)
+
+## 2026-07-31 21:52
+
+- Updated seed-agents-md.sh template script: added Guardrail #8 Anti-Daydreaming section, renumbered #9/#10, updated Quick Reference table, bumped template version to 3.8
+- Bumped SKILL.md Version property from 3.7 to 3.8
+
+## 2026-07-31 21:44
+
+- Added Guardrail #8 Anti-Daydreaming to agentfs-setup skill (SKILL.md + design-spec.md) and README.md
+- Renumbered Checkpoints → #9, Git Push Safety → #10 across all files
+- Updated guardrail count from 9 to 10 in SKILL.md, design-spec.md, README.md
+- Added v3.8 changelog entries to SKILL.md and design-spec.md
+
 ## 2026-07-30 14:14
 
 - Updated `goose-recipe-session-cleanup` to v3.0 — Desktop sessions now eligible for cleanup on explicit request; Hidden sessions deletable; added `SKIP_TRACKED` safety for projects.json sessions; signal routing table for category selection; "clean all sessions" support

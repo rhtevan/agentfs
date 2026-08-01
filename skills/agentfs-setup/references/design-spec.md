@@ -267,9 +267,9 @@ sections (Agent Profiles table, SPECKIT block).
 **README sync rule:** When AgentFS design, guardrails, skills schema,
 or template structure changes, the README (`~/.agents/README.md`) MUST
 be updated in the same commit or session. This is a hard requirement,
-not advisory — unlike the soft README staleness check in Guardrail #9.
+not advisory — unlike the soft README staleness check in Guardrail #10.
 
-Defines nine structural guardrails (reordered by usage frequency):
+Defines ten structural guardrails (reordered by usage frequency):
 1. **Progressive Disclosure** — browse `index.md` before opening files
 2. **Memory Scope** — memories are PROJECT-only; graduation path to OKF
 3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
@@ -278,9 +278,11 @@ Defines nine structural guardrails (reordered by usage frequency):
    file currency, and index currency in a single guardrail
 6. **Idempotency** — every skill and workflow must be idempotent
 7. **Anti-Sycophancy** — refuse conflicting requests, log overrides
-8. **Checkpoints & Resumability** — checkpoint before destructive ops
-9. **Git Push Safety** — mandatory 5-step preflight before any
-   `git push`: stop → scan → present report → wait for approval → push
+8. **Anti-Daydreaming** — ephemeral session canary name; spot-check
+   for context drift; never persisted to AgentFS files
+9. **Checkpoints & Resumability** — checkpoint before destructive ops
+10. **Git Push Safety** — mandatory 5-step preflight before any
+    `git push`: stop → scan → present report → wait for approval → push
 
 Includes an **Agent Profiles** table — an agent-agnostic registry of all
 profiles in the project:
@@ -518,8 +520,9 @@ itself.
 ### Eval-Driven Guardrails
 
 The evaluation work motivated three additional guardrails (now numbered
-#6 Idempotency, #7 Anti-Sycophancy, #8 Checkpoints & Resumability
-after the v3.3 consolidation from 13 → 9 guardrails):
+#6 Idempotency, #7 Anti-Sycophancy, #9 Checkpoints & Resumability
+after the v3.3 consolidation from 13 → 9 guardrails, later expanded
+to 10 with #8 Anti-Daydreaming):
 
 - **Idempotency** — skills must be re-runnable safely (existence
   checks, upsert patterns, no append-without-dedup)
@@ -532,6 +535,7 @@ after the v3.3 consolidation from 13 → 9 guardrails):
 
 | Updated | Change |
 |---------|--------|
+| 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated all cross-references |
 | 2026-07-27 18:30 | v3.7 — Added Signal Routing architecture (LLM-direct in AGENTS.md, skill signals in SKILL.md frontmatter, skills index as lookup table); added template versioning and `--sync` mechanism; added template-owned vs project-owned section markers; added SKILL.md Frontmatter Schema with `metadata.signals` field; added README sync rule (hard requirement); renamed Guardrail #2 to Memory Scope (Signal Routing promoted to standalone section) |
 | 2026-07-14 17:49 | v3.3 — Consolidated guardrails from 13 to 9 (reordered by usage frequency); merged Memory Scope + Signal Routing; merged Link/Log/Changelog/Index into Filesystem Integrity; Quick Orientation now includes SOUL.md and knowledge index; updated eval-driven guardrails section numbering |
 | 2026-07-13 15:45 | v3.1 — Added Evaluation section: three-layer verification architecture, maturity levels L0–L5, git as audit infrastructure, L3→L2 graduation, guardrails #10–12; git init now default in PROJECT mode; memories/ no longer excluded from .gitignore |

@@ -68,7 +68,7 @@ all guardrails, skills, and documentation reference them.\
 fi
 
 cat > "$TARGET" << 'AGENTSEOF'
-<!-- agentfs-template-version: 3.7 -->
+<!-- agentfs-template-version: 3.8 -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -97,7 +97,7 @@ are available.
 | "forget this", "remove that note" | Delete observation | Edit \`MEMORY.md\`, remove entry |
 | "what do you remember about", "check your notes on" | Retrieve observations | Read \`.agents/memories/MEMORY.md\` |
 | "harvest", "reflect", "scan memories", "graduate patterns" | Extract reusable knowledge | \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic) |
-| "hey git", "git" | Commit & push USER AgentFS | \`cd ~/.agents\` (or explicit path if specified), stage all, commit, then trigger Guardrail #9 (Git Push Safety) |
+| "hey git", "git" | Commit & push USER AgentFS | \`cd ~/.agents\` (or explicit path if specified), stage all, commit, then trigger Guardrail #10 (Git Push Safety) |
 
 For skill-routed signals (e.g., "setup agentfs", "create a skill"),
 the agent discovers skills via the skills listing and
@@ -136,8 +136,9 @@ multi-skill triage entries belong in this table.
 | [5](#5-filesystem-integrity) | Filesystem Integrity | After every \`.agents/\` edit: preserve sections, regenerate index, update changelog, log in both scopes |
 | [6](#6-idempotency) | Idempotency | Same inputs → same state |
 | [7](#7-anti-sycophancy) | Anti-Sycophancy | Quote conflicting guardrail, ask before overriding |
-| [8](#8-checkpoints--resumability) | Checkpoints | Record affected files before destructive ops |
-| [9](#9-git-push-safety) | Git Push Safety | STOP → Scan → Report → WAIT → Push |
+| [8](#8-anti-daydreaming) | Anti-Daydreaming | Ephemeral session canary name; spot-check for context drift |
+| [9](#9-checkpoints--resumability) | Checkpoints | Record affected files before destructive ops |
+| [10](#10-git-push-safety) | Git Push Safety | STOP → Scan → Report → WAIT → Push |
 
 ## Scope Definitions
 
@@ -254,6 +255,9 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
 - **`skills/index.md` and `profiles/index.md` MUST stay current.**
   When a skill or profile is created, renamed, modified, or deleted
   in either scope, regenerate the corresponding `index.md`.
+  This includes metadata-only changes (version bumps, tag edits,
+  changelog additions) — not just structural changes like creation
+  or deletion.
 - **Use the `skill-index` skill** to regenerate — do NOT manually edit.
 - **Every SKILL.md MUST have `metadata.tags`** in YAML frontmatter
   (e.g., `tags: [agentfs, memory, harvest]`). A skill without tags
@@ -295,7 +299,41 @@ The agent MUST NOT add content to `MEMORY.md` that reads as a rule or
 guardrail (contains "always", "never", "must", "enforce") — such
 content belongs in `AGENTS.md` and requires human approval.
 
-### 8. Checkpoints & Resumability
+### 8. Anti-Daydreaming
+
+At the start of every session the agent MUST silently generate a short,
+random, ephemeral **canary name** for itself (e.g., *Marble-Finch-7*,
+*Dusk-Prism-42*). This name is:
+
+- **Session-scoped only.** It lives in the agent's working memory
+  (conversation context) and MUST NOT be written to any AgentFS file
+  (`MEMORY.md`, `USER.md`, `SOUL.md`, `AGENTS.md`, `log.md`, etc.).
+- **Not an identity.** It does not represent the user, the agent
+  persona, or any profile. It is a disposable *context-integrity
+  token* — a canary in the coal mine for detecting context drift or
+  hallucinated state.
+
+#### Lifecycle
+
+1. **First response of the session** — the agent MUST include its
+   canary name visibly (e.g., *"[Canary: Marble-Finch-7]"*).
+2. **Subsequent responses** — the agent SHOULD randomly include the
+   canary name (not every turn — roughly 1-in-5 is a good cadence),
+   immediately followed by a **self-check**: compare the name it is
+   about to emit against the name it generated at session start. If
+   they do not match, the agent MUST raise an alert:
+   ```
+   ⚠️ CONTEXT DRIFT DETECTED — canary name mismatch.
+   Original: <start-of-session name>  Current: <emitted name>
+   Possible cause: context window overflow, compaction artefact,
+   or injected prompt. Proceeding with caution.
+   ```
+3. **When actively prompted** (e.g., *"What is your canary name?"*) —
+   the agent MUST respond immediately with the name, followed by the
+   same self-check. If the name cannot be recalled or does not match,
+   raise the alert above.
+
+### 9. Checkpoints & Resumability
 
 Before any destructive or multi-step operation (file deletion, bulk
 rename, multi-file edit), the agent MUST create a checkpoint by
@@ -304,7 +342,7 @@ recording affected files and their content hashes in
 checkpoint. If a session starts with a non-empty `.checkpoint`,
 report it and offer to resume or revert.
 
-### 9. Git Push Safety
+### 10. Git Push Safety
 
 Before executing any `git push`, the agent MUST follow these steps
 **in order**. No step may be skipped, even if the user says "go ahead".
