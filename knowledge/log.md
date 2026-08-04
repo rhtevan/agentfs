@@ -2,6 +2,17 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-04 15:58
+
+- Created knowledge bundle `llm-inference-constrained-gpu` with 6 concept documents
+- `vllm-vs-llamacpp-gpu-philosophy.md` — GPU-first vs CPU-first inference architecture
+- `containerized-inference-pattern.md` — Reusable pattern for GPU-accelerated container serving
+- `gpu-layer-tuning-methodology.md` — Systematic tuning of llama.cpp GPU layers on limited VRAM
+- `context-window-agentfs-requirements.md` — Minimum context window for AgentFS compatibility
+- `fedora-nvidia-container-gotchas.md` — Fedora RPMFusion + Podman + NVIDIA pitfalls
+- `vllm-quantization-pitfalls.md` — vLLM quantization failure modes and solutions
+- Updated `~/.agents/knowledge/index.md` with new bundle entry
+
 ## 2026-07-22 19:06
 
 * **Update**: Merged new knowledge into `skupper-v2-concepts/` — 6 created, 3 indexes updated. New sub-bundles: migration/, platform-details/.

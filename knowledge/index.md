@@ -2,6 +2,7 @@
 
 User-scoped knowledge bundles distilled from project experiences.
 
+* [LLM Inference on Constrained GPUs](llm-inference-constrained-gpu/index.md) - Patterns, gotchas, and architectural decisions for deploying LLM inference servers on NVIDIA GPUs with limited VRAM (≤ 4 GB)
 * [Skupper V2 Concepts](skupper-v2-concepts/index.md) - Comprehensive knowledge of Skupper V2 (Red Hat Service Interconnect) — concepts, resources, security, advanced features, and operations
 * [AgentFS Skill Patterns](agentfs-skill-patterns/index.md) - Reusable design patterns for building robust, multi-parameter AgentFS skills (parameter binding, CLI hints, confirmation flow)
 * [AgentFS ↔ Claude Compatibility](agentfs-claude-compat/index.md) - Gap analysis and solution plan for cross-agent context discovery between AgentFS (AGENTS.md), Claude Code (CLAUDE.md)...

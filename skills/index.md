@@ -1,11 +1,12 @@
 # Skills Index
 
-> 45 skills | Sorted by reverse chronological order (newest first).
+> 46 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Signals | Updated |
 |-------|------|---------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | sync agentfs, update agentfs, upgrade agentfs | 2026-07-31 21:52 |
-| [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal |  | 2026-07-30 14:14 |
+| [local-model-ctl](./local-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf | model list, model setup, model start, model stop, model status, model test, model pre-check, deploy model, start model, stop model, start vllm, stop vllm, start llama, stop llama, granite start, granite stop, granite status | 2026-08-04 15:19 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | sync agentfs, update agentfs, upgrade agentfs | 2026-07-31 22:01 |
+| [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean recipe sessions, cleanup goose sessions, clean all sessions, clean desktop sessions, clean terminal sessions, orphaned sessions, recipe session cleanup, goose session cleanup, remove recipe sessions, stale goose sessions | 2026-07-30 14:14 |
 | [fedora-dns-cache](./fedora-dns-cache/SKILL.md) | fedora, dns, network, systemd, terminal, offline | dns cache, terminal stuck offline, terminal hangs no internet, dns timeout, fedora dns cache, shell hangs network drop | 2026-07-29 10:27 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-07-28 09:39 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill | 2026-07-27 18:28 |

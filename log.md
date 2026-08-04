@@ -2,6 +2,36 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-04 15:58
+
+- Harvested knowledge bundle `llm-inference-constrained-gpu` at `~/.agents/knowledge/llm-inference-constrained-gpu/`
+- 6 concept documents: vLLM vs llama.cpp philosophy, containerized inference pattern, GPU layer tuning, AgentFS context requirements, Fedora NVIDIA gotchas, vLLM quantization pitfalls
+- Updated `~/.agents/knowledge/index.md` and `~/.agents/knowledge/log.md`
+
+## 2026-08-04 15:36
+
+- Updated `local-model-ctl` to v2.1 — model-specific container names (`model-g350m`, `model-g1b`, `model-g8b`)
+- Enables true start/stop switching without redeployment
+- Renamed live container on rhtevan-work: `llama-granite` → `model-g8b`
+
+## 2026-08-04 15:19
+
+- Renamed skill `granite-4.0-1b-model-ctl` → `local-model-ctl` (v2.0)
+- Added multi-model support: g350m (default), g1b, g8b with automatic engine selection
+- Added llama.cpp engine support for g8b (GGUF Q4_K_M, hybrid CPU+GPU offload)
+- Added `list` operation to show all supported models
+- Added model alias parameter to `start` and `setup` operations
+- Captured GPU layer tuning data (4K ctx → 25 layers, 16K ctx → 18 layers)
+- Removed old `granite-4.0-1b-model-ctl` skill directory
+- Regenerated `~/.agents/skills/index.md` (46 skills)
+
+## 2026-08-04 12:46
+
+- Created skill `granite-4.0-1b-model-ctl` at `~/.agents/skills/granite-4.0-1b-model-ctl/SKILL.md`
+- Skill provides pre-check, setup, test, status, start, stop operations for containerized vLLM + Granite 4.0-1B inference server
+- Captures all lessons learned from deployment session on rhtevan-work (Fedora/RPMFusion nvidia-smi absence, Podman pasta networking, bitsandbytes quantization, dtype auto-detect, tool calling flags)
+- Regenerated `~/.agents/skills/index.md` (46 skills)
+
 ## 2026-07-31 21:57
 
 - Updated Index Currency sub-guardrail in seed-agents-md.sh template: clarified that metadata-only changes also trigger index regeneration
