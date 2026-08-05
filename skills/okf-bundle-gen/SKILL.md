@@ -9,6 +9,7 @@ description: >
   Session-specific knowledge goes into per-session sub-bundles. Fully
   compliant with Open Knowledge Format v0.1.
 metadata:
+  version: "3.2.0"
   tags: [agentfs, okf, knowledge, generation, session]
   signals: ["generate knowledge bundle", "create knowledge bundle", "okf generate"]
 ---

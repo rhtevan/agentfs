@@ -9,7 +9,7 @@ argument-hint: "'start crc', 'stop crc', 'crc start', 'crc stop'"
 compatibility: "Requires crcstart/crcstop wrappers installed via crc-cmd skill"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.0.0"
   tags: [crc, openshift, openshift-local, cluster, operations]
   signals: ["start crc", "stop crc", "crc start", "crc stop"]
 user-invocable: true

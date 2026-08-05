@@ -1,27 +1,10 @@
 ---
 name: goose-desktop-env-fix
 description: "Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.)"
-version: 1.2
 metadata:
+    version: "1.2.0"
     tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
     signals: ["fix goose desktop", "goose shell environment", "goose env fix"]
-    changelog:
-      - version: "1.2"
-        date: "2026-07-15"
-        changes:
-          - "Changed devbox shellenv guard from exported `__DEVBOX_SHELLENV_LOADED` to shell-local `__devbox_shellenv_done`"
-          - "Fixes `refresh-global` alias missing inside `devbox shell` sessions"
-          - "Shell-local variable prevents re-eval in same process but does not propagate to child shells"
-      - version: "1.1"
-        date: "2026-07-08"
-        changes:
-          - "Added devbox fork bomb root cause analysis, trigger chain, symptoms, emergency cleanup"
-          - "Added `__DEVBOX_SHELLENV_LOADED` recursion guard as critical fix"
-          - "Updated `.bashrc` example, verification checklist, and tags"
-      - version: "1.0"
-        date: "2026-07-08"
-        changes:
-          - "Initial skill capturing the full Goose Desktop environment fix"
 ---
 
 # Goose Desktop Environment Fix

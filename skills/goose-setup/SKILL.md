@@ -1,8 +1,8 @@
 ---
 name: goose-setup
 description: "Configure Goose global persistent instructions for cross-project, cross-session use"
-version: 1.4
 metadata:
+    version: "1.4.0"
     tags: [goose, config, instructions, persistent]
     signals: ["setup goose", "goose global instructions", "goose persistent instructions"]
 ---

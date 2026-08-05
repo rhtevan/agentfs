@@ -258,7 +258,12 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
   This includes metadata-only changes (version bumps, tag edits,
   changelog additions) — not just structural changes like creation
   or deletion.
-- **Use the `skill-index` skill** to regenerate — do NOT manually edit.
+- **Use the `skill-index` skill** to regenerate — do NOT manually
+  edit, and do NOT write ad-hoc scripts to generate the index.
+  The `skill-index` skill contains tested logic for YAML frontmatter
+  parsing, nested metadata extraction, and correct table formatting
+  that ad-hoc scripts routinely get wrong. Always `load_skill` and
+  follow its instructions.
 - **Every SKILL.md MUST have `metadata.tags`** in YAML frontmatter
   (e.g., `tags: [agentfs, memory, harvest]`). A skill without tags
   is invisible to tag-based discovery.

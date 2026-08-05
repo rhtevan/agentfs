@@ -12,7 +12,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "1.2"
+  version: "1.5.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
   signals: ["create skill", "new skill", "make skill", "edit skill"]
 user-invocable: true
@@ -141,7 +141,7 @@ argument-hint: "<usage hint>"
 compatibility: "<requirements, if any>"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.0.0"
   tags: [<relevant-tags>]
   signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
 user-invocable: true
@@ -172,11 +172,15 @@ disable-model-invocation: false
 
 | Updated | Change |
 |---------|--------|
-| YYYY-MM-DD HH:MM | v1.0 — Initial skill |
+| YYYY-MM-DD HH:MM | v1.0.0 — Initial skill |
 ```
 
 **Writing guidance:**
 
+- **Follow the canonical schema** — see
+  [`references/skill-schema.md`](./references/skill-schema.md) for
+  required/optional fields, version format (quoted 3-part semver in
+  `metadata.version`), and changelog rules.
 - **Explain the why** — don't just say MUST/NEVER; explain reasoning
   so the agent can generalize beyond the literal instructions
 - **Imperative form** — "Run the script" not "You should run the script"
@@ -210,13 +214,16 @@ set -euo pipefail
 - [ ] **Scope verification** — skill is in the correct directory
       (USER `~/.agents/skills/` or PROJECT `./.agents/skills/`)
 - [ ] **Frontmatter validation** — YAML frontmatter includes:
-      `name`, `description`, `metadata.tags` (bracket notation,
+      `name`, `description`, `metadata.version` (quoted 3-part semver,
+      e.g., `version: "1.0.0"`), `metadata.tags` (bracket notation,
       e.g., `tags: [domain, function, artifact]`), `metadata.signals`
       (list of natural-language trigger phrases, e.g.,
       `signals: ["create skill", "new skill"]`), `user-invocable`.
       A skill without tags is invisible to tag-based discovery
       (Guardrail #5, Index Currency). A skill without signals is
       invisible to signal-based routing via `skills/index.md`.
+      See [`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md)
+      for the full canonical schema.
 - [ ] **Signal quality** — Signals should capture how users
       naturally express intent for this skill. If the skill name
       and description are self-explanatory, signals can mirror the
@@ -335,6 +342,7 @@ For both modes:
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-04 23:47 | v1.5.0 — Added canonical SKILL.md frontmatter schema (`references/skill-schema.md`); template now uses quoted 3-part semver (`"1.0.0"`); post-creation checklist requires `metadata.version`; writing guidance references schema doc |
 | 2026-07-27 18:35 | v1.4 — Added `metadata.signals` to SKILL.md template and post-creation checklist; added signal quality check; updated description guidance to emphasize conciseness (loaded every session via built-in skills listing) |
 | 2026-07-14 14:51 | v1.3 — Added "Name consistency" check to post-creation checklist: `name` field must match directory name per Agent Skills open standard (agentskills.io/specification) |
 | 2026-07-13 16:11 | v1.2 — Added "Skill Design Principles" section: non-interactive scripts, agent-as-orchestrator pattern, business process modeling |

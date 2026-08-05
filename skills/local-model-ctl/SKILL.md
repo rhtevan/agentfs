@@ -11,7 +11,7 @@ argument-hint: "'model list', 'model start g8b on rhtevan-work', 'model status',
 compatibility: "Requires Podman, NVIDIA driver, nvidia-container-toolkit, CDI spec"
 metadata:
   author: agentfs
-  version: "2.1"
+  version: "2.3.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf]
   signals:
     - "model list"
@@ -506,6 +506,8 @@ to avoid common failures.
 
 | Date | Change |
 |------|--------|
+| 2026-08-04 | v2.3 — Reverted g8b to 16K/18 GPU layers; 32K context too slow for prompt processing (~14 tok/s) causing Goose timeout; kept SELinux `:ro,z` volume mount fix |
+| 2026-08-04 | v2.2 — Increased g8b context from 16K to 32K (`--ctx-size 32768`); reduced GPU layers from 18 to 12 to fit KV cache in 4 GB VRAM; added SELinux `:ro,z` volume mount fix; updated memory budget and GPU layer tuning tables |
 | 2026-08-04 | v2.1 — Model-specific container names (`model-g350m`, `model-g1b`, `model-g8b`); enables true start/stop switching without redeployment; multiple models can be deployed simultaneously (only one running at a time on port 8000) |
 | 2026-08-04 | v2.0 — Renamed from `granite-4.0-1b-model-ctl` to `local-model-ctl`; added multi-model support (g350m, g1b, g8b); added llama.cpp engine for g8b; added `list` operation; added model alias parameter to start/setup; GPU layer tuning data |
 | 2026-08-04 | v1.0 — Initial creation as `granite-4.0-1b-model-ctl` from deployment session on rhtevan-work |

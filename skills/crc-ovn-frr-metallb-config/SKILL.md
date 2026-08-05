@@ -6,6 +6,7 @@ description: >
   re-establishes the full OVN-FRR and MetalLB integration after a
   `crc delete && crc start` cycle.
 metadata:
+  version: "1.1.0"
   tags: [openshift, crc, networking, ovn, bgp, metallb]
   signals: ["ovn frr", "metallb setup", "bgp metallb"]
 ---

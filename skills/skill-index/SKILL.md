@@ -9,6 +9,7 @@ description: >
   (~/.agents/skills/); use PROJECT skills (./.agents/skills/) only when
   the user explicitly signals project scope.
 metadata:
+  version: "2.3.0"
   tags: [agentfs, skills, index, discovery]
   signals: ["refresh skill index", "index skills", "regenerate skill index"]
 ---
@@ -70,11 +71,29 @@ the default. If the user signals project scope (see table above), use
         typically a YAML list in bracket notation, e.g.,
         `tags: [agentfs, memory, harvest]`. Parse the bracket contents
         and split on commas. Strip whitespace from each tag.
-      - **Signals:** Extract the `signals:` field under `metadata:`.
+      - **Signals:** Extract the `signals:` field **nested under
+        `metadata:`** (i.e., `meta['metadata']['signals']`). Do NOT
+        look for signals at the YAML top level — the nesting matters.
+        If using a YAML parser, access via
+        `meta.get('metadata', {}).get('signals', [])`, not
+        `meta.get('signals', [])`.
         Signals are a YAML list of natural-language trigger phrases,
         e.g., `signals: ["sync agentfs", "update agentfs"]`. Parse
         the bracket contents and split on commas. Strip surrounding
         quotes and whitespace from each signal.
+      - **Metadata block regex (last-line bug):** When using regex to
+        capture the indented block under `metadata:`, the pattern
+        `((?:[ \t]+.*\n)*)` fails to capture the last indented line
+        if it is not followed by a newline (i.e., it sits immediately
+        before the closing `---`). Use `((?:[ \t]+.*(?:\n|$))*)` instead
+        to match lines terminated by either newline OR end-of-string.
+        Without this fix, `signals:` (often the last metadata field)
+        will be silently dropped.
+      - **Table generation (blank-line bug):** When joining table lines
+        with `\n`, do NOT embed trailing `\n` in any element of the
+        lines list. A `\n` suffix on the header separator line produces
+        a double newline (blank row) between the header and first data
+        row, which breaks Markdown table rendering.
       - Strip surrounding quotes from values if present.
 
    b. If there is **no** YAML frontmatter, derive the metadata:
@@ -97,6 +116,10 @@ the default. If the user signals project scope (see table above), use
      `name`), but the warning alerts the user to fix it.
    - If the skill has no `name` field, emit:
      `WARNING: missing name field — dir=[<dir>]`
+   - If the skill has no `metadata.version` field, emit:
+     `WARNING: missing metadata.version — dir=[<dir>]`
+     (Version is required per the canonical schema:
+     [`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md))
 
 5. **Extract timestamp for each skill**
    Use the last-modified timestamp of each `SKILL.md` file
@@ -150,11 +173,16 @@ the default. If the user signals project scope (see table above), use
 - [ ] Rows are sorted newest-first (reverse chronological order).
 - [ ] **Name consistency** — No warnings about `name` vs directory mismatches.
       If warnings were emitted, they should be reported to the user.
+- [ ] **Version presence** — No warnings about missing `metadata.version`.
+      If warnings were emitted, they should be reported to the user.
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-04 23:52 | v2.3.0 — Added `metadata.version` presence validation; emits warning for skills missing `metadata.version`; references canonical schema (`skill-gen/references/skill-schema.md`) |
+| 2026-08-04 19:20 | v2.2 — Documented two implementation bugs: (1) metadata block regex must use `(?:\n|$)` not just `\n` to capture last-line signals before closing `---`; (2) table generation must not embed trailing `\n` in lines list elements to avoid blank-row between header and data |
+| 2026-08-04 19:10 | v2.1 — Clarified that signals MUST be extracted from `metadata.signals` (nested), NOT top-level `signals` — the YAML nesting matters; previous ambiguity caused empty Signals columns during index generation |
 | 2026-07-27 18:25 | v2.0 — Removed Description column from generated index (already in built-in skills listing; avoids token duplication); Signals column now primary discovery mechanism; every skill MUST have signals |
 | 2026-07-27 17:15 | v1.9 — Added Signals column to generated index; extract `metadata.signals` from YAML frontmatter; supports signal-based skill discovery for non-obvious intent routing |
 | 2026-07-14 14:56 | v1.8 — Added name-directory consistency validation (step 4): warns when `name` field doesn't match directory name per Agent Skills open standard (agentskills.io/specification). Added verification check. Fixed step numbering. |

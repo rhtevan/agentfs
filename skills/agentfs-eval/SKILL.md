@@ -6,7 +6,7 @@ description: >-
   assertions (forensic), and semantic assertions (constrained LLM
   classification). Produces a maturity report with levels L0–L5.
 metadata:
-  version: "1.0"
+  version: "1.0.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
   signals: ["eval agentfs", "agentfs health", "maturity check"]
 ---

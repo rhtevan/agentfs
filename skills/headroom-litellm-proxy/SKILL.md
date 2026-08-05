@@ -1,9 +1,9 @@
 ---
 name: headroom-litellm-proxy
 description: "Install the Headroom context-optimization proxy and configure it as a systemd user service chained to a local LiteLLM upstream"
-version: 1.1.0
 platforms: [linux]
 metadata:
+  version: "1.1.0"
   tags: [headroom, proxy, litellm, systemd, compression, context-optimization, installation]
   signals: ["install headroom", "headroom proxy setup", "headroom service"]
   related_skills: [headroom-proxy-status, litellm-proxy-status, litellm-vertex-ai-proxy, goose-headroom-provider]

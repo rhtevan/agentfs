@@ -1,9 +1,9 @@
 ---
 name: litellm-vertex-ai-proxy
 description: "Set up a local LiteLLM proxy for GCP Vertex AI with systemd auto-start and service account credentials"
-version: 1.0.0
 platforms: [linux]
 metadata:
+  version: "1.0.0"
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   signals: ["litellm vertex", "vertex ai proxy", "setup litellm vertex"]
   hermes:

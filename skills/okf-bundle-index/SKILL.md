@@ -6,6 +6,7 @@ description: >
   index.md files, then repairs them to restore full OKF conformance.
   Fully compliant with Open Knowledge Format v0.1.
 metadata:
+  version: "1.3.0"
   tags: [agentfs, okf, knowledge, index, links]
   signals: ["fix knowledge index", "check knowledge links", "okf index fix"]
 ---

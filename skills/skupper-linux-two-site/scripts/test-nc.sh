@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # test-nc.sh — Test inter-site connectivity using nc (netcat) through the Skupper VAN
 # Usage: bash test-nc.sh <NAMESPACE> <REMOTE_SSH_HOST> <LOCAL_SITE_NAME> [TEST_PORT] [ROUTING_KEY]
+#
+# Architecture: Remote=interior(hub), Local=edge.
+#   Connector on remote → nc listener on remote
+#   Listener on local → send from local, receive on remote
 set -euo pipefail
 
 if [[ $# -lt 3 ]]; then
@@ -16,8 +20,8 @@ ROUTING_KEY="${5:-nc-test}"
 
 TEST_MSG="hello from ${LOCAL_SITE_NAME} via skupper VAN"
 
-# --- Create Connector on remote ---
-echo "=== Creating Connector on remote ==="
+# --- Create Connector on remote (interior site) ---
+echo "=== Creating Connector on remote (interior) ==="
 CONNECTOR_YAML=$(mktemp /tmp/connector-XXXXXX.yaml)
 cat > "${CONNECTOR_YAML}" <<EOF
 apiVersion: skupper.io/v2alpha1
@@ -33,12 +37,12 @@ EOF
 REMOTE_CONNECTOR="/tmp/connector-nc.yaml"
 scp -q "${CONNECTOR_YAML}" "${REMOTE_SSH_HOST}:${REMOTE_CONNECTOR}"
 ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux apply -f ${REMOTE_CONNECTOR}"
-ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux reload" 2>&1 | grep -v 'WARN certificate'
+ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux reload" 2>&1 | { grep -v 'WARN certificate' || true; }
 sleep 2
 
-# --- Create Listener on localhost ---
+# --- Create Listener on localhost (edge site) ---
 echo ""
-echo "=== Creating Listener on localhost ==="
+echo "=== Creating Listener on localhost (edge) ==="
 LISTENER_YAML=$(mktemp /tmp/listener-XXXXXX.yaml)
 cat > "${LISTENER_YAML}" <<EOF
 apiVersion: skupper.io/v2alpha1
@@ -52,7 +56,7 @@ spec:
 EOF
 
 skupper system -n "${NAMESPACE}" -p linux apply -f "${LISTENER_YAML}"
-skupper system -n "${NAMESPACE}" -p linux reload 2>&1 | grep -v 'WARN certificate'
+skupper system -n "${NAMESPACE}" -p linux reload 2>&1 | { grep -v 'WARN certificate' || true; }
 sleep 2
 
 # Verify listener port
@@ -89,12 +93,12 @@ fi
 # --- Cleanup test resources ---
 echo ""
 echo "=== Cleaning up test resources ==="
-ssh "${REMOTE_SSH_HOST}" 'pkill -f "nc -l" 2>/dev/null || true'
+ssh "${REMOTE_SSH_HOST}" 'pkill -f "nc -l" 2>/dev/null; true'
 ssh "${REMOTE_SSH_HOST}" 'rm -f /tmp/nc-received.txt'
 ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux delete -f ${REMOTE_CONNECTOR}" 2>/dev/null || true
 skupper system -n "${NAMESPACE}" -p linux delete -f "${LISTENER_YAML}" 2>/dev/null || true
-ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux reload" 2>&1 | grep -v 'WARN certificate'
-skupper system -n "${NAMESPACE}" -p linux reload 2>&1 | grep -v 'WARN certificate'
+ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux reload" 2>&1 | { grep -v 'WARN certificate' || true; }
+skupper system -n "${NAMESPACE}" -p linux reload 2>&1 | { grep -v 'WARN certificate' || true; }
 
 # Cleanup temp files
 rm -f "${CONNECTOR_YAML}" "${LISTENER_YAML}"

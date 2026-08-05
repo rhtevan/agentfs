@@ -1,8 +1,8 @@
 ---
 name: hermes-desktop-fixes
 description: Diagnose and maintain Hermes Agent Desktop fixes for custom provider identity loss, Electron sandbox issues, and electron-builder workspace hoisting problems
-version: 2
 metadata:
+  version: "2.0.0"
   tags: [hermes, desktop, electron, fix, provider]
   signals: ["fix hermes desktop", "hermes electron fix", "hermes identity fix"]
 ---

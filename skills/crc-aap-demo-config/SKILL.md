@@ -8,6 +8,7 @@ description: >
   or resource allocations. Installs the aap-demo CLI and prepares the
   pull secret.
 metadata:
+  version: "1.0.0"
   tags: [openshift, crc, aap-demo, configuration, safety, preflight]
   signals: ["aap demo", "configure aap demo", "setup aap demo"]
 ---

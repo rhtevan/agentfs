@@ -8,6 +8,7 @@ description: >
   explicitly signals force/overwrite. After merging, refreshes the
   USER skills index.
 metadata:
+  version: "1.2.0"
   tags: [agentfs, skills, merge, project, user]
   signals: ["merge skills", "copy skills to user", "promote skills"]
 ---

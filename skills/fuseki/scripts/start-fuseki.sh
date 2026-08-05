@@ -17,6 +17,12 @@ if ! systemctl --user cat "${SERVICE}" &>/dev/null; then
     exit 1
 fi
 
+# Ensure service is enabled for auto-start on login
+if ! systemctl --user is-enabled "${SERVICE}" &>/dev/null; then
+    echo "  [+] Enabling ${SERVICE} for auto-start..."
+    systemctl --user enable "${SERVICE}"
+fi
+
 # Check if already running
 if systemctl --user is-active "${SERVICE}" &>/dev/null; then
     echo "  [~] Fuseki is already running"

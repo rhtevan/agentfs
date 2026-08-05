@@ -6,7 +6,7 @@ description: >
   (goose term), hidden sessions (goose doctor), and desktop sessions
   (interactive UI/CLI). Supports date filtering and per-category selection.
 metadata:
-  version: 3.0.0
+  version: "3.0.0"
   tags: [goose, recipe, session, cleanup, orphan, desktop, terminal]
   signals:
     - clean recipe sessions

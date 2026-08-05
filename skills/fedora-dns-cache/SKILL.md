@@ -8,7 +8,7 @@ argument-hint: "No arguments required"
 compatibility: "Fedora 40+ with systemd-resolved"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.0.0"
   tags: [fedora, dns, network, systemd, terminal, offline]
   signals: ["dns cache", "terminal stuck offline", "terminal hangs no internet", "dns timeout", "fedora dns cache", "shell hangs network drop"]
 user-invocable: true

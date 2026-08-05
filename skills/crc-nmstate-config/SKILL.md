@@ -2,6 +2,7 @@
 name: crc-nmstate-config
 description: Install and configure the NMState Operator on OpenShift Local (CRC), verify the nmstate-console-plugin is functioning, and confirm NodeNetworkConfigurationPolicy (NNCP) and NodeNetworkState (NNS) menu items appear in the OpenShift Console Networking section.
 metadata:
+  version: "1.0.0"
   tags: [openshift, crc, networking, nmstate, operator]
   signals: ["install nmstate", "configure nmstate", "nmstate operator"]
 ---

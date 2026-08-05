@@ -2,6 +2,89 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-04 23:58
+
+- Migrated all 48 skills to canonical frontmatter schema (`skill-gen/references/skill-schema.md`):
+  - 14 skills: moved `version:` from top-level into `metadata:` block
+  - 19 skills: added `metadata.version` (extracted from changelog)
+  - 13 skills: normalized version format to quoted 3-part semver
+  - 2 skills: removed YAML `changelog:` from frontmatter (goose-desktop-env-fix, goose-skupper-provider)
+  - 1 skill: restructured non-standard frontmatter (goose-skupper-provider: added `description:`, wrapped tags/signals in `metadata:`)
+  - 1 skill: added missing `## Changelog` Markdown section (goose-skupper-provider)
+- Result: 48/48 skills now have `metadata.version` as quoted 3-part semver
+
+## 2026-08-04 23:52
+
+- Created `skills/skill-gen/references/skill-schema.md` — canonical SKILL.md frontmatter schema (single source of truth for version location, format, changelog rules)
+- Updated `skills/skill-gen/SKILL.md` v1.5.0 — template uses quoted 3-part semver (`"1.0.0"`); post-creation checklist requires `metadata.version`; writing guidance references schema doc
+- Updated `skills/skill-harvest/SKILL.md` v1.1.0 — scaffolded template uses `"1.0.0"` with `metadata.signals`; quality checklist references canonical schema
+- Updated `skills/skill-index/SKILL.md` v2.3.0 — added `metadata.version` presence validation warning; references canonical schema
+
+## 2026-08-04 22:20
+
+- Reverted `local-model-ctl` to v2.3 — g8b back to 16K/18 GPU layers (32K too slow for Goose prompt processing)
+- Recreated `model-g8b` container on rhtevan-work with `--ctx-size 16384 --n-gpu-layers 18 -v ...:/models:ro,z`
+- Updated `custom_skupper.json` context_limit to 16384
+- Validated: 3/3 model tests passed via Skupper VAN
+
+## 2026-08-04 20:24
+
+- Updated `local-model-ctl` to v2.2 — g8b context increased from 16K to 32K, GPU layers reduced from 18 to 12, SELinux volume mount fix
+- Recreated `model-g8b` container on rhtevan-work with `--ctx-size 32768 --n-gpu-layers 12`
+- Updated `skupper-linux-two-site` to v2.0 — swapped site roles: localhost=edge, remote=interior/hub
+- Updated `skupper-model-provider` to v1.1 — same role swap, firewall check moved to remote host
+- Validated skupper-linux-two-site: create → link → nc test ✅ → teardown ✅
+
+## 2026-08-04 19:37
+
+- Updated `skills/agentfs-setup/scripts/seed-agents-md.sh` § Index Currency guardrail: strengthened `skill-index` mandate — explicitly prohibits ad-hoc scripts for index generation; requires `load_skill` and following skill instructions
+
+## 2026-08-04 19:33
+
+- Updated `skills/goose-skupper-provider/SKILL.md` to v1.1.0 — added setup/teardown capabilities with setup as default
+- Rewrote `skills/goose-skupper-provider/PROVIDER.md` — merged original loaded-skill reference config into PROVIDER.md; added full Teardown section (remove custom_skupper.json + config.yaml entry)
+- Regenerated `skills/index.md`
+
+## 2026-08-04 19:20
+- Updated `skill-index` skill (v2.1→v2.2): documented metadata block regex last-line bug fix (`(?:\n|$)`) and table generation blank-line bug fix
+- Regenerated `~/.agents/skills/index.md` — all 48/48 skills now have signals populated
+
+## 2026-08-04 19:16
+- Created skill `goose-skupper-provider` at `~/.agents/skills/goose-skupper-provider/SKILL.md` — Goose custom provider for Skupper VAN model endpoint (localhost:8000)
+- Created `~/.config/goose/custom_providers/custom_skupper.json` — Skupper provider definition
+- Added `custom_skupper` provider entry to `~/.config/goose/config.yaml`
+- Updated terminology in `skupper-model-provider` (v1.1→v1.2): local=edge, remote=hub/interior
+- Updated terminology in `skupper-linux-two-site` (v2.0→v2.1): replaced my-hub/my-edge examples with neutral placeholders
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-04 19:05
+- Fixed missing `signals` in `skills/spec-kit-setup/SKILL.md` frontmatter — added 5 signal phrases
+- Regenerated `skills/index.md` (48 skills) — spec-kit-setup Signals column now populated
+
+## 2026-08-04 19:00
+
+- Fixed `fuseki` skill v1.1: stop script now disables auto-start (`systemctl --user disable`); start script re-enables it. Prevents Fuseki from restarting on login after explicit stop.
+- Updated `skills/fuseki/scripts/stop-fuseki.sh` — added disable step after stop
+- Updated `skills/fuseki/scripts/start-fuseki.sh` — added enable step before start
+- Updated `skills/fuseki/SKILL.md` changelog
+
+## 2026-08-04 18:35
+
+- Updated `skupper-linux-two-site` to v2.0 — swapped site roles: localhost=edge (outbound, no firewall needed), remote=interior/hub (accepts inbound links)
+- Updated `skupper-model-provider` to v1.1 — same role swap, all scripts rewritten
+- Updated `link-sites.sh`, `test-nc.sh`, `teardown.sh` in skupper-linux-two-site
+- Updated `up.sh`, `down.sh`, `status.sh` in skupper-model-provider
+- Validated skupper-linux-two-site with full cycle: create sites → link → nc test ✅ → teardown ✅
+- Regenerated `~/.agents/skills/index.md`
+
+## 2026-08-04 17:38
+
+- Created `skupper-model-provider` skill under `~/.agents/skills/skupper-model-provider/`
+- Scripts: `up.sh`, `down.sh`, `test-model.sh`, `status.sh`
+- Replaces `skupper-linux-two-site` with integrated model runtime lifecycle
+- Idempotent up/down with full Skupper VAN + model runtime management
+- Regenerated `~/.agents/skills/index.md` (47 skills)
+
 ## 2026-08-04 15:58
 
 - Harvested knowledge bundle `llm-inference-constrained-gpu` at `~/.agents/knowledge/llm-inference-constrained-gpu/`
@@ -628,3 +711,5 @@
 ## 2026-06-26 14:00
 
 - Initialized .agents/ directory structure (mode: system).
+
+

@@ -15,7 +15,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.0.0"
   tags: [goose, agentfs, configuration, compatibility]
   signals: ["configure goose agentfs", "goose context files", "goose agentfs"]
 user-invocable: true

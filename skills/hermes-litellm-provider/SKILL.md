@@ -1,9 +1,9 @@
 ---
 name: hermes-litellm-provider
 description: "Configure Hermes Agent to use a local LiteLLM proxy as its custom LLM provider, with model discovery and verification"
-version: 1.0.0
 platforms: [linux]
 metadata:
+  version: "1.0.0"
   tags: [hermes, litellm, custom-provider, configuration]
   signals: ["hermes litellm", "configure hermes litellm"]
   related_skills: [litellm-vertex-ai-proxy]

@@ -12,7 +12,7 @@ argument-hint: "Optionally specify project paths: 'harvest skills from ~/project
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.1.0"
   tags: [agentfs, skills, memory, procedural, graduation, harvest]
   signals: ["harvest skills", "harvest procedures", "graduate skills"]
 user-invocable: true
@@ -269,8 +269,9 @@ argument-hint: "<usage hint>"
 compatibility: "<requirements>"
 metadata:
   author: agentfs
-  version: "1.0"
+  version: "1.0.0"
   tags: [<tags>]
+  signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -306,7 +307,7 @@ disable-model-invocation: false
 
 | Updated | Change |
 |---------|--------|
-| YYYY-MM-DD HH:MM | v1.0 — Initial skill harvested from project memories |
+| YYYY-MM-DD HH:MM | v1.0.0 — Initial skill harvested from project memories |
 ```
 
 #### 5c. Write scripts
@@ -404,7 +405,9 @@ bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
 
 For each new skill created:
 
-1. Confirm `SKILL.md` exists and has YAML frontmatter
+1. Confirm `SKILL.md` exists and has YAML frontmatter conforming to
+   the canonical schema
+   ([`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md))
 2. Confirm scripts are executable (`chmod +x`)
 3. Confirm the skill appears in `~/.agents/skills/index.md`
 4. Optionally do a dry-run of the scripts if safe
@@ -421,7 +424,10 @@ Before completing, verify:
 - [ ] System-specific entries were either abstracted or left as memory
 - [ ] Graduated entries were **removed** from source MEMORY.md files
 - [ ] MEMORY.md backups were created before pruning
-- [ ] Every SKILL.md has YAML frontmatter with `name` and `description`
+- [ ] Every SKILL.md has YAML frontmatter conforming to the canonical schema
+      ([`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md)):
+      `name`, `description`, `metadata.version` (quoted 3-part semver),
+      `metadata.tags`, `metadata.signals`
 - [ ] Scripts are idempotent (or document why not)
 - [ ] Scripts use `$HOME` not hardcoded paths
 - [ ] `~/.agents/skills/index.md` regenerated via `skill-index`
@@ -519,4 +525,5 @@ Dependencies (from `skill-index`):
 
 | Updated | Change |
 |---------|--------|
-| 2026-07-09 19:52 | v1.0 — Initial skill: procedural memory scanning, graduation criteria, skill scaffolding, MEMORY.md pruning |
+| 2026-08-04 23:50 | v1.1.0 — Scaffolded SKILL.md template now uses quoted 3-part semver (`"1.0.0"`), includes `metadata.signals`; quality checklist and post-creation verification reference canonical schema (`skill-gen/references/skill-schema.md`) |
+| 2026-07-09 19:52 | v1.0.0 — Initial skill: procedural memory scanning, graduation criteria, skill scaffolding, MEMORY.md pruning |

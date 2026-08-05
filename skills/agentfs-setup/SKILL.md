@@ -6,6 +6,7 @@ description: >
   sync existing AGENTS.md with latest template, and verify setup
   integrity. Default mode is PROJECT.
 metadata:
+  version: "3.8.1"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
   signals: ["sync agentfs", "update agentfs", "upgrade agentfs"]
 ---
@@ -231,6 +232,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-04 19:40 | v3.8.1 — Strengthened Index Currency guardrail in AGENTS.md template: explicitly prohibits ad-hoc scripts for index generation; requires `load_skill` and following `skill-index` instructions |
 | 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated design-spec and all cross-references |
 | 2026-07-27 17:10 | v3.7 — Added `metadata.signals` frontmatter field spec to design-spec; slimmed Signal Routing table to LLM-direct + ambiguous routes only (11→9 rows); added skill discovery note for signal-routed intents; added template version stamp (`<!-- agentfs-template-version: X.Y -->`); added `--sync` mode for updating existing AGENTS.md from latest template; added project-owned section markers; added `metadata.signals` to SKILL.md frontmatter |
 | 2026-07-15 16:50 | v3.6 — Added Guardrail Quick Reference table after Signal Routing: one-line scannable checklist with anchor links to detailed guardrail sections; promotes post-edit discipline and all 9 guardrails to high-attention position |

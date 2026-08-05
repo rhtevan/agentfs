@@ -6,6 +6,7 @@ description: >
   set up Spec-Driven Development, check for spec-kit updates, upgrade specify,
   or when another skill or workflow requires spec-kit as a prerequisite.
 metadata:
+  version: "1.0.0"
   tags: [speckit, specify, cli, setup, installation]
   signals: ["install spec-kit", "setup specify", "upgrade spec-kit"]
 ---

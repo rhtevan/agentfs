@@ -2,6 +2,7 @@
 name: fedora-window-list
 description: Toggle the window list (taskbar) at the bottom of the Fedora GNOME desktop on or off
 metadata:
+  version: "1.0.0"
   tags: [fedora, gnome, desktop, taskbar]
   signals: ["window list", "taskbar toggle", "gnome taskbar"]
 ---

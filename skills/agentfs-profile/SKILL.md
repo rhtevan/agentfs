@@ -7,6 +7,7 @@ description: >
   have been run in PROJECT mode first. Skills remain shared across all
   agents at the project level.
 metadata:
+  version: "1.8.0"
   tags: [agentfs, profiles, multi-agent, identity]
   signals: ["create profile", "add agent profile", "new agent"]
 ---

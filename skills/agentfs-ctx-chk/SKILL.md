@@ -7,7 +7,7 @@ description: >-
   applies fixes to both project files and root-cause skill templates.
   Complements agentfs-eval (structural health) with context optimization.
 metadata:
-  version: "1.1"
+  version: "1.1.0"
   tags: [agentfs, context, audit, optimization, guardrails]
   signals: ["check agentfs", "audit context", "context check"]
 user-invocable: true

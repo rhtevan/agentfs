@@ -25,6 +25,13 @@ else
     echo "  [✓] Service stopped"
 fi
 
+# Disable auto-start on login
+if systemctl --user is-enabled "${SERVICE}" &>/dev/null; then
+    echo "  [+] Disabling ${SERVICE} auto-start..."
+    systemctl --user disable "${SERVICE}"
+    echo "  [✓] Service disabled (won't start on next login)"
+fi
+
 # Verify port is released
 sleep 2
 HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 2 \

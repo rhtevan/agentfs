@@ -10,32 +10,32 @@ argument-hint: >
   Usage: skupper-linux-two-site --local-site <name> --remote-site <name>
     --remote-host <ssh-host> --namespace <ns>
     [--firewall-zone <zone>] [--test-port <port>] [--routing-key <key>]
-  Example: skupper-linux-two-site --local-site my-hub
-    --remote-site my-edge --remote-host my-edge
+  Example: skupper-linux-two-site --local-site my-local
+    --remote-site my-remote --remote-host my-remote-host
     --namespace playground
 parameters:
   LOCAL_SITE_NAME:
-    description: Name for the interior (hub) Skupper site on localhost
+    description: Name for the edge Skupper site on localhost
     required: true
-    binding-cues: ["local site", "this host", "hub site", "interior site"]
-    example: my-hub
+    binding-cues: ["local site", "this host", "edge site"]
+    example: my-local
   REMOTE_SITE_NAME:
-    description: Name for the edge Skupper site on the remote host
+    description: Name for the interior (hub) Skupper site on the remote host
     required: true
-    binding-cues: ["remote site", "edge site", "other host"]
-    example: my-edge
+    binding-cues: ["remote site", "hub site", "interior site", "other host"]
+    example: my-remote
   REMOTE_SSH_HOST:
     description: SSH target for the remote host (alias or user@host)
     required: true
     binding-cues: ["ssh host", "remote host", "connect to", "ssh alias"]
-    example: my-edge
+    example: my-remote-host
   NAMESPACE:
     description: Skupper namespace (isolates sites on the same host)
     required: true
     binding-cues: ["namespace", "ns"]
     example: playground
   FIREWALL_ZONE:
-    description: Firewall zone on the interior site (auto-detected if omitted)
+    description: Firewall zone on the interior site (remote host, auto-detected if omitted)
     required: false
     default: auto-detect via 'firewall-cmd --get-active-zones'
     binding-cues: ["firewall zone", "zone"]
@@ -58,7 +58,7 @@ compatibility: >
   (if firewall is active on interior site)
 metadata:
   author: agentfs
-  version: "1.3"
+  version: "2.1.0"
   tags: [skupper, linux, systemd, two-site, van, networking, skrouterd]
   signals: ["skupper linux", "skupper two site", "skupper systemd"]
 user-invocable: true
@@ -79,9 +79,9 @@ against user input for semantic binding.
 
 | Parameter | Required | Default | Binding Cues | Example |
 |-----------|:--------:|---------|-------------|----------|
-| `LOCAL_SITE_NAME` | ✅ | — | "local site", "this host", "hub site" | `my-hub` |
-| `REMOTE_SITE_NAME` | ✅ | — | "remote site", "edge site", "other host" | `my-edge` |
-| `REMOTE_SSH_HOST` | ✅ | — | "ssh host", "remote host", "connect to" | `my-edge` |
+| `LOCAL_SITE_NAME` | ✅ | — | "local site", "this host", "edge site" | `my-local` |
+| `REMOTE_SITE_NAME` | ✅ | — | "remote site", "hub site", "interior site" | `my-remote` |
+| `REMOTE_SSH_HOST` | ✅ | — | "ssh host", "remote host", "connect to" | `my-remote-host` |
 | `NAMESPACE` | ✅ | — | "namespace", "ns" | `playground` |
 | `FIREWALL_ZONE` | ❌ | auto-detect | "firewall zone", "zone" | `FedoraWorkstation` |
 | `TEST_PORT` | ❌ | `9090` | "test port", "port", "nc port" | `9090` |
@@ -90,8 +90,8 @@ against user input for semantic binding.
 ### Agent Binding Rules
 
 1. **Match user input against `binding-cues`** — when the user says
-   "set up a skupper VAN to remote host my-edge", bind
-   `my-edge` to `REMOTE_SSH_HOST` (matches "remote host").
+   "set up a skupper VAN to remote host my-remote-host", bind
+   `my-remote-host` to `REMOTE_SSH_HOST` (matches "remote host").
 
 2. **Prompt for missing required parameters** — if a required parameter
    cannot be resolved from context, present a usage hint:
@@ -110,9 +110,9 @@ against user input for semantic binding.
 
    ```
    Resolved parameters:
-     LOCAL_SITE_NAME:  my-hub
-     REMOTE_SITE_NAME: my-edge
-     REMOTE_SSH_HOST:  my-edge
+     LOCAL_SITE_NAME:  my-local
+     REMOTE_SITE_NAME: my-remote
+     REMOTE_SSH_HOST:  my-remote-host
      NAMESPACE:        playground
      TEST_PORT:        9090 (default)
    Proceed? [y/n]
@@ -124,7 +124,7 @@ against user input for semantic binding.
    |--------|------|
    | `verify-prerequisites.sh` | `$1=REMOTE_SSH_HOST` |
    | `create-site.sh` | `$1=SITE_NAME $2=NAMESPACE $3=ROLE $4=REMOTE_SSH_HOST` |
-   | `link-sites.sh` | `$1=NAMESPACE $2=LOCAL_IP $3=REMOTE_SSH_HOST` |
+   | `link-sites.sh` | `$1=NAMESPACE $2=REMOTE_SSH_HOST` |
    | `test-nc.sh` | `$1=NAMESPACE $2=REMOTE_SSH_HOST $3=LOCAL_SITE_NAME $4=TEST_PORT $5=TEST_ROUTING_KEY` |
    | `teardown.sh` | `$1=NAMESPACE $2=REMOTE_SSH_HOST` |
 
@@ -132,19 +132,19 @@ against user input for semantic binding.
 
 ### Happy path — all required parameters provided
 
-User: *"Set up a skupper VAN between this host and my-edge, call the local site my-hub and the remote site my-edge, use namespace playground"*
+User: *"Set up a skupper VAN between this host and my-remote-host, call the local site my-local and the remote site my-remote, use namespace playground"*
 
 ```
-load_skill(name: "skupper-linux-two-site", args: "--local-site my-hub --remote-site my-edge --remote-host my-edge --namespace playground")
+load_skill(name: "skupper-linux-two-site", args: "--local-site my-local --remote-site my-remote --remote-host my-remote-host --namespace playground")
 ```
 
 Agent confirms:
 
 ```
 Resolved parameters:
-  LOCAL_SITE_NAME:   my-hub
-  REMOTE_SITE_NAME:  my-edge
-  REMOTE_SSH_HOST:   my-edge
+  LOCAL_SITE_NAME:   my-local
+  REMOTE_SITE_NAME:  my-remote
+  REMOTE_SSH_HOST:   my-remote-host
   NAMESPACE:         playground
   FIREWALL_ZONE:     auto-detect
   TEST_PORT:         9090 (default)
@@ -165,9 +165,9 @@ Missing required parameters. Usage:
     --remote-host <ssh-host> --namespace <ns>
 
 Please provide:
-  --local-site   Name for the interior site on this host (e.g., my-hub)
-  --remote-site  Name for the edge site on the remote host (e.g., my-edge)
-  --remote-host  SSH target for the remote host (e.g., my-edge)
+  --local-site   Name for the edge site on this host (e.g., my-local)
+  --remote-site  Name for the interior/hub site on the remote host (e.g., my-remote)
+  --remote-host  SSH target for the remote host (e.g., my-remote-host)
 ```
 
 ## Prerequisites
@@ -182,19 +182,19 @@ Please provide:
 ## Architecture
 
 ```
-Localhost (Interior)                    Remote Host (Edge)
+Localhost (Edge)                        Remote Host (Interior)
 ┌──────────────────────┐  mTLS Link  ┌──────────────────────┐
-│  LOCAL_SITE_NAME     │ ←────────── │  REMOTE_SITE_NAME    │
-│  linkAccess: default │   port      │  edge: true          │
-│  ports: 55671, 45671 │   45671     │                      │
+│  LOCAL_SITE_NAME     │ ──────────→ │  REMOTE_SITE_NAME    │
+│  edge: true          │   port      │  linkAccess: default │
+│                      │   45671     │  ports: 55671, 45671 │
 │  (skrouterd native)  │             │  (skrouterd native)  │
 └──────────────────────┘             └──────────────────────┘
    namespace: NAMESPACE                 namespace: NAMESPACE
 ```
 
-**Link direction:** The edge site (remote) connects **outbound** to
-the interior site (localhost). Only the interior site needs inbound
-firewall rules.
+**Link direction:** The edge site (localhost) connects **outbound** to
+the interior site (remote). Only the interior site (remote) needs
+inbound firewall rules. Localhost requires no inbound ports.
 
 ## Steps
 
@@ -220,7 +220,7 @@ firewall rules.
 
 ### Phase 2: Create Sites
 
-3. **Create the Interior site on localhost**
+3. **Create the Edge site on localhost**
 
    Write the Site resource YAML:
 
@@ -231,7 +231,7 @@ firewall rules.
    metadata:
      name: ${LOCAL_SITE_NAME}
    spec:
-     linkAccess: default
+     edge: true
    ```
 
    Apply and start:
@@ -247,13 +247,7 @@ firewall rules.
    systemctl --user status skupper-${NAMESPACE}.service
    ```
 
-   Verify ports are listening:
-
-   ```bash
-   ss -tlnp | grep -E '55671|45671'
-   ```
-
-4. **Create the Edge site on the remote host**
+4. **Create the Interior site on the remote host**
 
    Write the Site resource YAML:
 
@@ -264,7 +258,7 @@ firewall rules.
    metadata:
      name: ${REMOTE_SITE_NAME}
    spec:
-     edge: true
+     linkAccess: default
    ```
 
    Copy to remote, apply, and start:
@@ -281,58 +275,65 @@ firewall rules.
    ssh ${REMOTE_SSH_HOST} 'systemctl --user status skupper-${NAMESPACE}.service'
    ```
 
-### Phase 3: Open Firewall (Interior Site Only)
-
-The interior site accepts inbound links. If a firewall is active on
-localhost, open port **45671** (edge links). Port 55671 is only
-needed if other interior sites will link in.
-
-5. **Check and open firewall (requires sudo)**
+   Verify ports are listening on the remote (interior) host:
 
    ```bash
-   # Detect active zone if FIREWALL_ZONE not provided
-   firewall-cmd --get-active-zones
-
-   # Open port
-   sudo firewall-cmd --zone=${FIREWALL_ZONE} --add-port=45671/tcp --permanent
-   sudo firewall-cmd --reload
-
-   # Verify
-   firewall-cmd --list-ports
+   ssh ${REMOTE_SSH_HOST} 'ss -tlnp | grep -E "55671|45671"'
    ```
 
-   > **Note:** This step requires `sudo`. The agent cannot perform
-   > this automatically — provide the commands for the user to run.
+### Phase 3: Open Firewall (Interior Site — Remote Host)
 
-   If no firewall is active, skip this step.
+The interior site (remote host) accepts inbound links. If a firewall
+is active on the remote host, open port **45671** (edge links).
+Port 55671 is only needed if other interior sites will link in.
+
+5. **Check and open firewall on the remote host (requires sudo)**
+
+   ```bash
+   # Detect active zone on remote
+   ssh ${REMOTE_SSH_HOST} 'firewall-cmd --get-active-zones'
+
+   # Open port (run on remote host)
+   ssh ${REMOTE_SSH_HOST} 'sudo firewall-cmd --zone=${FIREWALL_ZONE} --add-port=45671/tcp --permanent'
+   ssh ${REMOTE_SSH_HOST} 'sudo firewall-cmd --reload'
+
+   # Verify
+   ssh ${REMOTE_SSH_HOST} 'firewall-cmd --list-ports'
+   ```
+
+   > **Note:** This step requires `sudo` on the remote host. The agent
+   > cannot perform this automatically — provide the commands for the
+   > user to run.
+
+   If no firewall is active on the remote host, skip this step.
+   Localhost (edge site) requires no inbound ports.
 
 ### Phase 4: Link the Sites
 
-6. **Get the interior site's reachable IP**
+6. **Get the interior site's (remote) reachable IP**
 
    ```bash
-   LOCAL_IP=$(hostname -I | awk '{print $1}')
-   echo "Interior site IP: ${LOCAL_IP}"
+   REMOTE_IP=$(ssh ${REMOTE_SSH_HOST} "hostname -I | awk '{print \$1}'")
+   echo "Interior site IP: ${REMOTE_IP}"
    ```
 
-   Verify the remote host can reach this IP:
+   Verify localhost can reach the remote interior site:
 
    ```bash
-   ssh ${REMOTE_SSH_HOST} "nc -zv ${LOCAL_IP} 45671 -w 5"
+   nc -zv ${REMOTE_IP} 45671 -w 5
    ```
 
-7. **Generate a link token on the interior site**
+7. **Generate a link token on the interior site (remote)**
 
    ```bash
-   skupper link generate -n ${NAMESPACE} -p linux --host ${LOCAL_IP} > link-token.yaml
+   ssh ${REMOTE_SSH_HOST} "skupper link generate -n ${NAMESPACE} -p linux --host ${REMOTE_IP}" > link-token.yaml
    ```
 
-8. **Copy the token to the remote host and apply**
+8. **Apply the token on the edge site (localhost)**
 
    ```bash
-   scp link-token.yaml ${REMOTE_SSH_HOST}:~/link-token.yaml
-   ssh ${REMOTE_SSH_HOST} "skupper system -n ${NAMESPACE} -p linux apply -f ~/link-token.yaml"
-   ssh ${REMOTE_SSH_HOST} "skupper system -n ${NAMESPACE} -p linux reload"
+   skupper system -n ${NAMESPACE} -p linux apply -f link-token.yaml
+   skupper system -n ${NAMESPACE} -p linux reload
    ```
 
 9. **Verify the link**
@@ -346,7 +347,7 @@ needed if other interior sites will link in.
    Check link status (may show "Pending" — see Known Issues):
 
    ```bash
-   ssh ${REMOTE_SSH_HOST} 'skupper link status -n ${NAMESPACE} -p linux'
+   skupper link status -n ${NAMESPACE} -p linux
    ```
 
 ### Phase 5: Test with nc
@@ -445,8 +446,8 @@ To completely remove everything including sites:
 16. **Stop both sites**
 
     ```bash
-    ssh ${REMOTE_SSH_HOST} "skupper system -n ${NAMESPACE} -p linux stop"
     skupper system -n ${NAMESPACE} -p linux stop
+    ssh ${REMOTE_SSH_HOST} "skupper system -n ${NAMESPACE} -p linux stop"
     ```
 
 17. **Clean up stale systemd state** (if needed)
@@ -457,11 +458,11 @@ To completely remove everything including sites:
     ssh ${REMOTE_SSH_HOST} 'systemctl --user reset-failed skupper-${NAMESPACE}.service 2>/dev/null; systemctl --user daemon-reload'
     ```
 
-18. **Remove firewall rule** (if added)
+18. **Remove firewall rule on remote** (if added)
 
     ```bash
-    sudo firewall-cmd --zone=${FIREWALL_ZONE} --remove-port=45671/tcp --permanent
-    sudo firewall-cmd --reload
+    ssh ${REMOTE_SSH_HOST} 'sudo firewall-cmd --zone=${FIREWALL_ZONE} --remove-port=45671/tcp --permanent'
+    ssh ${REMOTE_SSH_HOST} 'sudo firewall-cmd --reload'
     ```
 
 ## Known Issues
@@ -476,7 +477,7 @@ To completely remove everything including sites:
 
 - [ ] Both `skupper-${NAMESPACE}.service` units are `active (running)`
 - [ ] `skrouterd` processes running on both hosts
-- [ ] Ports 55671 and 45671 listening on interior site
+- [ ] Ports 55671 and 45671 listening on interior site (remote host)
 - [ ] TCP ESTABLISHED connection on port 45671 between the hosts
 - [ ] nc test message delivered end-to-end through the VAN
 
@@ -484,6 +485,8 @@ To completely remove everything including sites:
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-04 19:09 | v2.1 — Fixed terminology consistency: local=edge, remote=hub/interior. Replaced confusing my-hub/my-edge examples with neutral my-local/my-remote/my-remote-host placeholders to avoid conflating site names with Skupper roles. |
+| 2026-08-04 18:25 | v2.0 — Swapped site roles: localhost=edge (outbound only, no firewall needed), remote=interior/hub (accepts inbound links). Updated all scripts and documentation. |
 | 2026-07-22 21:34 | v1.3 — Replaced environment-specific examples (ezhang-work, rhtevan-work) with generic placeholders (my-hub, my-edge) |
 | 2026-07-22 21:21 | v1.2 — Added Invocation Example section (happy path + missing params) |
 | 2026-07-22 21:11 | v1.1 — Added structured parameter definitions with binding-cues, usage hints, confirmation flow, and script argument mapping table |

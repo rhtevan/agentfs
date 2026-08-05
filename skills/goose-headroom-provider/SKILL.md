@@ -1,9 +1,9 @@
 ---
 name: goose-headroom-provider
 description: "Configure Goose to use the Headroom context-optimization proxy as a custom provider, chained to LiteLLM for upstream LLM access"
-version: 2.0.0
 platforms: [linux]
 metadata:
+  version: "2.0.0"
   tags: [goose, headroom, custom-provider, context-optimization, compression, configuration]
   signals: ["goose headroom", "configure goose headroom"]
   related_skills: [headroom-litellm-proxy, headroom-proxy-status, goose-litellm-provider, litellm-proxy-status]
