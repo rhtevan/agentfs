@@ -45,7 +45,7 @@ Localhost (Edge)                         Remote Host (Interior/Hub)
 │  Listener                  │  port   │  Connector                 │
 │    routingKey: model-api   │  45671  │    routingKey: model-api   │
 │    port: 8000              │         │    port: 8000              │
-│                            │         │    host: localhost          │
+│                            │         │    host: localhost         │
 │  curl localhost:8000 ──────┼────→────┼──→ model container         │
 │    /v1/chat/completions    │         │    (g350m/g1b/g8b)         │
 └────────────────────────────┘         └────────────────────────────┘
