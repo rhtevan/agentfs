@@ -1,96 +1,112 @@
 #!/usr/bin/env bash
-# status.sh — Check the status of all Skupper Model Provider components
-# Usage: bash status.sh <NAMESPACE> <REMOTE_SSH_HOST>
-#
-# Architecture: Local=edge, Remote=interior/hub + model runtime.
-set -euo pipefail
+# status.sh — Check Skupper VAN and model status
+# Usage: bash status.sh [MODEL_ALIAS]
+#   No alias: full status of all components
+#   With alias: status of specific model path
 
-if [[ $# -lt 2 ]]; then
-  echo "Usage: $0 <NAMESPACE> <REMOTE_SSH_HOST>" >&2
-  exit 2
-fi
+source "$(dirname "$0")/common.sh"
 
-NAMESPACE="$1"
-REMOTE_SSH_HOST="$2"
-MODEL_PORT=8000
+MODEL_ALIAS="${1:-}"
 
-echo "══════════════════════════════════════════════════════════"
-echo "Skupper Model Provider — Status"
-echo "══════════════════════════════════════════════════════════"
+echo "=== Skupper Model Provider Status ==="
+echo
 
-# ---- Skupper Sites ----
-echo ""
-echo "── Skupper Sites ──"
-REMOTE_SVC=$(ssh "${REMOTE_SSH_HOST}" "systemctl --user is-active skupper-${NAMESPACE}.service 2>/dev/null || echo inactive")
-LOCAL_SVC=$(systemctl --user is-active "skupper-${NAMESPACE}.service" 2>/dev/null || echo "inactive")
-
-if [[ "$REMOTE_SVC" == "active" ]]; then
-  echo "✅ Remote (interior): active"
+# ── Local Router ──────────────────────────────────────────────
+echo "--- Local Router ---"
+LOCAL_STATUS=$(check_router_status "localhost")
+if [[ "$LOCAL_STATUS" == *"Up"* ]]; then
+  echo "  🟢 Router: $LOCAL_STATUS"
+  
+  # Check established connections
+  ESTAB_RTW=$(ss -tnp 2>/dev/null | grep '55671' | grep -c ESTAB 2>/dev/null || echo "0")
+  ESTAB_RAI=$(ss -tnp 2>/dev/null | grep '8000' | grep -c ESTAB 2>/dev/null || echo "0")
+  
+  [[ "$ESTAB_RTW" -gt 0 ]] && echo "  🟢 Link rhtevan-work: $ESTAB_RTW connections" || echo "  🔴 Link rhtevan-work: not connected"
+  [[ "$ESTAB_RAI" -gt 0 ]] && echo "  🟢 Link rhel-ai: $ESTAB_RAI connections" || echo "  🔴 Link rhel-ai: not connected"
+  
+  # Check listener ports
+  PORT_10000=$(ss -tlnp 2>/dev/null | grep ':10000' | grep -c LISTEN 2>/dev/null || echo "0")
+  PORT_9000=$(ss -tlnp 2>/dev/null | grep ':9000' | grep -c LISTEN 2>/dev/null || echo "0")
+  
+  [[ "$PORT_10000" -gt 0 ]] && echo "  🟢 Listener :10000 (model-api-rhtevan-work)" || echo "  🔴 Listener :10000 not open"
+  [[ "$PORT_9000" -gt 0 ]]  && echo "  🟢 Listener :9000 (model-api-rhel-ai)" || echo "  🔴 Listener :9000 not open"
 else
-  echo "⬚  Remote (interior): ${REMOTE_SVC}"
+  echo "  🔴 Router: $LOCAL_STATUS"
 fi
+echo
 
-if [[ "$LOCAL_SVC" == "active" ]]; then
-  echo "✅ Local (edge):      active"
-else
-  echo "⬚  Local (edge):      ${LOCAL_SVC}"
-fi
-
-# ---- Inter-site Link ----
-echo ""
-echo "── Inter-site Link ──"
-LINK_ESTAB=$(ss -tnp 2>/dev/null | { grep 45671 || true; } | { grep ESTAB || true; } | wc -l)
-if [[ "$LINK_ESTAB" -gt 0 ]]; then
-  echo "✅ Link: ${LINK_ESTAB} ESTAB connections on port 45671"
-else
-  echo "⬚  Link: no established connections on port 45671"
-fi
-
-# ---- Model Runtime on Remote ----
-echo ""
-echo "── Model Runtime (${REMOTE_SSH_HOST}) ──"
-for ALIAS in g350m g1b g8b; do
-  CONTAINER="model-${ALIAS}"
-  STATUS=$(ssh "${REMOTE_SSH_HOST}" "podman ps -a --filter name=${CONTAINER} --format '{{.Status}}' 2>/dev/null" || true)
-  if [[ -z "$STATUS" ]]; then
-    continue  # Container doesn't exist, skip
+# ── Remote Hubs ───────────────────────────────────────────────
+for host in rhtevan-work rhel-ai; do
+  echo "--- $host Hub ---"
+  
+  if ! host_reachable "$host"; then
+    echo "  ⚠️  Host unreachable"
+    echo
+    continue
   fi
-  RUNNING=$(echo "$STATUS" | { grep -c '^Up' || true; })
-  if [[ "$RUNNING" -gt 0 ]]; then
-    echo "✅ ${CONTAINER}: ${STATUS}"
+  
+  ROUTER_STATUS=$(check_router_status "$host")
+  if [[ "$ROUTER_STATUS" == *"Up"* ]]; then
+    echo "  🟢 Router: $ROUTER_STATUS"
+    
+    IFS='|' read -r _ ir_port _ routing_key model_port <<< "${SITE_PROFILES[$host]}"
+    
+    # Check listening ports
+    LISTENING=$(run_on_host "$host" "ss -tlnp | grep ${ir_port} | grep -c LISTEN" || echo "0")
+    [[ "$LISTENING" -gt 0 ]] && echo "  🟢 Inter-router port $ir_port listening" || echo "  🔴 Port $ir_port not listening"
   else
-    echo "⬚  ${CONTAINER}: ${STATUS}"
+    echo "  🔴 Router: $ROUTER_STATUS"
   fi
+  echo
 done
 
-# Remote API check
-REMOTE_API=$(ssh "${REMOTE_SSH_HOST}" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${MODEL_PORT}/v1/models 2>/dev/null" || echo "000")
-if [[ "$REMOTE_API" == "200" ]]; then
-  REMOTE_MODEL=$(ssh "${REMOTE_SSH_HOST}" "curl -s http://localhost:${MODEL_PORT}/v1/models" 2>/dev/null \
-    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data'][0]['id'])" 2>/dev/null || echo "unknown")
-  echo "✅ Remote API:  HTTP 200 — model: ${REMOTE_MODEL}"
+# ── Models ────────────────────────────────────────────────────
+echo "--- Models ---"
+
+if [[ -n "$MODEL_ALIAS" ]]; then
+  # Specific model
+  aliases=("$MODEL_ALIAS")
 else
-  echo "⬚  Remote API:  HTTP ${REMOTE_API}"
+  # All models
+  aliases=(g350m g1b g8b g30b-96k g8b-128k)
 fi
 
-# ---- Local Listener ----
-echo ""
-echo "── Local Endpoint ──"
-LISTENER_PORT=$(ss -tlnp 2>/dev/null | { grep ":${MODEL_PORT} " || true; } | head -1)
-if [[ -n "$LISTENER_PORT" ]]; then
-  echo "✅ Port ${MODEL_PORT}: listening"
-else
-  echo "⬚  Port ${MODEL_PORT}: not listening"
-fi
+for alias in "${aliases[@]}"; do
+  host=$(alias_to_host "$alias") || continue
+  container=$(alias_to_container "$alias")
+  local_port=$(alias_to_local_port "$alias")
+  
+  if ! host_reachable "$host"; then
+    printf "  %-12s %-12s %-6s %s\n" "$alias" "$host" "$local_port" "⚪ unknown (host unreachable)"
+    continue
+  fi
+  
+  status=$(run_on_host "$host" "podman ps -a --filter name=${container} --format '{{.Status}}'" || echo "not found")
+  if [[ "$status" == *"Up"* ]]; then
+    icon="🟢"
+    # Check API
+    code=$(run_on_host "$host" "curl -s -o /dev/null -w '%{http_code}' http://localhost:$(alias_to_local_port "$alias" | sed 's/10000/10000/;s/9000/9000/')" 2>/dev/null || echo "000")
+    IFS='|' read -r _ _ _ _ model_port <<< "${SITE_PROFILES[$host]}"
+    code=$(run_on_host "$host" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${model_port}/v1/models" 2>/dev/null || echo "000")
+    [[ "$code" == "200" ]] && status="$status (API: HTTP 200)" || status="$status (API: HTTP $code)"
+  elif [[ "$status" == *"Exited"* ]]; then
+    icon="🔴"
+  else
+    icon="⚪"
+  fi
+  printf "  %-12s %-12s %-6s %s %s\n" "$alias" "$host" "$local_port" "$icon" "$status"
+done
+echo
 
-# Local API check (through Skupper)
-LOCAL_API=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${MODEL_PORT}/v1/models" 2>/dev/null || echo "000")
-if [[ "$LOCAL_API" == "200" ]]; then
-  LOCAL_MODEL=$(curl -s "http://localhost:${MODEL_PORT}/v1/models" 2>/dev/null \
-    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data'][0]['id'])" 2>/dev/null || echo "unknown")
-  echo "✅ Local API:   HTTP 200 — model: ${LOCAL_MODEL} (via Skupper VAN)"
-else
-  echo "⬚  Local API:   HTTP ${LOCAL_API}"
-fi
-
-echo ""
+# ── End-to-End ────────────────────────────────────────────────
+echo "--- End-to-End ---"
+for port in 10000 9000; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${port}/v1/models" 2>/dev/null || echo "000")
+  if [[ "$code" == "200" ]]; then
+    model_id=$(curl -s "http://localhost:${port}/v1/models" | \
+      python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "unknown")
+    echo "  🟢 localhost:${port} → $model_id"
+  else
+    echo "  🔴 localhost:${port} → HTTP $code"
+  fi
+done

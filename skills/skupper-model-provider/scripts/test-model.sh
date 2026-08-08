@@ -1,124 +1,104 @@
 #!/usr/bin/env bash
-# test-model.sh — Verify model access through Skupper VAN from localhost
-# Usage: bash test-model.sh [MODEL_PORT]
-set -euo pipefail
+# test-model.sh — Test model connectivity through Skupper VAN
+# Usage: bash test-model.sh MODEL_ALIAS
+# Tests the local Skupper listener endpoint (not the remote model directly)
 
-MODEL_PORT="${1:-8000}"
-BASE_URL="http://localhost:${MODEL_PORT}"
+source "$(dirname "$0")/common.sh"
+
+MODEL_ALIAS="${1:?Usage: test-model.sh MODEL_ALIAS}"
+
+REMOTE_HOST=$(alias_to_host "$MODEL_ALIAS") || exit 1
+LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
+ROUTING_KEY=$(alias_to_routing_key "$MODEL_ALIAS")
 
 PASSED=0
 FAILED=0
 
-check() {
-  local label="$1"
-  local ok="$2"
-  if [[ "$ok" == "1" ]]; then
-    echo "✅ ${label}"
-    PASSED=$((PASSED + 1))
-  else
-    echo "❌ ${label}"
-    FAILED=$((FAILED + 1))
-  fi
-}
+pass() { echo "  ✅ $1"; PASSED=$((PASSED + 1)); }
+fail() { echo "  ❌ $1"; FAILED=$((FAILED + 1)); }
 
-echo "══════════════════════════════════════════════════════════"
-echo "Test: Model Access via Skupper VAN"
-echo "Endpoint: ${BASE_URL}"
-echo "══════════════════════════════════════════════════════════"
+echo "=== Skupper Model Test: $MODEL_ALIAS ==="
+echo "  Routing key:    $ROUTING_KEY"
+echo "  Local endpoint: localhost:$LOCAL_PORT"
+echo "  Remote host:    $REMOTE_HOST"
+echo
 
-# ---- Test 1: API Reachability ----
-echo ""
-echo "── Test 1: API Reachability ──"
-HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "${BASE_URL}/v1/models" 2>/dev/null || echo "000")
+# T1: Local listener port open
+echo "T1: Local listener"
+LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${LOCAL_PORT}" || echo "0")
+if [[ "$LISTENING" -gt 0 ]]; then
+  pass "Port $LOCAL_PORT listening"
+else
+  fail "Port $LOCAL_PORT not listening"
+  echo "     Skupper router may not be running or link not established."
+  echo "     Run: bash up.sh $MODEL_ALIAS"
+fi
+
+# T2: Local API responds
+echo "T2: API health"
+HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${LOCAL_PORT}/v1/models" 2>/dev/null || echo "000")
 if [[ "$HTTP_CODE" == "200" ]]; then
-  check "GET /v1/models → HTTP ${HTTP_CODE}" 1
-  # Show models
-  echo "   Models available:"
-  curl -s "${BASE_URL}/v1/models" | python3 -m json.tool 2>/dev/null | grep '"id"' | sed 's/^/   /'
+  pass "HTTP 200 on localhost:$LOCAL_PORT"
 else
-  check "GET /v1/models → HTTP ${HTTP_CODE} (expected 200)" 0
-  echo ""
-  echo "❌ API not reachable. Remaining tests skipped."
-  echo "   Check: skupper model up"
-  exit 1
+  fail "HTTP $HTTP_CODE on localhost:$LOCAL_PORT (expected 200)"
 fi
 
-# Discover model name from the API
-MODEL_NAME=$(curl -s "${BASE_URL}/v1/models" 2>/dev/null \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data'][0]['id'])" 2>/dev/null || echo "unknown")
-echo "   Using model: ${MODEL_NAME}"
-
-# ---- Test 2: Chat Completion ----
-echo ""
-echo "── Test 2: Chat Completion ──"
-CHAT_RESPONSE=$(curl -s "${BASE_URL}/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{"model": "'"${MODEL_NAME}"'", "messages": [{"role": "user", "content": "Hello! Say exactly: skupper-test-ok"}], "max_tokens": 50}' 2>/dev/null || echo "")
-
-if [[ -n "$CHAT_RESPONSE" ]]; then
-  CHAT_CONTENT=$(echo "$CHAT_RESPONSE" | python3 -c "import sys,json; r=json.load(sys.stdin); print(r['choices'][0]['message']['content'])" 2>/dev/null || echo "<parse error>")
-  FINISH_REASON=$(echo "$CHAT_RESPONSE" | python3 -c "import sys,json; r=json.load(sys.stdin); print(r['choices'][0]['finish_reason'])" 2>/dev/null || echo "")
-  if [[ -n "$CHAT_CONTENT" && "$CHAT_CONTENT" != "<parse error>" ]]; then
-    check "Chat completion returned content (finish_reason=${FINISH_REASON})" 1
-    echo "   Response: ${CHAT_CONTENT:0:120}"
+# T3: Model ID
+echo "T3: Model ID"
+if [[ "$HTTP_CODE" == "200" ]]; then
+  MODEL_ID=$(curl -s "http://localhost:${LOCAL_PORT}/v1/models" | \
+    python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "PARSE_ERROR")
+  if [[ "$MODEL_ID" != "PARSE_ERROR" && -n "$MODEL_ID" ]]; then
+    pass "Model: $MODEL_ID"
   else
-    check "Chat completion returned parseable content" 0
-    echo "   Raw: ${CHAT_RESPONSE:0:200}"
+    fail "Could not parse model ID"
   fi
 else
-  check "Chat completion request succeeded" 0
+  fail "Skipped (API not responding)"
 fi
 
-# ---- Test 3: Tool Calling ----
-echo ""
-echo "── Test 3: Tool Calling ──"
-TOOL_RESPONSE=$(curl -s "${BASE_URL}/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "'"${MODEL_NAME}"'",
-    "messages": [{"role": "user", "content": "What is the weather in London?"}],
-    "tools": [{"type": "function", "function": {"name": "get_weather", "description": "Get weather for a location", "parameters": {"type": "object", "properties": {"location": {"type": "string"}}, "required": ["location"]}}}],
-    "max_tokens": 200
-  }' 2>/dev/null || echo "")
-
-if [[ -n "$TOOL_RESPONSE" ]]; then
-  # Check if tool_calls present
-  HAS_TOOL_CALLS=$(echo "$TOOL_RESPONSE" | python3 -c "
-import sys, json
-r = json.load(sys.stdin)
-msg = r['choices'][0]['message']
-tc = msg.get('tool_calls', [])
-print('yes' if tc else 'no')
-" 2>/dev/null || echo "no")
-
-  if [[ "$HAS_TOOL_CALLS" == "yes" ]]; then
-    TOOL_NAME=$(echo "$TOOL_RESPONSE" | python3 -c "
-import sys, json
-r = json.load(sys.stdin)
-tc = r['choices'][0]['message']['tool_calls'][0]
-print(f\"{tc['function']['name']}({tc['function']['arguments']})\")
-" 2>/dev/null || echo "<parse error>")
-    check "Tool calling — model invoked function" 1
-    echo "   Tool call: ${TOOL_NAME}"
+# T4: Chat completion through VAN
+echo "T4: Chat completion (through Skupper VAN)"
+if [[ "$HTTP_CODE" == "200" ]]; then
+  RESPONSE=$(curl -s "http://localhost:${LOCAL_PORT}/v1/chat/completions" \
+    -H 'Content-Type: application/json' \
+    -d "{\"model\": \"${MODEL_ID}\", \"messages\": [{\"role\": \"user\", \"content\": \"Say hello\"}], \"max_tokens\": 20}" 2>/dev/null)
+  
+  CHAT=$(echo "$RESPONSE" | \
+    python3 -c "import json,sys; print(json.load(sys.stdin)['choices'][0]['message']['content'])" 2>/dev/null || echo "PARSE_ERROR")
+  
+  if [[ "$CHAT" != "PARSE_ERROR" && -n "$CHAT" ]]; then
+    pass "Chat: $(echo "$CHAT" | head -c 60)"
   else
-    # Some models respond with text instead of tool_calls — not a hard failure
-    TOOL_CONTENT=$(echo "$TOOL_RESPONSE" | python3 -c "import sys,json; r=json.load(sys.stdin); print(r['choices'][0]['message']['content'][:100])" 2>/dev/null || echo "")
-    check "Tool calling — model responded (no tool_calls, text instead)" 1
-    echo "   Response: ${TOOL_CONTENT:0:120}"
+    fail "Chat completion failed or empty response"
   fi
 else
-  check "Tool calling request succeeded" 0
+  fail "Skipped (API not responding)"
 fi
 
-# ---- Summary ----
-echo ""
-echo "══════════════════════════════════════════════════════════"
-TOTAL=$((PASSED + FAILED))
-echo "Results: ${PASSED}/${TOTAL} passed, ${FAILED} failed"
-if [[ $FAILED -eq 0 ]]; then
-  echo "✅ All model access tests PASSED via Skupper VAN"
-  exit 0
+# T5: Remote host reachable
+echo "T5: Remote host"
+if host_reachable "$REMOTE_HOST"; then
+  pass "$REMOTE_HOST reachable"
 else
-  echo "❌ Some tests FAILED"
-  exit 1
+  fail "$REMOTE_HOST unreachable"
 fi
+
+# T6: Remote model container running
+echo "T6: Remote model container"
+if host_reachable "$REMOTE_HOST"; then
+  CONTAINER=$(alias_to_container "$MODEL_ALIAS")
+  CONTAINER_STATUS=$(run_on_host "$REMOTE_HOST" "podman ps --filter name=${CONTAINER} --format '{{.Status}}'" || echo "")
+  if [[ "$CONTAINER_STATUS" == *"Up"* ]]; then
+    pass "$CONTAINER running on $REMOTE_HOST"
+  else
+    fail "$CONTAINER not running: $CONTAINER_STATUS"
+  fi
+else
+  fail "Skipped (host unreachable)"
+fi
+
+# Summary
+echo
+echo "=== Results: $PASSED passed, $FAILED failed ==="
+[[ $FAILED -eq 0 ]] && exit 0 || exit 1

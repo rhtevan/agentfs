@@ -1,158 +1,96 @@
 #!/usr/bin/env bash
-# down.sh — Idempotent teardown of Skupper VAN + remote model runtime
-# Usage: bash down.sh <NAMESPACE> <REMOTE_SSH_HOST>
-#
-# Architecture: Local=edge, Remote=interior/hub.
-set -euo pipefail
+# down.sh — Tear down Skupper VAN and stop model
+# Usage: bash down.sh [MODEL_ALIAS]
+#   With alias: stop specific model and its skupper link
+#   No alias:   stop all models and all skupper components
 
-if [[ $# -lt 2 ]]; then
-  echo "Usage: $0 <NAMESPACE> <REMOTE_SSH_HOST>" >&2
-  exit 2
-fi
+source "$(dirname "$0")/common.sh"
 
-NAMESPACE="$1"
-REMOTE_SSH_HOST="$2"
+MODEL_ALIAS="${1:-all}"
 
-# ============================================================
-# Phase 1: Remove Skupper Connector + Listener
-# ============================================================
-echo "══════════════════════════════════════════════════════════"
-echo "Phase 1: Remove Skupper Connector + Listener"
-echo "══════════════════════════════════════════════════════════"
+if [[ "$MODEL_ALIAS" == "all" ]]; then
+  echo "=== Skupper Model Provider — DOWN (all) ==="
+  echo
 
-# Remove Connector on remote (interior)
-CONNECTOR_YAML=$(mktemp /tmp/connector-XXXXXX.yaml)
-cat > "${CONNECTOR_YAML}" <<EOF
-apiVersion: skupper.io/v2alpha1
-kind: Connector
-metadata:
-  name: model-connector
-spec:
-  routingKey: model-api
-  port: 8000
-  host: localhost
-EOF
+  # Phase 1: Stop all model containers
+  echo "Phase 1: Stop model containers"
+  for alias in g350m g1b g8b g8b-128k g30b-96k; do
+    host=$(alias_to_host "$alias") || continue
+    container=$(alias_to_container "$alias")
+    if ! host_reachable "$host"; then
+      echo "  ⚠️  $host unreachable — skipping $container"
+      continue
+    fi
+    status=$(run_on_host "$host" "podman ps --filter name=${container} --format '{{.Status}}'" || echo "")
+    if [[ "$status" == *"Up"* ]]; then
+      echo "  Stopping $container on $host..."
+      run_on_host "$host" "podman stop ${container}" || true
+      echo "  ✅ $container stopped"
+    fi
+  done
+  echo
 
-scp -q "${CONNECTOR_YAML}" "${REMOTE_SSH_HOST}:/tmp/model-connector.yaml"
-ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux delete -f /tmp/model-connector.yaml" 2>/dev/null || true
-rm -f "${CONNECTOR_YAML}"
-echo "✅ Connector removed (or was not present)"
-
-# Remove Listener on localhost (edge)
-LISTENER_YAML=$(mktemp /tmp/listener-XXXXXX.yaml)
-cat > "${LISTENER_YAML}" <<EOF
-apiVersion: skupper.io/v2alpha1
-kind: Listener
-metadata:
-  name: model-listener
-spec:
-  routingKey: model-api
-  host: localhost
-  port: 8000
-EOF
-
-skupper system -n "${NAMESPACE}" -p linux delete -f "${LISTENER_YAML}" 2>/dev/null || true
-rm -f "${LISTENER_YAML}"
-echo "✅ Listener removed (or was not present)"
-
-# Reload both sides
-ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux reload" 2>&1 | { grep -v 'WARN certificate' || true; }
-skupper system -n "${NAMESPACE}" -p linux reload 2>&1 | { grep -v 'WARN certificate' || true; }
-
-# ============================================================
-# Phase 2: Stop Model Runtime on Remote
-# ============================================================
-echo ""
-echo "══════════════════════════════════════════════════════════"
-echo "Phase 2: Stop Model Runtime on ${REMOTE_SSH_HOST}"
-echo "══════════════════════════════════════════════════════════"
-
-# Stop all model containers (they share port 8000)
-for ALIAS in g350m g1b g8b; do
-  CONTAINER="model-${ALIAS}"
-  RUNNING=$(ssh "${REMOTE_SSH_HOST}" "podman ps --filter name=${CONTAINER} --filter status=running --format '{{.Names}}' 2>/dev/null" || true)
-  if [[ -n "$RUNNING" ]]; then
-    echo "→ Stopping ${CONTAINER}..."
-    ssh "${REMOTE_SSH_HOST}" "podman stop ${CONTAINER}" 2>/dev/null || true
-    echo "✅ ${CONTAINER} stopped"
+  # Phase 2: Stop local router
+  echo "Phase 2: Stop local router"
+  LOCAL_STATUS=$(podman ps --filter name=${ROUTER_CONTAINER} --format '{{.Status}}' 2>/dev/null || echo "")
+  if [[ "$LOCAL_STATUS" == *"Up"* ]]; then
+    podman stop "${ROUTER_CONTAINER}" 2>/dev/null || true
+    echo "  ✅ Local router stopped"
   else
-    echo "  ${CONTAINER}: not running"
+    echo "  Local router not running"
   fi
-done
+  echo
 
-# ============================================================
-# Phase 3: Stop Skupper Sites
-# ============================================================
-echo ""
-echo "══════════════════════════════════════════════════════════"
-echo "Phase 3: Stop Skupper Sites"
-echo "══════════════════════════════════════════════════════════"
+  # Phase 3: Stop remote routers
+  echo "Phase 3: Stop remote routers"
+  for host in rhtevan-work rhel-ai; do
+    if ! host_reachable "$host"; then
+      echo "  ⚠️  $host unreachable — skipping"
+      continue
+    fi
+    status=$(run_on_host "$host" "podman ps --filter name=${ROUTER_CONTAINER} --format '{{.Status}}'" || echo "")
+    if [[ "$status" == *"Up"* ]]; then
+      run_on_host "$host" "podman stop ${ROUTER_CONTAINER}" || true
+      echo "  ✅ $host router stopped"
+    else
+      echo "  $host router not running"
+    fi
+  done
+  echo
 
-# Stop local site (edge) first
-LOCAL_SVC=$(systemctl --user is-active "skupper-${NAMESPACE}.service" 2>/dev/null || echo "inactive")
-if [[ "$LOCAL_SVC" == "active" ]]; then
-  echo "→ Stopping local site (edge)..."
-  skupper system -n "${NAMESPACE}" -p linux stop 2>/dev/null || true
-  echo "✅ Local site stopped"
+  # Phase 4: Verify
+  echo "Phase 4: Verify"
+  ss -tlnp 2>/dev/null | grep -E '9000|10000' && echo "  ⚠️  Ports still listening" || echo "  ✅ All local ports clear"
+  echo
+  echo "✅ Skupper Model Provider DOWN (all)"
+
 else
-  echo "  Local site: already stopped"
-fi
+  # Single model shutdown
+  REMOTE_HOST=$(alias_to_host "$MODEL_ALIAS") || exit 1
+  LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
+  MODEL_CONTAINER=$(alias_to_container "$MODEL_ALIAS")
 
-# Stop remote site (interior)
-REMOTE_SVC=$(ssh "${REMOTE_SSH_HOST}" "systemctl --user is-active skupper-${NAMESPACE}.service 2>/dev/null || echo inactive")
-if [[ "$REMOTE_SVC" == "active" ]]; then
-  echo "→ Stopping remote site (interior)..."
-  ssh "${REMOTE_SSH_HOST}" "skupper system -n ${NAMESPACE} -p linux stop" 2>/dev/null || true
-  echo "✅ Remote site stopped"
-else
-  echo "  Remote site: already stopped"
-fi
+  echo "=== Skupper Model Provider — DOWN ($MODEL_ALIAS) ==="
+  echo "  Remote host:    $REMOTE_HOST"
+  echo "  Container:      $MODEL_CONTAINER"
+  echo "  Local listener: localhost:$LOCAL_PORT"
+  echo
 
-# ============================================================
-# Phase 4: Clean up systemd state
-# ============================================================
-echo ""
-echo "══════════════════════════════════════════════════════════"
-echo "Phase 4: Clean up systemd state"
-echo "══════════════════════════════════════════════════════════"
+  # Stop model container
+  echo "Phase 1: Stop model container"
+  if ! host_reachable "$REMOTE_HOST"; then
+    echo "  ⚠️  $REMOTE_HOST unreachable — cannot stop model"
+  else
+    status=$(run_on_host "$REMOTE_HOST" "podman ps --filter name=${MODEL_CONTAINER} --format '{{.Status}}'" || echo "")
+    if [[ "$status" == *"Up"* ]]; then
+      run_on_host "$REMOTE_HOST" "podman stop ${MODEL_CONTAINER}" || true
+      echo "  ✅ $MODEL_CONTAINER stopped on $REMOTE_HOST"
+    else
+      echo "  $MODEL_CONTAINER not running ($status)"
+    fi
+  fi
+  echo
 
-systemctl --user reset-failed "skupper-${NAMESPACE}.service" 2>/dev/null || true
-systemctl --user daemon-reload
-ssh "${REMOTE_SSH_HOST}" "systemctl --user reset-failed skupper-${NAMESPACE}.service 2>/dev/null || true; systemctl --user daemon-reload"
-echo "✅ systemd state cleaned"
-
-# ============================================================
-# Verification
-# ============================================================
-echo ""
-echo "══════════════════════════════════════════════════════════"
-echo "Verification"
-echo "══════════════════════════════════════════════════════════"
-
-LOCAL_PROC=$(pgrep -c skrouterd 2>/dev/null || true)
-LOCAL_PROC=${LOCAL_PROC:-0}
-LOCAL_PROC=$(echo "$LOCAL_PROC" | tr -d '\n' | tr -cd '0-9')
-[[ -z "$LOCAL_PROC" ]] && LOCAL_PROC=0
-
-REMOTE_PROC=$(ssh "${REMOTE_SSH_HOST}" 'pgrep -c skrouterd 2>/dev/null || true')
-REMOTE_PROC=${REMOTE_PROC:-0}
-REMOTE_PROC=$(echo "$REMOTE_PROC" | tr -d '\n' | tr -cd '0-9')
-[[ -z "$REMOTE_PROC" ]] && REMOTE_PROC=0
-
-REMOTE_MODELS=$(ssh "${REMOTE_SSH_HOST}" 'podman ps --filter name=model- --filter status=running --format "{{.Names}}" 2>/dev/null' || true)
-
-echo "localhost:      skrouterd processes=${LOCAL_PROC}"
-echo "${REMOTE_SSH_HOST}: skrouterd processes=${REMOTE_PROC}"
-if [[ -n "$REMOTE_MODELS" ]]; then
-  echo "${REMOTE_SSH_HOST}: running models=${REMOTE_MODELS}"
-else
-  echo "${REMOTE_SSH_HOST}: running models=none"
-fi
-
-if [[ "$LOCAL_PROC" == "0" && "$REMOTE_PROC" == "0" && -z "$REMOTE_MODELS" ]]; then
-  echo ""
-  echo "✅ Skupper Model Provider is DOWN — all resources stopped"
-else
-  echo ""
-  echo "⚠️  Some resources may still be active"
+  echo "✅ Skupper Model Provider DOWN ($MODEL_ALIAS)"
+  echo "Note: Skupper routers left running. Use 'down.sh all' to stop everything."
 fi

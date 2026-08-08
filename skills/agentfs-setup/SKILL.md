@@ -6,7 +6,7 @@ description: >
   sync existing AGENTS.md with latest template, and verify setup
   integrity. Default mode is PROJECT.
 metadata:
-  version: "3.8.1"
+  version: "3.9.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
   signals: ["sync agentfs", "update agentfs", "upgrade agentfs"]
 ---
@@ -21,7 +21,7 @@ AI coding agents.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 3.8 |
+| **Version** | 3.9 |
 | **Default mode** | `project` |
 | **Modes** | `project` (per-repo context) · `user` (shared library) |
 | **Scripts** | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
@@ -232,6 +232,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-08 10:55 | v3.9.0 — Added "Never improvise when a skill exists" routing rule; added "Backup untracked files" to Guardrail #9 (Checkpoints); template version 3.8→3.9 |
 | 2026-08-04 19:40 | v3.8.1 — Strengthened Index Currency guardrail in AGENTS.md template: explicitly prohibits ad-hoc scripts for index generation; requires `load_skill` and following `skill-index` instructions |
 | 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated design-spec and all cross-references |
 | 2026-07-27 17:10 | v3.7 — Added `metadata.signals` frontmatter field spec to design-spec; slimmed Signal Routing table to LLM-direct + ambiguous routes only (11→9 rows); added skill discovery note for signal-routed intents; added template version stamp (`<!-- agentfs-template-version: X.Y -->`); added `--sync` mode for updating existing AGENTS.md from latest template; added project-owned section markers; added `metadata.signals` to SKILL.md frontmatter |

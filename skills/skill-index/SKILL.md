@@ -9,7 +9,7 @@ description: >
   (~/.agents/skills/); use PROJECT skills (./.agents/skills/) only when
   the user explicitly signals project scope.
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
   tags: [agentfs, skills, index, discovery]
   signals: ["refresh skill index", "index skills", "regenerate skill index"]
 ---
@@ -72,23 +72,50 @@ the default. If the user signals project scope (see table above), use
         `tags: [agentfs, memory, harvest]`. Parse the bracket contents
         and split on commas. Strip whitespace from each tag.
       - **Signals:** Extract the `signals:` field **nested under
-        `metadata:`** (i.e., `meta['metadata']['signals']`). Do NOT
-        look for signals at the YAML top level — the nesting matters.
-        If using a YAML parser, access via
-        `meta.get('metadata', {}).get('signals', [])`, not
-        `meta.get('signals', [])`.
-        Signals are a YAML list of natural-language trigger phrases,
-        e.g., `signals: ["sync agentfs", "update agentfs"]`. Parse
-        the bracket contents and split on commas. Strip surrounding
-        quotes and whitespace from each signal.
-      - **Metadata block regex (last-line bug):** When using regex to
-        capture the indented block under `metadata:`, the pattern
-        `((?:[ \t]+.*\n)*)` fails to capture the last indented line
-        if it is not followed by a newline (i.e., it sits immediately
-        before the closing `---`). Use `((?:[ \t]+.*(?:\n|$))*)` instead
-        to match lines terminated by either newline OR end-of-string.
-        Without this fix, `signals:` (often the last metadata field)
-        will be silently dropped.
+        `metadata:`**. Signals are a YAML list of dash-prefixed items
+        under the `signals:` key inside the `metadata:` block.
+        **Do NOT use regex to capture the metadata block** — the
+        regex approach is fragile and has failed repeatedly in
+        practice (last-line bug, Python string escaping of `$` vs
+        end-of-string). Instead, use a **line-by-line state machine**:
+        ```python
+        lines = frontmatter.split('\n')
+        in_metadata = False
+        in_signals = False
+        sig_list = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped == 'metadata:':
+                in_metadata = True
+                continue
+            if in_metadata and line and not line[0].isspace():
+                in_metadata = False
+                in_signals = False
+                continue
+            if not in_metadata:
+                continue
+            if re.match(r'\s+signals:\s*$', line):
+                in_signals = True
+                continue
+            elif in_signals and re.match(r'\s+-\s+', line):
+                sig = re.sub(r'^\s+-\s+', '', line).strip().strip('"\'')
+                sig_list.append(sig)
+            elif in_signals and stripped and not stripped.startswith('-'):
+                in_signals = False
+        ```
+        ```
+        This handles multi-line signals (dash-prefixed list items).
+        Also handle **inline bracket format** before entering the
+        state machine:
+        ```python
+        inline_match = re.match(r'\s+signals:\s*\[(.+)\]', line)
+        if inline_match:
+            for s in inline_match.group(1).split(','):
+                sig_list.append(s.strip().strip('"\''))
+        ```
+        Both formats are common in the wild:
+        - Inline: `signals: ["foo", "bar"]`
+        - Multi-line: `signals:\n    - "foo"\n    - "bar"`
       - **Table generation (blank-line bug):** When joining table lines
         with `\n`, do NOT embed trailing `\n` in any element of the
         lines list. A `\n` suffix on the header separator line produces
@@ -180,6 +207,7 @@ the default. If the user signals project scope (see table above), use
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-06 20:58 | v2.4.0 — Fixed signals extraction bug: replaced fragile metadata block regex (`((?:[ \t]+.*(?:\n|$))*)`) with line-by-line state machine parser; regex silently failed due to Python `$` escaping causing zero-length match on `metadata:` block, resulting in empty Signals columns; new approach correctly handles signals at any position including last field before `---` |
 | 2026-08-04 23:52 | v2.3.0 — Added `metadata.version` presence validation; emits warning for skills missing `metadata.version`; references canonical schema (`skill-gen/references/skill-schema.md`) |
 | 2026-08-04 19:20 | v2.2 — Documented two implementation bugs: (1) metadata block regex must use `(?:\n|$)` not just `\n` to capture last-line signals before closing `---`; (2) table generation must not embed trailing `\n` in lines list elements to avoid blank-row between header and data |
 | 2026-08-04 19:10 | v2.1 — Clarified that signals MUST be extracted from `metadata.signals` (nested), NOT top-level `signals` — the YAML nesting matters; previous ambiguity caused empty Signals columns during index generation |

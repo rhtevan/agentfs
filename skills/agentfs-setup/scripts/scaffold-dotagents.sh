@@ -107,8 +107,6 @@ if [[ ! -f "$AGENTS/log.md" ]]; then
 cat > "$AGENTS/log.md" << EOF
 # Directory Update Log
 
-<!-- Append-only. Newest entries at top. -->
-
 ## $(date '+%Y-%m-%d %H:%M')
 
 - Initialized .agents/ directory structure (mode: $MODE).

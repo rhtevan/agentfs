@@ -1,6 +1,71 @@
 # Directory Update Log
+## 2026-08-08 14:59
 
-<!-- Append-only. Newest entries at top. -->
+- Complete rewrite of `hosted-model-ctl` v5.0: 7 operational scripts, Specification, Tests, compact tables (659→229 lines)
+- Complete rewrite of `skupper-model-provider` v5.0: 5 scripts (up/down/status/test/common), podman platform, interior mode (334→194 lines)
+- Complete rewrite of `goose-skupper-provider` v4.0: 3 scripts (setup/teardown/test), JSON schema enforcement (127→126 lines)
+- Updated `skill-gen` v1.8: Skill Check mode with 4 principles (Accuracy, Currency, Concise, Verifiable Spec)
+- Fixed model ID: granite-4.1-8b-instruct → granite-4.1-8b in PROVIDER.md
+- All scripts syntax-verified and live-tested
+- Regenerated `skills/index.md` (48 skills)
+## 2026-08-08 12:15
+
+- Created OKF knowledge bundle `skupper-vllm-deployment` with 5 concept documents
+- Added bundle to `~/.agents/knowledge/index.md`
+
+## 2026-08-08 10:55
+
+- Updated `agentfs-setup` v3.8→v3.9: added "Never improvise when a skill exists" routing rule; added "Backup untracked files" to Guardrail #9
+- Synced `AGENTS.md` to template v3.9
+- Updated `skill-gen` v1.5→v1.6: added "Defensive file templates" writing guidance
+- Updated `skill-gen/references/skill-schema.md` v1.0→v1.1: added `writes-files` optional field
+- Regenerated `skills/index.md` (48 skills)
+## 2026-08-08 10:09
+
+- Fixed `goose-skupper-provider/PROVIDER.md` v3.0→v3.1: added schema warning, templated JSON placeholders; root cause: agent bypassed skill and wrote invalid custom_skupper.json with non-Goose fields
+- Fixed `custom_skupper.json` to use correct Goose custom provider schema
+- Regenerated `skills/index.md` (48 skills)
+## 2026-08-08 01:43
+
+- Updated `skupper-model-provider/SKILL.md` v3.0→v4.0: complete rewrite for interior mode (not edge), podman platform (not linux/systemd), routing keys `model-api-rhtevan-work` and `model-api-rhel-ai`, ports 10000 (rhtevan-work) and 9000 (rhel-ai), inter-router links on 55671 and 8000, documented podman gotchas
+- Updated `hosted-model-ctl/SKILL.md` v3.2→v4.0: rhtevan-work model port 8000→10000, updated all container commands and test commands
+- Updated `goose-skupper-provider/SKILL.md` v2.0→v3.0 and `PROVIDER.md`: port 8000→10000 for rhtevan-work, routing key `model-api-rhtevan-work`
+- Regenerated `skills/index.md` (48 skills)
+- Deployed full Skupper VAN interior mesh: localhost (outbound only) ↔ rhtevan-work:55671 ↔ rhel-ai:8000, all podman platform with official skupper-router:3.5.2 image
+- Recreated rhtevan-work model containers (g350m, g1b, g8b) on port 10000
+- Masked old linux-platform skupper-model-provider.service on rhel-ai
+
+## 2026-08-07 00:38
+
+- Updated `goose-skupper-provider/SKILL.md` v1.2→v2.0: model-to-port routing table (8000 for rhtevan-work, 9000 for rhel-ai), default g350m, signal parsing for model alias
+- Updated `goose-skupper-provider/PROVIDER.md` v1.1→v2.0: multi-port base_url, added g30b-96k and g8b-128k to model reference
+- Updated `skupper-model-provider/SKILL.md` v2.0→v3.0: two routing keys (model-api, model-api-rhel-ai), two local ports (8000, 9000), rhel-ai edge port 8000 (AWS 45671 blocked), multi-hub architecture
+- Updated `hosted-model-ctl/SKILL.md` v3.1→v3.2: rhel-ai models serve on port 9000 (was 8000), port 8000 reserved for Skupper edge on rhel-ai
+- Regenerated `skills/index.md` (48 skills)
+
+## 2026-08-06 21:14
+
+- Renamed `local-model-ctl` → `hosted-model-ctl`: directory, SKILL.md name, description, signals (`hosted model *` patterns), tags (`hosted`, `self-hosted`), version 3.0→3.1
+- Updated `skupper-model-provider/SKILL.md`: all 5 references to `local-model-ctl` → `hosted-model-ctl`
+- Regenerated `skills/index.md` (48 skills)
+
+## 2026-08-06 21:03
+
+- Updated `goose-skupper-provider/SKILL.md` v1.1→v1.2: Added recreate capability (teardown + setup); useful when remote model changes
+- Regenerated `skills/index.md` (48 skills)
+
+## 2026-08-06 20:58
+
+- Fixed `skill-index/SKILL.md` v2.3→v2.4: Replaced fragile metadata block regex with line-by-line state machine for signals extraction; added inline bracket format support; signals now correctly populate for all 48 skills (was 4/48)
+- Updated `local-model-ctl/SKILL.md`: All rhel-ai models now use port 8000 (single endpoint, one model at a time)
+- Updated `skupper-model-provider/SKILL.md`: Model alias auto-routes to remote host; single localhost:8000 endpoint; "bring up"/"shutdown" invocation patterns; added signals
+- Regenerated `skills/index.md` (48 skills, 48 with signals)
+
+## 2026-08-06 20:04
+
+- Updated `local-model-ctl/SKILL.md` v2.3→v3.0: Added rhel-ai host profile (4× NVIDIA L4, 92 GB VRAM); added g30b-96k (Granite 4.1 30B, BF16, tp=4, 96K context) and g8b-128k (Granite 4.1 8B, BF16, tp=2, 128K context) models; InstructLab container image support; rhel-ai-specific gotchas and memory budgets
+- Updated `skupper-model-provider/SKILL.md` v1.2→v2.0: Added rhel-ai as supported remote host; updated model selection prompts, container check commands, and prerequisites for multi-host support
+- Regenerated `skills/index.md` (48 skills)
 
 ## 2026-08-04 23:58
 

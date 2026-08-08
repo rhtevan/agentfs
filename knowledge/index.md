@@ -2,6 +2,7 @@
 
 User-scoped knowledge bundles distilled from project experiences.
 
+* [Skupper + vLLM Deployment Postmortem](skupper-vllm-deployment/index.md) - Lessons from deploying Granite models on 4× L4 GPUs via Skupper V2 VAN; platform migration (systemd→podman); edge→interior mode; 128K context VRAM math; AgentFS defensive patterns
 * [LLM Inference on Constrained GPUs](llm-inference-constrained-gpu/index.md) - Patterns, gotchas, and architectural decisions for deploying LLM inference servers on NVIDIA GPUs with limited VRAM (≤ 4 GB)
 * [Skupper V2 Concepts](skupper-v2-concepts/index.md) - Comprehensive knowledge of Skupper V2 (Red Hat Service Interconnect) — concepts, resources, security, advanced features, and operations
 * [AgentFS Skill Patterns](agentfs-skill-patterns/index.md) - Reusable design patterns for building robust, multi-parameter AgentFS skills (parameter binding, CLI hints, confirmation flow)

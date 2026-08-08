@@ -1,6 +1,8 @@
 # Directory Update Log
+## 2026-08-08 12:19
 
-<!-- Append-only. Newest entries at top. -->
+- Created OKF knowledge bundle `skupper-vllm-deployment` with 5 concept documents (postmortem)
+- Added bundle entry to `index.md`
 
 ## 2026-08-04 15:58
 

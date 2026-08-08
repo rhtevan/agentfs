@@ -1,6 +1,6 @@
 ---
 title: SKILL.md Frontmatter Schema
-version: "1.0.0"
+version: "1.1.0"
 status: canonical
 ---
 
@@ -34,6 +34,7 @@ maintaining independent copies.
 | `platforms` | top-level | bracket list | — | e.g., `[linux]` |
 | `user-invocable` | top-level | boolean | `true` | Whether users can trigger directly |
 | `disable-model-invocation` | top-level | boolean | `false` | Whether to suppress auto-invocation |
+| `writes-files` | top-level | boolean | `false` | Skill writes/modifies files outside `.agents/` — signals critical file templates that must be followed exactly |
 
 ## Version Rules
 
@@ -86,7 +87,7 @@ maintaining independent copies.
 |----------------|------------|
 | `version: 1.2` (top-level, unquoted, 2-part) | `metadata: version: "1.2.0"` |
 | `version: 2` (bare integer) | `metadata: version: "2.0.0"` |
-| `version: 1.0.0` (top-level, unquoted) | `metadata: version: "1.0.0"` |
+| `version: 1.0.0` (top-level, unquoted) | `metadata: version: "1.1.0"` |
 | `changelog:` inside YAML frontmatter | `## Changelog` as Markdown section |
 | Version only in changelog text, not in frontmatter | Both `metadata.version` AND changelog entry |
 | `metadata.version` says `"1.0"` but changelog says `v1.3` | Must match: `"1.3.0"` in both |
@@ -102,7 +103,7 @@ argument-hint: "<usage hint>"
 compatibility: "<requirements>"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [<relevant-tags>]
   signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
 user-invocable: true
@@ -114,4 +115,6 @@ disable-model-invocation: false
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-08 10:55 | v1.1.0 — Added `writes-files` optional field: flags skills that write/modify files outside `.agents/`, signaling critical file templates that must be followed exactly |
 | 2026-08-04 23:46 | v1.0.0 — Initial schema: canonical version location (metadata.version), quoted 3-part semver, changelog as Markdown section, anti-patterns table |
+

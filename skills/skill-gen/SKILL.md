@@ -12,7 +12,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "1.5.0"
+  version: "1.8.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
   signals: ["create skill", "new skill", "make skill", "edit skill"]
 user-invocable: true
@@ -38,6 +38,8 @@ Detect mode from user's language:
   "turn this into a skill", "skill for this workflow"
 - **Advanced**: "create a skill, advanced", "thorough skill",
   "production quality skill", "with evals", "benchmark this skill"
+- **Skill Check**: "skill check", "scan skill", "check skill",
+  "audit skill", "skill scan", "verify skill quality"
 
 When in doubt, ask: *"Do you want a quick skill scaffold, or a
 thorough process with test cases and evaluation?"*
@@ -144,6 +146,10 @@ metadata:
   version: "1.0.0"
   tags: [<relevant-tags>]
   signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
+    - "skill check"
+    - "scan skill"
+    - "audit skill"
+    - "check skill quality"
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -184,6 +190,16 @@ disable-model-invocation: false
 - **Explain the why** — don't just say MUST/NEVER; explain reasoning
   so the agent can generalize beyond the literal instructions
 - **Imperative form** — "Run the script" not "You should run the script"
+- **Defensive file templates** — when a skill writes or modifies
+  external files (configs, JSON, YAML), include the exact template
+  inline with a warning block:
+  ```
+  > ⚠️ **Use this exact schema.** Do NOT write from memory or
+  > improvise field names. Copy this template and substitute only
+  > the marked placeholders.
+  ```
+  This prevents agents from bypassing the skill and writing
+  malformed files from stale context or hallucinated schemas.
 - **Keep SKILL.md under 500 lines** — if longer, add `references/`
   directory with supporting docs and clear pointers from SKILL.md
 - **Progressive disclosure** — metadata (~100 words) always in context;
@@ -328,6 +344,131 @@ For both modes:
 
 ---
 
+## Skill Check Mode
+
+Audit one or more skills against four quality principles. Use when:
+- A skill has undergone significant changes across sessions
+- Scripts may be stale after architecture changes
+- Pre-flight check before committing skill updates
+- Validating a skill works autonomously in a fresh session
+
+**Trigger phrases:** "skill check", "scan skill", "check skill",
+"audit skill", "verify skill quality"
+
+### Four Principles
+
+#### Principle 1 — Accuracy & Consistency
+
+> Prioritize deterministic scripts and code over natural language.
+> Use natural language as 'glue' putting everything together.
+
+**Check for:**
+- [ ] Operations are implemented as **scripts** (not inline commands
+      that the agent must interpret and may vary between sessions)
+- [ ] Scripts match the documented procedures in SKILL.md
+- [ ] All ports, hostnames, container names, routing keys in scripts
+      match SKILL.md tables and inline YAML/JSON
+- [ ] Model IDs, aliases, and context limits are consistent across
+      all tables, scripts, and supporting files
+- [ ] No hardcoded values that contradict configurable parameters
+
+#### Principle 2 — Autonomous & Currency
+
+> Skill MUST NOT rely on current session history. It must function
+> in a fresh NEW session without glitches. No obsolete scripts,
+> code, instructions, or content.
+
+**Check for:**
+- [ ] Scripts are self-contained (no session-context dependencies)
+- [ ] No references to deleted/renamed files, old namespaces, or
+      deprecated platform modes
+- [ ] All container commands use current image tags and flags
+- [ ] Platform references are current (e.g., no linux/systemd if
+      migrated to podman)
+- [ ] Environment assumptions are documented in Prerequisites
+- [ ] Scripts have proper error handling and exit codes
+
+#### Principle 3 — Concise, Traceable & Well-Formatted
+
+> Avoid redundant, conflicting, and obsolete instructions and
+> scripts. Historical content must be distilled to knowledge items
+> with links from the skill's changelog.
+
+**Check for:**
+- [ ] No duplicate instructions (same procedure in two places)
+- [ ] No conflicting instructions (two procedures that contradict)
+- [ ] No obsolete content (old procedures kept "just in case")
+- [ ] Historical lessons distilled to knowledge bundles with links
+- [ ] Changelog is current and version matches `metadata.version`
+- [ ] Markdown renders correctly (tables, code blocks, YAML blocks)
+
+#### Principle 4 — Verifiable Specification & Test
+
+> A description of purpose is not sufficient. The skill MUST have
+> a list of verifiable specification items that clearly and concisely
+> prescribe what the skill can do. Associated with each spec item
+> are testcases — preferably deterministic scripts/code, or at
+> minimum unambiguous instructions with expected results.
+
+**Check for:**
+- [ ] A **Specification** section exists listing each capability
+      with a unique ID (e.g., S1, S2, S3)
+- [ ] Each spec item has a **verifiable criterion** (not vague
+      descriptions like "works correctly")
+- [ ] A **Tests** section exists with testcases mapped to spec IDs
+- [ ] Testcases are implemented as **scripts** where possible
+      (e.g., `scripts/test.sh <alias>` → expected HTTP code + model ID)
+- [ ] Where scripts aren't feasible, testcases have **unambiguous
+      instructions** and **concrete expected results**
+- [ ] Test coverage: every spec item has at least one testcase
+
+**Example Specification section:**
+
+```markdown
+## Specification
+
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | List all model containers on both hosts | `scripts/list.sh` outputs status table |
+| S2 | Start model by alias on correct host/port | `scripts/start.sh g350m` → HTTP 200 on port 10000 |
+| S3 | Stop model by alias | `scripts/stop.sh g350m` → container status Exited |
+
+## Tests
+
+| Test | Spec | Command | Expected Result |
+|:----:|:----:|---------|----------------|
+| T1 | S1 | `scripts/list.sh` | Table showing 5 models with status |
+| T2 | S2 | `scripts/start.sh g350m && scripts/test.sh g350m` | HTTP 200, model=granite-4.0-350m |
+| T3 | S3 | `scripts/stop.sh g350m && scripts/status.sh g350m` | Container Exited |
+```
+
+### Skill Check Procedure
+
+1. **Load the target skill** — `load_skill(name: "<skill-name>")`
+2. **Read all supporting files** — scripts, references, templates
+3. **Apply Principle 1** — verify scripts exist and match SKILL.md;
+   flag inline-only operations as 🔴 critical
+4. **Apply Principle 2** — check for session dependencies, obsolete
+   references; verify scripts are self-contained
+5. **Apply Principle 3** — scan for redundancy, conflicts, obsolete
+   content; check Markdown rendering
+6. **Apply Principle 4** — verify Specification and Tests sections
+   exist; check spec coverage and test determinism
+7. **Report findings** — table of issues with severity (🔴 critical,
+   🟡 warning, 🟢 info) and recommended fix
+8. **Fix** — apply fixes with user approval; version bump; changelog
+
+### Report Format
+
+```markdown
+## Skill Check Report: <skill-name>
+
+| # | Principle | Severity | Finding | Fix |
+|:-:|:---------:|:--------:|---------|-----|
+| 1 | P1 Accuracy | 🔴 | ... | ... |
+| 2 | P4 Spec/Test | 🟡 | ... | ... |
+```
+
 ## Upstream Source
 
 | Item | Value |
@@ -342,6 +483,9 @@ For both modes:
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-08 13:39 | v1.8.0 — Skill Check expanded to 4 principles: added Principle 4 (Verifiable Specification & Test) with spec table and testcase mapping examples; Principle 1 now flags inline-only operations as critical |
+| 2026-08-08 13:20 | v1.7.0 — Added Skill Check mode: audit skills against 3 principles (Accuracy/Consistency, Autonomous/Currency, Concise/Traceable); checklist-driven procedure with severity-rated findings report |
+| 2026-08-08 10:55 | v1.6.0 — Added "Defensive file templates" writing guidance: skills that write external files must include exact templates with warning blocks; added `writes-files` optional field to skill-schema.md |
 | 2026-08-04 23:47 | v1.5.0 — Added canonical SKILL.md frontmatter schema (`references/skill-schema.md`); template now uses quoted 3-part semver (`"1.0.0"`); post-creation checklist requires `metadata.version`; writing guidance references schema doc |
 | 2026-07-27 18:35 | v1.4 — Added `metadata.signals` to SKILL.md template and post-creation checklist; added signal quality check; updated description guidance to emphasize conciseness (loaded every session via built-in skills listing) |
 | 2026-07-14 14:51 | v1.3 — Added "Name consistency" check to post-creation checklist: `name` field must match directory name per Agent Skills open standard (agentskills.io/specification) |

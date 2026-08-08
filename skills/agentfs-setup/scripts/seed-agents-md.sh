@@ -68,7 +68,7 @@ all guardrails, skills, and documentation reference them.\
 fi
 
 cat > "$TARGET" << 'AGENTSEOF'
-<!-- agentfs-template-version: 3.8 -->
+<!-- agentfs-template-version: 3.9 -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -124,6 +124,11 @@ multi-skill triage entries belong in this table.
   try \`load_skill\` by name → tag fallback via \`~/.agents/skills/index.md\`
   → semantic fallback via descriptions → **fail loud** (do NOT
   silently improvise when the named skill is missing).
+- **Never improvise when a skill exists.** When user intent matches
+  a skill signal, the agent MUST \`load_skill\` and follow its
+  instructions — even if the agent believes it already knows the
+  procedure. Stale context, schema changes, and memory
+  hallucination make "I already know this" unreliable.
 
 ## Guardrail Quick Reference
 
@@ -240,14 +245,13 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
 - **Log every material change** — file creation, renames, deletions,
   structural updates.
 - **Insertion anchor.** When appending a new log entry, always insert
-  immediately after the \`<!-- Append-only. Newest entries at top. -->\`
-  comment line — never relative to an existing dated entry.
+  immediately after the \`# Directory Update Log\` heading line
+  — never relative to an existing dated entry.
 - **Never modify or delete** existing log or changelog entries.
 - **Scope:** Each `log.md` MUST only describe changes within its scope
   (`~/.agents/log.md` for USER, `./.agents/log.md` for PROJECT).
   When a single action affects both scopes, log in each.
 - **Format:** Title `# Directory Update Log`,
-  comment `<!-- Append-only. Newest entries at top. -->`,
   headings `## YYYY-MM-DD HH:MM`, entries `- ` (dash prefix).
 
 #### Index Currency
@@ -346,6 +350,12 @@ recording affected files and their content hashes in
 `.agents/.checkpoint`. After successful completion, clear the
 checkpoint. If a session starts with a non-empty `.checkpoint`,
 report it and offer to resume or revert.
+
+**Backup untracked files.** Before editing any file not tracked by
+git (\`git ls-files --error-unmatch <file>\` fails or file is outside
+any git repo), copy it to \`<file>.bak.<YYYYMMDD_HHMMSS>\` in the
+same directory. Git-tracked files need no backup — version control
+provides recovery.
 
 ### 10. Git Push Safety
 

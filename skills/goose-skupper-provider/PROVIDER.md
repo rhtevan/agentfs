@@ -1,16 +1,22 @@
 # Goose Skupper Provider Configuration
 
 Configure Goose (CLI and Desktop) to use a **Skupper VAN model endpoint**
-as a custom provider named **Skupper**. The endpoint at
-`http://localhost:8000` is served by a remote GPU host through a
-Skupper V2 Virtual Application Network (see `skupper-model-provider`
-skill).
+as a custom provider named **Skupper**. The endpoint is served by a
+remote GPU host through a Skupper V2 Virtual Application Network
+(see `skupper-model-provider` skill).
+
+**Port routing:** The `base_url` port depends on which model is targeted:
+- `http://localhost:10000` → rhtevan-work models (g350m, g1b, g8b)
+- `http://localhost:9000` → rhel-ai models (g30b-96k, g8b-128k)
+
+Default: `http://localhost:10000` (g350m).
 
 ## Prerequisites
 
 - Goose installed (`goose` CLI or Goose Desktop)
 - Skupper Model Provider running (`skupper model up`) — the local
-  endpoint `http://localhost:8000/v1/...` must be reachable
+  endpoint (`http://localhost:10000/v1/...` or `http://localhost:9000/v1/...`
+  depending on model) must be reachable
 - Use `skupper model status` to verify before proceeding
 
 ## Reference Configuration
@@ -19,18 +25,24 @@ skill).
 
 **File:** `~/.config/goose/custom_providers/custom_skupper.json`
 
+> ⚠️ **ALWAYS use this exact schema.** Do NOT improvise or write from
+> memory. The field names are Goose-specific (`api_key_env`,
+> `requires_auth`, `timeout_seconds`, `display_name`, etc.) — they
+> are NOT standard OpenAI fields. Omitting or renaming fields will
+> break Goose Desktop provider discovery.
+
 ```json
 {
   "name": "custom_skupper",
   "engine": "openai",
   "display_name": "Skupper",
-  "description": "Skupper VAN to remote GPU model (IBM Granite via vLLM/llama.cpp)",
+  "description": "Skupper VAN to remote GPU model (IBM Granite via vLLM)",
   "api_key_env": "",
-  "base_url": "http://localhost:8000",
+  "base_url": "http://localhost:<PORT>",
   "models": [
     {
-      "name": "ibm-granite/granite-4.0-1b",
-      "context_limit": 2048,
+      "name": "<MODEL_NAME>",
+      "context_limit": "<CONTEXT_LIMIT>",
       "input_token_cost": null,
       "output_token_cost": null,
       "currency": null,
@@ -54,13 +66,21 @@ skill).
 }
 ```
 
+**Template substitutions** — resolve from the Model-to-Port Routing table:
+
+| Placeholder | Example (g350m) | Example (g8b-128k) |
+|-------------|-----------------|---------------------|
+| `<PORT>` | 10000 | 9000 |
+| `<MODEL_NAME>` | ibm-granite/granite-4.0-350m | ibm-granite/granite-4.1-8b |
+| `<CONTEXT_LIMIT>` | 2048 | 131072 |
+
 ### config.yaml Provider Entry
 
 ```yaml
 providers:
   custom_skupper:
     enabled: true
-    model: ibm-granite/granite-4.0-1b
+    model: <MODEL_NAME>    # e.g., ibm-granite/granite-4.1-8b
     configured: true
 ```
 
@@ -71,28 +91,30 @@ providers:
 | `name` | `custom_skupper` | Internal identifier; must match config.yaml |
 | `engine` | `openai` | vLLM/llama.cpp expose an OpenAI-compatible API |
 | `display_name` | `Skupper` | Friendly name shown in provider picker |
-| `base_url` | `http://localhost:8000` | Skupper VAN listener endpoint |
+| `base_url` | `http://localhost:10000` or `http://localhost:9000` | Skupper VAN listener endpoint (port depends on model alias) |
 | `requires_auth` | `false` | No API key needed for local endpoint |
 | `api_key_env` | `""` | No API key environment variable needed |
 | `timeout_seconds` | `300` | 5-minute timeout (small models respond fast) |
 | `supports_streaming` | `true` | vLLM and llama.cpp support streaming |
 | `preserves_thinking` | `false` | Granite models don't produce thinking blocks |
-| `context_limit` | `2048` | Matches vLLM `max_model_len` for g1b; update if using g8b (16384) |
+| `context_limit` | varies | 2048 for g350m/g1b, 16384 for g8b, 98304 for g30b-96k, 131072 for g8b-128k |
 
 ### Model Reference
 
 The model listed in the JSON depends on which model is currently
 running on the remote host via `skupper-model-provider`:
 
-| Alias | Model ID | Context Limit | Engine |
-|-------|----------|:-------------:|--------|
-| g350m | `ibm-granite/granite-4.0-350m` | 2048 | vLLM |
-| g1b | `ibm-granite/granite-4.0-1b` | 2048 | vLLM |
-| g8b | `ibm-granite/granite-4.1-8b-instruct` | 16384 | llama.cpp |
+| Alias | Model ID | Context Limit | Engine | Port |
+|-------|----------|:-------------:|--------|:----:|
+| g350m | `ibm-granite/granite-4.0-350m` | 2048 | vLLM | 10000 |
+| g1b | `ibm-granite/granite-4.0-1b` | 2048 | vLLM | 10000 |
+| g8b | `ibm-granite/granite-4.1-8b` | 16384 | llama.cpp | 10000 |
+| g30b-96k | `ibm-granite/granite-4.1-30b` | 98304 | vLLM | 9000 |
+| g8b-128k | `ibm-granite/granite-4.1-8b` | 131072 | vLLM | 9000 |
 
 To update the provider when switching models, run `skupper model status`
-to get the current model ID, then update the `models` array and
-`config.yaml` model entry accordingly.
+to get the current model ID, then update the `models` array,
+`base_url` port, and `config.yaml` model entry accordingly.
 
 ---
 
@@ -107,7 +129,9 @@ bash ~/.agents/skills/skupper-model-provider/scripts/status.sh model-provider <R
 Or quick check:
 
 ```bash
-curl -s http://localhost:8000/v1/models | python3 -m json.tool
+# Use the port matching the target model (10000 for rhtevan-work, 9000 for rhel-ai)
+PORT=10000  # or 9000 for rhel-ai models
+curl -s http://localhost:${PORT}/v1/models | python3 -m json.tool
 ```
 
 Should return HTTP 200 with the model list.
@@ -115,7 +139,7 @@ Should return HTTP 200 with the model list.
 ### Step 2 — Discover the Active Model
 
 ```bash
-curl -s http://localhost:8000/v1/models | python3 -c "
+curl -s http://localhost:${PORT}/v1/models | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 for m in data['data']:
@@ -243,7 +267,7 @@ If the Skupper custom provider is lost:
 - [ ] `config.yaml` has `custom_skupper` in `providers:` with `enabled: true`
 - [ ] `goose configure` shows **Skupper** in the provider list
 - [ ] A test chat returns a valid LLM response
-- [ ] `curl http://localhost:8000/v1/models` returns the expected model
+- [ ] `curl http://localhost:<PORT>/v1/models` returns the expected model (10000 or 9000)
 
 ## Troubleshooting
 
@@ -253,12 +277,16 @@ If the Skupper custom provider is lost:
 | "Connection refused" | Skupper VAN not running | Run `skupper model up` |
 | Provider shows but won't connect | Model container not started | Check `skupper model status`, restart if needed |
 | Timeout on requests | Model loading slowly | Increase `timeout_seconds`; wait for vLLM warmup |
-| Wrong model listed | Model was switched | Update JSON `models` array and config.yaml `model` field |
-| Context too short | Using g8b but JSON says 2048 | Update `context_limit` to 16384 for g8b |
+| Wrong model listed | Model was switched | Update JSON `models` array, `base_url` port, and config.yaml `model` field; or run `recreate skupper provider` |
+| Context too short | Using g8b but JSON says 2048 | Update `context_limit` to match model (see Model Reference table) |
+| Wrong port | Switched between rhtevan-work and rhel-ai models | Update `base_url` to correct port (10000 or 9000); or run `recreate skupper provider for <alias>` |
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-08 | v3.1 — Added schema warning to JSON template; templated PORT/MODEL_NAME/CONTEXT_LIMIT fields; added substitution table; incident: agent bypassed skill and wrote invalid JSON with non-Goose fields (auth, default_params) |
+| 2026-08-08 | v3.0 — Port update: rhtevan-work on port 10000 (was 8000); routing key model-api-rhtevan-work |
+| 2026-08-07 | v2.0 — Multi-port support: base_url port resolved from model alias (10000 for rhtevan-work, 9000 for rhel-ai); added g30b-96k and g8b-128k to model reference |
 | 2026-08-04 | v1.1 — Added Teardown section; restructured into Setup/Teardown capabilities |
 | 2026-08-04 | v1.0 — Initial provider config: custom_skupper.json, config.yaml entry, model reference, recovery, troubleshooting |
