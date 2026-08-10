@@ -2,10 +2,12 @@
 name: goose-litellm-provider
 description: "Configure Goose to use a local LiteLLM proxy as a custom provider, with model discovery and verification"
 platforms: [linux]
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  version: "1.2.0"
+  version: "1.6.0"
   tags: [goose, litellm, custom-provider, redhat, configuration]
-  signals: ["goose litellm", "configure goose litellm"]
+  signals: ["goose litellm", "configure goose litellm", "redhat provider"]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
 ---
 
@@ -28,6 +30,16 @@ skill instead.
 - Use skill `litellm-proxy-status` to verify the proxy is healthy before
   proceeding
 
+## Model Selection Architecture
+
+Goose uses two separate model settings for this provider. They are
+independent — neither overwrites the other.
+
+| Setting | Where | Purpose |
+|---|---|---|
+| **Default model** | `config.yaml` → `providers.custom_redhat.model` | Main conversation model |
+| **Fast model** | `custom_redhat.json` → `fast_model` | Lightweight model for auxiliary calls (tool-selection, classification, session titles) |
+
 ## Reference Configuration
 
 The custom provider is defined as a JSON file under
@@ -37,6 +49,10 @@ The custom provider is defined as a JSON file under
 ### Custom Provider JSON
 
 **File:** `~/.config/goose/custom_providers/custom_redhat.json`
+
+> ⚠️ **Use this exact schema.** Do NOT write from memory or
+> improvise field names. Copy this template and substitute only
+> the marked placeholders.
 
 ```json
 {
@@ -49,7 +65,7 @@ The custom provider is defined as a JSON file under
   "models": [
     {
       "name": "claude-opus-4-6",
-      "context_limit": 128000,
+      "context_limit": 1000000,
       "input_token_cost": null,
       "output_token_cost": null,
       "currency": null,
@@ -58,7 +74,7 @@ The custom provider is defined as a JSON file under
     },
     {
       "name": "claude-sonnet-4-6",
-      "context_limit": 128000,
+      "context_limit": 1000000,
       "input_token_cost": null,
       "output_token_cost": null,
       "currency": null,
@@ -66,8 +82,8 @@ The custom provider is defined as a JSON file under
       "reasoning": false
     },
     {
-      "name": "claude-sonnet-4-5",
-      "context_limit": 128000,
+      "name": "claude-haiku-4-5",
+      "context_limit": 200000,
       "input_token_cost": null,
       "output_token_cost": null,
       "currency": null,
@@ -86,7 +102,7 @@ The custom provider is defined as a JSON file under
   "skip_canonical_filtering": false,
   "model_doc_link": null,
   "setup_steps": [],
-  "fast_model": null,
+  "fast_model": "claude-haiku-4-5",
   "preserves_thinking": true
 }
 ```
@@ -97,7 +113,7 @@ The custom provider is defined as a JSON file under
 providers:
   custom_redhat:
     enabled: true
-    model: claude-opus-4-6
+    model: claude-opus-4-6       # default model for conversation
     configured: true
 ```
 
@@ -114,20 +130,23 @@ providers:
 | `timeout_seconds` | `600` | 10-minute timeout for long-running requests |
 | `supports_streaming` | `true` | LiteLLM supports streaming responses |
 | `preserves_thinking` | `true` | Pass through Claude thinking blocks |
+| `fast_model` | `claude-haiku-4-5` | Lighter model for auxiliary calls (does not affect default model) |
 | `models` | (see JSON) | One entry per model with 128K context limit |
 
 ---
 
 ## Workflow
 
-### Step 1 — Verify LiteLLM Proxy Is Running
+### Step 1 — Pre-flight Check
+
+Run the verification script to confirm the LiteLLM proxy is running
+and see current state:
 
 ```bash
-systemctl --user status litellm-proxy
-curl -s http://127.0.0.1:4000/health | python3 -m json.tool
+bash ~/.agents/skills/goose-litellm-provider/scripts/verify.sh
 ```
 
-All endpoints should be healthy. If not, run:
+If the proxy is not running, start it:
 
 ```bash
 systemctl --user start litellm-proxy
@@ -135,78 +154,58 @@ systemctl --user start litellm-proxy
 
 Or use the `litellm-vertex-ai-proxy` skill to set it up from scratch.
 
-### Step 2 — Discover Available Models
+### Step 2 — Create the Custom Provider
+
+**Option A — Script (recommended):**
 
 ```bash
-curl -s http://127.0.0.1:4000/v1/models | python3 -m json.tool
+bash ~/.agents/skills/goose-litellm-provider/scripts/restore.sh
 ```
 
-Record the model IDs. These will be listed in the custom provider JSON.
-
-### Step 3 — Create the Custom Provider JSON
-
-Write the JSON file shown in the [Reference Configuration](#custom-provider-json)
-section above to:
-
-```
-~/.config/goose/custom_providers/custom_redhat.json
-```
-
-Create the directory if it does not exist:
+Optionally override defaults:
 
 ```bash
-mkdir -p ~/.config/goose/custom_providers
+bash ~/.agents/skills/goose-litellm-provider/scripts/restore.sh \
+  --default-model claude-opus-4-6 \
+  --fast-model claude-sonnet-4-6
 ```
 
-### Step 4 — Configure via `goose configure` CLI (Interactive)
-
-Alternatively, use the interactive wizard:
+**Option B — Interactive wizard:**
 
 ```bash
 goose configure
 ```
 
-1. Select **Custom Providers**
-2. Select **Add A Custom Provider**
-3. API Type → **OpenAI Compatible**
-4. Name → `RedHat`
-5. API URL → `http://localhost:4000`
-6. Authentication Required → **No**
-7. Available Models → `claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-4-5`
-8. Streaming Support → **Yes**
+1. Select **Custom Providers** → **Add A Custom Provider**
+2. API Type → **OpenAI Compatible**
+3. Name → `RedHat`
+4. API URL → `http://localhost:4000`
+5. Authentication Required → **No**
+6. Available Models → `claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-4-5`
+7. Streaming Support → **Yes**
 
-Then activate it:
+Then activate: **Configure Providers** → **RedHat** → choose default model.
+
+> **Note:** The interactive wizard does not set `fast_model`. After using
+> Option B, manually edit `custom_redhat.json` to add
+> `"fast_model": "claude-sonnet-4-6"`.
+
+### Step 3 — Verify Configuration
+
+Run the verification script:
 
 ```bash
-goose configure
+bash ~/.agents/skills/goose-litellm-provider/scripts/verify.sh
 ```
 
-1. Select **Configure Providers**
-2. Select **RedHat** from the provider list
-3. Choose `claude-opus-4-6` as the default model
-
-### Step 5 — Verify config.yaml
-
-Check that `~/.config/goose/config.yaml` contains the provider entry and
-active provider setting shown in the
-[Reference Configuration](#configyaml-provider-entry) section.
+All checks should pass. Alternatively, verify manually:
 
 ```bash
 grep -A3 'custom_redhat' ~/.config/goose/config.yaml
 grep 'active_provider' ~/.config/goose/config.yaml
 ```
 
-Expected output:
-
-```
-  custom_redhat:
-    enabled: true
-    model: claude-opus-4-6
-    configured: true
-active_provider: custom_redhat
-```
-
-### Step 6 — Test from CLI
+### Step 4 — Test from CLI
 
 ```bash
 goose run -t "Say hello in one sentence"
@@ -214,7 +213,7 @@ goose run -t "Say hello in one sentence"
 
 Verify the response comes through successfully via the LiteLLM proxy.
 
-### Step 7 — Test from Desktop (Optional)
+### Step 5 — Test from Desktop (Optional)
 
 1. Launch Goose Desktop
 2. Open Settings → Models
@@ -227,124 +226,55 @@ Verify the response comes through successfully via the LiteLLM proxy.
 ## Recovery Procedure
 
 If the RedHat custom provider is lost (e.g., after a config reset or
-reinstall), restore it by:
-
-1. **Ensure LiteLLM proxy is running** (use `litellm-proxy-status` skill)
-2. **Copy the JSON file** from this skill's reference into
-   `~/.config/goose/custom_providers/custom_redhat.json`
-3. **Add the provider entry** to `~/.config/goose/config.yaml` under
-   `providers:`
-4. **Set `active_provider: custom_redhat`** in config.yaml
-5. **Restart Goose** — the RedHat provider will be available
-
-Or re-run the interactive wizard (Step 4) to recreate it from scratch.
-
-### Quick Recovery Script
+reinstall), run the restore script:
 
 ```bash
-#!/usr/bin/env bash
-# Restore the RedHat custom provider for Goose
-set -euo pipefail
-
-PROVIDER_DIR="$HOME/.config/goose/custom_providers"
-PROVIDER_FILE="$PROVIDER_DIR/custom_redhat.json"
-
-mkdir -p "$PROVIDER_DIR"
-
-cat > "$PROVIDER_FILE" << 'EOF'
-{
-  "name": "custom_redhat",
-  "engine": "openai",
-  "display_name": "RedHat",
-  "description": "Local LiteLLM proxy to Vertex AI (Claude models)",
-  "api_key_env": "",
-  "base_url": "http://localhost:4000",
-  "models": [
-    {
-      "name": "claude-opus-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-5",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    }
-  ],
-  "headers": null,
-  "timeout_seconds": 600,
-  "supports_streaming": true,
-  "requires_auth": false,
-  "catalog_provider_id": null,
-  "base_path": null,
-  "env_vars": null,
-  "dynamic_models": null,
-  "skip_canonical_filtering": false,
-  "model_doc_link": null,
-  "setup_steps": [],
-  "fast_model": null,
-  "preserves_thinking": true
-}
-EOF
-
-echo "✅ RedHat custom provider restored to: $PROVIDER_FILE"
-echo ""
-echo "Next steps:"
-echo "  1. Run 'goose configure' → Configure Providers → RedHat"
-echo "  2. Or manually add to ~/.config/goose/config.yaml:"
-echo ""
-echo "     providers:"
-echo "       custom_redhat:"
-echo "         enabled: true"
-echo "         model: claude-opus-4-6"
-echo "         configured: true"
-echo "     active_provider: custom_redhat"
+bash ~/.agents/skills/goose-litellm-provider/scripts/restore.sh
 ```
+
+Then follow Step 3 (verify) and Step 4 (test).
 
 ---
 
-## Verification Checklist
+## Specification
 
-- [ ] LiteLLM proxy is running and healthy (`litellm-proxy-status` skill)
-- [ ] `custom_redhat.json` exists in `~/.config/goose/custom_providers/`
-- [ ] `config.yaml` has `custom_redhat` in `providers:` with `enabled: true`
-- [ ] `active_provider: custom_redhat` is set (if RedHat is the default)
-- [ ] `goose configure` shows **RedHat** in the provider list
-- [ ] A test chat returns a valid LLM response
-- [ ] `curl http://127.0.0.1:4000/v1/models` lists all expected models
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | LiteLLM proxy is running with all endpoints healthy | `scripts/verify.sh` checks S1a, S1b |
+| S2 | Custom provider JSON exists with correct engine, base_url, models, and fast_model | `scripts/verify.sh` checks S2a–S2e |
+| S3 | config.yaml has custom_redhat entry with a default model set | `scripts/verify.sh` checks S3a, S3b |
+| S4 | Provider JSON models match live LiteLLM models | `scripts/verify.sh` check S4 |
+
+## Tests
+
+| Test | Spec | Command | Expected Result |
+|:----:|:----:|---------|----------------|
+| T1 | S1 | `bash scripts/verify.sh 2>&1 \| grep S1` | Both S1a and S1b show ✅ |
+| T2 | S2 | `bash scripts/verify.sh 2>&1 \| grep S2` | All S2a–S2e show ✅ |
+| T3 | S3 | `bash scripts/verify.sh 2>&1 \| grep S3` | Both S3a and S3b show ✅ |
+| T4 | S4 | `bash scripts/verify.sh 2>&1 \| grep S4` | S4 shows ✅ |
+| T5 | S1–S4 | `bash scripts/verify.sh` | Exit code 0, all checks pass |
+| T6 | S2 | `bash scripts/restore.sh && bash scripts/verify.sh` | Restore + verify both succeed |
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| RedHat not in provider list | Missing JSON file | Copy `custom_redhat.json` to `~/.config/goose/custom_providers/` |
+| RedHat not in provider list | Missing JSON file | Run `scripts/restore.sh` |
 | "Connection refused" | LiteLLM proxy not running | `systemctl --user start litellm-proxy` |
 | Provider shows but won't connect | `base_url` wrong | Verify `http://localhost:4000` is correct |
-| Only 1 model available | Models not listed in JSON | Update the `models` array in the JSON file |
-| Config lost after update | Goose config reset | Re-run the recovery procedure above |
-| Timeout on long requests | `timeout_seconds` too low | Increase from 600 to a higher value |
+| Only 1 model available | Models not listed in JSON | Run `scripts/restore.sh` to regenerate |
+| Config lost after update | Goose config reset | Run `scripts/restore.sh` |
+| Timeout on long requests | `timeout_seconds` too low | Edit JSON, increase from 600 |
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
-| 2026-07-06 19:25 | v1.2 — Removed MaaS content (moved to dedicated `goose-maas-provider` skill); restored as local-proxy-only; updated description, tags, and related_skills |
-| 2026-07-06 19:14 | v1.1 — Added MaaS remote provider config (now removed) |
-| 2026-07-06 18:04 | v1.0 — Initial skill, capturing RedHat custom provider configuration |
+| 2026-08-10 15:39 | v1.6.0 — Removed claude-sonnet-4-5; fixed context_limit (opus/sonnet: 1M, haiku: 200k); fixed config.yaml default model to claude-opus-4-6 |
+| 2026-08-10 15:25 | v1.5.0 — Added claude-haiku-4-5 to models; changed fast_model from claude-sonnet-4-6 to claude-haiku-4-5; updated Vertex AI region from global to us-east5 in LiteLLM config |
+| 2026-08-10 12:55 | v1.4.0 — Removed pyyaml dependency from verify.sh (replaced with awk); consolidated Steps 1-2 (inline curl commands) into single pre-flight check using verify.sh; renumbered steps (6→5); 5-principle skill check clean |
+| 2026-08-10 10:38 | v1.3.0 — Set fast_model to claude-sonnet-4-6; added Model Selection Architecture section; added scripts/verify.sh and scripts/restore.sh; added Specification and Tests sections; consolidated workflow steps; added defensive template warning; added user-invocable and disable-model-invocation to frontmatter; normalized changelog versions |
+| 2026-07-06 19:25 | v1.2.0 — Removed MaaS content (moved to dedicated `goose-maas-provider` skill); restored as local-proxy-only; updated description, tags, and related_skills |
+| 2026-07-06 19:14 | v1.1.0 — Added MaaS remote provider config (now removed) |
+| 2026-07-06 18:04 | v1.0.0 — Initial skill, capturing RedHat custom provider configuration |

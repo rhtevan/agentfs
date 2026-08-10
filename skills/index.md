@@ -4,19 +4,22 @@
 
 | Skill | Tags | Signals | Updated |
 |-------|------|---------|---------|
-| [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | goose skupper provider, setup skupper provider, setup goose skupper provider for, remove skupper provider, teardown skupper provider, ... | 2026-08-08 14:52 |
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work | skupper model up, skupper model down, skupper model status, skupper model test, bring up skupper model, ... | 2026-08-08 14:31 |
-| [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted | hosted model list, list hosted model, hosted model setup, hosted model start, hosted model stop, ... | 2026-08-08 13:58 |
-| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill | 2026-08-08 13:39 |
+| [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | litellm vertex, vertex ai proxy, setup litellm vertex | 2026-08-10 16:45 |
+| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill | 2026-08-10 16:11 |
+| [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | hermes litellm, configure hermes litellm, hermes provider | 2026-08-10 15:39 |
+| [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | goose litellm, configure goose litellm, redhat provider | 2026-08-10 15:39 |
+| [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | goose skupper provider, setup skupper provider, setup goose skupper provider for, remove skupper provider, teardown skupper provider, recreate skupper provider, reset skupper provider | 2026-08-08 14:52 |
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work | skupper model up, skupper model down, skupper model status, skupper model test, bring up skupper model, shutdown skupper model, expose remote model, skupper van | 2026-08-08 14:31 |
+| [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted | hosted model list, list hosted model, hosted model setup, hosted model start, hosted model stop, hosted model status, hosted model test, hosted model pre-check, model list, model start, model stop, model status | 2026-08-08 13:58 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | sync agentfs, update agentfs, upgrade agentfs | 2026-08-08 10:48 |
 | [skill-index](./skill-index/SKILL.md) | agentfs, skills, index, discovery | refresh skill index, index skills, regenerate skill index | 2026-08-06 20:59 |
 | [skupper-linux-two-site](./skupper-linux-two-site/SKILL.md) | skupper, linux, systemd, two-site, van, networking, skrouterd | skupper linux, skupper two site, skupper systemd | 2026-08-04 23:55 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | agentfs, okf, knowledge, memory, distillation, graduation | harvest knowledge, harvest concepts, graduate knowledge | 2026-08-04 23:55 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | hermes headroom, configure hermes headroom | 2026-08-04 23:55 |
-| [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean recipe sessions, cleanup goose sessions, clean all sessions, clean desktop sessions, clean terminal sessions, ... | 2026-08-04 23:55 |
+| [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean recipe sessions, cleanup goose sessions, clean all sessions, clean desktop sessions, clean terminal sessions, orphaned sessions, recipe session cleanup, goose session cleanup, remove recipe sessions, stale goose sessions | 2026-08-04 23:55 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-08-04 23:55 |
 | [fuseki](./fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | fuseki setup, fuseki start, fuseki stop, fuseki status | 2026-08-04 23:55 |
-| [fedora-dns-cache](./fedora-dns-cache/SKILL.md) | fedora, dns, network, systemd, terminal, offline | dns cache, terminal stuck offline, terminal hangs no internet, dns timeout, fedora dns cache, ... | 2026-08-04 23:55 |
+| [fedora-dns-cache](./fedora-dns-cache/SKILL.md) | fedora, dns, network, systemd, terminal, offline | dns cache, terminal stuck offline, terminal hangs no internet, dns timeout, fedora dns cache, shell hangs network drop | 2026-08-04 23:55 |
 | [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations | start crc, stop crc, crc start, crc stop | 2026-08-04 23:55 |
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | bash completion, generate completion, tab completion | 2026-08-04 23:55 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, maturity check | 2026-08-04 23:55 |
@@ -38,16 +41,13 @@
 | [crc-cmd](./crc-cmd/SKILL.md) | openshift, crc, wrapper, shell | install crcstart, install crcstop, crc wrapper | 2026-08-04 23:53 |
 | [crc-aap-demo-config](./crc-aap-demo-config/SKILL.md) | openshift, crc, aap-demo, configuration, safety, preflight | aap demo, configure aap demo, setup aap demo | 2026-08-04 23:53 |
 | [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, add agent profile, new agent | 2026-08-04 23:53 |
-| [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | litellm vertex, vertex ai proxy, setup litellm vertex | 2026-08-04 23:52 |
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health | 2026-08-04 23:52 |
-| [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | hermes litellm, configure hermes litellm | 2026-08-04 23:52 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-08-04 23:52 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-08-04 23:52 |
 | [headroom-proxy-status](./headroom-proxy-status/SKILL.md) | headroom, proxy, status, health, systemd, compression, context-optimization | headroom status, check headroom, headroom health | 2026-08-04 23:52 |
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | headroom, proxy, litellm, systemd, compression, context-optimization, installation | install headroom, headroom proxy setup, headroom service | 2026-08-04 23:52 |
 | [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-08-04 23:51 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | goose, maas, litellm, custom-provider, reasoning, configuration | goose maas, configure goose maas, goose remote provider | 2026-08-04 23:51 |
-| [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | goose litellm, configure goose litellm | 2026-08-04 23:51 |
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | goose, headroom, custom-provider, context-optimization, compression, configuration | goose headroom, configure goose headroom | 2026-08-04 23:51 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-08-04 23:51 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, provider-management | install lightspeed, configure lightspeed, openshift lightspeed, ols setup | 2026-08-04 23:51 |

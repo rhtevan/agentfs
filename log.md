@@ -1,4 +1,65 @@
 # Directory Update Log
+<!-- Append-only. Newest entries at top. -->
+
+## 2026-08-10 16:45
+
+- Updated `litellm-vertex-ai-proxy` v3.0.0: extracted all inline execution code to 4 scripts (setup.sh, detect-sa.sh, test-sa.sh, probe-models.sh); SKILL.md reduced from 308→202 lines; added Gotcha #7; added T8–T11 tests; workflow 8→6 steps
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 16:25
+
+- Added `<!-- Append-only. Newest entries at top. -->` comment anchor to `~/.agents/log.md` (was missing)
+- Strengthened Guardrail #5 insertion anchor in AGENTS.md: added "read current file head before inserting" to prevent stale-context log misordering
+
+## 2026-08-10 16:15
+
+- Updated `skill-gen` v2.1.1: strengthened Gotchas from suggestion to requirement; added Gotchas section to SKILL.md template; added P1 checklist item for Gotchas/Known Issues
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 15:58
+
+- Updated `skill-gen` v2.1.0: P1 inline code boundary guidance — reference vs execution code distinction; added checklist item
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 15:50
+
+- Updated `litellm-vertex-ai-proxy` v2.0.0: updated model list; documented us-east5 as explicit region; added scripts/verify.sh (11 checks) and scripts/probe-models.sh (model discovery); added Specification and Tests; added SA key safety warning; fixed frontmatter
+- Updated `goose-litellm-provider` v1.6.0: removed sonnet-4-5; fixed context_limits (opus/sonnet: 1M, haiku: 200k)
+- Updated `hermes-litellm-provider` v2.2.0: removed sonnet-4-5 from reference config
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 15:26
+
+- Updated `goose-litellm-provider` v1.5.0: added claude-haiku-4-5 to models; changed fast_model to claude-haiku-4-5; updated Vertex AI region from global to us-east5
+- Updated `hermes-litellm-provider` v2.1.0: added claude-haiku-4-5 to reference config; updated region note
+- Updated LiteLLM proxy config: all 4 models pinned to us-east5
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 14:10
+
+- Updated `hermes-litellm-provider` v2.0.0: rewrote to match live Hermes config schema; added scripts/verify.sh and scripts/restore.sh; added Specification and Tests; removed hardcoded dummy api_key; documented hermes model persistence bug
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 12:55
+
+- Updated `goose-litellm-provider` v1.4.0: removed pyyaml dependency from verify.sh (replaced with awk); consolidated Steps 1-2 into single pre-flight check; renumbered steps (6→5)
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 12:02
+
+- Updated `skill-gen` v2.0.0: added Principle 5 (Security & Trust Boundary) with 6-item checklist; "Four Principles" → "Five Principles"; added "Real Expertise" anti-pattern and Gotchas guidance to Step 1; added "loose steps → instructions, fragile steps → code" aphorism to Agent-as-Orchestrator; updated Skill Check Procedure to 9 steps
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 11:23
+
+- Updated `skill-gen` v1.9.0: strengthened P1 to "Accuracy, Consistency & Testability (Code-First)" — skills as prescriptive SOPs verified by execution; code-first for accuracy, consistency, conciseness, testability; added could-be-script 🟡 flag and knowledge-extraction checklist items; moved Concise from P3 to P1; renamed P3 to "Traceable & Well-Formatted"
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
+## 2026-08-10 10:38
+
+- Updated `goose-litellm-provider` v1.3.0: set fast_model to claude-sonnet-4-6; added Model Selection Architecture section; added scripts/verify.sh and scripts/restore.sh; added Specification and Tests sections; consolidated workflow steps; added defensive template warning; normalized changelog versions
+- Regenerated `~/.agents/skills/index.md` (48 skills)
+
 ## 2026-08-08 14:59
 
 - Complete rewrite of `hosted-model-ctl` v5.0: 7 operational scripts, Specification, Tests, compact tables (659→229 lines)

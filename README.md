@@ -140,13 +140,13 @@ Skills cover topics like:
 | Category | Examples |
 |----------|----------|
 | **Agent Setup** | AgentFS scaffolding, Goose/Hermes configuration, agent profiles |
-| **LLM Providers** | LiteLLM proxy, Headroom proxy, Vertex AI, MaaS providers |
+| **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes provider config, Headroom proxy, MaaS providers |
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster config |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
 | **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes |
 
-See [`skills/index.md`](skills/index.md) for the full catalog (43 skills).
+See [`skills/index.md`](skills/index.md) for the full catalog (48 skills).
 
 #### SKILL.md Frontmatter
 
