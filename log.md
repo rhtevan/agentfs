@@ -1,6 +1,11 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-11 18:49
+- skupper-model-provider v6.1.1: `down.sh all` now stops controllers on all 3 hosts (previously left running)
+- Updated SKILL.md: version bump, script table, shutdown example, known issues table, changelog
+- Regenerated skills/index.md (48 skills)
+
 ## 2026-08-11 18:28
 - Sanitized POSTMORTEM.md: replaced site-specific hostnames (`bastion.g7cpg.*`) with `*.example.com`, IPs with placeholders, `local-ezhang` with `local-site`
 - Sanitized SKILL.md changelog and log.md: replaced `local-ezhang` with `local-site`

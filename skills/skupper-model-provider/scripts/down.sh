@@ -58,10 +58,18 @@ if [[ "$ARG" == "all" ]]; then
   done
   echo
 
-  # Phase 4: Optionally stop controllers
-  echo "Phase 4: Controllers"
-  echo "  Controllers left running (they manage certs and reconciliation)."
-  echo "  To stop: systemctl --user stop skupper-controller.service"
+  # Phase 4: Stop controllers (nothing to manage with all routers down)
+  echo "Phase 4: Stop controllers"
+  systemctl --user stop skupper-controller.service 2>/dev/null || true
+  echo "  ✅ Local controller stopped"
+  for host in rhel-ai rhtevan-work; do
+    if host_reachable "$host"; then
+      run_on_host "$host" "systemctl --user stop skupper-controller.service 2>/dev/null" || true
+      echo "  ✅ $host controller stopped"
+    else
+      echo "  ⚠️  $host unreachable — skip"
+    fi
+  done
   echo
 
   # Phase 5: Verify

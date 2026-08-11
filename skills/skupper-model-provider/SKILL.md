@@ -10,7 +10,7 @@ compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "6.1.0"
+  version: "6.1.1"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
   signals:
     - "skupper model up"
@@ -90,7 +90,7 @@ All values in the table above are defined in `topology.env`.
 | `teardown.sh` | Remove infrastructure | Decommissioning |
 | `up.sh ALIAS` | Start model + ensure VAN running | Daily use |
 | `down.sh ALIAS` | Stop one model | Daily use |
-| `down.sh all` | Stop all models + routers | End of day |
+| `down.sh all` | Stop all models, routers + controllers | End of day |
 | `status.sh` | Full health check | Troubleshooting |
 | `test-model.sh ALIAS` | E2E connectivity test | Verification |
 
@@ -145,7 +145,7 @@ bash ~/.agents/skills/skupper-model-provider/scripts/up.sh g8b-128k
 
 ```bash
 bash ~/.agents/skills/skupper-model-provider/scripts/down.sh g350m     # stop one model
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh all        # stop all models + routers
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh all        # stop all models, routers + controllers
 bash ~/.agents/skills/skupper-model-provider/scripts/down.sh all --keep-van  # stop models only
 ```
 
@@ -211,7 +211,7 @@ remote host reachable, remote container running.
 | `link generate` returns "no tokens" | CLI bug on podman platform | Build link YAML manually from client certs |
 | rhel-ai port 55671 not publicly accessible | AWS security group | Use port 8000 via `hub-rhel-ai-public` RouterAccess |
 | Cert verify failed on link | No SANs on server cert | Add `subjectAlternativeNames` to RouterAccess |
-| No CLI to stop controller | By design | Use `systemctl --user stop skupper-controller.service` |
+| No CLI to stop controller | By design | `down.sh all` stops via systemctl; manual: `systemctl --user stop skupper-controller.service` |
 | system-controller doesn't restart crashed router | Podman platform limitation | Auto-restart via systemd patch |
 
 ## Prerequisites
@@ -235,6 +235,7 @@ remote host reachable, remote container running.
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-11 | v6.1.1 — `down.sh all` now stops controllers on all 3 hosts (previously left running). No reason to keep controllers alive when all routers are down. |
 | 2026-08-11 | v6.1.0 — Extracted site-specific config to `topology.env` (gitignored). Added `topology.env.example` with placeholder values. Added precheck capability (`setup.sh --check`) with topology display and validation. Signals: `skupper model precheck`, `skupper model topology`, `show skupper topology`. Scripts no longer contain hardcoded IPs, hostnames, or usernames. |
 | 2026-08-11 | v6.0.1 — Added Tests section (T1–T7) mapped to Specification (S1–S7) per skill-check P4 |
 | 2026-08-11 | v6.0 — Complete refactor: separated setup.sh/teardown.sh (one-time) from up.sh/down.sh (daily). Added auto-restart patches for router + controller. Unique site names (hub-rhel-ai, hub-rhtevan-work, local-site). Manual link building (CLI `link generate` broken on podman). SANs on all RouterAccess certs. Comprehensive status.sh with controllers, systemd, e2e. |
