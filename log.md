@@ -1,6 +1,38 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-11 18:28
+- Sanitized POSTMORTEM.md: replaced site-specific hostnames (`bastion.g7cpg.*`) with `*.example.com`, IPs with placeholders, `local-ezhang` with `local-site`
+- Sanitized SKILL.md changelog and log.md: replaced `local-ezhang` with `local-site`
+- Regenerated USER skills index.md (48 skills)
+
+## 2026-08-11 18:00
+- skupper-model-provider v6.1.0: Extracted site-specific config (IPs, hostnames, SANs, usernames) from scripts to `topology.env`
+- Created `topology.env.example` with placeholder values for safe git commit
+- Added precheck capability (`setup.sh --check`): topology display + validation (podman, skupper, SSH, DNS, SANs, ports)
+- Added signals: `skupper model precheck`, `skupper model topology`, `show skupper topology`
+- Added `topology.env` and `.rollback/` patterns to `.gitignore`
+- Updated SKILL.md architecture, site config, and operations sections to reference topology.env variables
+
+## 2026-08-11 17:17
+- skupper-model-provider v6.0.1: Added Tests section (T1–T7 mapped to S1–S7) per skill-check Principle 4 finding
+- Regenerated USER skills index.md (48 skills)
+
+## 2026-08-11 17:12
+- Fixed skill-gen metadata.signals: added Skill Check mode triggers (skill check, check skill, scan skill, audit skill, verify skill quality) that were missing from YAML frontmatter — only existed in prose body text, invisible to signal routing
+- Regenerated USER skills index.md (48 skills)
+
+## 2026-08-11 16:57
+- skupper-model-provider: Added POSTMORTEM.md documenting 9 root causes, architecture decisions, and lessons learned
+
+## 2026-08-11 16:50
+- skupper-model-provider v6.0: Complete refactor — separated setup.sh/teardown.sh (one-time infrastructure) from up.sh/down.sh (daily start/stop)
+- New scripts: setup.sh (416 lines), teardown.sh (85 lines); refactored up.sh (179 lines), down.sh (107 lines), status.sh (127 lines), common.sh (319 lines)
+- Added auto-restart patches for router + controller (start-watch.sh + Restart=on-failure) on all 3 hosts
+- Fixed: unique site names (hub-rhel-ai, hub-rhtevan-work, local-site), podman 4.x /tmp workaround, cert perms, SANs on RouterAccess, manual link building
+- VAN fully operational: localhost:9000 → granite-4.1-8b (rhel-ai), localhost:10000 → granite-4.0-350m (rhtevan-work)
+- Regenerated USER skills index.md (48 skills)
+
 ## 2026-08-11 11:50
 - Added Guardrail Type System to AgentFS: Gate 🚧, Rule ⚖️, Habit 🔄
 - Updated `agentfs-setup/references/design-spec.md`: added type badges to guardrail list, added Guardrail Type System sub-section with rationale and Trigger/Invariant collapse analysis

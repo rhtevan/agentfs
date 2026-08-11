@@ -14,7 +14,7 @@ metadata:
   author: agentfs
   version: "2.1.1"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
-  signals: ["create skill", "new skill", "make skill", "edit skill"]
+  signals: ["create skill", "new skill", "make skill", "edit skill", "skill check", "check skill", "scan skill", "audit skill", "verify skill quality"]
 user-invocable: true
 disable-model-invocation: false
 ---

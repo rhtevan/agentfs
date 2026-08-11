@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# up.sh — Bring up Skupper VAN and start a model
+# up.sh — Start a model and ensure Skupper VAN is running
 # Usage: bash up.sh MODEL_ALIAS
-# Idempotent: skips already-running components.
+# Assumes setup.sh has been run. Starts systemd services + model container.
 
 source "$(dirname "$0")/common.sh"
 
@@ -13,254 +13,110 @@ LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
 ROUTING_KEY=$(alias_to_routing_key "$MODEL_ALIAS")
 MODEL_CONTAINER=$(alias_to_container "$MODEL_ALIAS")
 
-IFS='|' read -r _ INTER_ROUTER_PORT EDGE_PORT _ MODEL_PORT <<< "${SITE_PROFILES[$REMOTE_HOST]}"
+IFS='|' read -r INTER_ROUTER_PORT _ _ MODEL_PORT _ <<< "${SITE_PROFILES[$REMOTE_HOST]}"
 
 echo "=== Skupper Model Provider — UP ==="
 echo "  Model alias:    $MODEL_ALIAS"
 echo "  Remote host:    $REMOTE_HOST"
 echo "  Container:      $MODEL_CONTAINER"
-echo "  Routing key:    $ROUTING_KEY"
-echo "  Remote model port: $MODEL_PORT"
-echo "  Local listener: localhost:$LOCAL_PORT"
-echo "  Link port:      $INTER_ROUTER_PORT"
+echo "  Local endpoint: localhost:$LOCAL_PORT"
 echo
 
 FAILED=0
 
-# ── Phase 1: Prerequisites ────────────────────────────────────
+# ── Phase 1: Check prerequisites ──────────────────────────────
 echo "Phase 1: Prerequisites"
 
-# Check remote host
 if ! host_reachable "$REMOTE_HOST"; then
-  echo "❌ Remote host $REMOTE_HOST is unreachable"
+  echo "  ❌ $REMOTE_HOST unreachable"
   exit 1
 fi
 echo "  ✅ $REMOTE_HOST reachable"
 
-# Check skupper CLI
-if ! command -v skupper &>/dev/null; then
-  echo "❌ skupper CLI not found"
-  exit 1
-fi
-echo "  ✅ skupper CLI available"
-
-# Check model container exists on remote
-CONTAINER_STATUS=$(run_on_host "$REMOTE_HOST" "podman ps -a --filter name=${MODEL_CONTAINER} --format '{{.Status}}'" || echo "")
-if [[ -z "$CONTAINER_STATUS" ]]; then
-  echo "❌ Model container $MODEL_CONTAINER not found on $REMOTE_HOST"
-  echo "   Run: bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh $MODEL_ALIAS"
-  exit 1
-fi
-echo "  ✅ Container $MODEL_CONTAINER exists ($CONTAINER_STATUS)"
-echo
-
-# ── Phase 2: Remote Hub Site ──────────────────────────────────
-echo "Phase 2: Remote hub site ($REMOTE_HOST)"
-
-HUB_ROUTER=$(check_router_status "$REMOTE_HOST")
-if [[ "$HUB_ROUTER" == *"Up"* ]]; then
-  echo "  ✅ Hub router already running"
-else
-  echo "  → Creating hub site..."
-  
-  # Check if namespace exists
-  HAS_NS=$(run_on_host "$REMOTE_HOST" "test -d ~/.local/share/skupper/namespaces/${NAMESPACE} && echo yes || echo no")
-  
-  if [[ "$HAS_NS" != "yes" ]]; then
-    echo "  → Applying site resources..."
-    run_on_host "$REMOTE_HOST" "skupper system apply -n ${NAMESPACE} -p ${PLATFORM} << 'SITEEOF'
-apiVersion: skupper.io/v2alpha1
-kind: Site
-metadata:
-  name: hub
-  namespace: ${NAMESPACE}
-spec:
-  linkAccess: default
-SITEEOF"
-    
-    # Apply RouterAccess with custom ports
-    run_on_host "$REMOTE_HOST" "skupper system apply -n ${NAMESPACE} -p ${PLATFORM} << 'RAEOF'
-apiVersion: skupper.io/v2alpha1
-kind: RouterAccess
-metadata:
-  name: hub
-  namespace: ${NAMESPACE}
-spec:
-  roles:
-  - name: inter-router
-    port: ${INTER_ROUTER_PORT}
-  - name: edge
-    port: ${EDGE_PORT}
-  subjectAlternativeNames:
-  - ${REMOTE_HOST}
-RAEOF"
-    
-    # Apply Connector
-    run_on_host "$REMOTE_HOST" "skupper system apply -n ${NAMESPACE} -p ${PLATFORM} << 'CONNEOF'
-apiVersion: skupper.io/v2alpha1
-kind: Connector
-metadata:
-  name: model-connector
-  namespace: ${NAMESPACE}
-spec:
-  routingKey: ${ROUTING_KEY}
-  port: ${MODEL_PORT}
-  host: host.containers.internal
-CONNEOF"
-    
-    # Start site to generate certs
-    run_on_host "$REMOTE_HOST" "skupper system start -n ${NAMESPACE} -p ${PLATFORM}"
-    sleep 3
-  fi
-  
-  # Start router container manually (fixes tmpfs/cert issues)
-  start_router_container "$REMOTE_HOST"
-  sleep 5
-  
-  # Verify listening
-  LISTENING=$(run_on_host "$REMOTE_HOST" "ss -tlnp | grep -c ${INTER_ROUTER_PORT}" || echo "0")
-  if [[ "$LISTENING" -gt 0 ]]; then
-    echo "  ✅ Hub listening on port $INTER_ROUTER_PORT"
-  else
-    echo "  ❌ Hub not listening on port $INTER_ROUTER_PORT"
-    FAILED=1
-  fi
-fi
-echo
-
-# ── Phase 3: Local Interior Site ──────────────────────────────
-echo "Phase 3: Local interior site"
-
-LOCAL_ROUTER=$(check_router_status "localhost")
-if [[ "$LOCAL_ROUTER" == *"Up"* ]]; then
-  echo "  ✅ Local router already running"
-else
-  echo "  → Creating local interior site..."
-  
-  LOCAL_HAS_NS=$(test -d "$HOME/.local/share/skupper/namespaces/${NAMESPACE}" && echo yes || echo no)
-  
-  if [[ "$LOCAL_HAS_NS" != "yes" ]]; then
-    skupper system apply -n "${NAMESPACE}" -p "${PLATFORM}" << 'SITEEOF'
-apiVersion: skupper.io/v2alpha1
-kind: Site
-metadata:
-  name: local
-spec: {}
-SITEEOF
-  fi
-  
-  # Ensure listener exists for this routing key
-  LISTENER_NAME="model-listener-$(echo $REMOTE_HOST | tr '.' '-')"
-  LOCAL_NS_DIR="$HOME/.local/share/skupper/namespaces/${NAMESPACE}"
-  
-  if [[ ! -f "${LOCAL_NS_DIR}/input/resources/Listener-${LISTENER_NAME}.yaml" ]]; then
-    skupper system apply -n "${NAMESPACE}" -p "${PLATFORM}" << LISTEOF
-apiVersion: skupper.io/v2alpha1
-kind: Listener
-metadata:
-  name: ${LISTENER_NAME}
-  namespace: ${NAMESPACE}
-spec:
-  routingKey: ${ROUTING_KEY}
-  port: ${LOCAL_PORT}
-  host: 0.0.0.0
-LISTEOF
-  fi
-  
-  # Start site
-  skupper system start -n "${NAMESPACE}" -p "${PLATFORM}" 2>/dev/null || true
-  sleep 2
-  
-  # Start router container
-  start_router_container "localhost"
-  sleep 5
-fi
-echo
-
-# ── Phase 4: Link ─────────────────────────────────────────────
-echo "Phase 4: Link to $REMOTE_HOST"
-
-LINK_NAME="link-${REMOTE_HOST}"
+# Check setup has been done
 LOCAL_NS_DIR="$HOME/.local/share/skupper/namespaces/${NAMESPACE}"
+if [[ ! -d "${LOCAL_NS_DIR}/runtime/resources" ]]; then
+  echo "  ❌ Setup not done. Run: bash setup.sh"
+  exit 1
+fi
+echo "  ✅ Setup detected"
+echo
 
-if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-${LINK_NAME}.yaml" ]]; then
-  echo "  ✅ Link $LINK_NAME already configured"
+# ── Phase 2: Start controllers ────────────────────────────────
+echo "Phase 2: Start controllers"
+
+# Local controller
+LOCAL_CTL=$(check_controller_status localhost)
+if [[ "$LOCAL_CTL" == *"Up"* ]]; then
+  echo "  ✅ Local controller running"
 else
-  echo "  → Generating link token from $REMOTE_HOST..."
-  TOKEN_FILE=$(mktemp /tmp/skupper-token-XXXXXX.yaml)
-  run_on_host "$REMOTE_HOST" "skupper link generate -n ${NAMESPACE} -p ${PLATFORM}" > "$TOKEN_FILE"
-  
-  LINES=$(wc -l < "$TOKEN_FILE")
-  if [[ "$LINES" -lt 5 ]]; then
-    echo "  ❌ Token generation failed ($LINES lines)"
-    cat "$TOKEN_FILE"
-    rm -f "$TOKEN_FILE"
-    FAILED=1
-  else
-    # Fix host and rename
-    sed -i "s/0\.0\.0\.0/${REMOTE_HOST}/g" "$TOKEN_FILE"
-    sed -i "s/name: link-hub/name: ${LINK_NAME}/g" "$TOKEN_FILE"
-    sed -i "s/tlsCredentials: link-hub/tlsCredentials: ${LINK_NAME}/g" "$TOKEN_FILE"
-    
-    skupper system apply -n "${NAMESPACE}" -p "${PLATFORM}" -i "$TOKEN_FILE"
-    
-    # Fix the Link to use only inter-router endpoint
-    cat > "${LOCAL_NS_DIR}/input/resources/Link-${LINK_NAME}.yaml" << LINKEOF
-apiVersion: skupper.io/v2alpha1
-kind: Link
-metadata:
-  name: ${LINK_NAME}
-  namespace: ${NAMESPACE}
-spec:
-  endpoints:
-  - name: inter-router
-    host: ${REMOTE_HOST}
-    port: "${INTER_ROUTER_PORT}"
-  tlsCredentials: ${LINK_NAME}
-LINKEOF
-    
-    # Rename secret if needed
-    if [[ -f "${LOCAL_NS_DIR}/input/resources/Secret-link-hub.yaml" ]]; then
-      mv "${LOCAL_NS_DIR}/input/resources/Secret-link-hub.yaml" \
-         "${LOCAL_NS_DIR}/input/resources/Secret-${LINK_NAME}.yaml"
-      sed -i "s/name: link-hub/name: ${LINK_NAME}/g" \
-         "${LOCAL_NS_DIR}/input/resources/Secret-${LINK_NAME}.yaml"
-    fi
-    
-    rm -f "$TOKEN_FILE"
-    echo "  ✅ Link $LINK_NAME configured"
-  fi
+  systemctl --user start skupper-controller.service 2>/dev/null || true
+  sleep 2
+  echo "  ✅ Local controller started"
 fi
 
-# Reload and restart router
-fix_cert_perms "localhost"
-# Restart router to pick up any new link/listener config
-start_router_container "localhost"
-sleep 10
-
-# Verify connection
-ESTAB=$(ss -tnp 2>/dev/null | grep "${INTER_ROUTER_PORT}" | grep -c ESTAB 2>/dev/null || echo "0")
-if [[ "$ESTAB" -gt 0 ]]; then
-  echo "  ✅ Link established ($ESTAB connections)"
+# Remote controller
+REMOTE_CTL=$(check_controller_status "$REMOTE_HOST")
+if [[ "$REMOTE_CTL" == *"Up"* ]]; then
+  echo "  ✅ $REMOTE_HOST controller running"
 else
-  echo "  ⚠️  No established connections to $REMOTE_HOST:$INTER_ROUTER_PORT yet"
+  run_on_host "$REMOTE_HOST" "systemctl --user start skupper-controller.service 2>/dev/null" || true
+  sleep 2
+  echo "  ✅ $REMOTE_HOST controller started"
 fi
 echo
 
-# ── Phase 5: Start Model ──────────────────────────────────────
-echo "Phase 5: Start model $MODEL_ALIAS"
+# ── Phase 3: Start routers ────────────────────────────────────
+echo "Phase 3: Start routers"
+
+# Remote router
+REMOTE_ROUTER=$(check_router_status "$REMOTE_HOST")
+if [[ "$REMOTE_ROUTER" == *"Up"* ]]; then
+  echo "  ✅ $REMOTE_HOST router running"
+else
+  if needs_tmpfs_workaround "$REMOTE_HOST"; then
+    echo "  → Starting $REMOTE_HOST router (with tmpfs workaround)..."
+    recreate_router_with_tmpfs "$REMOTE_HOST"
+  else
+    run_on_host "$REMOTE_HOST" "systemctl --user start skupper-${NAMESPACE}.service 2>/dev/null" || true
+  fi
+  sleep 5
+  echo "  ✅ $REMOTE_HOST router started"
+fi
+
+# Local router
+LOCAL_ROUTER=$(check_router_status localhost)
+if [[ "$LOCAL_ROUTER" == *"Up"* ]]; then
+  echo "  ✅ Local router running"
+else
+  systemctl --user start "skupper-${NAMESPACE}.service" 2>/dev/null || true
+  sleep 5
+  echo "  ✅ Local router started"
+fi
+echo
+
+# ── Phase 4: Start model container ────────────────────────────
+echo "Phase 4: Start model $MODEL_ALIAS"
 
 MODEL_STATUS=$(run_on_host "$REMOTE_HOST" "podman ps --filter name=${MODEL_CONTAINER} --format '{{.Status}}'" || echo "")
 if [[ "$MODEL_STATUS" == *"Up"* ]]; then
   echo "  ✅ $MODEL_CONTAINER already running"
 else
+  # Check container exists
+  EXISTS=$(run_on_host "$REMOTE_HOST" "podman ps -a --filter name=${MODEL_CONTAINER} --format '{{.Names}}'" || echo "")
+  if [[ -z "$EXISTS" ]]; then
+    echo "  ❌ Container $MODEL_CONTAINER not found on $REMOTE_HOST"
+    echo "     Run: bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh $MODEL_ALIAS"
+    exit 1
+  fi
+
   echo "  → Starting $MODEL_CONTAINER..."
   run_on_host "$REMOTE_HOST" "podman start ${MODEL_CONTAINER}" || {
     echo "  ❌ Failed to start $MODEL_CONTAINER"
     FAILED=1
   }
-  
-  # Wait for model
+
+  # Wait for model API
   case "$MODEL_ALIAS" in
     g350m|g1b) WAIT=60 ;;
     g8b)       WAIT=30 ;;
@@ -268,9 +124,10 @@ else
     g30b-96k)  WAIT=1200 ;;
     *)         WAIT=120 ;;
   esac
-  
-  echo "  Waiting for model (max ${WAIT}s)..."
+
+  echo "  Waiting for model API (max ${WAIT}s)..."
   ELAPSED=0
+  CODE="000"
   while (( ELAPSED < WAIT )); do
     CODE=$(run_on_host "$REMOTE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${MODEL_PORT}/v1/models" || echo "000")
     if [[ "$CODE" == "200" ]]; then
@@ -280,28 +137,29 @@ else
     sleep 15
     ELAPSED=$((ELAPSED + 15))
   done
-  
+
   if [[ "$CODE" != "200" ]]; then
-    echo "  ❌ Timeout waiting for model"
+    echo "  ❌ Timeout waiting for model API"
     FAILED=1
   fi
 fi
 echo
 
-# ── Phase 6: Verify Local Endpoint ────────────────────────────
-echo "Phase 6: Verify local endpoint"
+# ── Phase 5: Verify local endpoint ────────────────────────────
+echo "Phase 5: Verify local endpoint"
+
+sleep 5
 
 # Check listener port
-LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${LOCAL_PORT}" || echo "0")
+LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${LOCAL_PORT}" || true)
+LISTENING=${LISTENING:-0}
 if [[ "$LISTENING" -gt 0 ]]; then
   echo "  ✅ localhost:${LOCAL_PORT} listening"
 else
-  echo "  ⚠️  localhost:${LOCAL_PORT} not listening yet"
-  echo "  (May need a few seconds for routing to propagate)"
+  echo "  ⚠️  localhost:${LOCAL_PORT} not listening yet (may need a few seconds)"
 fi
 
 # Test end-to-end
-sleep 5
 HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${LOCAL_PORT}/v1/models" 2>/dev/null || echo "000")
 if [[ "$HTTP_CODE" == "200" ]]; then
   MODEL_ID=$(curl -s "http://localhost:${LOCAL_PORT}/v1/models" | \

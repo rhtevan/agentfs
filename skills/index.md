@@ -4,12 +4,12 @@
 
 | Skill | Tags | Signals | Updated |
 |-------|------|---------|---------|
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work | skupper model up, skupper model down, skupper model status, skupper model test, skupper model setup, skupper model teardown, bring up skupper model, shutdown skupper model, expose remote model, skupper van, skupper model precheck, skupper model topology, show skupper topology | 2026-08-11 18:02 |
+| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill, skill check, check skill, scan skill, audit skill, verify skill quality | 2026-08-11 17:12 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | sync agentfs, update agentfs, upgrade agentfs | 2026-08-11 11:48 |
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work | skupper model up, skupper model down, skupper model status, skupper model test, bring up skupper model, shutdown skupper model, expose remote model, skupper van | 2026-08-11 10:40 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | goose, maas, litellm, custom-provider, reasoning, configuration | goose maas, configure goose maas, goose remote provider | 2026-08-10 22:23 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, provider-management | install lightspeed, configure lightspeed, openshift lightspeed, ols setup | 2026-08-10 21:55 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | litellm vertex, vertex ai proxy, setup litellm vertex | 2026-08-10 16:45 |
-| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill | 2026-08-10 16:11 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | hermes litellm, configure hermes litellm, hermes provider | 2026-08-10 15:39 |
 | [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | goose litellm, configure goose litellm, redhat provider | 2026-08-10 15:39 |
 | [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | goose skupper provider, setup skupper provider, setup goose skupper provider for, remove skupper provider, teardown skupper provider, recreate skupper provider, reset skupper provider | 2026-08-08 14:52 |

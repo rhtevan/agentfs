@@ -1,96 +1,107 @@
 #!/usr/bin/env bash
-# down.sh — Tear down Skupper VAN and stop model
-# Usage: bash down.sh [MODEL_ALIAS]
-#   With alias: stop specific model and its skupper link
-#   No alias:   stop all models and all skupper components
+# down.sh — Stop model and optionally Skupper services
+# Usage:
+#   bash down.sh MODEL_ALIAS       — stop one model container only
+#   bash down.sh all                — stop all models + all routers
+#   bash down.sh all --keep-van     — stop all models, keep VAN running
 
 source "$(dirname "$0")/common.sh"
 
-MODEL_ALIAS="${1:-all}"
+ARG="${1:?Usage: down.sh MODEL_ALIAS|all [--keep-van]}"
+KEEP_VAN=false
+[[ "${2:-}" == "--keep-van" ]] && KEEP_VAN=true
 
-if [[ "$MODEL_ALIAS" == "all" ]]; then
-  echo "=== Skupper Model Provider — DOWN (all) ==="
+if [[ "$ARG" == "all" ]]; then
+  echo "=== Skupper Model Provider — DOWN ALL ==="
   echo
 
   # Phase 1: Stop all model containers
   echo "Phase 1: Stop model containers"
-  for alias in g350m g1b g8b g8b-128k g30b-96k; do
-    host=$(alias_to_host "$alias") || continue
-    container=$(alias_to_container "$alias")
+  for host in rhel-ai rhtevan-work; do
     if ! host_reachable "$host"; then
-      echo "  ⚠️  $host unreachable — skipping $container"
+      echo "  ⚠️  $host unreachable — skip"
       continue
     fi
-    status=$(run_on_host "$host" "podman ps --filter name=${container} --format '{{.Status}}'" || echo "")
-    if [[ "$status" == *"Up"* ]]; then
-      echo "  Stopping $container on $host..."
-      run_on_host "$host" "podman stop ${container}" || true
-      echo "  ✅ $container stopped"
+    # Find and stop model containers
+    CONTAINERS=$(run_on_host "$host" "podman ps --filter 'name=model-' --format '{{.Names}}'" || echo "")
+    if [[ -n "$CONTAINERS" ]]; then
+      while IFS= read -r container; do
+        run_on_host "$host" "podman stop ${container}" 2>/dev/null || true
+        echo "  ✅ Stopped $container on $host"
+      done <<< "$CONTAINERS"
+    else
+      echo "  ✅ No model containers running on $host"
     fi
   done
   echo
 
+  if [[ "$KEEP_VAN" == "true" ]]; then
+    echo "✅ All models stopped. VAN kept running (--keep-van)."
+    exit 0
+  fi
+
   # Phase 2: Stop local router
   echo "Phase 2: Stop local router"
-  LOCAL_STATUS=$(podman ps --filter name=${ROUTER_CONTAINER} --format '{{.Status}}' 2>/dev/null || echo "")
-  if [[ "$LOCAL_STATUS" == *"Up"* ]]; then
-    podman stop "${ROUTER_CONTAINER}" 2>/dev/null || true
-    echo "  ✅ Local router stopped"
-  else
-    echo "  Local router not running"
-  fi
+  systemctl --user stop "skupper-${NAMESPACE}.service" 2>/dev/null || true
+  echo "  ✅ Local router stopped"
   echo
 
   # Phase 3: Stop remote routers
   echo "Phase 3: Stop remote routers"
-  for host in rhtevan-work rhel-ai; do
-    if ! host_reachable "$host"; then
-      echo "  ⚠️  $host unreachable — skipping"
-      continue
-    fi
-    status=$(run_on_host "$host" "podman ps --filter name=${ROUTER_CONTAINER} --format '{{.Status}}'" || echo "")
-    if [[ "$status" == *"Up"* ]]; then
-      run_on_host "$host" "podman stop ${ROUTER_CONTAINER}" || true
+  for host in rhel-ai rhtevan-work; do
+    if host_reachable "$host"; then
+      run_on_host "$host" "systemctl --user stop skupper-${NAMESPACE}.service 2>/dev/null" || true
       echo "  ✅ $host router stopped"
     else
-      echo "  $host router not running"
+      echo "  ⚠️  $host unreachable — skip"
     fi
   done
   echo
 
-  # Phase 4: Verify
-  echo "Phase 4: Verify"
-  ss -tlnp 2>/dev/null | grep -E '9000|10000' && echo "  ⚠️  Ports still listening" || echo "  ✅ All local ports clear"
+  # Phase 4: Optionally stop controllers
+  echo "Phase 4: Controllers"
+  echo "  Controllers left running (they manage certs and reconciliation)."
+  echo "  To stop: systemctl --user stop skupper-controller.service"
   echo
-  echo "✅ Skupper Model Provider DOWN (all)"
+
+  # Phase 5: Verify
+  echo "Phase 5: Verify"
+  LOCAL_PORT_9000=$(ss -tlnp 2>/dev/null | grep -c ':9000' || true)
+  LOCAL_PORT_10000=$(ss -tlnp 2>/dev/null | grep -c ':10000' || true)
+  echo "  localhost:9000  — ${LOCAL_PORT_9000:-0} listeners"
+  echo "  localhost:10000 — ${LOCAL_PORT_10000:-0} listeners"
+  echo
+
+  echo "✅ All models and routers stopped."
 
 else
-  # Single model shutdown
+  # Single model mode
+  MODEL_ALIAS="$ARG"
   REMOTE_HOST=$(alias_to_host "$MODEL_ALIAS") || exit 1
-  LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
   MODEL_CONTAINER=$(alias_to_container "$MODEL_ALIAS")
+  LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
 
-  echo "=== Skupper Model Provider — DOWN ($MODEL_ALIAS) ==="
-  echo "  Remote host:    $REMOTE_HOST"
-  echo "  Container:      $MODEL_CONTAINER"
-  echo "  Local listener: localhost:$LOCAL_PORT"
+  echo "=== Skupper Model Provider — DOWN $MODEL_ALIAS ==="
+  echo "  Remote host: $REMOTE_HOST"
+  echo "  Container:   $MODEL_CONTAINER"
   echo
 
-  # Stop model container
   echo "Phase 1: Stop model container"
-  if ! host_reachable "$REMOTE_HOST"; then
-    echo "  ⚠️  $REMOTE_HOST unreachable — cannot stop model"
-  else
-    status=$(run_on_host "$REMOTE_HOST" "podman ps --filter name=${MODEL_CONTAINER} --format '{{.Status}}'" || echo "")
-    if [[ "$status" == *"Up"* ]]; then
-      run_on_host "$REMOTE_HOST" "podman stop ${MODEL_CONTAINER}" || true
-      echo "  ✅ $MODEL_CONTAINER stopped on $REMOTE_HOST"
+  if host_reachable "$REMOTE_HOST"; then
+    MODEL_STATUS=$(run_on_host "$REMOTE_HOST" "podman ps --filter name=${MODEL_CONTAINER} --format '{{.Status}}'" || echo "")
+    if [[ "$MODEL_STATUS" == *"Up"* ]]; then
+      run_on_host "$REMOTE_HOST" "podman stop ${MODEL_CONTAINER}" 2>/dev/null || true
+      echo "  ✅ Stopped $MODEL_CONTAINER on $REMOTE_HOST"
     else
-      echo "  $MODEL_CONTAINER not running ($status)"
+      echo "  ✅ $MODEL_CONTAINER already stopped"
     fi
+  else
+    echo "  ⚠️  $REMOTE_HOST unreachable — cannot stop container"
   fi
   echo
 
-  echo "✅ Skupper Model Provider DOWN ($MODEL_ALIAS)"
-  echo "Note: Skupper routers left running. Use 'down.sh all' to stop everything."
+  echo "Note: VAN infrastructure (routers, links) left running."
+  echo "      Use 'down.sh all' to stop everything."
+  echo
+  echo "✅ Model $MODEL_ALIAS stopped."
 fi
