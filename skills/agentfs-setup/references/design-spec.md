@@ -270,19 +270,45 @@ be updated in the same commit or session. This is a hard requirement,
 not advisory — unlike the soft README staleness check in Guardrail #10.
 
 Defines ten structural guardrails (reordered by usage frequency):
-1. **Progressive Disclosure** — browse `index.md` before opening files
-2. **Memory Scope** — memories are PROJECT-only; graduation path to OKF
-3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
-4. **Skill Placement** — default to USER, PROJECT only when explicit
-5. **Filesystem Integrity** — link integrity, log currency, content
+1. 🔄 **Progressive Disclosure** — browse `index.md` before opening files
+2. ⚖️ **Memory Scope** — memories are PROJECT-only; graduation path to OKF
+3. 🔄 **Cross-Agent Discovery** — read CLAUDE.md, .cursorrules, etc.
+4. ⚖️ **Skill Placement** — default to USER, PROJECT only when explicit
+5. 🚧 **Filesystem Integrity** — link integrity, log currency, content
    file currency, and index currency in a single guardrail
-6. **Idempotency** — every skill and workflow must be idempotent
-7. **Anti-Sycophancy** — refuse conflicting requests, log overrides
-8. **Anti-Daydreaming** — ephemeral session canary name; spot-check
+6. 🔄 **Idempotency** — every skill and workflow must be idempotent
+7. ⚖️ **Anti-Sycophancy** — refuse conflicting requests, log overrides
+8. 🔄 **Anti-Daydreaming** — ephemeral session canary name; spot-check
    for context drift; never persisted to AgentFS files
-9. **Checkpoints & Resumability** — checkpoint before destructive ops
-10. **Git Push Safety** — mandatory 5-step preflight before any
+9. 🚧 **Checkpoints & Resumability** — checkpoint before destructive ops
+10. 🚧 **Git Push Safety** — mandatory 5-step preflight before any
     `git push`: stop → scan → present report → wait for approval → push
+
+### Guardrail Type System
+
+Each guardrail is classified by its enforcement mechanism:
+
+| Type | Marker | Trigger | Agent Behavior | Key Action Pattern |
+|------|--------|---------|---------------|--------------------|
+| **Gate** | 🚧 | Specific action point | STOP, complete checklist, then proceed | `STOP → [verb chain] → RESUME/WAIT` |
+| **Rule** | ⚖️ | Decision point | Choose correctly from constrained options | `Default X; exception when Y` |
+| **Habit** | 🔄 | Continuous / periodic | Maintain behavioral norm throughout session | `[trigger]: action` |
+
+Three types map to three fundamental flow-control primitives:
+Gate = checkpoint, Rule = branch, Habit = feedback loop.
+
+Two additional patterns (Trigger and Invariant) were considered
+during design but collapse into existing types at the agent
+behavioral level:
+- **Trigger** (react to detected condition) collapses into **Rule** —
+  both are conditional responses; a Rule is a Trigger with a default
+  path, a Trigger is a Rule without one.
+- **Invariant** (property that must always hold) collapses into
+  **Habit** — the agent enforces both through ongoing vigilance with
+  no distinct structural mechanism.
+
+Only guardrails with proven multi-step failure modes receive the Gate
+type. Overusing Gate dilutes its interrupt force.
 
 Includes an **Agent Profiles** table — an agent-agnostic registry of all
 profiles in the project:

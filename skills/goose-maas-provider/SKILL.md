@@ -3,7 +3,7 @@ name: goose-maas-provider
 description: "Configure Goose to use a remote MaaS (Model as a Service) LiteLLM instance, with API key setup, reasoning model fixes, and troubleshooting"
 platforms: [linux]
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
   signals: ["goose maas", "configure goose maas", "goose remote provider"]
   related_skills: [goose-litellm-provider, litellm-proxy-status]
@@ -64,6 +64,24 @@ The custom provider is defined as a JSON file under
     },
     {
       "name": "qwen3-14b",
+      "context_limit": 128000,
+      "input_token_cost": null,
+      "output_token_cost": null,
+      "currency": null,
+      "supports_cache_control": null,
+      "reasoning": false
+    },
+    {
+      "name": "qwen36-35b-a3b",
+      "context_limit": 128000,
+      "input_token_cost": null,
+      "output_token_cost": null,
+      "currency": null,
+      "supports_cache_control": null,
+      "reasoning": false
+    },
+    {
+      "name": "deepseek-r1-distill-qwen-14b",
       "context_limit": 128000,
       "input_token_cost": null,
       "output_token_cost": null,
@@ -148,7 +166,7 @@ curl -s "https://maas-rhdp.apps.maas.redhatworkshops.io/v1/models" \
   -H "Authorization: Bearer <your-sk-key>" | python3 -m json.tool
 ```
 
-Known models (as of 2026-07-06):
+Known models (as of 2026-08-10):
 
 | Model ID | Type | Notes |
 |---|---|---|
@@ -156,6 +174,7 @@ Known models (as of 2026-07-06):
 | `qwen3-14b` | Standard | Smaller model |
 | `llama-scout-17b` | Standard | Meta Llama Scout |
 | `deepseek-r1-distill-qwen-14b` | Reasoning | DeepSeek R1 distilled |
+| `qwen36-35b-a3b` | Standard (MoE) | Qwen 3.6 35B-A3B MoE |
 
 ---
 
@@ -211,6 +230,7 @@ thinking block, then fails to process the subsequent tool_calls.
 | `gpt-oss-120b` | ✅ Yes (always) | ❌ **No** | Goose drops tool_calls after reasoning |
 | `qwen3-14b` | ✅ Yes (always) | ❌ **No** | Same streaming parser issue |
 | `deepseek-r1-distill-qwen-14b` | ✅ Yes (always) | ❌ **No** | Same streaming parser issue |
+| `qwen36-35b-a3b` | ❓ Unknown | ❓ **Untested** | New model; test with diagnostic before use |
 
 ### Diagnostic Test
 
@@ -409,6 +429,24 @@ cat > "$PROVIDER_FILE" << 'EOF'
       "currency": null,
       "supports_cache_control": null,
       "reasoning": false
+    },
+    {
+      "name": "qwen36-35b-a3b",
+      "context_limit": 128000,
+      "input_token_cost": null,
+      "output_token_cost": null,
+      "currency": null,
+      "supports_cache_control": null,
+      "reasoning": false
+    },
+    {
+      "name": "deepseek-r1-distill-qwen-14b",
+      "context_limit": 128000,
+      "input_token_cost": null,
+      "output_token_cost": null,
+      "currency": null,
+      "supports_cache_control": null,
+      "reasoning": false
     }
   ],
   "headers": null,
@@ -482,6 +520,7 @@ echo "     active_provider: custom_maas"
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-10 22:22 | v1.4 — Added `qwen36-35b-a3b` (Qwen 3.6 35B-A3B MoE) and `deepseek-r1-distill-qwen-14b` to model list in provider JSON, reference configuration, recovery script, and model compatibility matrix |
 | 2026-07-06 20:06 | v1.3 — **Goose Desktop is incompatible with MaaS** — tool calling fails under all tested Desktop configurations (streaming on/off, toolshim on/off); CLI with `GOOSE_TOOLSHIM: true` is the only working approach; updated Desktop section, troubleshooting |
 | 2026-07-06 20:00 | v1.2 — Added `GOOSE_TOOLSHIM: true` requirement; `supports_streaming: false` for Desktop; documented Desktop vs CLI differences |
 | 2026-07-06 19:39 | v1.1 — **Breaking**: reasoning models (`gpt-oss-120b`, `qwen3-14b`, `deepseek-r1-*`) are fundamentally incompatible with Goose's OpenAI streaming parser — goose drops tool_calls that follow `reasoning_content` chunks. Changed default model to `llama-scout-17b`. Added all available models to provider JSON. Updated model compatibility matrix, troubleshooting, recovery script. Config settings (`reasoning: false`, `preserves_thinking: false`) are necessary but NOT sufficient for reasoning models. |

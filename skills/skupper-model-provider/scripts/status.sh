@@ -18,15 +18,19 @@ if [[ "$LOCAL_STATUS" == *"Up"* ]]; then
   echo "  🟢 Router: $LOCAL_STATUS"
   
   # Check established connections
-  ESTAB_RTW=$(ss -tnp 2>/dev/null | grep '55671' | grep -c ESTAB 2>/dev/null || echo "0")
-  ESTAB_RAI=$(ss -tnp 2>/dev/null | grep '8000' | grep -c ESTAB 2>/dev/null || echo "0")
+  ESTAB_RTW=$(ss -tnp 2>/dev/null | grep '55671' | grep -c ESTAB 2>/dev/null || true)
+  ESTAB_RTW=${ESTAB_RTW:-0}
+  ESTAB_RAI=$(ss -tnp 2>/dev/null | grep '8000' | grep -c ESTAB 2>/dev/null || true)
+  ESTAB_RAI=${ESTAB_RAI:-0}
   
   [[ "$ESTAB_RTW" -gt 0 ]] && echo "  🟢 Link rhtevan-work: $ESTAB_RTW connections" || echo "  🔴 Link rhtevan-work: not connected"
   [[ "$ESTAB_RAI" -gt 0 ]] && echo "  🟢 Link rhel-ai: $ESTAB_RAI connections" || echo "  🔴 Link rhel-ai: not connected"
   
   # Check listener ports
-  PORT_10000=$(ss -tlnp 2>/dev/null | grep ':10000' | grep -c LISTEN 2>/dev/null || echo "0")
-  PORT_9000=$(ss -tlnp 2>/dev/null | grep ':9000' | grep -c LISTEN 2>/dev/null || echo "0")
+  PORT_10000=$(ss -tlnp 2>/dev/null | grep ':10000' | grep -c LISTEN 2>/dev/null || true)
+  PORT_10000=${PORT_10000:-0}
+  PORT_9000=$(ss -tlnp 2>/dev/null | grep ':9000' | grep -c LISTEN 2>/dev/null || true)
+  PORT_9000=${PORT_9000:-0}
   
   [[ "$PORT_10000" -gt 0 ]] && echo "  🟢 Listener :10000 (model-api-rhtevan-work)" || echo "  🔴 Listener :10000 not open"
   [[ "$PORT_9000" -gt 0 ]]  && echo "  🟢 Listener :9000 (model-api-rhel-ai)" || echo "  🔴 Listener :9000 not open"

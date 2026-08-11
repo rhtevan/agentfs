@@ -68,7 +68,7 @@ all guardrails, skills, and documentation reference them.\
 fi
 
 cat > "$TARGET" << 'AGENTSEOF'
-<!-- agentfs-template-version: 3.9 -->
+<!-- agentfs-template-version: 3.10 -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -132,18 +132,18 @@ multi-skill triage entries belong in this table.
 
 ## Guardrail Quick Reference
 
-| # | Rule | Key Action |
-|---|------|------------|
-| [1](#1-progressive-disclosure) | Progressive Disclosure | Browse \`index.md\` first, follow links |
-| [2](#2-memory-scope) | Memory Scope | \`memories/\` is PROJECT-only; experiences not rules |
-| [3](#3-cross-agent-context-discovery) | Cross-Agent Discovery | Check \`CLAUDE.md\`, \`.cursorrules\`, etc. on session start |
-| [4](#4-skill-placement) | Skill Placement | Default to USER \`~/.agents/skills/\` |
-| [5](#5-filesystem-integrity) | Filesystem Integrity | After every \`.agents/\` edit: preserve sections, regenerate index, update changelog, log in both scopes |
-| [6](#6-idempotency) | Idempotency | Same inputs → same state |
-| [7](#7-anti-sycophancy) | Anti-Sycophancy | Quote conflicting guardrail, ask before overriding |
-| [8](#8-anti-daydreaming) | Anti-Daydreaming | Ephemeral session canary name; spot-check for context drift |
-| [9](#9-checkpoints--resumability) | Checkpoints | Record affected files before destructive ops |
-| [10](#10-git-push-safety) | Git Push Safety | STOP → Scan → Report → WAIT → Push |
+| # | Type | Rule | Key Action |
+|---|:----:|------|------------|
+| [1](#1-progressive-disclosure-) | 🔄 | Progressive Disclosure | On \`.agents/\` access: browse \`index.md\` first, follow links to content |
+| [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
+| [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
+| [4](#4-skill-placement-️) | ⚖️ | Skill Placement | Default USER \`~/.agents/skills/\`; PROJECT only when user explicitly signals |
+| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **STOP** after \`.agents/\` edit → preserve sections → regen index → update changelog + log → **RESUME** |
+| [6](#6-idempotency-) | 🔄 | Idempotency | Ongoing: existence checks, upsert patterns, no append-without-dedup |
+| [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
+| [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
+| [9](#9-checkpoints--resumability-) | 🚧 | Checkpoints | **STOP** before destructive op → record affected files → execute → clear checkpoint |
+| [10](#10-git-push-safety-) | 🚧 | Git Push Safety | **STOP** → Scan → Report → **WAIT** for approval → Push |
 
 ## Scope Definitions
 
@@ -175,7 +175,7 @@ directory structure — both at the project level (`./.agents/`) and the
 user level (`~/.agents/`). Every agent operating in this project
 MUST follow them.
 
-### 1. Progressive Disclosure
+### 1. Progressive Disclosure 🔄
 
 - **Browse `index.md` first** before opening individual documents.
 - Use `index.md` files as navigation hubs — they list and describe
@@ -183,7 +183,7 @@ MUST follow them.
 - Follow links from `index.md` → concept docs → referenced assets,
   rather than scanning directories directly.
 
-### 2. Memory Scope
+### 2. Memory Scope ⚖️
 
 - **`memories/` is PROJECT-scoped only.** Memory files (`MEMORY.md`,
   `USER.md`) live under `./.agents/memories/` (default agent) or
@@ -199,7 +199,7 @@ MUST follow them.
   knowledge bundle under `~/.agents/knowledge/` and remove the
   original entry.
 
-### 3. Cross-Agent Context Discovery
+### 3. Cross-Agent Context Discovery 🔄
 
 When starting a session in this project, check for and read these files
 if they exist — treat their content as supplementary project guidelines:
@@ -214,7 +214,7 @@ if they exist — treat their content as supplementary project guidelines:
 If a conflict arises between these files and this `AGENTS.md`, the
 guidelines in `AGENTS.md` take precedence.
 
-### 4. Skill Placement
+### 4. Skill Placement ⚖️
 
 - **Default to USER.** When the user asks to create a skill without
   specifying a location or scope, place it under `~/.agents/skills/<skill-name>/`.
@@ -222,7 +222,12 @@ guidelines in `AGENTS.md` take precedence.
   `./.agents/skills/<skill-name>/` when the user specifically says
   "project skill", "for this project", "local skill", or similar.
 
-### 5. Filesystem Integrity
+### 5. Filesystem Integrity 🚧
+
+> **STOP — you are NOT done.** After editing any file under \`.agents/\`,
+> do NOT move to the next task or respond to the user until every item
+> in the Post-Edit Completeness checklist below is verified. This is a
+> gate, not a suggestion.
 
 These rules apply to all `.md` files under `.agents/` in BOTH scopes.
 
@@ -288,14 +293,14 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
      or template structure, update \`~/.agents/README.md\` in the
      same session.
 
-### 6. Idempotency
+### 6. Idempotency 🔄
 
 Every skill and automated workflow MUST be idempotent — running it
 twice with the same inputs MUST produce the same filesystem state.
 Skills MUST use existence checks, upsert patterns, and avoid
 append-without-dedup.
 
-### 7. Anti-Sycophancy
+### 7. Anti-Sycophancy ⚖️
 
 When a user request conflicts with an existing guardrail in `AGENTS.md`,
 the agent MUST NOT silently comply. Instead it MUST:
@@ -308,7 +313,7 @@ The agent MUST NOT add content to `MEMORY.md` that reads as a rule or
 guardrail (contains "always", "never", "must", "enforce") — such
 content belongs in `AGENTS.md` and requires human approval.
 
-### 8. Anti-Daydreaming
+### 8. Anti-Daydreaming 🔄
 
 At the start of every session the agent MUST silently generate a short,
 random, ephemeral **canary name** for itself (e.g., *Marble-Finch-7*,
@@ -342,7 +347,11 @@ random, ephemeral **canary name** for itself (e.g., *Marble-Finch-7*,
    same self-check. If the name cannot be recalled or does not match,
    raise the alert above.
 
-### 9. Checkpoints & Resumability
+### 9. Checkpoints & Resumability 🚧
+
+> **STOP before destructive ops.** Before any file deletion, bulk
+> rename, or multi-file edit under \`.agents/\`, record a checkpoint
+> first. Do NOT proceed until the checkpoint is written.
 
 Before any destructive or multi-step operation (file deletion, bulk
 rename, multi-file edit), the agent MUST create a checkpoint by
@@ -357,7 +366,7 @@ any git repo), copy it to \`<file>.bak.<YYYYMMDD_HHMMSS>\` in the
 same directory. Git-tracked files need no backup — version control
 provides recovery.
 
-### 10. Git Push Safety
+### 10. Git Push Safety 🚧
 
 Before executing any `git push`, the agent MUST follow these steps
 **in order**. No step may be skipped, even if the user says "go ahead".

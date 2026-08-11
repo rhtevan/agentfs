@@ -232,6 +232,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-11 11:48 | v3.10.0 — Added Guardrail Type System (Gate 🚧, Rule ⚖️, Habit 🔄): Type column in Quick Reference table with verb-chain Key Actions; type badges on all 10 guardrail headings; gate blockquote notices on #5 (Filesystem Integrity), #9 (Checkpoints), #10 (Git Push Safety); design-spec updated with type rationale and Trigger/Invariant collapse analysis; template version 3.9→3.10 |
 | 2026-08-08 10:55 | v3.9.0 — Added "Never improvise when a skill exists" routing rule; added "Backup untracked files" to Guardrail #9 (Checkpoints); template version 3.8→3.9 |
 | 2026-08-04 19:40 | v3.8.1 — Strengthened Index Currency guardrail in AGENTS.md template: explicitly prohibits ad-hoc scripts for index generation; requires `load_skill` and following `skill-index` instructions |
 | 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated design-spec and all cross-references |

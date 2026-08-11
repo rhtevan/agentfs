@@ -1,6 +1,19 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-11 11:50
+- Added Guardrail Type System to AgentFS: Gate 🚧, Rule ⚖️, Habit 🔄
+- Updated `agentfs-setup/references/design-spec.md`: added type badges to guardrail list, added Guardrail Type System sub-section with rationale and Trigger/Invariant collapse analysis
+- Updated `agentfs-setup/scripts/seed-agents-md.sh`: Type column in Quick Reference table, verb-chain Key Actions, type badges on all 10 headings, gate blockquotes on #5/#9/#10, template version 3.9→3.10
+- Updated `agentfs-setup/SKILL.md` changelog with v3.10.0 entry
+- Synced AGENTS.md in project `goofing-around` to template v3.10, re-injected project-owned profiles (verifier, watchdog)
+- Fixed `skupper-model-provider/scripts/status.sh`: replaced `|| echo "0"` with `|| true` on pipefail-sensitive pipelines
+- Updated `skupper-model-provider/SKILL.md` changelog with v5.1 entry
+
+## 2026-08-11 10:40
+- Fixed `skupper-model-provider/scripts/status.sh`: replaced `|| echo "0"` with `|| true` on `ss | grep | grep -c` pipelines to prevent `set -euo pipefail` abort and `0\n0` arithmetic parse errors
+- Updated `skupper-model-provider/SKILL.md` changelog with v5.1 entry
+
 ## 2026-08-10 16:45
 
 - Updated `litellm-vertex-ai-proxy` v3.0.0: extracted all inline execution code to 4 scripts (setup.sh, detect-sa.sh, test-sa.sh, probe-models.sh); SKILL.md reduced from 308→202 lines; added Gotcha #7; added T8–T11 tests; workflow 8→6 steps

@@ -15,13 +15,13 @@ Install OpenShift Lightspeed on an OpenShift Local (CRC) cluster, configure one 
 
 This skill supports multiple operations via arguments:
 
-| Argument | Description | Keywords / Signals |
-|----------|-------------|--------------------|
-| `install` (or no args) | Install the Lightspeed Operator on CRC, apply the `metrics-client-ca` fix, configure the first LLM provider, create OLSConfig, and verify deployment | *install lightspeed*, *set up OLS*, *deploy lightspeed on CRC*, *first time setup* |
-| `add-provider` | Add an additional LLM provider: create credentials secret (file-based), patch OLSConfig providers array, verify pod rollout and status | *add provider*, *new LLM*, *add maas*, *add openai*, *another model*, *configure additional provider* |
-| `list` | Display all configured providers, their types, URLs, models, and which provider/model is the active default | *list providers*, *show models*, *what's configured*, *current OLS config*, *which model*, *show lightspeed config* |
-| `switch-default` | Change the default provider and model, wait for pod rollout, verify the switch | *switch model*, *change provider*, *use qwen*, *switch to claude*, *change default*, *swap model* |
-| `remove-provider` | Remove a provider from OLSConfig (cannot remove the current default — switch first), optionally delete the credentials secret | *remove provider*, *delete provider*, *drop maas*, *uninstall provider*, *clean up provider* |
+| Argument               | Description                                                                                                                                          | Keywords / Signals                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `install` (or no args) | Install the Lightspeed Operator on CRC, apply the `metrics-client-ca` fix, configure the first LLM provider, create OLSConfig, and verify deployment | *install lightspeed*, *set up OLS*, *deploy lightspeed on CRC*, *first time setup*                                  |
+| `add-provider`         | Add an additional LLM provider: create credentials secret (file-based), patch OLSConfig providers array, verify pod rollout and status               | *add provider*, *new LLM*, *add maas*, *add openai*, *another model*, *configure additional provider*               |
+| `list`                 | Display all configured providers, their types, URLs, models, and which provider/model is the active default                                          | *list providers*, *show models*, *what's configured*, *current OLS config*, *which model*, *show lightspeed config* |
+| `switch-default`       | Change the default provider and model, wait for pod rollout, verify the switch                                                                       | *switch model*, *change provider*, *use qwen*, *switch to claude*, *change default*, *swap model*                   |
+| `remove-provider`      | Remove a provider from OLSConfig (cannot remove the current default — switch first), optionally delete the credentials secret                        | *remove provider*, *delete provider*, *drop maas*, *uninstall provider*, *clean up provider*                        |
 
 ### Cross-Cutting Capabilities
 

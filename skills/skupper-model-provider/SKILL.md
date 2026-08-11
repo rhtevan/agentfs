@@ -187,6 +187,7 @@ podman run -d \
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-11 | v5.1 — Fix pipefail crash in status.sh: `grep -c` in pipelines with `set -euo pipefail` aborted script when grep found no matches; replaced `\|\| echo "0"` (which produced `0\n0`) with `\|\| true` |
 | 2026-08-08 | v5.0 — Complete rewrite: all scripts rewritten for podman/interior platform; added Specification and Tests; compact SKILL.md; applied skill-check 4 principles |
 | 2026-08-08 | v4.0 — All-interior mode; podman platform; official container image; dual routing keys; ports 10000/9000 |
 | 2026-08-07 | v3.0 — Two routing keys; rhel-ai edge port 8000 |
