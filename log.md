@@ -1,6 +1,12 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-12 09:04
+- skupper-model-provider v6.1.2: Removed `[Install]`/`WantedBy=default.target` from systemd unit templates in `common.sh`
+- Disabled skupper services on all 3 hosts to prevent auto-start on reboot with `Linger=yes`
+- Updated SKILL.md: new known issue entry, updated auto-restart fix description, changelog, version bump
+- Regenerated skills/index.md (48 skills)
+
 ## 2026-08-11 18:49
 - skupper-model-provider v6.1.1: `down.sh all` now stops controllers on all 3 hosts (previously left running)
 - Updated SKILL.md: version bump, script table, shutdown example, known issues table, changelog

@@ -10,7 +10,7 @@ compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "6.1.1"
+  version: "6.1.2"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
   signals:
     - "skupper model up"
@@ -207,11 +207,12 @@ remote host reachable, remote container running.
 | `/tmp` not writable (rhel-ai) | podman 4.9.4 rootless uid mapping on bootc | `--tmpfs /tmp:rw,size=10M,mode=1777` |
 | Cert files not readable | Files created 640, container runs as uid 10000 | `chmod -R o+r` on certs dir after each `system start` |
 | `SSL_PROFILE_BASE_PATH` missing | env var not set on manual container | `-e SSL_PROFILE_BASE_PATH=/etc/skupper-router` |
-| No auto-restart on crash | systemd `RemainAfterExit=yes` fire-and-forget | `start-watch.sh` + `Restart=on-failure` |
+| No auto-restart on crash | systemd `RemainAfterExit=yes` fire-and-forget | `start-watch.sh` + `Restart=on-failure` (no `[Install]` — services are `disabled` so they don't auto-start on boot; `up.sh` starts them on demand) |
 | `link generate` returns "no tokens" | CLI bug on podman platform | Build link YAML manually from client certs |
 | rhel-ai port 55671 not publicly accessible | AWS security group | Use port 8000 via `hub-rhel-ai-public` RouterAccess |
 | Cert verify failed on link | No SANs on server cert | Add `subjectAlternativeNames` to RouterAccess |
 | No CLI to stop controller | By design | `down.sh all` stops via systemctl; manual: `systemctl --user stop skupper-controller.service` |
+| Services auto-start on reboot | `WantedBy=default.target` + `Linger=yes` | Removed `[Install]` section from unit files; services are `disabled` — `up.sh` starts on demand, `Restart=on-failure` handles crashes |
 | system-controller doesn't restart crashed router | Podman platform limitation | Auto-restart via systemd patch |
 
 ## Prerequisites
@@ -235,6 +236,7 @@ remote host reachable, remote container running.
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 | v6.1.2 — Removed `[Install]` / `WantedBy=default.target` from systemd unit templates in `common.sh`; disabled services on all 3 hosts. Prevents auto-start on reboot when `Linger=yes`. `up.sh` starts on demand; `Restart=on-failure` still handles crash recovery. |
 | 2026-08-11 | v6.1.1 — `down.sh all` now stops controllers on all 3 hosts (previously left running). No reason to keep controllers alive when all routers are down. |
 | 2026-08-11 | v6.1.0 — Extracted site-specific config to `topology.env` (gitignored). Added `topology.env.example` with placeholder values. Added precheck capability (`setup.sh --check`) with topology display and validation. Signals: `skupper model precheck`, `skupper model topology`, `show skupper topology`. Scripts no longer contain hardcoded IPs, hostnames, or usernames. |
 | 2026-08-11 | v6.0.1 — Added Tests section (T1–T7) mapped to Specification (S1–S7) per skill-check P4 |

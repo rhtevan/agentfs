@@ -442,9 +442,6 @@ ExecStop=/bin/bash ${ns_dir}/internal/scripts/stop.sh
 Type=simple
 Restart=on-failure
 RestartSec=5
-
-[Install]
-WantedBy=default.target
 EOF
 systemctl --user daemon-reload"
 }
@@ -503,9 +500,6 @@ ExecStop=/bin/bash ${home_dir}/.local/share/skupper/system-controller/internal/s
 Type=simple
 Restart=on-failure
 RestartSec=5
-
-[Install]
-WantedBy=default.target
 EOF
 systemctl --user daemon-reload"
 }
