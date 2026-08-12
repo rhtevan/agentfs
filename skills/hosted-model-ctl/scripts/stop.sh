@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # stop.sh — Stop a running model container
-# Usage: bash stop.sh ALIAS
-#   Or: bash stop.sh all     — stop all models on all hosts
+# Usage: bash stop.sh ALIAS [--remove]
+#   Or: bash stop.sh all [--remove]
+# --remove: also delete the container after stopping
 
 source "$(dirname "$0")/common.sh"
 
-ALIAS="${1:?Usage: stop.sh ALIAS|all}"
+ALIAS="${1:?Usage: stop.sh ALIAS|all [--remove]}"
+REMOVE=false
+[[ "${2:-}" == "--remove" ]] && REMOVE=true
 
 if [[ "$ALIAS" == "all" ]]; then
   echo "Stopping all model containers..."
@@ -21,8 +24,16 @@ if [[ "$ALIAS" == "all" ]]; then
       run_on_host "$HOST" "podman stop $CONTAINER" 2>/dev/null
       echo "  ✅ $CONTAINER stopped"
     fi
+    if [[ "$REMOVE" == "true" ]]; then
+      run_on_host "$HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
+      echo "  🗑️  $CONTAINER removed"
+    fi
   done
-  echo "✅ All reachable models stopped"
+  if [[ "$REMOVE" == "true" ]]; then
+    echo "✅ All reachable models stopped and removed"
+  else
+    echo "✅ All reachable models stopped"
+  fi
   exit 0
 fi
 
@@ -40,4 +51,9 @@ if [[ "$status" == *"Up"* ]]; then
   echo "✅ $CONTAINER stopped"
 else
   echo "$CONTAINER is not running ($status)"
+fi
+
+if [[ "$REMOVE" == "true" ]]; then
+  run_on_host "$HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
+  echo "🗑️  $CONTAINER removed"
 fi

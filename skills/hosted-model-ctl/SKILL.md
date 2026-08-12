@@ -11,7 +11,7 @@ compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "5.0.0"
+  version: "5.1.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted]
   signals:
     - "hosted model list"
@@ -22,10 +22,8 @@ metadata:
     - "hosted model status"
     - "hosted model test"
     - "hosted model pre-check"
-    - "model list"
-    - "model start"
-    - "model stop"
-    - "model status"
+    - "hosted model teardown"
+    - "teardown hosted model"
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -60,7 +58,7 @@ deterministic scripts.
 | `g30b-96k` | granite-4.1-30b | vLLM BF16 | 4 | 96K |
 | `g8b-128k` | granite-4.1-8b | vLLM BF16 | 2 | 128K |
 
-Defaults: `g350m` (rhtevan-work), `g30b-96k` (rhel-ai).
+Defaults: `g350m` (rhtevan-work), `g8b-128k` (rhel-ai).
 
 Full container details (images, flags, VRAM budgets) in
 [references/memory-budget.md](./references/memory-budget.md).
@@ -157,6 +155,17 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/test.sh g350m
 
 Runs 4 tests: container running, API health, model ID, chat completion.
 
+### 8. Teardown (Remove)
+
+```bash
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g350m --remove    # stop + remove specific
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh all --remove      # stop + remove all
+```
+
+With `--remove`, stops and deletes the container(s). Use `setup.sh ALIAS`
+to redeploy afterwards. Without `--remove`, containers are stopped but
+preserved. Does NOT delete downloaded model weights from the HF cache.
+
 ## Tests
 
 | Test | Spec | Command | Expected Result |
@@ -219,6 +228,7 @@ For detailed VRAM breakdowns, see
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 | v5.1.0 — Changed default rhel-ai model from `g30b-96k` to `g8b-128k`. Removed ambiguous bare signals (`model list/start/stop/status`); added `hosted model teardown`/`teardown hosted model` signals. Added teardown operation via `stop.sh --remove`. Clarified signal boundaries with `skupper-model-provider`. |
 | 2026-08-08 | v5.0 — Complete rewrite: all operations as scripts; added Specification and Tests sections; compact tables; moved memory budgets to references/; proper heading hierarchy; applied skill-check 4 principles |
 | 2026-08-08 | v4.0 — rhtevan-work port 8000→10000; consistent with Skupper listener |
 | 2026-08-07 | v3.2 — rhel-ai port 8000→9000; port 8000 for Skupper |

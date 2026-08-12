@@ -5,27 +5,34 @@ description: >
   Virtual Application Network (VAN). All-interior-mode mesh on Podman
   platform with official skupper-router container. Auto-routes model
   alias to correct remote host and local port.
-argument-hint: "bring up skupper model g350m | shutdown skupper model | skupper model status | skupper model precheck | show skupper topology"
+argument-hint: "setup skupper model | teardown skupper model | start skupper model | shutdown skupper model | skupper model status | skupper model precheck"
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "6.1.3"
+  version: "7.0.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
   signals:
+    - "skupper model setup"
+    - "setup skupper model"
+    - "skupper model teardown"
+    - "teardown skupper model"
+    - "skupper model start"
+    - "start skupper model"
+    - "bring up skupper model"
     - "skupper model up"
+    - "skupper model stop"
+    - "stop skupper model"
+    - "shutdown skupper model"
     - "skupper model down"
     - "skupper model status"
+    - "check skupper model"
     - "skupper model test"
-    - "skupper model setup"
-    - "skupper model teardown"
-    - "bring up skupper model"
-    - "shutdown skupper model"
-    - "expose remote model"
-    - "skupper van"
     - "skupper model precheck"
     - "skupper model topology"
     - "show skupper topology"
+    - "expose remote model"
+    - "skupper van"
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -88,11 +95,53 @@ All values in the table above are defined in `topology.env`.
 | `setup.sh` | One-time infrastructure | First time, or after teardown |
 | `setup.sh --check` | Precheck only (topology + validation) | Before setup, or to inspect topology |
 | `teardown.sh` | Remove infrastructure | Decommissioning |
-| `up.sh ALIAS` | Start model + ensure VAN running | Daily use |
-| `down.sh ALIAS` | Stop one model | Daily use |
-| `down.sh all` | Stop all models, routers + controllers | End of day |
+| `up.sh [HOST]` | Start VAN (controllers + routers) | Daily use |
+| `down.sh [HOST]` | Stop VAN (routers + controllers) | End of day |
 | `status.sh` | Full health check | Troubleshooting |
 | `test-model.sh ALIAS` | E2E connectivity test | Verification |
+
+## Agent Orchestration
+
+This skill manages **Skupper VAN infrastructure only**. Model container
+lifecycle is delegated to `hosted-model-ctl` at the agent level.
+
+### Signal Routing Rules
+
+| Signal pattern | Skupper action | hosted-model-ctl delegation |
+|----------------|----------------|-----------------------------|
+| `setup skupper model [provider]` | `setup.sh` (infra) | `setup.sh DEFAULT_MODEL` per host (deploy default models) |
+| `teardown skupper model [provider]` | `teardown.sh` (remove infra) | `stop.sh all` (stop models, do NOT remove) |
+| `start skupper model [provider]` | `up.sh` (start VAN) | `start.sh DEFAULT_MODEL` per host (start default models) |
+| `stop skupper model [provider]` | `down.sh` (stop VAN) | `stop.sh all` (stop all models) |
+| `check skupper model [provider]` | `status.sh` (VAN status) | `status.sh` (model status) |
+| `start skupper model with g8b-128k` | `up.sh rhel-ai` (scoped) | `start.sh g8b-128k` (specific model) |
+| `stop skupper model on rhtevan-work` | `down.sh rhtevan-work` (scoped) | `stop.sh all` on rhtevan-work only |
+
+### Scoping Rules
+
+- **Without `on HOST`** → action applies to ALL hosts (local + all remotes)
+- **Without `with MODEL`** → use default models from `hosted-model-ctl`
+  (`DEFAULT_MODEL_RHTEVAN` and `DEFAULT_MODEL_RHELAI` in its `common.sh`)
+- **With explicit target** → scope to that specific host/model
+
+### Error Handling
+
+When any phase fails, the agent MUST:
+1. Present the error output and analysis
+2. **STOP** — do not proceed to the next phase
+3. **WAIT** for user instructions before continuing
+
+### Startup Order
+
+1. Skupper controllers (systemd)
+2. Skupper routers (systemd)
+3. Model containers (via `hosted-model-ctl`)
+
+### Shutdown Order (reverse)
+
+1. Model containers (via `hosted-model-ctl`)
+2. Skupper routers (systemd)
+3. Skupper controllers (systemd)
 
 ## Operations
 
@@ -127,27 +176,33 @@ Idempotent 6-phase process (after precheck passes):
 5. Apply auto-restart patches (all 3 hosts, router + controller)
 6. Verify all sites Ready
 
-### Bring Up a Model
+After infrastructure setup, agent delegates to `hosted-model-ctl` to
+deploy default models on each host.
+
+### Start VAN
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh g350m
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh g8b-128k
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh           # all hosts
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh rhel-ai   # specific host
 ```
 
-5-phase process:
+4-phase process:
 1. Prerequisites (SSH, setup check)
 2. Start controllers (systemd)
 3. Start routers (systemd, with tmpfs workaround for rhel-ai)
-4. Start model container
-5. Verify local endpoint
+4. Verify VAN connectivity
 
-### Shut Down
+Agent then delegates to `hosted-model-ctl` to start model containers.
+
+### Stop VAN
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh g350m     # stop one model
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh all        # stop all models, routers + controllers
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh all --keep-van  # stop models only
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh           # all hosts
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh rhel-ai   # specific host
 ```
+
+Agent first delegates to `hosted-model-ctl` to stop model containers,
+then runs `down.sh` to stop routers and controllers.
 
 ### Status
 
@@ -156,7 +211,7 @@ bash ~/.agents/skills/skupper-model-provider/scripts/status.sh
 ```
 
 Shows: controllers, routers (with mode), sites, links, listeners,
-connectors, model containers, end-to-end HTTP, systemd services.
+connectors. Agent also delegates to `hosted-model-ctl` for model status.
 
 ### Teardown
 
@@ -164,8 +219,9 @@ connectors, model containers, end-to-end HTTP, systemd services.
 bash ~/.agents/skills/skupper-model-provider/scripts/teardown.sh
 ```
 
-Stops all sites and controllers on all hosts. Does NOT remove model
-containers. Run `setup.sh` to rebuild.
+Agent first delegates to `hosted-model-ctl` to stop (not remove) model
+containers, then runs `teardown.sh` to remove Skupper infrastructure.
+Run `setup.sh` to rebuild.
 
 ### Test
 
@@ -181,24 +237,26 @@ remote host reachable, remote container running.
 | ID | Capability | Verifiable By |
 |:--:|-----------|---------------|
 | S1 | One-time VAN setup across 3 hosts | `setup.sh` → all sites Ready |
-| S2 | Start model + VAN by alias | `up.sh ALIAS` → localhost:PORT HTTP 200 |
-| S3 | Stop model (single or all) | `down.sh ALIAS\|all` → container stopped |
+| S2 | Start VAN infrastructure | `up.sh` → controllers + routers running, listeners active |
+| S3 | Stop VAN infrastructure | `down.sh` → routers + controllers stopped |
 | S4 | Full status with all components | `status.sh` → comprehensive report |
-| S5 | E2E connectivity test | `test-model.sh ALIAS` → 6/6 pass |
-| S6 | Teardown infrastructure | `teardown.sh` → all containers stopped |
+| S5 | E2E connectivity test | `test-model.sh ALIAS` → 6/6 pass (requires model via `hosted-model-ctl`) |
+| S6 | Teardown infrastructure | `teardown.sh` → all Skupper containers stopped |
 | S7 | Auto-restart on crash | Kill router → systemd restarts within 10s |
+| S8 | Agent orchestration with `hosted-model-ctl` | Signal → VAN + model lifecycle coordinated |
 
 ## Tests
 
 | Test | Spec | Command | Expected |
 |:----:|:----:|---------|----------|
 | T1 | S1 | `setup.sh` | All 3 sites Ready, both links connected |
-| T2 | S2 | `up.sh g350m` | localhost:10000 HTTP 200, model=granite-4.0-350m |
-| T3 | S3 | `down.sh g350m` | Container stopped, VAN still running |
-| T4 | S4 | `status.sh` | All components green, e2e connectivity ✅ |
-| T5 | S5 | `test-model.sh g350m` | 6/6 pass |
-| T6 | S6 | `teardown.sh` | All containers stopped on all hosts |
+| T2 | S2 | `up.sh` | All controllers + routers running, listener ports active |
+| T3 | S3 | `down.sh` | All routers + controllers stopped, no listeners |
+| T4 | S4 | `status.sh` | All components green |
+| T5 | S5 | `test-model.sh g350m` | 6/6 pass (model started via `hosted-model-ctl`) |
+| T6 | S6 | `teardown.sh` | All Skupper containers stopped on all hosts |
 | T7 | S7 | `podman kill router; sleep 12` | Router auto-restarted, service active |
+| T8 | S8 | "start skupper model" signal | Agent: `up.sh` → `hosted-model-ctl start.sh` defaults → e2e ✅ |
 
 ## Known Issues & Workarounds
 
@@ -227,15 +285,16 @@ remote host reachable, remote container running.
 
 ## Relationship to Other Skills
 
-| Skill | Relationship |
-|-------|-------------|
-| `hosted-model-ctl` | Deploys model containers that this skill exposes |
-| `goose-skupper-provider` | Configures Goose to use the exposed endpoint |
+| Skill | Relationship | Coupling |
+|-------|-------------|----------|
+| `hosted-model-ctl` | Manages model container lifecycle (deploy, start, stop, remove) | Agent-level delegation — scripts do NOT cross-reference |
+| `goose-skupper-provider` | Configures Goose to use the exposed endpoint | Independent |
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 | v7.0.0 — **Breaking:** Decoupled model lifecycle from VAN scripts. `up.sh`/`down.sh` now manage Skupper infrastructure only (controllers + routers). Model containers delegated to `hosted-model-ctl` at agent level (DRY + Loose Coupling). Added Agent Orchestration section with signal routing rules, scoping rules (`on HOST`, `with MODEL`), error handling (STOP & WAIT), startup/shutdown ordering. Updated signals for symmetric `verb skupper model` / `skupper model verb` patterns. Removed `--keep-van` flag (no longer needed). Scripts accept optional `[HOST]` arg for scoped operations. Updated Specification (S1–S8) and Tests (T1–T8). |
 | 2026-08-12 | v6.1.3 — Fixed `down.sh` Phase 1 container filter: `--filter 'name=model-'` was also matching `model-provider-podman-skupper-router`; added `grep -v skupper-router` to exclude routers from model stop phase. |
 | 2026-08-12 | v6.1.2 — Removed `[Install]` / `WantedBy=default.target` from systemd unit templates in `common.sh`; disabled services on all 3 hosts. Prevents auto-start on reboot when `Linger=yes`. `up.sh` starts on demand; `Restart=on-failure` still handles crash recovery. |
 | 2026-08-11 | v6.1.1 — `down.sh all` now stops controllers on all 3 hosts (previously left running). No reason to keep controllers alive when all routers are down. |

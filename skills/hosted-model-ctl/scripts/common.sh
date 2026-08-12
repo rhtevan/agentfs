@@ -17,7 +17,7 @@ declare -A MODEL_REGISTRY=(
 
 # Default models per host
 DEFAULT_MODEL_RHTEVAN="g350m"
-DEFAULT_MODEL_RHELAI="g30b-96k"
+DEFAULT_MODEL_RHELAI="g8b-128k"
 
 # ── Helper Functions ──────────────────────────────────────────
 

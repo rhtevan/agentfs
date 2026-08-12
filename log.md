@@ -1,6 +1,19 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-12 11:10
+- skupper-model-provider v7.0.0: Decoupled model lifecycle from VAN scripts
+  - `up.sh`/`down.sh` now manage Skupper infrastructure only (controllers + routers)
+  - Model containers delegated to `hosted-model-ctl` at agent level (DRY + Loose Coupling)
+  - Added Agent Orchestration section with signal routing, scoping rules, error handling
+  - Updated signals, Specification (S1–S8), Tests (T1–T8), Relationship table
+- hosted-model-ctl v5.1.0:
+  - Changed default rhel-ai model from `g30b-96k` to `g8b-128k`
+  - Removed ambiguous bare signals (`model list/start/stop/status`)
+  - Added `hosted model teardown`/`teardown hosted model` signals
+  - Added `stop.sh --remove` flag for container teardown
+- Regenerated skills/index.md (48 skills)
+
 ## 2026-08-12 09:10
 - skupper-model-provider v6.1.3: Fixed `down.sh` Phase 1 container filter to exclude router containers
 - Regenerated skills/index.md (48 skills)
