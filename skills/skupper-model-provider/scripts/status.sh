@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
-# status.sh — Check Skupper VAN and model status
-# Usage:
-#   bash status.sh              — full status of all components
-#   bash status.sh MODEL_ALIAS  — status of specific model path
+# status.sh — Check Skupper VAN infrastructure status
+# Usage: bash status.sh
+# Model container status is handled by hosted-model-ctl (agent orchestration).
 
 source "$(dirname "$0")/common.sh"
 
-MODEL_ALIAS="${1:-}"
-
-echo "=== Skupper Model Provider — STATUS ==="
+echo "=== Skupper VAN — STATUS ==="
 echo
 
 # ── Controllers ───────────────────────────────────────────────
@@ -75,36 +72,6 @@ for host in rhel-ai rhtevan-work; do
 done
 echo
 
-# ── Model Containers ─────────────────────────────────────────
-echo "Model Containers:"
-for host in rhel-ai rhtevan-work; do
-  if host_reachable "$host"; then
-    MODELS=$(run_on_host "$host" "podman ps -a --filter 'name=model-' --format '{{.Names}} {{.Status}}'" || echo "")
-    if [[ -n "$MODELS" ]]; then
-      while IFS= read -r line; do
-        echo "  $host: $line"
-      done <<< "$MODELS"
-    else
-      echo "  $host: (none)"
-    fi
-  fi
-done
-echo
-
-# ── End-to-End Connectivity ──────────────────────────────────
-echo "End-to-End:"
-for port in 9000 10000; do
-  HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${port}/v1/models" 2>/dev/null || echo "000")
-  if [[ "$HTTP_CODE" == "200" ]]; then
-    MODEL_ID=$(curl -s "http://localhost:${port}/v1/models" | \
-      python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "unknown")
-    echo "  ✅ localhost:${port} → $MODEL_ID"
-  else
-    echo "  ❌ localhost:${port} → HTTP $HTTP_CODE"
-  fi
-done
-echo
-
 # ── Systemd Services ─────────────────────────────────────────
 echo "Systemd Services:"
 for host in localhost rhel-ai rhtevan-work; do
@@ -124,4 +91,5 @@ for host in localhost rhel-ai rhtevan-work; do
 done
 echo
 
-echo "=== Status complete ==="
+echo "=== VAN status complete ==="
+echo "    For model container status, use: hosted-model-ctl status"

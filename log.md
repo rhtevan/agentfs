@@ -1,6 +1,12 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-12 11:20
+- skupper-model-provider v7.0.1: Clarified loose coupling semantics — agent semantically triggers `hosted-model-ctl` (no cross-script invocation)
+- Stripped model container and e2e sections from `status.sh` (VAN-only)
+- Added `skupper model provider status`/`check skupper model provider` signals
+- Regenerated skills/index.md (48 skills)
+
 ## 2026-08-12 11:10
 - skupper-model-provider v7.0.0: Decoupled model lifecycle from VAN scripts
   - `up.sh`/`down.sh` now manage Skupper infrastructure only (controllers + routers)
