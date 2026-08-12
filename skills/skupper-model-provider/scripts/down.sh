@@ -23,7 +23,7 @@ if [[ "$ARG" == "all" ]]; then
       continue
     fi
     # Find and stop model containers
-    CONTAINERS=$(run_on_host "$host" "podman ps --filter 'name=model-' --format '{{.Names}}'" || echo "")
+    CONTAINERS=$(run_on_host "$host" "podman ps --filter 'name=model-' --format '{{.Names}}' | grep -v 'skupper-router'" || echo "")
     if [[ -n "$CONTAINERS" ]]; then
       while IFS= read -r container; do
         run_on_host "$host" "podman stop ${container}" 2>/dev/null || true

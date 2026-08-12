@@ -4,7 +4,7 @@
 
 | Skill | Tags | Signals | Updated |
 |-------|------|---------|---------|
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work | skupper model up, skupper model down, skupper model status, skupper model test, skupper model setup, skupper model teardown, bring up skupper model, shutdown skupper model, expose remote model, skupper van, skupper model precheck, skupper model topology, show skupper topology | 2026-08-12 09:03 |
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work | skupper model up, skupper model down, skupper model status, skupper model test, skupper model setup, skupper model teardown, bring up skupper model, shutdown skupper model, expose remote model, skupper van, skupper model precheck, skupper model topology, show skupper topology | 2026-08-12 09:10 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, make skill, edit skill, skill check, check skill, scan skill, audit skill, verify skill quality | 2026-08-11 17:12 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | sync agentfs, update agentfs, upgrade agentfs | 2026-08-11 11:48 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | goose, maas, litellm, custom-provider, reasoning, configuration | goose maas, configure goose maas, goose remote provider | 2026-08-10 22:23 |

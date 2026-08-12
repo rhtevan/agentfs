@@ -10,7 +10,7 @@ compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "6.1.2"
+  version: "6.1.3"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
   signals:
     - "skupper model up"
@@ -236,6 +236,7 @@ remote host reachable, remote container running.
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 | v6.1.3 — Fixed `down.sh` Phase 1 container filter: `--filter 'name=model-'` was also matching `model-provider-podman-skupper-router`; added `grep -v skupper-router` to exclude routers from model stop phase. |
 | 2026-08-12 | v6.1.2 — Removed `[Install]` / `WantedBy=default.target` from systemd unit templates in `common.sh`; disabled services on all 3 hosts. Prevents auto-start on reboot when `Linger=yes`. `up.sh` starts on demand; `Restart=on-failure` still handles crash recovery. |
 | 2026-08-11 | v6.1.1 — `down.sh all` now stops controllers on all 3 hosts (previously left running). No reason to keep controllers alive when all routers are down. |
 | 2026-08-11 | v6.1.0 — Extracted site-specific config to `topology.env` (gitignored). Added `topology.env.example` with placeholder values. Added precheck capability (`setup.sh --check`) with topology display and validation. Signals: `skupper model precheck`, `skupper model topology`, `show skupper topology`. Scripts no longer contain hardcoded IPs, hostnames, or usernames. |

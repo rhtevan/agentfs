@@ -1,6 +1,10 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-12 09:10
+- skupper-model-provider v6.1.3: Fixed `down.sh` Phase 1 container filter to exclude router containers
+- Regenerated skills/index.md (48 skills)
+
 ## 2026-08-12 09:04
 - skupper-model-provider v6.1.2: Removed `[Install]`/`WantedBy=default.target` from systemd unit templates in `common.sh`
 - Disabled skupper services on all 3 hosts to prevent auto-start on reboot with `Linger=yes`
