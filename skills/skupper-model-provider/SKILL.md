@@ -10,7 +10,7 @@ compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "7.0.1"
+  version: "7.1.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
   signals:
     - "skupper model setup"
@@ -214,10 +214,17 @@ containers, then runs `down.sh` to stop routers and controllers.
 bash ~/.agents/skills/skupper-model-provider/scripts/status.sh
 ```
 
-Shows: controllers, routers (with mode), sites, links, listeners,
-connectors, systemd services. Agent then semantically triggers
-`hosted-model-ctl` for model container status and presents
-combined results.
+Shows dual-column status for each component:
+- **Last-Known** — persisted in Skupper's runtime YAML (may be stale)
+- **Live** — derived from actual container, systemd, and port checks
+
+Sites show controller + router systemd state with a `(STALE)` flag
+when the YAML claims Ready but the infrastructure is actually down.
+Links include a TCP probe to the remote inter-router port. Listeners
+check whether the local port is actually bound.
+
+Agent then semantically triggers `hosted-model-ctl` for model
+container status and presents combined results.
 
 ### Teardown
 
@@ -300,6 +307,7 @@ remote host reachable, remote container running.
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 | v7.1.0 — Enhanced `status.sh` with dual-column reporting: Last-Known (persisted YAML) vs Live (actual container/systemd/port checks). Sites show controller+router systemd state with STALE flag when YAML disagrees with reality. Links include TCP probe to remote inter-router port. Listeners check local port binding. Removed redundant systemd section (merged into Sites). |
 | 2026-08-12 | v7.0.1 — Clarified loose coupling: agent semantically triggers `hosted-model-ctl` (loads skill, follows instructions) — no cross-script invocation. Stripped model container and e2e sections from `status.sh` (VAN-only). Added `skupper model provider status`/`check skupper model provider` signals. |
 | 2026-08-12 | v7.0.0 — **Breaking:** Decoupled model lifecycle from VAN scripts. `up.sh`/`down.sh` now manage Skupper infrastructure only (controllers + routers). Model containers semantically triggered via `hosted-model-ctl` at agent level (DRY + Loose Coupling). Added Agent Orchestration section with signal routing rules, scoping rules (`on HOST`, `with MODEL`), error handling (STOP & WAIT), startup/shutdown ordering. Updated signals for symmetric `verb skupper model` / `skupper model verb` patterns. Removed `--keep-van` flag (no longer needed). Scripts accept optional `[HOST]` arg for scoped operations. Updated Specification (S1–S8) and Tests (T1–T8). |
 | 2026-08-12 | v6.1.3 — Fixed `down.sh` Phase 1 container filter: `--filter 'name=model-'` was also matching `model-provider-podman-skupper-router`; added `grep -v skupper-router` to exclude routers from model stop phase. |
