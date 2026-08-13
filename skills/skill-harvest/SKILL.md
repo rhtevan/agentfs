@@ -514,9 +514,7 @@ Dependencies (from `okf-bundle-harvest`):
 Dependencies (from `skill-index`):
 - Regenerate `skills/index.md` after new skills are created
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-08-04 23:50 | v1.1.0 — Scaffolded SKILL.md template now uses quoted 3-part semver (`"1.0.0"`), includes `metadata.signals`; quality checklist and post-creation verification reference canonical schema (`skill-gen/references/skill-schema.md`) |
-| 2026-07-09 19:52 | v1.0.0 — Initial skill: procedural memory scanning, graduation criteria, skill scaffolding, MEMORY.md pruning |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

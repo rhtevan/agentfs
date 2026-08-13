@@ -116,8 +116,7 @@ is unreachable, previously cached answers are served immediately
 - [ ] `systemctl is-active systemd-resolved` returns `active`
 - [ ] `resolvectl statistics` shows "Total Timeouts (Stale Data Served)" counter
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-29 10:27 | v1.0 — Initial skill based on real DNS timeout diagnosis |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

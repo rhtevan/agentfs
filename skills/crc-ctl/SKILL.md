@@ -163,8 +163,7 @@ Expected output should show the CRC VM as `Stopped`.
 - [ ] No lingering CRC processes after `crcstop` completes
 - [ ] `crc status` reports correct state after start/stop
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-09 20:06 | v1.0 — Initial skill harvested from project memories (3 entries from goofing-around) |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

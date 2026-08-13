@@ -240,5 +240,81 @@ for host in rhel-ai rhtevan-work; do
 done
 echo
 
+# ══════════════════════════════════════════════════════════════
+# 5. CRC SITE (Kubernetes)
+# ══════════════════════════════════════════════════════════════
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  echo "CRC Site (${CRC_SITE_NAME}):" 
+  if crc_reachable; then
+    # Site
+    crc_s_status=""
+    crc_s_status=$(crc_site_status)
+    crc_s_icon=""
+    [[ "$crc_s_status" == "Ready" ]] && crc_s_icon="✅" || crc_s_icon="🔴"
+    echo "  Site:     ${crc_s_icon} ${crc_s_status}"
+
+    # Router pod
+    crc_router_status=""
+    crc_router_status=$(oc_crc get pods -n "${CRC_NAMESPACE}" -l skupper.io/component=router \
+      -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "not found")
+    crc_r_icon=""
+    [[ "$crc_router_status" == "Running" ]] && crc_r_icon="✅" || crc_r_icon="🔴"
+    echo "  Router:   ${crc_r_icon} ${crc_router_status}"
+
+    # Link
+    crc_l_status=""
+    crc_l_status=$(crc_link_status)
+    crc_l_icon=""
+    [[ "$crc_l_status" == "Ready" ]] && crc_l_icon="✅" || crc_l_icon="🔴"
+    echo "  Link:     ${crc_l_icon} link-hub-${CRC_LINK_TARGET} → ${crc_l_status}"
+
+    # Listener
+    crc_li_status=""
+    crc_li_status=$(crc_listener_status)
+    crc_li_icon=""
+    [[ "$crc_li_status" == "Ready" ]] && crc_li_icon="✅" || crc_li_icon="🔴"
+    echo "  Listener: ${crc_li_icon} model-listener-${CRC_LINK_TARGET}:${CRC_MODEL_PORT} → ${crc_li_status}"
+
+    # Service
+    crc_svc=""
+    crc_svc=$(oc_crc get svc "model-listener-${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+      -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "not found")
+    if [[ "$crc_svc" != "not found" && -n "$crc_svc" ]]; then
+      echo "  Service:  ✅ model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT} (${crc_svc})"
+    else
+      echo "  Service:  🔴 not found"
+    fi
+
+    # Operator
+    crc_csv_status=""
+    crc_csv_status=$(oc_crc get csv -n openshift-operators -o jsonpath='{.items[?(@.metadata.name=="skupper-operator.v2.2.1-rh-1")].status.phase}' 2>/dev/null || echo "not found")
+    [[ -z "$crc_csv_status" ]] && crc_csv_status="not found"
+    crc_csv_icon=""
+    [[ "$crc_csv_status" == "Succeeded" ]] && crc_csv_icon="✅" || crc_csv_icon="🔴"
+    echo "  Operator: ${crc_csv_icon} ${crc_csv_status}"
+
+    # Network Observer
+    if [[ "$CRC_OBSERVER_ENABLED" == "true" ]]; then
+      obs_pod_status=""
+      obs_pod_status=$(oc_crc get pods -n "${CRC_NAMESPACE}" -l app.kubernetes.io/name=network-observer \
+        -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "not found")
+      obs_icon=""
+      [[ "$obs_pod_status" == "Running" ]] && obs_icon="✅" || obs_icon="🔴"
+      echo "  Observer: ${obs_icon} ${obs_pod_status}"
+
+      obs_url=""
+      obs_url=$(crc_observer_route_url)
+      if [[ "$obs_url" != "not found" && -n "$obs_url" ]]; then
+        echo "  Dashboard: ✅ https://${obs_url}"
+      else
+        echo "  Dashboard: 🔴 Route not found"
+      fi
+    fi
+  else
+    echo "  🔴 CRC context (${CRC_OC_CONTEXT}) not authenticated"
+  fi
+  echo
+fi
+
 echo "=== VAN status complete ==="
 echo "    For model container status, use: hosted-model-ctl status"

@@ -164,8 +164,7 @@ oc get consoles.operator.openshift.io cluster -o jsonpath='{.spec.plugins}'
 ```
 It should be present by default in OCP 4.21+. If missing, contact cluster admin.
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 19:23 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

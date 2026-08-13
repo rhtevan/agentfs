@@ -46,8 +46,7 @@ Check the status of the OpenShift Local (CRC) cluster and remove the default cau
 - [ ] `crc status` shows the CRC VM and OpenShift as Running
 - [ ] `oc get consolenotifications` returns no `security-notice` resource
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 18:12 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

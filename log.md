@@ -1,6 +1,26 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-13 19:23
+
+- Externalized `## Changelog` sections from all 48 skills' SKILL.md → `CHANGELOG.md` files
+- SKILL.md now contains only `> See [CHANGELOG.md](./CHANGELOG.md) for version history.` reference
+- Updated `skill-gen` v3.0.0 → v3.1.0: template, Post-Creation Checklist, Skill Check P3, edit-existing guidance
+- Updated `skill-gen/references/skill-schema.md` v2.0.0 → v2.1.0: Changelog Rules, Anti-Patterns table
+- Rationale: changelogs grow unbounded and bloat model context window on `load_skill`
+
+## 2026-08-13 18:11
+
+- Skill `skupper-model-provider` v8.0.0 → v8.1.0 — Network Observer UI on CRC
+- Modified 6 files: topology.env.example, topology.env, common.sh, setup.sh, teardown.sh, status.sh, SKILL.md
+- Regenerated skills/index.md
+
+## 2026-08-13 17:39
+
+- Skill `skupper-model-provider` v7.4.1 → v8.0.0 — CRC as 4th VAN site
+- Modified 10 files: topology.env.example, topology.env, common.sh, setup.sh, teardown.sh, up.sh, down.sh, status.sh, test-model.sh, SKILL.md
+- Regenerated skills/index.md (48 skills)
+
 ## 2026-08-13 12:52
 
 - Skill check `skupper-model-provider` v7.4.0 → v7.4.1: `teardown.sh` now removes router `start-watch.sh`; `setup.sh` uses `mktemp`+`chmod 600` for link YAML temp files; POSTMORTEM.md Architecture Decision #4 updated for v6.1.1; `down.sh` Phase 1 comment clarified; regenerated `skills/index.md`

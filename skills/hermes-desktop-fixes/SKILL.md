@@ -93,9 +93,7 @@ rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
 - If upstream renames `_session_info`, `_desktop_linux_sandbox_fixup`, or removes the `process.exit(0)` in the prebuilder, the sed patterns will silently fail. The health check detects this.
 - The Desktop rebuild during `hermes update` calls `python -m hermes_cli.main desktop --build-only` directly (bypasses launcher), but `--build-only` returns before the sandbox check, so it's non-fatal.
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-28 | v2.1 — Added fix #4: duplicate taskbar icon on Fedora/GNOME Wayland (`StartupWMClass` case mismatch); renumbered electron-builder fix to #5; added `.desktop` file to "Files outside git" table |
-| 2026-06-26 14:07 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

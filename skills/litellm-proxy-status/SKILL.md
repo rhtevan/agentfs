@@ -75,8 +75,7 @@ If the service fails to start, check logs:
 journalctl --user -u litellm-proxy --no-pager -n 50
 ```
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 16:43 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

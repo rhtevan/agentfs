@@ -5,7 +5,9 @@
 
 source "$(dirname "$0")/common.sh"
 
-MODEL_ALIAS="${1:?Usage: test-model.sh MODEL_ALIAS}"
+MODEL_ALIAS="${1:?Usage: test-model.sh MODEL_ALIAS [--from-crc]}"
+FROM_CRC=false
+[[ "${2:-}" == "--from-crc" ]] && FROM_CRC=true
 
 REMOTE_HOST=$(alias_to_host "$MODEL_ALIAS") || exit 1
 LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
@@ -96,6 +98,77 @@ if host_reachable "$REMOTE_HOST"; then
   fi
 else
   fail "Skipped (host unreachable)"
+fi
+
+# ── CRC Tests (if --from-crc) ──────────────────────────────────
+if [[ "$FROM_CRC" == "true" && "$CRC_ENABLED" == "true" ]]; then
+  echo
+  echo "=== CRC Tests ==="
+  crc_listener_name="model-listener-${REMOTE_HOST}"
+  crc_svc="${crc_listener_name}.${CRC_NAMESPACE}"
+
+  # T7: CRC Listener status
+  echo "T7: CRC Listener"
+  crc_l_status=""
+  crc_l_status=$(crc_listener_status)
+  if [[ "$crc_l_status" == "Ready" ]]; then
+    pass "Listener ${crc_listener_name}: Matched"
+  else
+    fail "Listener ${crc_listener_name}: ${crc_l_status}"
+  fi
+
+  # T8: CRC Service exists
+  echo "T8: CRC Service"
+  if oc_crc get svc "${crc_listener_name}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    pass "Service ${crc_svc}:${CRC_MODEL_PORT} exists"
+  else
+    fail "Service ${crc_svc} not found"
+  fi
+
+  # T9: API health from CRC pod
+  echo "T9: API health (from CRC)"
+  crc_http=""
+  crc_http=$(oc_crc run test-model-health --rm -i --restart=Never --quiet \
+    --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n "${CRC_NAMESPACE}" \
+    -- bash -c "curl -s -o /dev/null -w '%{http_code}' http://${crc_svc}:${CRC_MODEL_PORT}/v1/models" 2>/dev/null | tail -1 || echo "000")
+  if [[ "$crc_http" == "200" ]]; then
+    pass "HTTP 200 from CRC → ${crc_svc}:${CRC_MODEL_PORT}"
+  else
+    fail "HTTP ${crc_http} from CRC (expected 200)"
+  fi
+
+  # T10: Chat completion from CRC pod
+  echo "T10: Chat completion (from CRC)"
+  if [[ "$crc_http" == "200" ]]; then
+    crc_model_id=""
+    crc_model_id=$(oc_crc run test-model-id --rm -i --restart=Never --quiet \
+      --image=registry.access.redhat.com/ubi9/ubi-minimal \
+      -n "${CRC_NAMESPACE}" \
+      -- bash -c "curl -s http://${crc_svc}:${CRC_MODEL_PORT}/v1/models" 2>/dev/null | \
+      python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "PARSE_ERROR")
+
+    if [[ "$crc_model_id" != "PARSE_ERROR" && -n "$crc_model_id" ]]; then
+      crc_chat=""
+      crc_chat=$(oc_crc run test-model-chat --rm -i --restart=Never --quiet \
+        --image=registry.access.redhat.com/ubi9/ubi-minimal \
+        -n "${CRC_NAMESPACE}" \
+        -- bash -c "curl -s http://${crc_svc}:${CRC_MODEL_PORT}/v1/chat/completions \
+          -H 'Content-Type: application/json' \
+          -d '{\"model\": \"${crc_model_id}\", \"messages\": [{\"role\": \"user\", \"content\": \"Say hello\"}], \"max_tokens\": 20}'" 2>/dev/null | \
+        python3 -c "import json,sys; print(json.load(sys.stdin)['choices'][0]['message']['content'])" 2>/dev/null || echo "PARSE_ERROR")
+
+      if [[ "$crc_chat" != "PARSE_ERROR" && -n "$crc_chat" ]]; then
+        pass "Chat from CRC: $(echo "$crc_chat" | head -c 60)"
+      else
+        fail "Chat completion from CRC failed"
+      fi
+    else
+      fail "Could not get model ID from CRC"
+    fi
+  else
+    fail "Skipped (API not responding from CRC)"
+  fi
 fi
 
 # Summary

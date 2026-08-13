@@ -7,7 +7,11 @@
 source "$(dirname "$0")/common.sh"
 
 echo "=== Skupper Model Provider — TEARDOWN ==="
-echo "  This will remove Skupper infrastructure from all 3 hosts."
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  echo "  This will remove Skupper infrastructure from all 3 podman hosts + CRC."
+else
+  echo "  This will remove Skupper infrastructure from all 3 podman hosts."
+fi
 echo "  Model containers will NOT be affected."
 echo
 
@@ -80,7 +84,64 @@ for host in rhel-ai rhtevan-work; do
   fi
 done
 
-echo
+# ── Phase 6: CRC teardown ──────────────────────────────────────
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  echo "Phase 6: CRC site teardown"
+
+  if crc_reachable; then
+    # Delete Skupper resources
+    oc_crc delete listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+    oc_crc delete link link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+    oc_crc delete secret link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+    oc_crc delete site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+    echo "  ✅ CRC Skupper resources deleted"
+
+    # Delete Network Observer (if installed)
+    if [[ "$CRC_OBSERVER_ENABLED" == "true" ]]; then
+      oc_crc delete networkobserver skupper-network-observer -n "${CRC_NAMESPACE}" 2>/dev/null || true
+      CRC_OBS_NS="openshift-operators"
+      oc_crc delete subscription skupper-netobs-operator -n "${CRC_OBS_NS}" 2>/dev/null || true
+      crc_obs_csv=$(oc_crc get csv -n "${CRC_OBS_NS}" -o name 2>/dev/null | grep netobs || true)
+      if [[ -n "$crc_obs_csv" ]]; then
+        oc_crc delete "$crc_obs_csv" -n "${CRC_OBS_NS}" 2>/dev/null || true
+      fi
+      echo "  ✅ Network Observer removed"
+    fi
+
+    # Delete operator (installed in openshift-operators with AllNamespaces scope)
+    CRC_OPERATOR_NS="openshift-operators"
+    oc_crc delete subscription skupper-operator -n "${CRC_OPERATOR_NS}" 2>/dev/null || true
+    # Delete CSV (all skupper CSVs)
+    crc_csv=$(oc_crc get csv -n "${CRC_OPERATOR_NS}" -o name 2>/dev/null | grep skupper || true)
+    if [[ -n "$crc_csv" ]]; then
+      oc_crc delete "$crc_csv" -n "${CRC_OPERATOR_NS}" 2>/dev/null || true
+    fi
+    # Note: global-operators OperatorGroup is shared — do NOT delete it
+    echo "  ✅ CRC Skupper operator removed"
+
+    # Delete namespace
+    oc_crc delete namespace "${CRC_NAMESPACE}" 2>/dev/null || true
+    echo "  → Waiting for namespace ${CRC_NAMESPACE} to terminate..."
+    ns_attempts=0
+    while [[ $ns_attempts -lt 30 ]]; do
+      if ! oc_crc get namespace "${CRC_NAMESPACE}" &>/dev/null; then break; fi
+      sleep 3
+      ((ns_attempts++)) || true
+    done
+    if ! oc_crc get namespace "${CRC_NAMESPACE}" &>/dev/null; then
+      echo "  ✅ Namespace ${CRC_NAMESPACE} deleted"
+    else
+      echo "  ⚠️  Namespace ${CRC_NAMESPACE} still terminating"
+    fi
+  else
+    echo "  ⚠️  CRC unreachable — skipping CRC teardown"
+  fi
+  echo
+else
+  echo "Phase 6: CRC site — skipped (CRC_ENABLED=false)"
+  echo
+fi
+
 echo "✅ Teardown complete."
 echo "   To fully remove all data: skupper --platform podman system uninstall -f"
 echo "   To re-setup: bash setup.sh"

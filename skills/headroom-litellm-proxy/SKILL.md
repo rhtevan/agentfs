@@ -276,9 +276,7 @@ systemctl --user disable headroom-proxy
 | 0% compression on short conversations | Normal — too few old turns | Compression triggers once older turns exceed `min_tokens_to_crush` (500) |
 | All requests show `no_compressible_content` | Content is protected user messages | Remove `--lossless`; add `--target-ratio` to enable ML compression |
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-07 16:07 | v1.1 — Removed `--lossless` (blocks ML compression via OpenAI endpoints); added `--target-ratio 0.5` and `--intercept-tool-results` for effective compression; added Compression Tuning section; added Flags NOT to Use section (lossless, memory, learn); expanded health verification checks; expanded stats key fields; added compression-specific troubleshooting entries; updated memory range |
-| 2026-07-06 21:46 | v1.0 — Initial skill; split from goose-headroom-provider |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

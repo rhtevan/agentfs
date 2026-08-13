@@ -350,9 +350,7 @@ Skill directory: ~/.agents/skills/crc-ovn-frr-metallb-config
 - The order matters: enable `additionalRoutingCapabilities` on the Network CR **before** installing the MetalLB Operator, so the CNO env vars are present when the operator starts.
 - After `crc delete && crc start`, the CatalogSource may take a few minutes to become READY before the MetalLB Subscription can resolve. Wait for `oc get catsrc redhat-operators -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}'` to return `READY`.
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-01 00:00 | v1.1 — Added missing YAML frontmatter (name + description) |
-| 2026-06-19 19:04 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

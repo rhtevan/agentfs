@@ -390,8 +390,307 @@ done
 sleep 5
 echo
 
-# ── Phase 6: Verify ───────────────────────────────────────────
-echo "Phase 6: Verify"
+# ── Phase 6: CRC site (Kubernetes) ────────────────────────────
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  echo "Phase 6: Build ${CRC_SITE_NAME} site (CRC/Kubernetes)"
+
+  # 6a. Create namespace
+  if oc_crc get namespace "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Namespace ${CRC_NAMESPACE} exists"
+  else
+    echo "  → Creating namespace ${CRC_NAMESPACE}..."
+    oc_crc create namespace "${CRC_NAMESPACE}"
+    echo "  ✅ Namespace ${CRC_NAMESPACE} created"
+  fi
+
+  # 6b. Install Skupper operator (AllNamespaces mode → openshift-operators)
+  # The skupper-operator v2.2.1 only supports AllNamespaces install mode.
+  # It must be installed in openshift-operators (which has the global-operators
+  # OperatorGroup). The operator watches ALL namespaces, including our
+  # model-provider-crc namespace, so Skupper CRs work there.
+  CRC_OPERATOR_NS="openshift-operators"
+  if oc_crc get csv -n "${CRC_OPERATOR_NS}" 2>/dev/null | grep -q 'skupper-operator.*Succeeded'; then
+    echo "  ✅ Skupper operator already installed (in ${CRC_OPERATOR_NS})"
+  else
+    echo "  → Installing Skupper operator (stable-2.2) in ${CRC_OPERATOR_NS}..."
+
+    # OperatorGroup already exists (global-operators) — no need to create one
+
+    # Subscription
+    if ! oc_crc get subscription -n "${CRC_OPERATOR_NS}" 2>/dev/null | grep -q skupper; then
+      cat << SUBEOF | oc_crc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: skupper-operator
+  namespace: ${CRC_OPERATOR_NS}
+spec:
+  channel: stable-2.2
+  installPlanApproval: Automatic
+  name: skupper-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+SUBEOF
+    fi
+
+    # Wait for CSV
+    echo "  → Waiting for operator CSV to succeed..."
+    crc_csv_attempts=0
+    while [[ $crc_csv_attempts -lt 60 ]]; do
+      if oc_crc get csv -n "${CRC_OPERATOR_NS}" 2>/dev/null | grep -q 'skupper-operator.*Succeeded'; then
+        break
+      fi
+      sleep 5
+      ((crc_csv_attempts++)) || true
+    done
+    if oc_crc get csv -n "${CRC_OPERATOR_NS}" 2>/dev/null | grep -q 'skupper-operator.*Succeeded'; then
+      echo "  ✅ Skupper operator installed"
+    else
+      echo "  ❌ Skupper operator CSV did not reach Succeeded"
+      ((FAILED++))
+    fi
+  fi
+
+  # 6c. Create TLS Secret (client certs from local link profile)
+  if oc_crc get secret link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Secret link-hub-${CRC_LINK_TARGET} exists"
+  else
+    echo "  → Creating TLS secret from local cert profile..."
+    cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/link-${SITE_NAMES[$CRC_LINK_TARGET]}-profile"
+    if [[ ! -d "$cert_dir" ]]; then
+      echo "  ❌ Cert profile not found: $cert_dir"
+      echo "     Run setup without CRC first to establish local links."
+      ((FAILED++))
+    else
+      # Must use 'tls' type secret (not generic/Opaque) — the kube-adaptor
+      # only auto-mounts kubernetes.io/tls secrets into the router pod.
+      oc_crc create secret tls link-hub-"${CRC_LINK_TARGET}" \
+        -n "${CRC_NAMESPACE}" \
+        --cert="${cert_dir}/tls.crt" \
+        --key="${cert_dir}/tls.key"
+      # Add ca.crt (not part of 'create secret tls' command)
+      oc_crc patch secret link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+        --type=merge -p "{\"data\":{\"ca.crt\":\"$(base64 -w0 "${cert_dir}/ca.crt")\"}}"
+      echo "  ✅ Secret link-hub-${CRC_LINK_TARGET} created"
+    fi
+  fi
+
+  # 6d. Create Site
+  if oc_crc get site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Site ${CRC_SITE_NAME} exists"
+  else
+    echo "  → Creating site ${CRC_SITE_NAME}..."
+    cat << SITEEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | sed "s/PLACEHOLDER_SITE/${CRC_SITE_NAME}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: PLACEHOLDER_SITE
+  namespace: PLACEHOLDER_NS
+spec: {}
+SITEEOF
+
+    # Wait for Site Ready
+    echo "  → Waiting for site to become Ready..."
+    crc_site_attempts=0
+    while [[ $crc_site_attempts -lt 30 ]]; do
+      site_status=""
+      site_status=$(oc_crc get site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" \
+        -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+      if [[ "$site_status" == "Ready" ]]; then break; fi
+      sleep 5
+      ((crc_site_attempts++)) || true
+    done
+    site_status=$(oc_crc get site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" \
+      -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+    if [[ "$site_status" == "Ready" ]]; then
+      echo "  ✅ Site ${CRC_SITE_NAME} Ready"
+    else
+      echo "  ❌ Site ${CRC_SITE_NAME} not Ready (status: ${site_status})"
+      ((FAILED++))
+    fi
+  fi
+
+  # 6e. Create Link
+  crc_link_name="link-hub-${CRC_LINK_TARGET}"
+  if oc_crc get link "${crc_link_name}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Link ${crc_link_name} exists"
+  else
+    echo "  → Creating link ${crc_link_name}..."
+    crc_hub_host=""
+    crc_hub_port=""
+    IFS='|' read -r crc_hub_port _ _ _ crc_hub_host <<< "${SITE_PROFILES[$CRC_LINK_TARGET]}"
+    cat << LINKEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: ${crc_link_name}
+  namespace: PLACEHOLDER_NS
+spec:
+  cost: 1
+  endpoints:
+    - name: inter-router
+      host: ${crc_hub_host}
+      port: "${crc_hub_port}"
+  tlsCredentials: ${crc_link_name}
+LINKEOF
+
+    # Wait for Link Ready
+    echo "  → Waiting for link to connect..."
+    crc_link_attempts=0
+    while [[ $crc_link_attempts -lt 30 ]]; do
+      link_status=""
+      link_status=$(oc_crc get link "${crc_link_name}" -n "${CRC_NAMESPACE}" \
+        -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+      if [[ "$link_status" == "Ready" ]]; then break; fi
+      sleep 5
+      ((crc_link_attempts++)) || true
+    done
+    link_status=$(oc_crc get link "${crc_link_name}" -n "${CRC_NAMESPACE}" \
+      -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+    if [[ "$link_status" == "Ready" ]]; then
+      echo "  ✅ Link ${crc_link_name} connected"
+    else
+      echo "  ⚠️  Link ${crc_link_name} status: ${link_status} (may need time)"
+      ((FAILED++))
+    fi
+  fi
+
+  # 6f. Create Listener
+  crc_listener_name="model-listener-${CRC_LINK_TARGET}"
+  if oc_crc get listener "${crc_listener_name}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Listener ${crc_listener_name} exists"
+  else
+    echo "  → Creating listener ${crc_listener_name}..."
+    cat << LISTEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: ${crc_listener_name}
+  namespace: PLACEHOLDER_NS
+spec:
+  host: ${crc_listener_name}
+  port: ${CRC_MODEL_PORT}
+  routingKey: ${CRC_ROUTING_KEY}
+LISTEOF
+
+    # Wait for Listener Matched
+    echo "  → Waiting for listener to match..."
+    crc_list_attempts=0
+    while [[ $crc_list_attempts -lt 20 ]]; do
+      list_status=""
+      list_status=$(oc_crc get listener "${crc_listener_name}" -n "${CRC_NAMESPACE}" \
+        -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+      if [[ "$list_status" == "Ready" ]]; then break; fi
+      sleep 3
+      ((crc_list_attempts++)) || true
+    done
+    list_status=$(oc_crc get listener "${crc_listener_name}" -n "${CRC_NAMESPACE}" \
+      -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+    if [[ "$list_status" == "Ready" ]]; then
+      echo "  ✅ Listener ${crc_listener_name} matched"
+    else
+      echo "  ⚠️  Listener ${crc_listener_name} status: ${list_status}"
+    fi
+  fi
+
+  # 6g. Verify Service created
+  if oc_crc get svc "${crc_listener_name}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Service ${crc_listener_name}.${CRC_NAMESPACE}:${CRC_MODEL_PORT} created"
+  else
+    echo "  ⚠️  Service ${crc_listener_name} not yet created (may need time)"
+  fi
+
+  # 6h. Network Observer (optional)
+  if [[ "$CRC_OBSERVER_ENABLED" == "true" ]]; then
+    CRC_OBSERVER_NS="openshift-operators"
+    if oc_crc get csv -n "${CRC_OBSERVER_NS}" 2>/dev/null | grep -q 'skupper-netobs-operator.*Succeeded'; then
+      echo "  ✅ Network Observer operator already installed"
+    else
+      echo "  → Installing Network Observer operator (stable-2.2)..."
+
+      if ! oc_crc get subscription -n "${CRC_OBSERVER_NS}" 2>/dev/null | grep -q skupper-netobs; then
+        cat << NOBSEOF | oc_crc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: skupper-netobs-operator
+  namespace: ${CRC_OBSERVER_NS}
+spec:
+  channel: stable-2.2
+  installPlanApproval: Automatic
+  name: skupper-netobs-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+NOBSEOF
+      fi
+
+      echo "  → Waiting for observer operator CSV..."
+      crc_obs_attempts=0
+      while [[ $crc_obs_attempts -lt 60 ]]; do
+        if oc_crc get csv -n "${CRC_OBSERVER_NS}" 2>/dev/null | grep -q 'skupper-netobs-operator.*Succeeded'; then
+          break
+        fi
+        sleep 5
+        ((crc_obs_attempts++)) || true
+      done
+      if oc_crc get csv -n "${CRC_OBSERVER_NS}" 2>/dev/null | grep -q 'skupper-netobs-operator.*Succeeded'; then
+        echo "  ✅ Network Observer operator installed"
+      else
+        echo "  ❌ Network Observer operator CSV did not reach Succeeded"
+        ((FAILED++))
+      fi
+    fi
+
+    # Create NetworkObserver CR
+    if oc_crc get networkobserver skupper-network-observer -n "${CRC_NAMESPACE}" &>/dev/null; then
+      echo "  ✅ NetworkObserver CR exists"
+    else
+      echo "  → Creating NetworkObserver CR..."
+      cat << NOCREOF | oc_crc apply -f -
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: skupper-network-observer
+  namespace: ${CRC_NAMESPACE}
+spec: {}
+NOCREOF
+
+      # Wait for observer pods
+      echo "  → Waiting for observer pods..."
+      crc_obs_pod_attempts=0
+      while [[ $crc_obs_pod_attempts -lt 30 ]]; do
+        if oc_crc get pods -n "${CRC_NAMESPACE}" -l app.kubernetes.io/name=network-observer 2>/dev/null | grep -q 'Running'; then
+          break
+        fi
+        sleep 5
+        ((crc_obs_pod_attempts++)) || true
+      done
+      if oc_crc get pods -n "${CRC_NAMESPACE}" -l app.kubernetes.io/name=network-observer 2>/dev/null | grep -q 'Running'; then
+        echo "  ✅ Network Observer pods running"
+      else
+        echo "  ⚠️  Network Observer pods not yet running (may need time)"
+      fi
+    fi
+
+    # Get or display Route
+    obs_route=$(crc_observer_route_url)
+    if [[ "$obs_route" != "not found" && -n "$obs_route" ]]; then
+      echo "  ✅ Network Observer dashboard: https://${obs_route}"
+    else
+      echo "  ⚠️  Network Observer Route not found yet (may need time)"
+    fi
+  else
+    echo "  ℹ️  Network Observer — skipped (CRC_OBSERVER_ENABLED=false)"
+  fi
+
+  echo
+else
+  echo "Phase 6: CRC site — skipped (CRC_ENABLED=false)"
+  echo
+fi
+
+# ── Phase 7: Verify ───────────────────────────────────────────
+echo "Phase 7: Verify"
 
 echo "  Sites:"
 for host in rhel-ai rhtevan-work; do
@@ -407,9 +706,22 @@ skupper --platform podman link status -n "${NAMESPACE}" 2>&1 | grep -E '^link-' 
 echo "  Listeners:"
 skupper --platform podman listener status -n "${NAMESPACE}" 2>&1 | grep -E '^model-' || echo "    (none yet)"
 
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  echo "  CRC:"
+  local_site_status=$(oc_crc get site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
+  local_link_status=$(oc_crc get link link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
+  local_list_status=$(oc_crc get listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
+  echo "    Site ${CRC_SITE_NAME}: ${local_site_status}"
+  echo "    Link link-hub-${CRC_LINK_TARGET}: ${local_link_status}"
+  echo "    Listener model-listener-${CRC_LINK_TARGET}: ${local_list_status}"
+fi
+
 echo
 if [[ "$FAILED" -eq 0 ]]; then
-  echo "✅ Setup complete. Run 'bash up.sh MODEL_ALIAS' to start a model."
+  echo "✅ Setup complete. Run 'bash up.sh' to start the VAN."
 else
   echo "⚠️  Setup completed with errors — check output above."
 fi

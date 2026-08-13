@@ -103,8 +103,7 @@ Install the Red Hat OpenShift Cluster Observability Operator (COO) on an OpenShi
 - The Perses Operator is installed automatically with COO. You do not need to install it separately. The UIPlugin CR creates the Perses server instance and registers the console plugin.
 - To use Perses dashboards with cluster metrics, you will need to create a **PersesGlobalDatasource** pointing to the platform Thanos Querier.
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 18:24 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

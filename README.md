@@ -156,23 +156,39 @@ Every SKILL.md begins with YAML frontmatter:
 ---
 name: my-skill
 description: >
-  Concise description — loaded into every session via built-in skills listing.
+  signal phrase 1, signal phrase 2, signal phrase 3
 metadata:
+  version: "1.0.0"
   tags: [domain, function]
-  signals: ["trigger phrase 1", "trigger phrase 2"]
 ---
 ```
 
 | Field | Required | Purpose |
 |-------|----------|----------|
 | `name` | Yes | Must match parent directory name |
-| `description` | Yes | Concise summary for built-in skills listing |
+| `description` | Yes | Signal phrases (2-4 word trigger phrases) for intent matching |
+| `metadata.version` | Yes | Quoted 3-part semver (e.g., `"1.0.0"`) |
 | `metadata.tags` | Yes | Tag-based discovery |
-| `metadata.signals` | Yes | Natural-language trigger phrases for signal-based routing via `skills/index.md` |
+
+See [`skill-gen/references/skill-schema.md`](skills/skill-gen/references/skill-schema.md)
+for the full canonical schema.
+
+#### Skill Directory Layout
+
+```
+skills/my-skill/
+├── SKILL.md          # Instructions (loaded by load_skill)
+├── CHANGELOG.md      # Version history (external, not loaded by default)
+├── scripts/          # Executable automation (non-interactive)
+└── references/       # Supporting docs
+```
+
+Changelogs are **externalized** into `CHANGELOG.md` to avoid bloating
+the model context window when `load_skill` reads `SKILL.md`. Access
+via `load_skill("skill-name/CHANGELOG.md")` when needed.
 
 The `skills/index.md` serves as a **signal-based routing lookup table**
-— it contains Skill, Tags, Signals, and Updated columns (no Description,
-since descriptions are already in the built-in skills listing). Agents
+— it contains Skill, Tags, Description, and Updated columns. Agents
 read it on session start to map user intent to skills.
 
 ### Knowledge (`knowledge/`)
@@ -362,8 +378,8 @@ Actionable, preferably idempotent workflows — standard operating procedures
 
 - **Scope:** Both USER (`~/.agents/skills/`, shared across projects) and
   PROJECT (`.agents/skills/`, repo-specific)
-- **Structure:** `SKILL.md` (instructions) + `scripts/` (executable) +
-  `references/` (supporting docs)
+- **Structure:** `SKILL.md` (instructions) + `CHANGELOG.md` (version history) +
+  `scripts/` (executable) + `references/` (supporting docs)
 - **Default placement:** USER scope unless the user explicitly requests
   project scope
 - **Portability:** `skill-merge` promotes PROJECT skills → USER skills

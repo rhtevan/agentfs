@@ -113,8 +113,7 @@ When `--json` is passed, the script emits a single JSON object:
 }
 ```
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-24 23:19 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

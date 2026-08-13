@@ -496,9 +496,7 @@ Skill directory: ~/.agents/skills/okf-bundle-setup
 - scripts/verify-bundle.sh → load_skill(name: "okf-bundle-setup/scripts/verify-bundle.sh")
 - references/okf-spec-summary.md → load_skill(name: "okf-bundle-setup/references/okf-spec-summary.md")
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-09 01:55 | v1.1 — Fixed default path to `~/.agents/knowledge/` (USER scope), updated examples |
-| 2026-06-25 22:52 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

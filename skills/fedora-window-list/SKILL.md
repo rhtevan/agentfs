@@ -55,8 +55,7 @@ Look for `State: ACTIVE` (enabled) or `State: INACTIVE` (disabled). The change t
 - The setting persists across reboots.
 - If the extension is not installed: `sudo dnf install gnome-shell-extension-window-list`
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 10:31 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

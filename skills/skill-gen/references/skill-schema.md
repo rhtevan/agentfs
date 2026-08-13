@@ -1,6 +1,6 @@
 ---
 title: SKILL.md Frontmatter Schema
-version: "2.0.0"
+version: "2.1.0"
 status: canonical
 ---
 
@@ -133,25 +133,37 @@ why it exists, and when to use it.
 
 ## Changelog Rules
 
-1. **Location:** A `## Changelog` Markdown section in the SKILL.md
-   body (not inside YAML frontmatter).
-
-2. **Format:** Rendered Markdown table with reverse chronological
-   order (newest first):
+1. **Location:** A dedicated `CHANGELOG.md` file in the skill
+   directory (sibling to `SKILL.md`). SKILL.md retains a
+   `## Changelog` section containing only a reference:
    ```markdown
    ## Changelog
+
+   > See [CHANGELOG.md](./CHANGELOG.md) for version history.
+   ```
+
+2. **Format:** The `CHANGELOG.md` file uses a rendered Markdown
+   table with reverse chronological order (newest first):
+   ```markdown
+   # skill-name Changelog
 
    | Updated | Change |
    |---------|--------|
    | YYYY-MM-DD HH:MM | vX.Y.Z — Description of change |
    ```
 
-3. **Do NOT** put changelog data inside YAML frontmatter as a
+3. **Why externalized:** Changelogs grow unbounded and bloat the
+   model context window when `load_skill` reads SKILL.md. Keeping
+   them external follows the same principle as externalizing scripts.
+   The changelog is still accessible via
+   `load_skill("skill-name/CHANGELOG.md")` when needed.
+
+4. **Do NOT** put changelog data inside YAML frontmatter as a
    `metadata.changelog` array — this bloats frontmatter that
    index parsers must skip and duplicates information.
 
-4. **Every skill MUST have** at least one changelog entry
-   (the initial `v1.0.0` entry).
+5. **Every skill MUST have** a `CHANGELOG.md` with at least one
+   entry (the initial `v1.0.0` entry).
 
 ## Anti-Patterns
 
@@ -160,7 +172,8 @@ why it exists, and when to use it.
 | `version: 1.2` (top-level, unquoted, 2-part) | `metadata: version: "1.2.0"` |
 | `version: 2` (bare integer) | `metadata: version: "2.0.0"` |
 | `version: 1.0.0` (top-level, unquoted) | `metadata: version: "1.1.0"` |
-| `changelog:` inside YAML frontmatter | `## Changelog` as Markdown section |
+| `changelog:` inside YAML frontmatter | `CHANGELOG.md` as separate file |
+| `## Changelog` with full table in SKILL.md | `## Changelog` with reference to `CHANGELOG.md` |
 | Version only in changelog text, not in frontmatter | Both `metadata.version` AND changelog entry |
 | `metadata.version` says `"1.0"` but changelog says `v1.3` | Must match: `"1.3.0"` in both |
 | Prose description explaining what skill does | Signal phrases: `setup agentfs, sync agentfs, verify agentfs` |
@@ -195,8 +208,4 @@ the signal-phrase description cannot convey.>
 
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-08-13 12:25 | v2.0.0 — Breaking: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); removed `metadata.signals` from schema; added Signal Phrase Rules section with patterns, three quality principles (Concise, No redundant, Complete), completeness guidance, smell test; added Opening Paragraph Requirement; added Progressive Disclosure Model; updated Reference Template and Anti-Patterns |
-| 2026-08-08 10:55 | v1.1.0 — Added `writes-files` optional field: flags skills that write/modify files outside `.agents/`, signaling critical file templates that must be followed exactly |
-| 2026-08-04 23:46 | v1.0.0 — Initial schema: canonical version location (metadata.version), quoted 3-part semver, changelog as Markdown section, anti-patterns table |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

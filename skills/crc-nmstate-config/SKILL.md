@@ -165,8 +165,7 @@ oc describe pod -n openshift-nmstate <pod-name>
 # Check for resource constraints or image pull errors
 ```
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 19:22 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

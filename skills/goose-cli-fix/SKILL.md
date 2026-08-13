@@ -67,8 +67,7 @@ Fix the warning `Failed to update project tracker with instruction: Failed to pa
 - [ ] `python3 -m json.tool ~/.local/share/goose/projects.json` exits with no errors
 - [ ] The Goose CLI warning no longer appears on next session start
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-26 09:20 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

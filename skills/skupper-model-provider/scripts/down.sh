@@ -10,11 +10,17 @@ source "$(dirname "$0")/common.sh"
 
 TARGET="${1:-all}"
 ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
+CRC_TARGET=false
 
 # Determine which remote hosts to stop
 if [[ "$TARGET" == "all" ]]; then
   HOSTS=("${ALL_REMOTE_HOSTS[@]}")
   SCOPED=false
+  [[ "$CRC_ENABLED" == "true" ]] && CRC_TARGET=true
+elif [[ "$TARGET" == "crc" ]]; then
+  HOSTS=()
+  SCOPED=true
+  CRC_TARGET=true
 else
   # Resolve model alias to host if needed
   if alias_to_host "$TARGET" &>/dev/null; then
@@ -26,7 +32,10 @@ else
 fi
 
 echo "=== Skupper VAN — DOWN ==="
-echo "  Hosts: ${HOSTS[*]}"
+if [[ ${#HOSTS[@]} -gt 0 ]]; then
+  echo "  Hosts: ${HOSTS[*]}"
+fi
+[[ "$CRC_TARGET" == "true" ]] && echo "  CRC:   ${CRC_SITE_NAME}"
 [[ "$SCOPED" == "true" ]] && echo "  Mode:  scoped (preserving other routes)"
 echo
 
@@ -134,6 +143,36 @@ if [[ "$SCOPED" == "true" && "$STOP_LOCAL" == "false" ]]; then
   done
 fi
 echo
+
+# ── Phase 5: CRC site ──────────────────────────────────────────
+if [[ "$CRC_TARGET" == "true" ]]; then
+  echo "Phase 5: CRC site"
+
+  if crc_reachable; then
+    crc_link_name="link-hub-${CRC_LINK_TARGET}"
+    link_status=""
+    link_status=$(crc_link_status)
+
+    if [[ "$link_status" == "not found" ]]; then
+      echo "  ✅ Link ${crc_link_name} already removed (CRC disconnected)"
+    else
+      oc_crc delete link "${crc_link_name}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+      echo "  ✅ Link ${crc_link_name} deleted (CRC disconnected)"
+    fi
+
+    # Verify Site + Listener preserved
+    site_status=""
+    site_status=$(crc_site_status)
+    echo "  ✅ Site ${CRC_SITE_NAME}: ${site_status} (preserved)"
+
+    list_status=""
+    list_status=$(crc_listener_status)
+    echo "  ✅ Listener model-listener-${CRC_LINK_TARGET}: ${list_status} (preserved)"
+  else
+    echo "  ⚠️  CRC unreachable — skipping"
+  fi
+  echo
+fi
 
 echo "✅ Skupper VAN infrastructure stopped."
 echo "   Model containers are managed via hosted-model-ctl."

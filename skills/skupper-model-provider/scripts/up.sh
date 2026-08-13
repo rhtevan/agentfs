@@ -10,11 +10,17 @@ source "$(dirname "$0")/common.sh"
 
 TARGET_HOST="${1:-all}"
 ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
+CRC_TARGET=false
 
 # Determine which remote hosts to start
 if [[ "$TARGET_HOST" == "all" ]]; then
   HOSTS=("${ALL_REMOTE_HOSTS[@]}")
   SCOPED=false
+  [[ "$CRC_ENABLED" == "true" ]] && CRC_TARGET=true
+elif [[ "$TARGET_HOST" == "crc" ]]; then
+  HOSTS=()
+  SCOPED=true
+  CRC_TARGET=true
 else
   # Resolve model alias to host if needed
   if alias_to_host "$TARGET_HOST" &>/dev/null; then
@@ -26,7 +32,10 @@ else
 fi
 
 echo "=== Skupper VAN — UP ==="
-echo "  Hosts: ${HOSTS[*]}"
+if [[ ${#HOSTS[@]} -gt 0 ]]; then
+  echo "  Hosts: ${HOSTS[*]}"
+fi
+[[ "$CRC_TARGET" == "true" ]] && echo "  CRC:   ${CRC_SITE_NAME}"
 [[ "$SCOPED" == "true" ]] && echo "  Mode:  scoped"
 echo
 
@@ -149,6 +158,85 @@ if [[ "$SCOPED" == "true" ]]; then
   done
 fi
 echo
+
+# ── Phase 5: CRC site ──────────────────────────────────────────
+if [[ "$CRC_TARGET" == "true" ]]; then
+  echo "Phase 5: CRC site"
+
+  if ! crc_reachable; then
+    echo "  ❌ CRC context (${CRC_OC_CONTEXT}) not authenticated"
+    echo "     Run: oc login -u kubeadmin -p kubeadmin https://api.crc.testing:6443"
+    FAILED=1
+  else
+    # Verify Site is Ready
+    local_site_status=$(crc_site_status)
+    if [[ "$local_site_status" == "Ready" ]]; then
+      echo "  ✅ Site ${CRC_SITE_NAME}: Ready"
+    else
+      echo "  ❌ Site ${CRC_SITE_NAME}: ${local_site_status}"
+      echo "     Run: bash setup.sh to create the CRC site"
+      FAILED=1
+    fi
+
+    # Recreate Link if missing
+    crc_link_name="link-hub-${CRC_LINK_TARGET}"
+    link_status=""
+    link_status=$(crc_link_status)
+    if [[ "$link_status" == "Ready" ]]; then
+      echo "  ✅ Link ${crc_link_name}: Connected"
+    elif [[ "$link_status" == "not found" ]]; then
+      echo "  → Recreating link ${crc_link_name}..."
+      crc_hub_host=""
+      crc_hub_port=""
+      IFS='|' read -r crc_hub_port _ _ _ crc_hub_host <<< "${SITE_PROFILES[$CRC_LINK_TARGET]}"
+      cat << LINKEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: ${crc_link_name}
+  namespace: PLACEHOLDER_NS
+spec:
+  cost: 1
+  endpoints:
+    - name: inter-router
+      host: ${crc_hub_host}
+      port: "${crc_hub_port}"
+  tlsCredentials: ${crc_link_name}
+LINKEOF
+
+      # Restart router pod so it mounts the TLS secret for the new link
+      oc_crc delete pod -n "${CRC_NAMESPACE}" -l skupper.io/component=router 2>/dev/null || true
+      sleep 15
+
+      # Wait for link
+      crc_link_attempts=0
+      while [[ $crc_link_attempts -lt 20 ]]; do
+        link_status=$(crc_link_status)
+        if [[ "$link_status" == "Ready" ]]; then break; fi
+        sleep 3
+        ((crc_link_attempts++)) || true
+      done
+      link_status=$(crc_link_status)
+      if [[ "$link_status" == "Ready" ]]; then
+        echo "  ✅ Link ${crc_link_name}: Connected"
+      else
+        echo "  ⚠️  Link ${crc_link_name}: ${link_status} (may need time)"
+      fi
+    else
+      echo "  ⚠️  Link ${crc_link_name}: ${link_status}"
+    fi
+
+    # Verify Listener
+    list_status=""
+    list_status=$(crc_listener_status)
+    if [[ "$list_status" == "Ready" ]]; then
+      echo "  ✅ Listener model-listener-${CRC_LINK_TARGET}: Matched"
+    else
+      echo "  ⚠️  Listener model-listener-${CRC_LINK_TARGET}: ${list_status}"
+    fi
+  fi
+  echo
+fi
 
 echo "✅ Skupper VAN infrastructure UP."
 echo "   Model containers are managed via hosted-model-ctl."

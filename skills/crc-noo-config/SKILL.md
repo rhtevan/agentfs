@@ -184,8 +184,7 @@ Then add `NetworkEvents` and/or `UDNMapping` to the FlowCollector features list.
 - The `privileged: true` setting on the eBPF agent is required for PacketDrop to function. Without it, the feature is silently degraded.
 - If the cluster has no application traffic, the Network Traffic view may show "No results" with default filters. Click **Clear all filters** to see infrastructure flows.
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 20:35 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

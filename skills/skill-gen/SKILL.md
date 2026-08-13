@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.0.0"
+  version: "3.1.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -199,9 +199,7 @@ the signal-phrase description cannot convey.>
 
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| YYYY-MM-DD HH:MM | v1.0.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.
 ```
 
 **Description as signal phrases:**
@@ -306,7 +304,7 @@ set -euo pipefail
       For example, a skill in `crc-ols/SKILL.md` must have `name: crc-ols`.
       The name must be lowercase alphanumeric + hyphens only, no
       consecutive hyphens, and must not start or end with a hyphen.
-- [ ] **Changelog** — Changelog table exists with at least a v1.0 entry
+- [ ] **Changelog** — `CHANGELOG.md` exists with at least a v1.0 entry
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
 - [ ] **Log update** — append entry to `~/.agents/log.md` (USER scope)
@@ -390,7 +388,7 @@ For both modes:
 
 1. Read the existing SKILL.md first
 2. Preserve the original `name` field — do not rename
-3. Add a new changelog entry (do not remove existing entries)
+3. Add a new changelog entry to `CHANGELOG.md` (do not remove existing entries)
 4. In advanced mode, use the existing skill as the baseline for
    comparison in the eval loop
 5. Run the AgentFS Post-Creation Checklist (Step 6 / Step 4)
@@ -487,7 +485,7 @@ like or provides a manual alternative, it stays inline.
 - [ ] No conflicting instructions (two procedures that contradict)
 - [ ] No obsolete content (old procedures kept "just in case")
 - [ ] Historical lessons distilled to knowledge bundles with links
-- [ ] Changelog is current and version matches `metadata.version`
+- [ ] `CHANGELOG.md` is current and version matches `metadata.version`
 - [ ] Markdown renders correctly (tables, code blocks, YAML blocks)
 
 #### Principle 4 — Verifiable Specification & Test
@@ -592,21 +590,7 @@ like or provides a manual alternative, it stays inline.
 | Cache location | `~/.agents/skills/skill-gen/.cache/upstream/` |
 | Cache refresh | Every 7 days, or `fetch-upstream.sh --force` |
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-08-13 12:30 | v3.0.0 — Breaking: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); removed `metadata.signals` from schema; added Signal Phrase Rules with three quality principles (Concise, No redundant, Complete) and smell test; added Opening Paragraph requirement; updated SKILL.md template, Post-Creation Checklist (Step 6), and Skill Check P1; updated `references/skill-schema.md` to v2.0.0 |
-| 2026-08-10 16:11 | v2.1.1 — Strengthened Gotchas from suggestion ("Consider") to requirement ("Include"); added Gotchas section to SKILL.md template; added P1 checklist item for Gotchas/Known Issues section |
-| 2026-08-10 15:58 | v2.1.0 — P1: added inline code boundary guidance — reference code (templates, examples, one-liners, manual fallbacks) belongs in SKILL.md; execution code (multi-step, verification, discovery, conditionals) belongs in scripts/; added checklist item for not flagging reference code as 🟡 |
-| 2026-08-10 12:01 | v2.0.0 — Added Principle 5 (Security & Trust Boundary) to Skill Check: scripts scope, secrets handling, network calls, prompt injection; "Four Principles" → "Five Principles"; added "Real Expertise" anti-pattern guidance and Gotchas pattern to Step 1 (Capture Intent); added "loose steps → instructions, fragile steps → code" aphorism to Agent-as-Orchestrator |
-| 2026-08-10 11:18 | v1.9.0 — Strengthened P1 to "Accuracy, Consistency & Testability (Code-First)": skills are prescriptive SOPs verified by execution; code is primary vehicle for accuracy, consistency, conciseness, and testability; added could-be-script 🟡 flag and knowledge-extraction flag to checklist; moved Concise from P3 to P1; P3 renamed to "Traceable & Well-Formatted" |
-| 2026-08-08 13:39 | v1.8.0 — Skill Check expanded to 4 principles: added Principle 4 (Verifiable Specification & Test) with spec table and testcase mapping examples; Principle 1 now flags inline-only operations as critical |
-| 2026-08-08 13:20 | v1.7.0 — Added Skill Check mode: audit skills against 3 principles (Accuracy/Consistency, Autonomous/Currency, Concise/Traceable); checklist-driven procedure with severity-rated findings report |
-| 2026-08-08 10:55 | v1.6.0 — Added "Defensive file templates" writing guidance: skills that write external files must include exact templates with warning blocks; added `writes-files` optional field to skill-schema.md |
-| 2026-08-04 23:47 | v1.5.0 — Added canonical SKILL.md frontmatter schema (`references/skill-schema.md`); template now uses quoted 3-part semver (`"1.0.0"`); post-creation checklist requires `metadata.version`; writing guidance references schema doc |
-| 2026-07-27 18:35 | v1.4 — Added `metadata.signals` to SKILL.md template and post-creation checklist; added signal quality check; updated description guidance to emphasize conciseness (loaded every session via built-in skills listing) |
-| 2026-07-14 14:51 | v1.3 — Added "Name consistency" check to post-creation checklist: `name` field must match directory name per Agent Skills open standard (agentskills.io/specification) |
-| 2026-07-13 16:11 | v1.2 — Added "Skill Design Principles" section: non-interactive scripts, agent-as-orchestrator pattern, business process modeling |
-| 2026-07-13 11:19 | v1.1 — Renamed from `skill-creator` to `skill-gen` for naming consistency with `okf-bundle-gen`, `bash-completion-gen`; updated all internal path references |
-| 2026-07-10 17:05 | v1.0 — Initial proxy skill: simple + advanced modes, upstream Anthropic skill-creator integration, AgentFS post-creation checklist, agent compatibility notes |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

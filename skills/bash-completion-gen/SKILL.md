@@ -305,8 +305,7 @@ Summarize to the user:
 - [ ] Script installed to `~/.local/share/bash-completion/completions/<command>`
 - [ ] New bash shell shows completions when pressing TAB
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-13 10:48 | v1.0 — Initial skill created from herdr completion workflow |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

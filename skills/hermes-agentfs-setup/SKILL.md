@@ -174,9 +174,7 @@ at session startup. No configuration is needed for this.
 | Goose | #1 (in `CONTEXT_FILE_NAMES` default) | CWD + nested subdirs |
 | Hermes | #2 (after `.hermes.md` / `HERMES.md`) | CWD + subdirs via `SubdirectoryHintTracker` |
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-06 11:00 | v1.1 — Added PROJECT scope support (`--project`, `--undo-project`, `--list`) |
-| 2026-07-06 10:52 | v1.0 — Initial skill (USER scope only) |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

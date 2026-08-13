@@ -25,12 +25,25 @@ ROUTER_IMAGE="quay.io/skupper/skupper-router:3.5.1"
 ROUTER_CONTAINER="${NAMESPACE}-skupper-router"
 CONTROLLER_SUFFIX="skupper-controller"
 
+# ── CRC Configuration (built from topology.env) ──────────────
+CRC_ENABLED="${CRC_ENABLED:-false}"
+CRC_SITE_NAME="${CRC_SITE_NAME:-crc-site}"
+CRC_NAMESPACE="${CRC_NAMESPACE:-model-provider-crc}"
+CRC_OC_CONTEXT="${CRC_OC_CONTEXT:-crc-admin}"
+CRC_LINK_TARGET="${CRC_LINK_TARGET:-rhel-ai}"
+CRC_MODEL_PORT="${CRC_MODEL_PORT:-9000}"
+CRC_ROUTING_KEY="${CRC_ROUTING_KEY:-model-api-rhel-ai}"
+CRC_OBSERVER_ENABLED="${CRC_OBSERVER_ENABLED:-false}"
+
 # ── Site Names (built from topology.env) ──────────────────────
 declare -A SITE_NAMES=(
   [rhtevan-work]="hub-rhtevan-work"
   [rhel-ai]="hub-rhel-ai"
   [local]="${LOCAL_SITE_NAME}"
 )
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  SITE_NAMES[crc]="${CRC_SITE_NAME}"
+fi
 
 # ── Site Profiles (built from topology.env) ───────────────────
 # Format: INTER_ROUTER_PORT|EDGE_PORT|ROUTING_KEY|MODEL_PORT|PUBLIC_HOST
@@ -179,6 +192,56 @@ check_controller_status() {
   echo "${status:-not found}"
 }
 
+# ── Platform detection ────────────────────────────────────────
+site_platform() {
+  local host="$1"
+  case "$host" in
+    crc) echo "kubernetes" ;;
+    *)   echo "podman" ;;
+  esac
+}
+
+# ── CRC helpers ───────────────────────────────────────────────
+# All CRC operations use explicit --context to avoid hitting the
+# wrong cluster when multiple kubeconfigs/contexts are present.
+oc_crc() {
+  oc --context="${CRC_OC_CONTEXT}" "$@"
+}
+
+crc_reachable() {
+  [[ "$CRC_ENABLED" != "true" ]] && return 1
+  oc_crc whoami &>/dev/null
+}
+
+crc_site_status() {
+  oc_crc get site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
+}
+
+crc_link_status() {
+  oc_crc get link link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
+}
+
+crc_listener_status() {
+  oc_crc get listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
+}
+
+crc_link_name() {
+  local target="${CRC_LINK_TARGET}"
+  echo "link-hub-${SITE_NAMES[$target]}"
+}
+
+crc_listener_name() {
+  echo "model-listener-${CRC_LINK_TARGET}"
+}
+
+crc_observer_route_url() {
+  oc_crc get route -n "${CRC_NAMESPACE}" -l app.kubernetes.io/name=network-observer \
+    -o jsonpath='{.items[0].spec.host}' 2>/dev/null || echo "not found"
+}
+
 # ── SAN helper (converts comma-separated → YAML list) ────────
 sans_to_yaml() {
   local sans_csv="$1"
@@ -215,11 +278,29 @@ precheck_topology() {
   local ra_sans_fmt="${ra_sans//,/, }"
   local rw_sans_fmt="${rw_sans//,/, }"
 
+  # Build CRC section if enabled
+  local crc_section=""
+  if [[ "$CRC_ENABLED" == "true" ]]; then
+    local crc_target_host_d crc_target_port_d
+    IFS='|' read -r crc_target_port_d _ _ _ crc_target_host_d <<< "${SITE_PROFILES[$CRC_LINK_TARGET]}"
+    crc_section="
+
+CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
+  └── link → hub-${CRC_LINK_TARGET}
+        host:  ${crc_target_host_d}
+        port:  ${crc_target_port_d} (AMQPS)
+        Listener :${CRC_MODEL_PORT} ← ${CRC_ROUTING_KEY}
+        Service: model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT}"
+    local site_count="4-site"
+  else
+    local site_count="3-site"
+  fi
+
   cat << TOPO
 
-Skupper VAN — 3-site interior mesh
+Skupper VAN — ${site_count} interior mesh
 
-LOCAL: ${LOCAL_SITE_NAME} (localhost)
+LOCAL: ${LOCAL_SITE_NAME} (localhost, podman)
   ├── link → hub-rhel-ai
   │     host:  ${ra_host}
   │     port:  ${ra_port} (AMQPS)
@@ -231,6 +312,7 @@ LOCAL: ${LOCAL_SITE_NAME} (localhost)
         port:  ${rw_port} (AMQPS)
         SANs:  ${rw_sans_fmt}
         Listener :${rw_lport} ← ${rw_rkey}
+${crc_section}
 
   PUBLIC_HOST = routable address the local router connects to via AMQPS
   SANS        = TLS cert Subject Alternative Names; must include every
@@ -317,6 +399,43 @@ TOPO
       echo "  ✅ Port $lport ($site listener): available"
     fi
   done
+
+  # 7. CRC checks (if enabled)
+  if [[ "$CRC_ENABLED" == "true" ]]; then
+    echo
+    echo "  CRC site (${CRC_SITE_NAME}):" 
+
+    # CRC context authentication
+    if oc --context="${CRC_OC_CONTEXT}" whoami &>/dev/null; then
+      local crc_user
+      crc_user=$(oc --context="${CRC_OC_CONTEXT}" whoami 2>/dev/null)
+      echo "  ✅ CRC context (${CRC_OC_CONTEXT}): authenticated as ${crc_user}"
+    else
+      echo "  ❌ CRC context (${CRC_OC_CONTEXT}): not authenticated"
+      echo "       Run: oc login -u kubeadmin -p kubeadmin https://api.crc.testing:6443"
+      ((errors++))
+    fi
+
+    # CRC → hub TCP reachability
+    local crc_target_host crc_target_port
+    IFS='|' read -r crc_target_port _ _ _ crc_target_host <<< "${SITE_PROFILES[$CRC_LINK_TARGET]}"
+    if oc --context="${CRC_OC_CONTEXT}" run skupper-precheck-tcp --rm -i --restart=Never \
+         --image=registry.access.redhat.com/ubi9/ubi-minimal \
+         -- bash -c "timeout 5 bash -c \"echo > /dev/tcp/${crc_target_host}/${crc_target_port}\"" &>/dev/null; then
+      echo "  ✅ CRC → ${CRC_LINK_TARGET} (${crc_target_host}:${crc_target_port}): reachable"
+    else
+      echo "  ⚠️  CRC → ${CRC_LINK_TARGET} (${crc_target_host}:${crc_target_port}): unreachable (hub may not be up yet)"
+      ((warnings++))
+    fi
+
+    # Operator catalog
+    if oc --context="${CRC_OC_CONTEXT}" get packagemanifest skupper-operator &>/dev/null; then
+      echo "  ✅ Skupper operator: available in catalog"
+    else
+      echo "  ❌ Skupper operator: not found in catalog"
+      ((errors++))
+    fi
+  fi
 
   echo
   # Re-enable errexit

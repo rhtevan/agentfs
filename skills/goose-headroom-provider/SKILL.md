@@ -375,9 +375,7 @@ echo "     systemctl --user status headroom-proxy"
 | Timeout on long requests | `timeout_seconds` too low | Increase from 600 to a higher value |
 | No compression visible in `/stats` | Short messages don't compress | Use longer conversations; check `curl http://localhost:8787/stats` |
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-06 21:47 | v2.0 — Refactored: split out installation/systemd to `headroom-litellm-proxy` skill; this skill now covers Goose provider config only |
-| 2026-07-06 21:37 | v1.0 — Initial skill capturing Headroom provider setup |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

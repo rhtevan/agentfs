@@ -118,8 +118,7 @@ Skill directory: ~/.agents/skills/crc-post-setup-config
 - apply-system-reserved.sh → load_skill(name: "crc-post-setup-config/apply-system-reserved.sh")
 - silence-alerts.sh → load_skill(name: "crc-post-setup-config/silence-alerts.sh")
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-06-19 19:41 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

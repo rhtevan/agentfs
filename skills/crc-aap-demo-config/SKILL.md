@@ -243,8 +243,7 @@ aap-demo diagnose  # Health check
 For the full aap-demo workflow and troubleshooting, refer to the
 `.claude/skills/aap-demo/SKILL.md` skill in the aap-demo repository.
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-07-16 11:11 | v1.0 — Initial skill: clone, pre-flight, protective config, CLI install |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

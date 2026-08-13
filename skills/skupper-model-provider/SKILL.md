@@ -8,8 +8,8 @@ argument-hint: "setup skupper model | teardown skupper model | start skupper mod
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "7.4.1"
-  tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
+  version: "8.1.0"
+  tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
 writes-files: false
@@ -24,7 +24,7 @@ from daily start/stop operations.
 ## Architecture
 
 ```
-LOCAL: LOCAL_SITE_NAME (localhost)
+LOCAL: LOCAL_SITE_NAME (localhost, podman)
   ├── link → hub-rhel-ai
   │     host:  RHEL_AI_PUBLIC_HOST
   │     port:  RHEL_AI_INTER_ROUTER_PORT (AMQPS)
@@ -34,6 +34,13 @@ LOCAL: LOCAL_SITE_NAME (localhost)
         host:  RHTEVAN_WORK_PUBLIC_HOST
         port:  RHTEVAN_WORK_INTER_ROUTER_PORT (AMQPS)
         Listener :RHTEVAN_WORK_MODEL_PORT ← RHTEVAN_WORK_ROUTING_KEY
+
+CRC: CRC_SITE_NAME (kubernetes, CRC_NAMESPACE)
+  └── link → hub-rhel-ai
+        host:  RHEL_AI_PUBLIC_HOST
+        port:  RHEL_AI_INTER_ROUTER_PORT (AMQPS)
+        Listener :CRC_MODEL_PORT ← CRC_ROUTING_KEY
+        Service: model-listener-rhel-ai.CRC_NAMESPACE:CRC_MODEL_PORT
 ```
 
 All site-specific values (IPs, hostnames, ports, SANs) are read from
@@ -52,18 +59,21 @@ diagram with actual values and validate the configuration.
 
 ## Site Configuration
 
-| Site Name | Host | Mode | Link Port | Model Port |
-|-----------|------|------|:---------:|:----------:|
-| **LOCAL_SITE_NAME** | localhost | Interior (outbound) | — | — |
-| **hub-rhtevan-work** | RHTEVAN_WORK_SSH_HOST | Interior hub | RHTEVAN_WORK_INTER_ROUTER_PORT | RHTEVAN_WORK_MODEL_PORT |
-| **hub-rhel-ai** | RHEL_AI_SSH_HOST | Interior hub | RHEL_AI_INTER_ROUTER_PORT | RHEL_AI_MODEL_PORT |
+| Site Name | Host | Platform | Mode | Link Port | Model Port |
+|-----------|------|----------|------|:---------:|:----------:|
+| **LOCAL_SITE_NAME** | localhost | podman | Interior (outbound) | — | — |
+| **hub-rhtevan-work** | RHTEVAN_WORK_SSH_HOST | podman | Interior hub | RHTEVAN_WORK_INTER_ROUTER_PORT | RHTEVAN_WORK_MODEL_PORT |
+| **hub-rhel-ai** | RHEL_AI_SSH_HOST | podman | Interior hub | RHEL_AI_INTER_ROUTER_PORT | RHEL_AI_MODEL_PORT |
+| **CRC_SITE_NAME** | CRC cluster | kubernetes | Interior (outbound) | — | CRC_MODEL_PORT |
 
 All values in the table above are defined in `topology.env`.
 
-- **Topology config:** `topology.env` (site-specific IPs, hostnames, SANs)
+- **Topology config:** `topology.env` (site-specific IPs, hostnames, SANs, CRC config)
 - **Shared config:** `scripts/common.sh` (site profiles, aliases, helper functions)
 - **Router image:** `quay.io/skupper/skupper-router:3.5.1`
-- **Namespace:** `model-provider-podman`
+- **Podman namespace:** `model-provider-podman`
+- **CRC namespace:** `model-provider-crc`
+- **CRC operator:** Red Hat `skupper-operator` v2.2.1 (`stable-2.2` channel, AllNamespaces mode in `openshift-operators`)
 - **System controller:** `--reload-type auto` (cert rotation, config reconciliation)
 
 ## Script Separation
@@ -276,6 +286,11 @@ remote host reachable, remote container running.
 | rhel-ai router survives `systemctl stop` | On tmpfs-workaround hosts, `recreate_router_with_tmpfs()` creates the container via `podman run` outside full systemd lifecycle; `systemctl stop` may not reach it | v7.2.0: `down.sh` explicitly runs `podman stop` (NOT `podman rm`) on tmpfs-workaround hosts as a safety net after `systemctl stop` |
 | `up.sh` broke auto-restart on rhel-ai | `up.sh` called `recreate_router_with_tmpfs()` every start, which did `podman rm` + `podman run -d` — bypassing systemd entirely. `start-watch.sh` never ran, so no crash detection, no auto-restart, and `systemctl stop` was a no-op. | v7.3.0: `up.sh` uses `systemctl --user start` for ALL hosts (same path). `recreate_router_with_tmpfs()` is setup-only — tmpfs flags are baked into the container at creation and preserved across `podman stop`/`podman start` cycles. |
 | `systemctl stop` marked service `failed` (exit 143) | Original `start-watch.sh` used bash SIGTERM trap with `exit 0`, but bash reports signal-based exit code (128+15=143) to systemd regardless of trap exit code. systemd saw non-zero → `Result=exit-code` → `failed` state. | v7.4.0: Simplified `start-watch.sh` to 6 lines (no trap, no stop marker). `podman wait` returns container exit code directly. `SuccessExitStatus=SIGTERM` in systemd unit tells systemd that exit 143 is success. Verified on all 3 hosts: `systemctl stop` → `Result=success`, `ActiveState=inactive`. |
+| CRC operator only supports AllNamespaces | skupper-operator v2.2.1 `installModes` has `OwnNamespace: false` | Install in `openshift-operators` (has `global-operators` OperatorGroup). Do NOT create a namespace-scoped OperatorGroup. |
+| CRC secret must be `kubernetes.io/tls` type | kube-adaptor only auto-mounts TLS-type secrets into router pod; Opaque secrets are ignored | Use `oc create secret tls` + patch to add `ca.crt` |
+| CRC router pod restart after link recreation | kube-adaptor doesn't dynamically mount new TLS secrets into an existing router pod | `up.sh crc` deletes the router pod after recreating the Link; Deployment recreates it with the secret mounted |
+| CRC TCP precheck fails during fresh setup | Hub routers aren't up yet when CRC precheck runs (setup creates them in Phase 1-2) | Downgraded to warning — CRC link will connect once hubs are up |
+| `((var++))` exits with code 1 in bash | `((0++))` evaluates to 0 (falsy), triggering `set -e` exit | Added `|| true` to all `((var++))` in CRC code paths |
 
 ## Prerequisites
 
@@ -286,6 +301,7 @@ remote host reachable, remote container running.
 - Model containers deployed via `hosted-model-ctl`
 - Port 55671 reachable on rhtevan-work (LAN)
 - Port 8000 reachable on rhel-ai (AWS security group)
+- **CRC (if enabled):** CRC running with OpenShift 4.x, `oc` CLI configured with context `CRC_OC_CONTEXT`, CRC VM able to reach hub's public host on AMQPS port
 
 ## Relationship to Other Skills
 
@@ -294,26 +310,7 @@ remote host reachable, remote container running.
 | `hosted-model-ctl` | Manages model container lifecycle (deploy, start, stop, remove) | Agent-level semantic triggering — scripts do NOT cross-reference or invoke each other |
 | `goose-skupper-provider` | Configures Goose to use the exposed endpoint | Independent |
 
+
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-08-13 12:51 | v7.4.1 — Skill check fixes: `teardown.sh` now removes router `start-watch.sh` (not just controller's); `setup.sh` uses `mktemp`+`chmod 600` for link YAML temp files (was predictable `/tmp/link-hub-*.yaml`); updated POSTMORTEM.md Architecture Decision #4 to reflect v6.1.1 change (controllers now stopped on `down.sh all`); minor comment update in `down.sh` Phase 1. |
-| 2026-08-13 | v7.4.0 — Simplified `start-watch.sh` from 20 lines to 6: removed bash SIGTERM trap, stop marker file, and `podman inspect` exit code check. Now uses direct `podman wait` exit code propagation. Added `SuccessExitStatus=SIGTERM` to systemd units. Fixes service marked `failed` (exit 143) after `systemctl stop`. Verified on all 3 hosts: crash → auto-restart ✅, `systemctl stop` → `inactive`/`success` ✅, `down.sh` → all `inactive`/`success` ✅. |
-| 2026-08-12 | v7.3.0 — **Bugfix:** `up.sh` no longer calls `recreate_router_with_tmpfs()` on every start. Tmpfs workaround is setup-only — container retains flags across stop/start. All hosts now use identical `systemctl --user start` path, restoring systemd auto-restart (start-watch.sh) on rhel-ai. Split S7→S7a/S7b for normal vs tmpfs-workaround host auto-restart. Added T7a/T7b. Verified: T7b auto-restart on rhel-ai confirmed (kill → restart in ~5s). |
-| 2026-08-12 | v7.2.0 — **Bugfix:** Scoped `down.sh HOST` no longer kills other routes. Local router/controller are shared infrastructure; scoped mode now checks if other remote hosts still have active routers before stopping local. Added `up.sh` scoped verification of unaffected routes. Split S2→S2a/S2b, S3→S3a/S3b/S3c with negative assertions. Added tests T2b/T2c/T3b/T3c/T3d/T3e for all scoped scenarios. Added Gotchas for shared-infrastructure incident and rhel-ai router surviving systemctl stop (tmpfs workaround creates container outside systemd lifecycle; explicit `podman stop` safety net added). |
-| 2026-08-12 | v7.1.0 — Enhanced `status.sh` with dual-column reporting: Last-Known (persisted YAML) vs Live (actual container/systemd/port checks). Sites show controller+router systemd state with STALE flag when YAML disagrees with reality. Links include TCP probe to remote inter-router port. Listeners check local port binding. Removed redundant systemd section (merged into Sites). |
-| 2026-08-12 | v7.0.1 — Clarified loose coupling: agent semantically triggers `hosted-model-ctl` (loads skill, follows instructions) — no cross-script invocation. Stripped model container and e2e sections from `status.sh` (VAN-only). Added `skupper model provider status`/`check skupper model provider` signals. |
-| 2026-08-12 | v7.0.0 — **Breaking:** Decoupled model lifecycle from VAN scripts. `up.sh`/`down.sh` now manage Skupper infrastructure only (controllers + routers). Model containers semantically triggered via `hosted-model-ctl` at agent level (DRY + Loose Coupling). Added Agent Orchestration section with signal routing rules, scoping rules (`on HOST`, `with MODEL`), error handling (STOP & WAIT), startup/shutdown ordering. Updated signals for symmetric `verb skupper model` / `skupper model verb` patterns. Removed `--keep-van` flag (no longer needed). Scripts accept optional `[HOST]` arg for scoped operations. Updated Specification (S1–S8) and Tests (T1–T8). |
-| 2026-08-12 | v6.1.3 — Fixed `down.sh` Phase 1 container filter: `--filter 'name=model-'` was also matching `model-provider-podman-skupper-router`; added `grep -v skupper-router` to exclude routers from model stop phase. |
-| 2026-08-12 | v6.1.2 — Removed `[Install]` / `WantedBy=default.target` from systemd unit templates in `common.sh`; disabled services on all 3 hosts. Prevents auto-start on reboot when `Linger=yes`. `up.sh` starts on demand; `Restart=on-failure` still handles crash recovery. |
-| 2026-08-11 | v6.1.1 — `down.sh all` now stops controllers on all 3 hosts (previously left running). No reason to keep controllers alive when all routers are down. |
-| 2026-08-11 | v6.1.0 — Extracted site-specific config to `topology.env` (gitignored). Added `topology.env.example` with placeholder values. Added precheck capability (`setup.sh --check`) with topology display and validation. Signals: `skupper model precheck`, `skupper model topology`, `show skupper topology`. Scripts no longer contain hardcoded IPs, hostnames, or usernames. |
-| 2026-08-11 | v6.0.1 — Added Tests section (T1–T7) mapped to Specification (S1–S7) per skill-check P4 |
-| 2026-08-11 | v6.0 — Complete refactor: separated setup.sh/teardown.sh (one-time) from up.sh/down.sh (daily). Added auto-restart patches for router + controller. Unique site names (hub-rhel-ai, hub-rhtevan-work, local-site). Manual link building (CLI `link generate` broken on podman). SANs on all RouterAccess certs. Comprehensive status.sh with controllers, systemd, e2e. |
-| 2026-08-11 | v5.1 — Fix pipefail crash in status.sh |
-| 2026-08-08 | v5.0 — Complete rewrite for podman/interior platform |
-| 2026-08-08 | v4.0 — All-interior mode; podman platform |
-| 2026-08-07 | v3.0 — Two routing keys; rhel-ai edge port 8000 |
-| 2026-08-06 | v2.0 — rhel-ai support; model alias routing |
-| 2026-08-04 | v1.0 — Initial skill |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.
