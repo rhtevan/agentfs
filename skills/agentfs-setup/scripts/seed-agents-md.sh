@@ -246,12 +246,24 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
 
 - **Reverse chronological order** — newest entries FIRST (applies to
   both `log.md` and any `Changelog` section in content files).
-- **ISO 8601 timestamp headings** — `## YYYY-MM-DD HH:MM`.
+- **ISO 8601 timestamp headings** — `## YYYY-MM-DD HH:MM`
+  (24-hour format; use `date '+%Y-%m-%d %H:%M'` for consistency).
 - **Log every material change** — file creation, renames, deletions,
   structural updates.
-- **Insertion anchor.** When appending a new log entry, always insert
-  immediately after the \`# Directory Update Log\` heading line
-  — never relative to an existing dated entry.
+- **Insertion anchor.** New entries go at the top, immediately after
+  the comment line. The result MUST look like this — no double
+  blank lines:
+  \`\`\`
+  # Directory Update Log
+  <!-- Append-only. Newest entries at top. -->
+
+  ## YYYY-MM-DD HH:MM
+
+  - Entry text
+  \`\`\`
+  One blank line between the comment and the heading. One blank
+  line between the heading and the entries. Verify with
+  \`head -6 <log_file> | cat -An\` after insertion.
 - **Never modify or delete** existing log or changelog entries.
 - **Scope:** Each `log.md` MUST only describe changes within its scope
   (`~/.agents/log.md` for USER, `./.agents/log.md` for PROJECT).
@@ -263,16 +275,12 @@ These rules apply to all `.md` files under `.agents/` in BOTH scopes.
 
 - **`skills/index.md` and `profiles/index.md` MUST stay current.**
   When a skill or profile is created, renamed, modified, or deleted
-  in either scope, regenerate the corresponding `index.md`.
-  This includes metadata-only changes (version bumps, tag edits,
-  changelog additions) — not just structural changes like creation
-  or deletion.
-- **Use the `skill-index` skill** to regenerate — do NOT manually
-  edit, and do NOT write ad-hoc scripts to generate the index.
-  The `skill-index` skill contains tested logic for YAML frontmatter
-  parsing, nested metadata extraction, and correct table formatting
-  that ad-hoc scripts routinely get wrong. Always `load_skill` and
-  follow its instructions.
+  in either scope, regenerate the corresponding `index.md` using
+  the `skill-index` skill — do NOT manually edit, and do NOT write
+  ad-hoc scripts. Always `load_skill(name: "skill-index")` and
+  follow its instructions. This includes metadata-only changes
+  (version bumps, tag edits, changelog additions) — not just
+  structural changes like creation or deletion.
 - **Every SKILL.md MUST have `metadata.tags`** in YAML frontmatter
   (e.g., `tags: [agentfs, memory, harvest]`). A skill without tags
   is invisible to tag-based discovery.

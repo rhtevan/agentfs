@@ -11,7 +11,7 @@ compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 writes-files: false
 metadata:
   author: agentfs
-  version: "5.1.0"
+  version: "5.2.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted]
   signals:
     - "hosted model list"
@@ -88,7 +88,8 @@ Full container details (images, flags, VRAM budgets) in
 | S2 | Pre-check host readiness (SSH, GPU, podman, CDI, images, disk) | `scripts/pre-check.sh HOST` → pass/fail report |
 | S3 | Deploy model container by alias (idempotent) | `scripts/setup.sh ALIAS` → container created, API HTTP 200 |
 | S4 | Start existing model container by alias (stops conflicting models on same port) | `scripts/start.sh ALIAS` → API HTTP 200 |
-| S5 | Stop model container by alias or all | `scripts/stop.sh ALIAS\|all` → container exited |
+| S5a | Stop single model container by alias (others unaffected) | `scripts/stop.sh ALIAS` → target stopped, other models on other hosts **preserved** |
+| S5b | Stop all model containers across both hosts | `scripts/stop.sh all` → all containers exited |
 | S6 | Show status of specific model or all models | `scripts/status.sh [ALIAS]` → status report |
 | S7 | Test running model (health, model ID, chat completion) | `scripts/test.sh ALIAS` → 4 tests pass |
 
@@ -174,14 +175,19 @@ preserved. Does NOT delete downloaded model weights from the HF cache.
 | T2 | S2 | `scripts/pre-check.sh rhtevan-work` | All checks pass |
 | T3 | S3 | `scripts/setup.sh g350m` | Container created, HTTP 200 |
 | T4 | S4 | `scripts/start.sh g350m` | HTTP 200, model ready |
-| T5 | S5 | `scripts/stop.sh g350m` | Container exited |
+| T5a | S5a | `scripts/stop.sh g350m` (g8b-128k running on rhel-ai) | g350m stopped, g8b-128k on rhel-ai **unaffected** |
+| T5b | S5b | `scripts/stop.sh all` | All containers exited on both hosts |
 | T6 | S6 | `scripts/status.sh g350m` | Status report with model details |
 | T7 | S7 | `scripts/test.sh g350m` | 4/4 tests pass |
 | T8 | S4 | `scripts/start.sh g8b-128k` | HTTP 200 on rhel-ai:9000 |
 | T9 | S7 | `scripts/test.sh g8b-128k` | 4/4 tests pass |
-| T10 | S5 | `scripts/stop.sh all` | All containers exited |
 
 ## Gotchas
+
+### Scoping Safety
+
+- **`stop.sh ALIAS` is correctly scoped** — stops only the targeted container on its host. No shared infrastructure risk (unlike Skupper's local router which serves all routes). Each model container is independent.
+- **`stop.sh all` iterates all aliases** — stops containers on both hosts. Unreachable hosts are skipped with a warning, not treated as errors.
 
 ### Fedora / rhtevan-work
 
@@ -228,6 +234,7 @@ For detailed VRAM breakdowns, see
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 | v5.2.0 — Split S5 into S5a (stop single alias, others unaffected) and S5b (stop all). Added negative assertion to T5a verifying models on other hosts are preserved. Added Scoping Safety gotcha. Prompted by skupper-model-provider v7.2.0 scoped-shutdown incident. |
 | 2026-08-12 | v5.1.0 — Changed default rhel-ai model from `g30b-96k` to `g8b-128k`. Removed ambiguous bare signals (`model list/start/stop/status`); added `hosted model teardown`/`teardown hosted model` signals. Added teardown operation via `stop.sh --remove`. Clarified signal boundaries with `skupper-model-provider`. |
 | 2026-08-08 | v5.0 — Complete rewrite: all operations as scripts; added Specification and Tests sections; compact tables; moved memory budgets to references/; proper heading hierarchy; applied skill-check 4 principles |
 | 2026-08-08 | v4.0 — rhtevan-work port 8000→10000; consistent with Skupper listener |

@@ -1,6 +1,34 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-13 11:37
+
+- Updated `skupper-model-provider` (v7.3.0 → v7.4.0): Simplified `start-watch.sh` from 20 lines to 6 — removed bash SIGTERM trap, stop marker file, and `podman inspect` exit code check. Now uses direct `podman wait` exit code propagation + `SuccessExitStatus=SIGTERM` in systemd units. Fixes service marked `failed` (exit 143) after `systemctl stop`. Patched and verified on all 3 hosts.
+- Regenerated `~/.agents/skills/index.md` (48 skills).
+
+## 2026-08-12 22:55
+
+- Updated Guardrail #5 (Index Currency): consolidated `skill-index` requirement into MUST-stay-current bullet with explicit `load_skill(name: "skill-index")` call-out. Applied to agentfs-setup template (v3.10.1) and project AGENTS.md.
+- Regenerated `~/.agents/skills/index.md` (48 skills) — agentfs-setup now at top.
+
+## 2026-08-12 22:48
+
+- Updated Guardrail #5 (Log & Changelog Currency): added 24-hour format hint with `date` command to ISO 8601 timestamp rule. Applied to agentfs-setup template and project AGENTS.md.
+
+## 2026-08-12 22:17
+
+- Fixed `skupper-model-provider/scripts/up.sh`: removed `recreate_router_with_tmpfs()` from start path. All hosts now use identical `systemctl --user start` path. Tmpfs workaround is setup-only — container retains flags across stop/start cycles. Restores systemd auto-restart (`start-watch.sh`) on rhel-ai.
+- Fixed `skupper-model-provider/scripts/down.sh`: added explicit `podman stop` (NOT rm) on tmpfs-workaround hosts as safety net after `systemctl stop`.
+- Updated `skupper-model-provider` SKILL.md (v7.2.0 → v7.3.0): split S7→S7a/S7b for normal vs tmpfs-workaround host auto-restart. Added T7a/T7b. Added Gotchas for `up.sh` bypassing systemd on rhel-ai. T7b pending verification (rhel-ai unreachable).
+- Regenerated `~/.agents/skills/index.md` (48 skills).
+
+## 2026-08-12 14:12
+
+- Fixed critical bug in `skupper-model-provider/scripts/down.sh`: scoped mode (`down.sh HOST`) unconditionally stopped local router and controller, killing routes to other still-active hosts. Now checks if other remote hosts have active routers before stopping local infrastructure.
+- Hardened `skupper-model-provider/scripts/up.sh`: scoped mode Phase 4 verification now checks that other routes are unaffected (not just the scoped host's port).
+- Updated `skupper-model-provider` SKILL.md (v7.1.0 → v7.2.0): split S2→S2a/S2b, S3→S3a/S3b/S3c with negative assertions for scoped operations. Added tests T2b/T2c/T3b/T3c/T3d/T3e covering all scoped start/stop scenarios. Added Gotcha for shared-infrastructure incident.
+- Updated `hosted-model-ctl` SKILL.md (v5.1.0 → v5.2.0): split S5→S5a/S5b with negative assertion for single-alias stop. Updated tests T5a/T5b. Added Scoping Safety gotcha. Scripts confirmed correct (no code changes needed).
+- Regenerated `~/.agents/skills/index.md` (48 skills).
 ## 2026-08-12 11:35
 - skupper-model-provider v7.1.0: Enhanced `status.sh` with dual-column reporting (Last-Known vs Live). Sites show controller+router systemd state with STALE flag. Links include TCP probe. Listeners check local port binding. Removed redundant systemd section.
 
@@ -919,5 +947,6 @@
 ## 2026-06-26 14:00
 
 - Initialized .agents/ directory structure (mode: system).
+
 
 

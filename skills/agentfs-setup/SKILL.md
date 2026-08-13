@@ -6,7 +6,7 @@ description: >
   sync existing AGENTS.md with latest template, and verify setup
   integrity. Default mode is PROJECT.
 metadata:
-  version: "3.9.0"
+  version: "3.10.1"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
   signals: ["sync agentfs", "update agentfs", "upgrade agentfs"]
 ---
@@ -19,13 +19,12 @@ AI coding agents.
 
 ## Overview
 
-| Property | Value |
-|----------|-------|
-| **Version** | 3.9 |
-| **Default mode** | `project` |
-| **Modes** | `project` (per-repo context) · `user` (shared library) |
-| **Scripts** | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
-| **Design spec** | [references/design-spec.md](./references/design-spec.md) |
+| Property         | Value                                                             |
+| ---------------- | ----------------------------------------------------------------- |
+| **Default mode** | `project`                                                         |
+| **Modes**        | `project` (per-repo context) · `user` (shared library)            |
+| **Scripts**      | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
+| **Design spec**  | [references/design-spec.md](./references/design-spec.md)          |
 
 ## Scope Definitions
 
@@ -232,6 +231,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-12 22:55 | v3.10.1 — Guardrail #5 (Log & Changelog Currency): added 24-hour format hint with `date` command to ISO 8601 timestamp rule. Index Currency: consolidated `skill-index` requirement into the MUST-stay-current bullet (removed separate bullet); explicit `load_skill(name: "skill-index")` call-out. |
 | 2026-08-11 11:48 | v3.10.0 — Added Guardrail Type System (Gate 🚧, Rule ⚖️, Habit 🔄): Type column in Quick Reference table with verb-chain Key Actions; type badges on all 10 guardrail headings; gate blockquote notices on #5 (Filesystem Integrity), #9 (Checkpoints), #10 (Git Push Safety); design-spec updated with type rationale and Trigger/Invariant collapse analysis; template version 3.9→3.10 |
 | 2026-08-08 10:55 | v3.9.0 — Added "Never improvise when a skill exists" routing rule; added "Backup untracked files" to Guardrail #9 (Checkpoints); template version 3.8→3.9 |
 | 2026-08-04 19:40 | v3.8.1 — Strengthened Index Currency guardrail in AGENTS.md template: explicitly prohibits ad-hoc scripts for index generation; requires `load_skill` and following `skill-index` instructions |

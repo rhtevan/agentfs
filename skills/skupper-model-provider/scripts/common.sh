@@ -395,27 +395,10 @@ install_router_auto_restart() {
 set -euo pipefail
 
 ROUTER="model-provider-podman-skupper-router"
-STOP_MARKER="/tmp/skupper-model-provider-podman-stopping"
-
-rm -f "${STOP_MARKER}"
-trap 'touch ${STOP_MARKER}; exit 0' SIGTERM
 
 podman start "${ROUTER}"
-
-podman wait --condition=stopped "${ROUTER}" &
-wait $!
-
-if [ -f "${STOP_MARKER}" ]; then
-    rm -f "${STOP_MARKER}"
-    exit 0
-fi
-
-RC=$(podman inspect "${ROUTER}" --format '{{.State.ExitCode}}' 2>/dev/null || echo "1")
-if [ "${RC}" != "0" ]; then
-    echo "Router crashed with exit code ${RC}, signaling failure for restart" >&2
-    exit 1
-fi
-exit 0
+RC=$(podman wait --condition=stopped "${ROUTER}")
+exit "${RC}"
 WATCHSCRIPT
 
   run_on_host "$host" "cat > ${ns_dir}/internal/scripts/start-watch.sh << 'EOF'
@@ -442,6 +425,7 @@ ExecStop=/bin/bash ${ns_dir}/internal/scripts/stop.sh
 Type=simple
 Restart=on-failure
 RestartSec=5
+SuccessExitStatus=SIGTERM
 EOF
 systemctl --user daemon-reload"
 }
@@ -460,22 +444,9 @@ install_controller_auto_restart() {
 #!/usr/bin/env bash
 set -euo pipefail
 CONTAINER=\"${controller}\"
-STOP_MARKER=\"/tmp/skupper-controller-stopping\"
-rm -f \"\${STOP_MARKER}\"
-trap 'touch \${STOP_MARKER}; exit 0' SIGTERM
 podman start \"\${CONTAINER}\"
-podman wait --condition=stopped \"\${CONTAINER}\" &
-wait \$!
-if [ -f \"\${STOP_MARKER}\" ]; then
-    rm -f \"\${STOP_MARKER}\"
-    exit 0
-fi
-RC=\$(podman inspect \"\${CONTAINER}\" --format '{{.State.ExitCode}}' 2>/dev/null || echo \"1\")
-if [ \"\${RC}\" != \"0\" ]; then
-    echo \"Controller crashed with exit code \${RC}, signaling failure for restart\" >&2
-    exit 1
-fi
-exit 0
+RC=\$(podman wait --condition=stopped \"\${CONTAINER}\")
+exit \"\${RC}\"
 EOF
 chmod +x ~/.local/share/skupper/system-controller/internal/scripts/start-watch.sh"
 
@@ -500,6 +471,7 @@ ExecStop=/bin/bash ${home_dir}/.local/share/skupper/system-controller/internal/s
 Type=simple
 Restart=on-failure
 RestartSec=5
+SuccessExitStatus=SIGTERM
 EOF
 systemctl --user daemon-reload"
 }
