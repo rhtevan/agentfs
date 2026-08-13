@@ -1,10 +1,10 @@
 ---
 name: goose-desktop-env-fix
-description: "Fix Goose Desktop shell environment so that shell commands have access to the full user environment (devbox/nix tools, crc/oc, cargo, sdkman, etc.)"
+description: >
+  fix goose desktop, goose shell environment, goose env fix
 metadata:
-    version: "1.2.0"
-    tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
-    signals: ["fix goose desktop", "goose shell environment", "goose env fix"]
+  version: "1.2.0"
+  tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---
 
 # Goose Desktop Environment Fix

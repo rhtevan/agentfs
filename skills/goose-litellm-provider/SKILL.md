@@ -1,14 +1,14 @@
 ---
 name: goose-litellm-provider
-description: "Configure Goose to use a local LiteLLM proxy as a custom provider, with model discovery and verification"
-platforms: [linux]
-user-invocable: true
-disable-model-invocation: false
+description: >
+  configure goose litellm, goose litellm provider
+platforms: ['linux']
 metadata:
   version: "1.6.0"
   tags: [goose, litellm, custom-provider, redhat, configuration]
-  signals: ["goose litellm", "configure goose litellm", "redhat provider"]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Configure Goose with a Local LiteLLM Proxy Provider

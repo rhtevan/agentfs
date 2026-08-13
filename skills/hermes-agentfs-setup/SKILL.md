@@ -1,14 +1,11 @@
 ---
 name: hermes-agentfs-setup
 description: >
-  Configure Hermes Agent for AgentFS compatibility by registering
-  ~/.agents/skills (USER) and per-project .agents/skills/ (PROJECT)
-  in skills.external_dirs
-platforms: [linux]
+  configure hermes agentfs, hermes skills dirs, hermes agentfs
+platforms: ['linux']
 metadata:
   version: "1.1.0"
   tags: [hermes, agentfs, configuration, skills, compatibility]
-  signals: ["configure hermes agentfs", "hermes skills dirs", "hermes agentfs"]
   related_skills: [agentfs-setup, hermes-litellm-provider, hermes-desktop-fixes]
 ---
 

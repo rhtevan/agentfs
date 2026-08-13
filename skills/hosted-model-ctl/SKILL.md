@@ -1,31 +1,18 @@
 ---
 name: hosted-model-ctl
 description: >
-  Deploy, manage, and troubleshoot self-hosted containerized LLM
-  inference servers for IBM Granite models on NVIDIA GPUs. Supports
-  multiple host profiles and models from 350M to 30B with automatic
-  engine selection. Operations: list, pre-check, setup, test, status,
-  start, stop.
+  hosted model list, setup hosted model, start hosted model,
+  stop hosted model, hosted model status, test hosted model,
+  teardown hosted model, precheck hosted model
 argument-hint: "hosted model list | hosted model start g350m | hosted model status g8b-128k"
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
-writes-files: false
 metadata:
   author: agentfs
   version: "5.2.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted]
-  signals:
-    - "hosted model list"
-    - "list hosted model"
-    - "hosted model setup"
-    - "hosted model start"
-    - "hosted model stop"
-    - "hosted model status"
-    - "hosted model test"
-    - "hosted model pre-check"
-    - "hosted model teardown"
-    - "teardown hosted model"
 user-invocable: true
 disable-model-invocation: false
+writes-files: false
 ---
 
 # Hosted Model Control

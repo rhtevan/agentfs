@@ -58,6 +58,7 @@ for host in rhel-ai rhtevan-work localhost; do
   if [[ "$host" == "localhost" ]] || host_reachable "$host"; then
     run_on_host "$host" "
       rm -f ~/.local/share/skupper/system-controller/internal/scripts/start-watch.sh 2>/dev/null
+      rm -f ~/.local/share/skupper/namespaces/${NAMESPACE}/internal/scripts/start-watch.sh 2>/dev/null
       systemctl --user daemon-reload 2>/dev/null
     " || true
     echo "  ✅ $host patches removed"

@@ -1,20 +1,13 @@
 ---
 name: okf-bundle-harvest
 description: >
-  Harvest concepts from MEMORY.md files across one or more projects and
-  distill them into OKF-compliant knowledge bundles under ~/.agents/knowledge/.
-  Scans default agent and named profile memories, identifies graduation
-  candidates (generalizable patterns that transcend a single project),
-  creates or merges concept documents, and removes graduated entries from
-  source MEMORY.md files. Implements the graduation path defined in
-  AgentFS Guardrail #2 (Memory Scope & Signal Routing). Fully compliant with Open Knowledge Format v0.1.
+  harvest knowledge, harvest concepts, graduate knowledge
 argument-hint: "Optionally specify project paths: 'harvest from ~/projects/foo and ~/projects/bar'"
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
   author: agentfs
   version: "1.2.0"
   tags: [agentfs, okf, knowledge, memory, distillation, graduation]
-  signals: ["harvest knowledge", "harvest concepts", "graduate knowledge"]
 user-invocable: true
 disable-model-invocation: false
 ---

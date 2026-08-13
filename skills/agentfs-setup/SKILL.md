@@ -1,14 +1,10 @@
 ---
 name: agentfs-setup
 description: >
-  Scaffold the AgentFS `.agents/` directory tree in USER or PROJECT mode,
-  seed AGENTS.md with scope definitions and structural guardrails,
-  sync existing AGENTS.md with latest template, and verify setup
-  integrity. Default mode is PROJECT.
+  setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
   version: "3.10.1"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
-  signals: ["sync agentfs", "update agentfs", "upgrade agentfs"]
 ---
 
 # AgentFS Setup

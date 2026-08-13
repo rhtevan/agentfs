@@ -1,16 +1,10 @@
 ---
 name: okf-bundle-setup
 description: >
-  Create or organize a directory into an OKF-conformant knowledge bundle.
-  Scaffolds index.md, log.md, and concept documents with proper YAML
-  frontmatter. Handles both fresh bundles and existing directories with
-  files — scanning content to derive a semantic bundle name, creating
-  concept docs for non-md assets, and recursing into subdirectories as
-  sub-bundles. Fully compliant with Open Knowledge Format v0.1.
+  setup knowledge bundle, scaffold knowledge bundle, okf setup
 metadata:
   version: "1.1.0"
   tags: [agentfs, okf, knowledge, scaffolding, setup]
-  signals: ["setup knowledge bundle", "scaffold knowledge bundle", "okf setup"]
 ---
 
 # OKF Bundle Setup

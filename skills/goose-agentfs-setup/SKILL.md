@@ -1,23 +1,13 @@
 ---
 name: goose-agentfs-setup
 description: >
-  Configure Goose for full AgentFS compatibility by adding CLAUDE.md and
-  other agent context files to CONTEXT_FILE_NAMES, so Goose automatically
-  discovers and loads cross-agent context files alongside AGENTS.md.
-  Also manages memory collision avoidance — installs persistent instruction
-  overrides that prevent the Goose memory extension from hijacking AgentFS
-  natural-language memory signals (remember, save, forget, etc.), routing
-  them to the correct MEMORY.md file (default agent or named profile).
-  Also manages global goosehints for progressive knowledge discovery —
-  references ~/.agents/knowledge/index.md so Goose can find and load
-  knowledge bundles on demand.
+  configure goose agentfs, goose context files, goose agentfs
 argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, .cursorrules)"
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
   version: "1.0.0"
   tags: [goose, agentfs, configuration, compatibility]
-  signals: ["configure goose agentfs", "goose context files", "goose agentfs"]
 user-invocable: true
 disable-model-invocation: false
 ---

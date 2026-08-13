@@ -1,10 +1,10 @@
 ---
 name: crc-noo-config
-description: Install and configure the Network Observability Operator (NOO) on OpenShift Local (CRC) with demo Loki and all safe eBPF features enabled
+description: >
+  install noo, configure noo, network observability
 metadata:
   version: "1.0.0"
   tags: [openshift, crc, networking, observability, operator, ebpf]
-  signals: ["install noo", "network observability", "configure noo"]
 ---
 
 # Install and Configure Network Observability Operator on CRC

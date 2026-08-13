@@ -1,16 +1,13 @@
 ---
 name: fedora-dns-cache
 description: >
-  Configure systemd-resolved stale DNS caching on Fedora to prevent terminal
-  and shell hangs when internet connectivity drops. Diagnoses DNS timeout
-  issues and applies a resolved.conf.d drop-in for instant cached responses.
+  configure dns cache, fedora dns cache, dns timeout, terminal hangs offline
 argument-hint: "No arguments required"
 compatibility: "Fedora 40+ with systemd-resolved"
 metadata:
   author: agentfs
   version: "1.0.0"
   tags: [fedora, dns, network, systemd, terminal, offline]
-  signals: ["dns cache", "terminal stuck offline", "terminal hangs no internet", "dns timeout", "fedora dns cache", "shell hangs network drop"]
 user-invocable: true
 disable-model-invocation: false
 ---

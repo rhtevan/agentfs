@@ -1,20 +1,13 @@
 ---
 name: skill-harvest
 description: >
-  Harvest procedural knowledge from MEMORY.md files across one or more
-  projects and distill them into reusable USER-scoped skills under
-  ~/.agents/skills/. Scans default agent and named profile memories,
-  identifies procedural graduation candidates (repeatable workflows,
-  multi-step SOPs, routine workarounds), scaffolds new skills, and
-  removes graduated entries from source MEMORY.md files. Complements
-  okf-bundle-harvest which handles declarative/semantic knowledge.
+  harvest skills, harvest procedures, graduate skills
 argument-hint: "Optionally specify project paths: 'harvest skills from ~/projects/foo and ~/projects/bar'"
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
   author: agentfs
   version: "1.1.0"
   tags: [agentfs, skills, memory, procedural, graduation, harvest]
-  signals: ["harvest skills", "harvest procedures", "graduate skills"]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -426,8 +419,8 @@ Before completing, verify:
 - [ ] MEMORY.md backups were created before pruning
 - [ ] Every SKILL.md has YAML frontmatter conforming to the canonical schema
       ([`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md)):
-      `name`, `description`, `metadata.version` (quoted 3-part semver),
-      `metadata.tags`, `metadata.signals`
+      `name`, `description` (signal phrases), `metadata.version`
+      (quoted 3-part semver), `metadata.tags`
 - [ ] Scripts are idempotent (or document why not)
 - [ ] Scripts use `$HOME` not hardcoded paths
 - [ ] `~/.agents/skills/index.md` regenerated via `skill-index`

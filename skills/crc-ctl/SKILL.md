@@ -1,17 +1,13 @@
 ---
 name: crc-ctl
 description: >
-  Operational skill for starting and stopping the OpenShift Local (CRC)
-  cluster using the custom crcstart/crcstop wrapper scripts. Includes
-  pre-start version check, post-stop process cleanup, and correct
-  command usage. Complements crc-cmd which installs the wrappers.
+  start crc, stop crc, crc start, crc stop
 argument-hint: "'start crc', 'stop crc', 'crc start', 'crc stop'"
 compatibility: "Requires crcstart/crcstop wrappers installed via crc-cmd skill"
 metadata:
   author: agentfs
   version: "1.0.0"
   tags: [crc, openshift, openshift-local, cluster, operations]
-  signals: ["start crc", "stop crc", "crc start", "crc stop"]
 user-invocable: true
 disable-model-invocation: false
 ---

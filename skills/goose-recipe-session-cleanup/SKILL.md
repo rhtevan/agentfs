@@ -1,27 +1,12 @@
 ---
 name: goose-recipe-session-cleanup
 description: >
-  Identify and remove orphaned or old Goose session records from the sessions
-  database. Covers recipe sessions (ad-hoc CLI runs), terminal sessions
-  (goose term), hidden sessions (goose doctor), and desktop sessions
-  (interactive UI/CLI). Supports date filtering and per-category selection.
+  clean goose sessions, cleanup recipe sessions, remove orphaned sessions,
+  clean desktop sessions, clean terminal sessions
 metadata:
+  author: agentfs
   version: "3.0.0"
   tags: [goose, recipe, session, cleanup, orphan, desktop, terminal]
-  signals:
-    - clean recipe sessions
-    - cleanup goose sessions
-    - clean all sessions
-    - clean desktop sessions
-    - clean terminal sessions
-    - orphaned sessions
-    - recipe session cleanup
-    - goose session cleanup
-    - remove recipe sessions
-    - stale goose sessions
-  author: agentfs
-  created: 2026-07-30
-  updated: 2026-07-30
 ---
 
 # goose-recipe-session-cleanup

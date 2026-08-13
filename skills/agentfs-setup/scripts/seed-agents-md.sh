@@ -100,10 +100,11 @@ are available.
 | "hey git", "git" | Commit & push USER AgentFS | \`cd ~/.agents\` (or explicit path if specified), stage all, commit, then trigger Guardrail #10 (Git Push Safety) |
 
 For skill-routed signals (e.g., "setup agentfs", "create a skill"),
-the agent discovers skills via the skills listing and
-\`~/.agents/skills/index.md\` — including \`metadata.signals\` in
-SKILL.md frontmatter. Only LLM-direct routes and genuinely ambiguous
-multi-skill triage entries belong in this table.
+the agent discovers skills via the built-in skills listing (which
+contains each skill's signal phrases in the \`description\` field)
+and \`~/.agents/skills/index.md\` as defense-in-depth. Only LLM-direct
+routes and genuinely ambiguous multi-skill triage entries belong in
+this table.
 
 ### Routing Rules
 
@@ -111,11 +112,12 @@ multi-skill triage entries belong in this table.
   decision table (e.g., in persistent instructions), and the referenced
   tool exists in the current session's available tools, the
   agent-specific route wins.
-- **Skill signal resolution.** On session start, read
-  \`~/.agents/skills/index.md\` to load the signal-to-skill mapping.
-  When user intent doesn't match an LLM-direct route in the table
-  above, match against the Signals column in the skills index before
-  falling back to default skill name/description matching.
+- **Skill signal resolution.** Signal phrases in each skill's
+  \`description\` field are always in context via the built-in skills
+  listing. On session start, also read \`~/.agents/skills/index.md\`
+  as defense-in-depth. When user intent doesn't match an LLM-direct
+  route in the table above, match against the Description column in
+  the skills index before falling back to skill name matching.
 - **Harvest scans the current project by default.** Scan \`MEMORY.md\`
   files at \`.agents/memories/\` and \`.agents/profiles/*/memories/\`.
   Route to \`skill-harvest\` for procedural patterns or

@@ -30,7 +30,7 @@ echo "  Hosts: ${HOSTS[*]}"
 [[ "$SCOPED" == "true" ]] && echo "  Mode:  scoped (preserving other routes)"
 echo
 
-# ── Phase 1: Stop remote routers ──────────────────────────────
+# ── Phase 1: Stop remote routers (+ tmpfs safety net) ─────────
 echo "Phase 1: Stop remote routers"
 for host in "${HOSTS[@]}"; do
   if host_reachable "$host"; then

@@ -1,14 +1,10 @@
 ---
 name: spec-kit-setup
 description: >
-  Check the existence of GitHub's spec-kit (specify CLI) and then install or
-  upgrade it to the latest release. Use when a user asks to install spec-kit,
-  set up Spec-Driven Development, check for spec-kit updates, upgrade specify,
-  or when another skill or workflow requires spec-kit as a prerequisite.
+  install spec-kit, setup specify, upgrade spec-kit
 metadata:
   version: "1.0.0"
   tags: [speckit, specify, cli, setup, installation]
-  signals: ["install spec-kit", "setup specify", "upgrade spec-kit"]
 ---
 
 # Spec-kit Setup

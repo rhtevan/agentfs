@@ -1,14 +1,14 @@
 ---
 name: hermes-litellm-provider
-description: "Configure Hermes Agent to use a local LiteLLM proxy as its custom LLM provider, with model discovery and verification"
-platforms: [linux]
-user-invocable: true
-disable-model-invocation: false
+description: >
+  configure hermes litellm, hermes litellm provider
+platforms: ['linux']
 metadata:
   version: "2.2.0"
   tags: [hermes, litellm, custom-provider, configuration]
-  signals: ["hermes litellm", "configure hermes litellm", "hermes provider"]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, hermes-headroom-provider]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Configure Hermes Agent with Local LiteLLM Proxy

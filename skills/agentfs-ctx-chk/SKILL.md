@@ -1,15 +1,10 @@
 ---
 name: agentfs-ctx-chk
-description: >-
-  Audit the context engineering layers that load into an AI agent session
-  for redundancy, ambiguity, conflicts, effectiveness, and cross-reference
-  integrity. Produces a findings report with action plan, then optionally
-  applies fixes to both project files and root-cause skill templates.
-  Complements agentfs-eval (structural health) with context optimization.
+description: >
+  audit context, check context, context audit
 metadata:
   version: "1.1.0"
   tags: [agentfs, context, audit, optimization, guardrails]
-  signals: ["check agentfs", "audit context", "context check"]
 user-invocable: true
 disable-model-invocation: false
 ---

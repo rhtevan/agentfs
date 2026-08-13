@@ -1,16 +1,10 @@
 ---
 name: skill-merge
 description: >
-  Copy skills from PROJECT skills (./.agents/skills/) to USER skills
-  (~/.agents/skills/). If no specific skill name(s) are mentioned, copies
-  all project skills. Otherwise copies only the named skills. Existing
-  USER skills with the same name are NOT overwritten unless the user
-  explicitly signals force/overwrite. After merging, refreshes the
-  USER skills index.
+  merge skills, copy skills to user, promote skills
 metadata:
   version: "1.2.0"
   tags: [agentfs, skills, merge, project, user]
-  signals: ["merge skills", "copy skills to user", "promote skills"]
 ---
 
 # Skill Merge

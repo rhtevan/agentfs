@@ -1,19 +1,13 @@
 ---
 name: fuseki
 description: >
-  Install, configure, and manage Apache Jena Fuseki as a local user
-  systemd service. Handles binary installation, systemd unit setup,
-  PATH configuration, and service lifecycle (start/stop/status). Use
-  when a user says "fuseki setup", "fuseki start", "fuseki stop",
-  "fuseki status", or needs a local SPARQL endpoint for RDF/OWL
-  workflows like AgentFLOW.
+  setup fuseki, start fuseki, stop fuseki, fuseki status
 argument-hint: "fuseki {setup|start|stop|status}"
 compatibility: "Linux with systemd user sessions, Java 17+"
 metadata:
   author: agentfs
   version: "1.0.0"
   tags: [fuseki, jena, sparql, rdf, infrastructure, service]
-  signals: ["fuseki setup", "fuseki start", "fuseki stop", "fuseki status"]
 user-invocable: true
 disable-model-invocation: false
 ---

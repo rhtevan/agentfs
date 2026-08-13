@@ -1,14 +1,10 @@
 ---
 name: crc-ovn-frr-metallb-config
 description: >
-  Set up OVN-Kubernetes FRR shared BGP backend and MetalLB Operator
-  integration on an OpenShift Local (CRC) cluster. This skill
-  re-establishes the full OVN-FRR and MetalLB integration after a
-  `crc delete && crc start` cycle.
+  setup ovn frr, setup metallb, bgp metallb
 metadata:
   version: "1.1.0"
   tags: [openshift, crc, networking, ovn, bgp, metallb]
-  signals: ["ovn frr", "metallb setup", "bgp metallb"]
 ---
 
 # CRC OVN-K FRR + MetalLB Integration Configuration

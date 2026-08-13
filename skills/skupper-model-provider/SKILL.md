@@ -1,42 +1,18 @@
 ---
 name: skupper-model-provider
 description: >
-  Expose remote LLM model runtimes to localhost through a Skupper V2
-  Virtual Application Network (VAN). All-interior-mode mesh on Podman
-  platform with official skupper-router container. Auto-routes model
-  alias to correct remote host and local port.
+  setup skupper model, teardown skupper model, start skupper model,
+  stop skupper model, skupper model status, test skupper model,
+  precheck skupper model, skupper model topology
 argument-hint: "setup skupper model | teardown skupper model | start skupper model | shutdown skupper model | skupper model status | skupper model precheck"
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
-writes-files: false
 metadata:
   author: agentfs
-  version: "7.4.0"
+  version: "7.4.1"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, interior-mode, rhel-ai, rhtevan-work]
-  signals:
-    - "skupper model setup"
-    - "setup skupper model"
-    - "skupper model teardown"
-    - "teardown skupper model"
-    - "skupper model start"
-    - "start skupper model"
-    - "bring up skupper model"
-    - "skupper model up"
-    - "skupper model stop"
-    - "stop skupper model"
-    - "shutdown skupper model"
-    - "skupper model down"
-    - "skupper model status"
-    - "skupper model provider status"
-    - "check skupper model"
-    - "check skupper model provider"
-    - "skupper model test"
-    - "skupper model precheck"
-    - "skupper model topology"
-    - "show skupper topology"
-    - "expose remote model"
-    - "skupper van"
 user-invocable: true
 disable-model-invocation: false
+writes-files: false
 ---
 
 # Skupper Model Provider
@@ -322,6 +298,7 @@ remote host reachable, remote container running.
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-13 12:51 | v7.4.1 — Skill check fixes: `teardown.sh` now removes router `start-watch.sh` (not just controller's); `setup.sh` uses `mktemp`+`chmod 600` for link YAML temp files (was predictable `/tmp/link-hub-*.yaml`); updated POSTMORTEM.md Architecture Decision #4 to reflect v6.1.1 change (controllers now stopped on `down.sh all`); minor comment update in `down.sh` Phase 1. |
 | 2026-08-13 | v7.4.0 — Simplified `start-watch.sh` from 20 lines to 6: removed bash SIGTERM trap, stop marker file, and `podman inspect` exit code check. Now uses direct `podman wait` exit code propagation. Added `SuccessExitStatus=SIGTERM` to systemd units. Fixes service marked `failed` (exit 143) after `systemctl stop`. Verified on all 3 hosts: crash → auto-restart ✅, `systemctl stop` → `inactive`/`success` ✅, `down.sh` → all `inactive`/`success` ✅. |
 | 2026-08-12 | v7.3.0 — **Bugfix:** `up.sh` no longer calls `recreate_router_with_tmpfs()` on every start. Tmpfs workaround is setup-only — container retains flags across stop/start. All hosts now use identical `systemctl --user start` path, restoring systemd auto-restart (start-watch.sh) on rhel-ai. Split S7→S7a/S7b for normal vs tmpfs-workaround host auto-restart. Added T7a/T7b. Verified: T7b auto-restart on rhel-ai confirmed (kill → restart in ~5s). |
 | 2026-08-12 | v7.2.0 — **Bugfix:** Scoped `down.sh HOST` no longer kills other routes. Local router/controller are shared infrastructure; scoped mode now checks if other remote hosts still have active routers before stopping local. Added `up.sh` scoped verification of unaffected routes. Split S2→S2a/S2b, S3→S3a/S3b/S3c with negative assertions. Added tests T2b/T2c/T3b/T3c/T3d/T3e for all scoped scenarios. Added Gotchas for shared-infrastructure incident and rhel-ai router surviving systemctl stop (tmpfs workaround creates container outside systemd lifecycle; explicit `podman stop` safety net added). |

@@ -1,6 +1,6 @@
 ---
 title: SKILL.md Frontmatter Schema
-version: "1.1.0"
+version: "2.0.0"
 status: canonical
 ---
 
@@ -18,10 +18,9 @@ maintaining independent copies.
 | Field | Location | Required | Format | Notes |
 |-------|----------|----------|--------|-------|
 | `name` | top-level | ✅ | lowercase alphanumeric + hyphens | Must exactly match parent directory name ([agentskills.io/specification](https://agentskills.io/specification)) |
-| `description` | top-level | ✅ | Multi-line `>` or `>-` scalar | Concise — loaded every session via built-in skills listing |
+| `description` | top-level | ✅ | Multi-line `>` or `>-` scalar | **Signal phrases** — loaded every session via built-in skills listing. See [Signal Phrase Rules](#signal-phrase-rules) |
 | `version` | `metadata.version` | ✅ | Quoted 3-part semver: `"1.0.0"` | See [Version Rules](#version-rules) |
 | `tags` | `metadata.tags` | ✅ | Bracket list: `[tag1, tag2]` | A skill without tags is invisible to tag-based discovery |
-| `signals` | `metadata.signals` | ✅ | List of trigger phrases | A skill without signals is invisible to signal-based routing |
 
 ## Optional Fields
 
@@ -36,11 +35,84 @@ maintaining independent copies.
 | `disable-model-invocation` | top-level | boolean | `false` | Whether to suppress auto-invocation |
 | `writes-files` | top-level | boolean | `false` | Skill writes/modifies files outside `.agents/` — signals critical file templates that must be followed exactly |
 
+## Signal Phrase Rules
+
+The `description` field serves as the **signal routing surface** — it
+contains the trigger phrases that the LLM uses to match user intent to
+the correct skill. It is loaded into every session via the built-in
+skills listing, making it the only metadata always in the agent's
+context.
+
+### Phrase Patterns
+
+Skills support two types of capabilities, each with a distinct pattern:
+
+| Capability Type | Pattern | Structure | Examples |
+|----------------|---------|-----------|----------|
+| **Command** | `verb + noun(s)` | Action that changes state | `setup agentfs`, `create skill`, `start crc`, `merge skills` |
+| **Query** | `noun(s)` | Retrieval, status, inspection | `crc status`, `litellm health`, `skupper model topology` |
+
+**Rules:**
+
+- **Command phrases start with a verb** — `setup`, `create`, `install`,
+  `configure`, `start`, `stop`, `fix`, `check`, `audit`, `harvest`,
+  `merge`, `scaffold`, `generate`, `refresh`
+- **Query phrases are noun-only** — no verb. The implicit verb is
+  "show me" / "tell me about"
+- **No articles, prepositions, or filler words** — `setup agentfs`
+  not `set up the agentfs directory`
+- **Lowercase** — signals are case-insensitive matching targets;
+  store lowercase
+- **2-4 words per phrase** — keep each phrase short
+- **Comma-separated** in the YAML scalar
+
+### Quality Principles
+
+Three mandatory qualities, applied in this order:
+
+| # | Principle | Rule | Anti-pattern |
+|:-:|-----------|------|--------------|
+| 1 | **Concise** | Each phrase is 2-4 words following the Command/Query pattern | `scaffold the agentfs dot-agents directory tree` |
+| 2 | **No redundant** | No two phrases that would match the same user intent. If removing a phrase doesn't reduce coverage, remove it | `create skill` + `make skill` — keep one, drop the other |
+| 3 | **Complete** | Every functional mode of the skill has at least one Command and/or Query phrase | A skill with `start`, `stop`, `status` modes needs signals for all three |
+
+### Completeness Guidance
+
+- **No hard limit** on signal count — completeness takes priority
+  over brevity
+- **Recommended range: 5-12 phrases** for a well-scoped skill
+- **Smell test:** If a skill requires 15+ signals to be complete,
+  this likely reveals a **design issue** — the skill carries too
+  much responsibility. Consider decomposition following Separation
+  of Concerns and Single Responsibility principles
+- **Mode coverage:** Each operational mode (e.g., `setup`, `teardown`,
+  `status`, `test`) should have at least one signal phrase
+- **Bidirectional phrasing:** Include both `verb noun` and `noun verb`
+  only when users genuinely say it both ways (e.g., `check skill` +
+  `skill check`). Do not mechanically generate both for every phrase
+
+### Opening Paragraph Requirement
+
+Since the `description` field now contains signal phrases (not prose),
+the SKILL.md body **MUST** include a hydrated human-readable paragraph
+immediately after the `# Title` heading. This paragraph provides the
+rich context that `description` used to carry — what the skill does,
+why it exists, and when to use it.
+
+### Progressive Disclosure Model
+
+| Layer | Content | Loaded When |
+|-------|---------|-------------|
+| **Name** | What category | Every session |
+| **Description (=signals)** | When to trigger | Every session |
+| **Opening paragraph** | What, why, when (human-readable) | On `load_skill` |
+| **Full body + scripts** | How to execute | On `load_skill` + on demand |
+
 ## Version Rules
 
 1. **Location:** Always inside `metadata:` block — never at YAML
    top-level. This keeps version grouped with other metadata
-   (`tags`, `signals`, `author`) under a single parse path.
+   (`tags`, `author`) under a single parse path.
 
 2. **Format:** Always quoted, always 3-part semver:
    `"MAJOR.MINOR.PATCH"` (e.g., `"1.0.0"`, `"2.3.1"`).
@@ -91,6 +163,10 @@ maintaining independent copies.
 | `changelog:` inside YAML frontmatter | `## Changelog` as Markdown section |
 | Version only in changelog text, not in frontmatter | Both `metadata.version` AND changelog entry |
 | `metadata.version` says `"1.0"` but changelog says `v1.3` | Must match: `"1.3.0"` in both |
+| Prose description explaining what skill does | Signal phrases: `setup agentfs, sync agentfs, verify agentfs` |
+| `metadata.signals` as separate field | Signals in `description` field directly |
+| Description with articles/filler: `set up the agentfs directory` | Concise: `setup agentfs` |
+| 20+ signal phrases in description | Smell test: consider splitting the skill |
 
 ## Reference Template
 
@@ -98,23 +174,29 @@ maintaining independent copies.
 ---
 name: <skill-name>
 description: >
-  <Concise description — WHAT it does and WHEN to use it.>
+  <signal phrase 1>, <signal phrase 2>, <signal phrase 3>,
+  <signal phrase 4>, <signal phrase 5>
 argument-hint: "<usage hint>"
 compatibility: "<requirements>"
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "1.0.0"
   tags: [<relevant-tags>]
-  signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
 user-invocable: true
 disable-model-invocation: false
 ---
+
+# <Skill Title>
+
+<Opening paragraph — human-readable explanation of what this skill does,
+why it exists, and when to use it. This is the hydrated context that
+the signal-phrase description cannot convey.>
 ```
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-13 12:25 | v2.0.0 — Breaking: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); removed `metadata.signals` from schema; added Signal Phrase Rules section with patterns, three quality principles (Concise, No redundant, Complete), completeness guidance, smell test; added Opening Paragraph Requirement; added Progressive Disclosure Model; updated Reference Template and Anti-Patterns |
 | 2026-08-08 10:55 | v1.1.0 — Added `writes-files` optional field: flags skills that write/modify files outside `.agents/`, signaling critical file templates that must be followed exactly |
 | 2026-08-04 23:46 | v1.0.0 — Initial schema: canonical version location (metadata.version), quoted 3-part semver, changelog as Markdown section, anti-patterns table |
-

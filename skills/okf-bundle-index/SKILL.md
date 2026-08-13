@@ -1,14 +1,10 @@
 ---
 name: okf-bundle-index
 description: >
-  Check and fix links in index.md files recursively across an OKF
-  knowledge bundle. Detects broken links, missing entries, and absent
-  index.md files, then repairs them to restore full OKF conformance.
-  Fully compliant with Open Knowledge Format v0.1.
+  fix knowledge index, check knowledge links, okf index fix
 metadata:
   version: "1.3.0"
   tags: [agentfs, okf, knowledge, index, links]
-  signals: ["fix knowledge index", "check knowledge links", "okf index fix"]
 ---
 
 # OKF Bundle Index

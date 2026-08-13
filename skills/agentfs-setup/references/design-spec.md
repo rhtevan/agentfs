@@ -256,13 +256,15 @@ sections (Agent Profiles table, SPECKIT block).
 - **LLM-direct routes** live in the AGENTS.md Signal Routing table
   (auto-loaded every session). These handle intents that don't map
   to any skill (e.g., "remember this" → edit MEMORY.md).
-- **Skill-routed signals** live in each SKILL.md's `metadata.signals`
-  frontmatter field. They are aggregated into `~/.agents/skills/index.md`
-  by the `skill-index` skill. The skills index is referenced in Quick
-  Orientation and the Routing Rules instruct the agent to read it on
-  session start for signal-based skill discovery.
-- **Fallback** — default skill name/description matching via the
-  built-in skills listing.
+- **Skill-routed signals** live in each SKILL.md's `description`
+  frontmatter field as signal phrases. They are the primary routing
+  surface — loaded into every session via the built-in skills
+  listing. They are also aggregated into `~/.agents/skills/index.md`
+  by the `skill-index` skill (Description column) as defense-in-depth.
+  The Routing Rules instruct the agent to read the skills index on
+  session start for additional signal discovery.
+- **Fallback** — default skill name matching via the built-in
+  skills listing.
 
 **README sync rule:** When AgentFS design, guardrails, skills schema,
 or template structure changes, the README (`~/.agents/README.md`) MUST
@@ -391,30 +393,41 @@ Shared across all agents. Present in both USER and PROJECT modes.
 Every SKILL.md MUST begin with YAML frontmatter containing:
 
 | Field | Required | Type | Purpose |
-|-------|----------|------|---------|
+|-------|----------|------|----------|
 | `name` | Yes | string | Skill name — MUST match parent directory name |
-| `description` | Yes | string | Single-paragraph summary for discovery |
+| `description` | Yes | string | **Signal phrases** — comma-separated trigger phrases for intent matching. See Signal Phrase Rules below |
 | `metadata.tags` | Yes | list[string] | Tag-based discovery (e.g., `[agentfs, setup]`) |
-| `metadata.signals` | No | list[string] | Natural-language trigger phrases for non-obvious skill routing (e.g., `["sync agentfs", "update agentfs"]`) |
 
-**When to add `metadata.signals`:**
-- The skill name and description alone are **not sufficient** for the
-  agent to match user intent to the skill.
-- The skill handles an **ambiguous** intent that could route to
-  multiple skills (e.g., "harvest" → `skill-harvest` or
-  `okf-bundle-harvest`).
-- The skill responds to **shorthand or slang** the user commonly uses
-  (e.g., "hey git").
+> **Schema change (v2.0.0):** `metadata.signals` has been removed.
+> Signal phrases now live in the `description` field, which is the
+> only metadata always loaded into the agent's context via the
+> built-in skills listing.
 
-**When NOT to add signals:**
-- The skill name is self-explanatory (e.g., `skill-gen` ← "create a
-  skill").
-- The description already contains the key intent phrases.
+**Signal Phrase Rules:**
 
-Signals are surfaced in `skills/index.md` by the `skill-index` skill
-for progressive discovery. They are NOT compiled into AGENTS.md —
-the Signal Routing table in AGENTS.md is reserved for LLM-direct
-routes and genuinely ambiguous multi-skill triage entries.
+The `description` field is the **signal routing surface** — the LLM
+matches user intent against these phrases to select the correct skill.
+
+- **Command pattern** (`verb + noun(s)`) — for actions: `setup agentfs`,
+  `create skill`, `start crc`
+- **Query pattern** (`noun(s)`) — for status/inspection: `crc status`,
+  `litellm health`
+- **Three principles:** Concise (2-4 words), No redundant (no two
+  phrases matching the same intent), Complete (every mode covered)
+- **Smell test:** 15+ phrases suggests the skill should be split
+
+**Opening paragraph requirement:** Since `description` contains signal
+phrases (not prose), the SKILL.md body MUST include a hydrated
+human-readable paragraph immediately after the `# Title` heading.
+
+Signal phrases are surfaced in `skills/index.md` by the `skill-index`
+skill (in the Description column) for progressive discovery. They are
+NOT compiled into AGENTS.md — the Signal Routing table in AGENTS.md
+is reserved for LLM-direct routes and genuinely ambiguous multi-skill
+triage entries.
+
+See [`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md)
+for the full canonical schema.
 
 ### 6. Semantic Context Layer — ~/.agents/knowledge/ (USER only)
 Open Knowledge Format. File path = concept identity. Every file requires
@@ -561,6 +574,7 @@ to 10 with #8 Anti-Daydreaming):
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-13 12:40 | v3.11 — SKILL.md Frontmatter Schema: `description` field redefined as signal phrases (Command/Query patterns); `metadata.signals` removed; added Signal Phrase Rules, Opening Paragraph requirement; updated Signal Routing architecture (signals now in `description`, skills index Description column as defense-in-depth) |
 | 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated all cross-references |
 | 2026-07-27 18:30 | v3.7 — Added Signal Routing architecture (LLM-direct in AGENTS.md, skill signals in SKILL.md frontmatter, skills index as lookup table); added template versioning and `--sync` mechanism; added template-owned vs project-owned section markers; added SKILL.md Frontmatter Schema with `metadata.signals` field; added README sync rule (hard requirement); renamed Guardrail #2 to Memory Scope (Signal Routing promoted to standalone section) |
 | 2026-07-14 17:49 | v3.3 — Consolidated guardrails from 13 to 9 (reordered by usage frequency); merged Memory Scope + Signal Routing; merged Link/Log/Changelog/Index into Filesystem Integrity; Quick Orientation now includes SOUL.md and knowledge index; updated eval-driven guardrails section numbering |

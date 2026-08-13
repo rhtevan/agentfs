@@ -1,6 +1,22 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-13 12:52
+
+- Skill check `skupper-model-provider` v7.4.0 → v7.4.1: `teardown.sh` now removes router `start-watch.sh`; `setup.sh` uses `mktemp`+`chmod 600` for link YAML temp files; POSTMORTEM.md Architecture Decision #4 updated for v6.1.1; `down.sh` Phase 1 comment clarified; regenerated `skills/index.md`
+
+## 2026-08-13 12:32
+
+- **Signal Phrase Schema Migration (v2.0.0)**: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); `metadata.signals` removed from schema
+- Updated `skill-gen/references/skill-schema.md` to v2.0.0: Signal Phrase Rules, Opening Paragraph requirement, Progressive Disclosure Model
+- Updated `skill-gen/SKILL.md` to v3.0.0: new description format, updated template, checklist, Skill Check P1 items
+- Updated `skill-index/SKILL.md` to v3.0.0: index columns `Skill | Tags | Description | Updated`; legacy `metadata.signals` warning
+- Updated `agentfs-setup/references/design-spec.md` to v3.11: SKILL.md Frontmatter Schema, Signal Routing architecture
+- Updated `agentfs-setup/scripts/seed-agents-md.sh`: Routing Rules reference `description` field instead of `metadata.signals`
+- Migrated all 48 skills: converted `description` to signal phrases, removed `metadata.signals` from frontmatter
+- Regenerated `skills/index.md` with new `Skill | Tags | Description | Updated` format
+
+
 ## 2026-08-13 11:37
 
 - Updated `skupper-model-provider` (v7.3.0 → v7.4.0): Simplified `start-watch.sh` from 20 lines to 6 — removed bash SIGTERM trap, stop marker file, and `podman inspect` exit code check. Now uses direct `podman wait` exit code propagation + `SuccessExitStatus=SIGTERM` in systemd units. Fixes service marked `failed` (exit 143) after `systemctl stop`. Patched and verified on all 3 hosts.
@@ -118,7 +134,19 @@
 
 ## 2026-08-10 16:25
 
-- Added `<!-- Append-only. Newest entries at top. -->` comment anchor to `~/.agents/log.md` (was missing)
+- Added `<!-- Append-only. Newest entries at top. -->
+
+## 2026-08-13 12:32
+
+- **Signal Phrase Schema Migration (v2.0.0)**: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); `metadata.signals` removed from schema
+- Updated `skill-gen/references/skill-schema.md` to v2.0.0: Signal Phrase Rules, Opening Paragraph requirement, Progressive Disclosure Model
+- Updated `skill-gen/SKILL.md` to v3.0.0: new description format, updated template, checklist, Skill Check P1 items
+- Updated `skill-index/SKILL.md` to v3.0.0: index columns `Skill | Tags | Description | Updated`; legacy `metadata.signals` warning
+- Updated `agentfs-setup/references/design-spec.md` to v3.11: SKILL.md Frontmatter Schema, Signal Routing architecture
+- Updated `agentfs-setup/scripts/seed-agents-md.sh`: Routing Rules reference `description` field instead of `metadata.signals`
+- Migrated all 48 skills: converted `description` to signal phrases, removed `metadata.signals` from frontmatter
+- Regenerated `skills/index.md` with new `Skill | Tags | Description | Updated` format
+` comment anchor to `~/.agents/log.md` (was missing)
 - Strengthened Guardrail #5 insertion anchor in AGENTS.md: added "read current file head before inserting" to prevent stale-context log misordering
 
 ## 2026-08-10 16:15

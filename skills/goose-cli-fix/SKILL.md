@@ -1,10 +1,10 @@
 ---
 name: goose-cli-fix
-description: Fix the Goose CLI "Failed to parse projects.json file" warning by repairing malformed JSON in the project tracker file
+description: >
+  fix goose cli, goose projects.json, goose parse error
 metadata:
   version: "1.0.0"
   tags: [goose, cli, fix, json]
-  signals: ["fix goose cli", "goose projects.json", "goose parse error"]
 ---
 
 # Fix Goose CLI projects.json Parse Error

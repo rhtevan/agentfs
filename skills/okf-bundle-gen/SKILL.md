@@ -1,17 +1,10 @@
 ---
 name: okf-bundle-gen
 description: >
-  Generate an OKF-compliant knowledge bundle from the current chat session
-  context AND accumulated agent memories. Writes concept documents into
-  ~/.agents/knowledge/ as the bundle root. Scans all MEMORY.md and USER.md
-  files under ./.agents/ (default agent + named profiles) to extract
-  higher-order patterns into a dedicated agent-patterns/ sub-bundle.
-  Session-specific knowledge goes into per-session sub-bundles. Fully
-  compliant with Open Knowledge Format v0.1.
+  generate knowledge bundle, create knowledge bundle, okf generate
 metadata:
   version: "3.2.0"
   tags: [agentfs, okf, knowledge, generation, session]
-  signals: ["generate knowledge bundle", "create knowledge bundle", "okf generate"]
 ---
 
 # OKF Bundle Generation from Session Context

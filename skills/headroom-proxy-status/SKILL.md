@@ -1,11 +1,11 @@
 ---
 name: headroom-proxy-status
-description: "Check the health, configuration, and runtime status of the local Headroom context-optimization proxy service"
-platforms: [linux]
+description: >
+  headroom status, check headroom, headroom health
+platforms: ['linux']
 metadata:
   version: "1.1.0"
   tags: [headroom, proxy, status, health, systemd, compression, context-optimization]
-  signals: ["headroom status", "check headroom", "headroom health"]
   related_skills: [litellm-proxy-status, goose-litellm-provider]
 ---
 

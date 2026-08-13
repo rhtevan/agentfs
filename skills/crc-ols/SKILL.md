@@ -1,10 +1,10 @@
 ---
 name: crc-ols
-description: Install, configure, and manage OpenShift Lightspeed on OpenShift Local (CRC). Supports multiple LLM providers (Google Vertex AI Anthropic, OpenAI-compatible/MaaS, Azure OpenAI, WatsonX), adding/removing providers, switching defaults, and CRC-specific tunings.
+description: >
+  install lightspeed, configure lightspeed, openshift lightspeed, ols setup
 metadata:
   version: "2.1.0"
   tags: [openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, provider-management]
-  signals: ["install lightspeed", "configure lightspeed", "openshift lightspeed", "ols setup"]
 ---
 
 # OpenShift Lightspeed on CRC — Multi-Provider Management

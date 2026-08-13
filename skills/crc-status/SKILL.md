@@ -1,10 +1,10 @@
 ---
 name: crc-status
-description: Check OpenShift Local (CRC) cluster status and remove the default caution banner from the web console if present
+description: >
+  crc status, check crc, crc health
 metadata:
   version: "1.0.0"
   tags: [openshift, crc, status, console]
-  signals: ["crc status", "check crc", "crc health"]
 ---
 
 # OpenShift Local Status & Banner Cleanup

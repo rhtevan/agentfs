@@ -1,23 +1,21 @@
 ---
 name: skill-index
 description: >
-  Create an index.md at the skills root with entries linking to every
-  skill's SKILL.md file alongside a short description. Scans all immediate
-  subdirectories for SKILL.md files, extracts each skill's name and
-  description, and writes a Markdown index. Re-run to refresh the index
-  after adding or removing skills. Defaults to USER skills
-  (~/.agents/skills/); use PROJECT skills (./.agents/skills/) only when
-  the user explicitly signals project scope.
+  refresh skill index, index skills, regenerate skill index
 metadata:
-  version: "2.4.0"
+  version: "3.0.0"
   tags: [agentfs, skills, index, discovery]
-  signals: ["refresh skill index", "index skills", "regenerate skill index"]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Skill Index Generator
 
 Scan the skills root directory for all skills and produce an `index.md`
-that links to each skill's `SKILL.md` with a short description.
+that links to each skill's `SKILL.md` with its signal phrases and tags.
+Re-run to refresh the index after adding or removing skills. Defaults to
+USER skills (`~/.agents/skills/`); use PROJECT skills (`./.agents/skills/`)
+only when the user explicitly signals project scope.
 
 ## Skill Location Selection
 
@@ -35,7 +33,7 @@ scope.
 ## Parameters
 
 | Parameter    | Default                | Description                        |
-|--------------|------------------------|------------------------------------|
+|--------------|------------------------|------------------------------------||
 | `skills_root`| `~/.agents/skills/`    | Root directory containing skills   |
 
 If the user provides an explicit skills root path, use that instead of
@@ -59,63 +57,20 @@ the default. If the user signals project scope (see table above), use
    For each discovered `SKILL.md`:
 
    a. If the file begins with YAML frontmatter (`---` delimiters), read
-      the `name`, `description`, `metadata.tags`, and `metadata.signals`
-      fields from it.
+      the `name`, `description`, and `metadata.tags` fields from it.
       - **Multi-line YAML scalars:** When `description:` is followed by
         a folding/literal indicator (`>`, `|`, `>-`, `|-`), the actual
         text is on the subsequent indented lines. Collect all indented
-        continuation lines and join them into a single sentence.
+        continuation lines and join them into a single line.
         Shell `sed` one-liners **cannot** handle this — use Python or
         a multi-step approach.
+      - **Description field:** The `description` field contains signal
+        phrases (comma-separated trigger phrases), NOT prose. Extract
+        the full value as-is for the Description column in the index.
       - **Tags:** Extract the `tags:` field under `metadata:`. Tags are
         typically a YAML list in bracket notation, e.g.,
         `tags: [agentfs, memory, harvest]`. Parse the bracket contents
         and split on commas. Strip whitespace from each tag.
-      - **Signals:** Extract the `signals:` field **nested under
-        `metadata:`**. Signals are a YAML list of dash-prefixed items
-        under the `signals:` key inside the `metadata:` block.
-        **Do NOT use regex to capture the metadata block** — the
-        regex approach is fragile and has failed repeatedly in
-        practice (last-line bug, Python string escaping of `$` vs
-        end-of-string). Instead, use a **line-by-line state machine**:
-        ```python
-        lines = frontmatter.split('\n')
-        in_metadata = False
-        in_signals = False
-        sig_list = []
-        for line in lines:
-            stripped = line.strip()
-            if stripped == 'metadata:':
-                in_metadata = True
-                continue
-            if in_metadata and line and not line[0].isspace():
-                in_metadata = False
-                in_signals = False
-                continue
-            if not in_metadata:
-                continue
-            if re.match(r'\s+signals:\s*$', line):
-                in_signals = True
-                continue
-            elif in_signals and re.match(r'\s+-\s+', line):
-                sig = re.sub(r'^\s+-\s+', '', line).strip().strip('"\'')
-                sig_list.append(sig)
-            elif in_signals and stripped and not stripped.startswith('-'):
-                in_signals = False
-        ```
-        ```
-        This handles multi-line signals (dash-prefixed list items).
-        Also handle **inline bracket format** before entering the
-        state machine:
-        ```python
-        inline_match = re.match(r'\s+signals:\s*\[(.+)\]', line)
-        if inline_match:
-            for s in inline_match.group(1).split(','):
-                sig_list.append(s.strip().strip('"\''))
-        ```
-        Both formats are common in the wild:
-        - Inline: `signals: ["foo", "bar"]`
-        - Multi-line: `signals:\n    - "foo"\n    - "bar"`
       - **Table generation (blank-line bug):** When joining table lines
         with `\n`, do NOT embed trailing `\n` in any element of the
         lines list. A `\n` suffix on the header separator line produces
@@ -129,7 +84,6 @@ the default. If the user signals project scope (see table above), use
         non-rule paragraph line in the file. Skip lines starting with
         `#`, `|`, `---`, or `>`.
       - `tags` — empty (no tags available).
-      - `signals` — empty (no signals available).
 
 4. **Validate name-directory consistency**
    For each skill, verify that the `name` field from the YAML
@@ -148,16 +102,25 @@ the default. If the user signals project scope (see table above), use
      (Version is required per the canonical schema:
      [`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md))
 
-5. **Extract timestamp for each skill**
+5. **Check for legacy `metadata.signals` field**
+   If any SKILL.md still contains a `metadata.signals` field (removed
+   in schema v2.0.0), emit a warning:
+   `WARNING: legacy metadata.signals found — dir=[<dir>] — signals should be in description field`
+
+   This helps track migration progress. Do NOT extract or use the
+   legacy field — the Description column is populated solely from
+   the `description` frontmatter field.
+
+6. **Extract timestamp for each skill**
    Use the last-modified timestamp of each `SKILL.md` file
    (`stat --format='%Y' <file>` on Linux) and format it as
    `YYYY-MM-DD HH:MM`.
 
-6. **Sort skills**
+7. **Sort skills**
    Sort the collected entries in **reverse chronological order**
-   (newest first) by the date obtained in step 4.
+   (newest first) by the date obtained in step 6.
 
-7. **Generate `index.md`**
+8. **Generate `index.md`**
    Write `<skills_root>/index.md` with the following structure:
 
    ```markdown
@@ -165,9 +128,9 @@ the default. If the user signals project scope (see table above), use
 
    > <N> skills | Sorted by reverse chronological order (newest first).
 
-   | Skill | Tags | Signals | Updated |
-   |-------|------|---------|---------|
-   | [<name>](./<dir>/SKILL.md) | tag1, tag2, … | signal1, signal2, … | YYYY-MM-DD HH:MM |
+   | Skill | Tags | Description | Updated |
+   |-------|------|-------------|----------|
+   | [<name>](./<dir>/SKILL.md) | tag1, tag2, … | signal phrase 1, signal phrase 2, … | YYYY-MM-DD HH:MM |
    …
    ```
 
@@ -177,36 +140,40 @@ the default. If the user signals project scope (see table above), use
    - `<dir>` is the subdirectory name (relative link).
    - `Tags` is a comma-separated list of tags from `metadata.tags`
      (empty cell if no tags found).
-   - `Signals` is a comma-separated list of trigger phrases from
-     `metadata.signals` (empty cell if no signals found).
+   - `Description` is the signal phrases from the `description`
+     frontmatter field (empty cell if no description found).
    - `Updated` is the last-modified timestamp of the `SKILL.md` file.
 
-   **Note:** The Description column is intentionally omitted — skill
-   descriptions are already loaded into the agent's context via the
-   built-in skills listing. Including them here would duplicate tokens.
-
-8. **Report**
-   Print the number of skills indexed and the path to the generated file.
+9. **Report**
+   Print the number of skills indexed, the path to the generated file,
+   and any warnings emitted during processing.
 
 ## Verification
 
 - [ ] `index.md` exists at the skills root.
 - [ ] Every subdirectory containing a `SKILL.md` has a corresponding row.
 - [ ] Each link resolves to the correct `SKILL.md` file.
-- [ ] No Description column is present (descriptions are in built-in skills listing).
-- [ ] A `Tags` column is present showing each skill's metadata tags (comma-separated, or empty if none).
-- [ ] A `Signals` column is present showing each skill's metadata signals (comma-separated, or empty if none).
-- [ ] An `Updated` column is present showing each skill's last-modified timestamp (`YYYY-MM-DD HH:MM`).
+- [ ] A `Tags` column is present showing each skill's metadata tags
+      (comma-separated, or empty if none).
+- [ ] A `Description` column is present showing each skill's signal
+      phrases from the `description` frontmatter field.
+- [ ] An `Updated` column is present showing each skill's last-modified
+      timestamp (`YYYY-MM-DD HH:MM`).
 - [ ] Rows are sorted newest-first (reverse chronological order).
-- [ ] **Name consistency** — No warnings about `name` vs directory mismatches.
-      If warnings were emitted, they should be reported to the user.
-- [ ] **Version presence** — No warnings about missing `metadata.version`.
-      If warnings were emitted, they should be reported to the user.
+- [ ] **Name consistency** — No warnings about `name` vs directory
+      mismatches. If warnings were emitted, they should be reported
+      to the user.
+- [ ] **Version presence** — No warnings about missing
+      `metadata.version`. If warnings were emitted, they should be
+      reported to the user.
+- [ ] **No legacy signals** — No warnings about `metadata.signals`
+      still present in any SKILL.md.
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-13 12:35 | v3.0.0 — Breaking: index columns changed from `Skill \| Tags \| Signals \| Updated` to `Skill \| Tags \| Description \| Updated`; Description column populated from `description` frontmatter field (signal phrases) instead of `metadata.signals`; removed `metadata.signals` extraction code (state machine parser); added Step 5 to warn on legacy `metadata.signals` field; updated verification checklist |
 | 2026-08-06 20:58 | v2.4.0 — Fixed signals extraction bug: replaced fragile metadata block regex (`((?:[ \t]+.*(?:\n|$))*)`) with line-by-line state machine parser; regex silently failed due to Python `$` escaping causing zero-length match on `metadata:` block, resulting in empty Signals columns; new approach correctly handles signals at any position including last field before `---` |
 | 2026-08-04 23:52 | v2.3.0 — Added `metadata.version` presence validation; emits warning for skills missing `metadata.version`; references canonical schema (`skill-gen/references/skill-schema.md`) |
 | 2026-08-04 19:20 | v2.2 — Documented two implementation bugs: (1) metadata block regex must use `(?:\n|$)` not just `\n` to capture last-line signals before closing `---`; (2) table generation must not embed trailing `\n` in lines list elements to avoid blank-row between header and data |
@@ -216,7 +183,7 @@ the default. If the user signals project scope (see table above), use
 | 2026-07-14 14:56 | v1.8 — Added name-directory consistency validation (step 4): warns when `name` field doesn't match directory name per Agent Skills open standard (agentskills.io/specification). Added verification check. Fixed step numbering. |
 | 2026-07-13 13:30 | v1.7 — Added Tags column to generated index; extract `metadata.tags` from YAML frontmatter; supports tag-based skill discovery for Guardrail #9 fallback routing |
 | 2026-07-08 22:42 | v1.6 — Clarified multi-line YAML scalar handling (description: > requires collecting indented continuation lines; sed cannot do this); improved fallback to skip table/rule/blockquote lines |
-| 2026-07-01 00:07 | v1.5 — Generated index now shows total skill count in summary line (`> N skills | Sorted by…`) |
+| 2026-07-01 00:07 | v1.5 — Generated index now shows total skill count in summary line (`> N skills \| Sorted by…`) |
 | 2026-06-30 23:36 | v1.4 — Changelog table uses `Updated` header and `YYYY-MM-DD HH:MM` timestamps, aligned with guardrail §3 |
 | 2026-06-30 23:31 | v1.3 — Renamed column `Added` → `Updated`; timestamp precision `YYYY-MM-DD HH:MM` |
 | 2026-06-30 23:16 | v1.2 — Renamed `Date` column to `Added`; added `> Sorted by reverse chronological order` header to generated index; aligns with Index Currency guardrail (AGENTS.md §6) |

@@ -1,15 +1,10 @@
 ---
 name: agentfs-profile
 description: >
-  Create named agent profiles under .agents/profiles/ in PROJECT mode.
-  Each profile gets its own SOUL.md (identity), memories/USER.md (user model),
-  and memories/MEMORY.md (project experiences). Requires agentfs-setup to
-  have been run in PROJECT mode first. Skills remain shared across all
-  agents at the project level.
+  create profile, new agent profile, add agent
 metadata:
   version: "1.8.0"
   tags: [agentfs, profiles, multi-agent, identity]
-  signals: ["create profile", "add agent profile", "new agent"]
 ---
 
 # Agent FS Profile

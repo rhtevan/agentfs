@@ -1,16 +1,10 @@
 ---
 name: crc-aap-demo-config
 description: >
-  Clone the aap-demo repo from GitHub and configure it for safe deployment on
-  an existing OpenShift Local (CRC) cluster. Runs pre-flight checks against
-  local system and CRC settings, then applies protective configuration to
-  ~/.aap-demo/config to prevent aap-demo from silently overwriting CRC preset
-  or resource allocations. Installs the aap-demo CLI and prepares the
-  pull secret.
+  configure aap demo, setup aap demo, aap demo
 metadata:
   version: "1.0.0"
   tags: [openshift, crc, aap-demo, configuration, safety, preflight]
-  signals: ["aap demo", "configure aap demo", "setup aap demo"]
 ---
 
 # CRC AAP Demo Configuration

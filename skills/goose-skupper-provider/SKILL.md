@@ -1,26 +1,17 @@
 ---
 name: goose-skupper-provider
 description: >
-  Configure Goose to use a Skupper VAN model endpoint as a custom
-  provider. Auto-routes model alias to correct local port (10000
-  for rhtevan-work, 9000 for rhel-ai). All operations scripted.
+  setup goose skupper provider, remove skupper provider,
+  teardown skupper provider, goose skupper provider
 argument-hint: "setup goose skupper provider for g8b-128k | recreate skupper provider"
 compatibility: "goose CLI or Desktop, skupper-model-provider running"
-writes-files: true
 metadata:
   author: agentfs
   version: "4.0.0"
   tags: [goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work]
-  signals:
-    - "goose skupper provider"
-    - "setup skupper provider"
-    - "setup goose skupper provider for"
-    - "remove skupper provider"
-    - "teardown skupper provider"
-    - "recreate skupper provider"
-    - "reset skupper provider"
 user-invocable: true
 disable-model-invocation: false
+writes-files: true
 ---
 
 # Goose Skupper Provider

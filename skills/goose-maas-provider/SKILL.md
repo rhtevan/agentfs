@@ -1,11 +1,11 @@
 ---
 name: goose-maas-provider
-description: "Configure Goose to use a remote MaaS (Model as a Service) LiteLLM instance, with API key setup, reasoning model fixes, and troubleshooting"
-platforms: [linux]
+description: >
+  configure goose maas, goose maas provider, goose remote provider
+platforms: ['linux']
 metadata:
   version: "1.4.0"
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
-  signals: ["goose maas", "configure goose maas", "goose remote provider"]
   related_skills: [goose-litellm-provider, litellm-proxy-status]
 ---
 

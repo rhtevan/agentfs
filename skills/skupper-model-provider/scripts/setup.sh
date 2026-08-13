@@ -296,7 +296,9 @@ else
   TLS_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhel-ai-public/tls.crt')
   TLS_KEY=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhel-ai-public/tls.key')
 
-  cat > /tmp/link-hub-rhel-ai.yaml << EOF
+  LINK_TMPFILE=$(mktemp /tmp/link-hub-rhel-ai.XXXXXX.yaml)
+  chmod 600 "$LINK_TMPFILE"
+  cat > "$LINK_TMPFILE" << EOF
 ---
 apiVersion: v1
 data:
@@ -321,8 +323,8 @@ spec:
   tlsCredentials: link-hub-rhel-ai
 EOF
 
-  skupper --platform podman system apply -n "${NAMESPACE}" -f /tmp/link-hub-rhel-ai.yaml
-  rm -f /tmp/link-hub-rhel-ai.yaml
+  skupper --platform podman system apply -n "${NAMESPACE}" -f "$LINK_TMPFILE"
+  rm -f "$LINK_TMPFILE"
   echo "  ✅ Link to rhel-ai created"
 fi
 
@@ -335,7 +337,9 @@ else
   TLS_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhtevan-work/tls.crt')
   TLS_KEY=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhtevan-work/tls.key')
 
-  cat > /tmp/link-hub-rhtevan-work.yaml << EOF
+  LINK_TMPFILE=$(mktemp /tmp/link-hub-rhtevan-work.XXXXXX.yaml)
+  chmod 600 "$LINK_TMPFILE"
+  cat > "$LINK_TMPFILE" << EOF
 ---
 apiVersion: v1
 data:
@@ -360,8 +364,8 @@ spec:
   tlsCredentials: link-hub-rhtevan-work
 EOF
 
-  skupper --platform podman system apply -n "${NAMESPACE}" -f /tmp/link-hub-rhtevan-work.yaml
-  rm -f /tmp/link-hub-rhtevan-work.yaml
+  skupper --platform podman system apply -n "${NAMESPACE}" -f "$LINK_TMPFILE"
+  rm -f "$LINK_TMPFILE"
   echo "  ✅ Link to rhtevan-work created"
 fi
 

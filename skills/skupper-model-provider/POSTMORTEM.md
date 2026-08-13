@@ -263,13 +263,17 @@ non-default RouterAccess resources. Even for the default RouterAccess, the
 generated link uses `host: 127.0.0.1` which must be manually fixed. Building
 manually is more reliable and scriptable.
 
-### 4. Controllers Left Running on `down.sh all`
+### 4. Controllers ~~Left Running~~ Now Stopped on `down.sh all`
 
-**Decision:** `down.sh all` stops routers but NOT controllers.
+**Decision (v6.0.0):** `down.sh all` stops routers but NOT controllers.
 
 **Rationale:** Controllers manage cert rotation and config reconciliation.
 Stopping them risks cert expiry. They are lightweight (~25MB memory) and
 should run continuously.
+
+> **Superseded in v6.1.1:** `down.sh all` now stops controllers on all
+> 3 hosts. No reason to keep controllers alive when all routers are down.
+> Controllers restart cleanly via `up.sh`.
 
 ## Metrics
 

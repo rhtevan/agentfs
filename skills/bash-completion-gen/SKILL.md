@@ -1,18 +1,13 @@
 ---
 name: bash-completion-gen
-description: >-
-  Generate a bash completion script for any CLI command by systematically
-  discovering its subcommands and options. Uses a multi-step process:
-  check for built-in completion generators, recursively walk the subcommand
-  tree via --help/-h, build the completion script, then validate every
-  subcommand and option against actual command output.
+description: >
+  generate bash completion, bash completion, tab completion
 argument-hint: "<command-name> — the CLI command to generate bash completion for"
 compatibility: "Any agent with shell access on a system with bash-completion installed"
 metadata:
   author: agentfs
   version: "1.0.0"
   tags: [bash, completion, cli, shell, automation]
-  signals: ["bash completion", "generate completion", "tab completion"]
 user-invocable: true
 disable-model-invocation: false
 ---

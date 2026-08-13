@@ -1,66 +1,20 @@
 ---
 name: skupper-linux-two-site
 description: >
-  Set up a two-site Skupper V2 network on the Linux/systemd platform with
-  native skrouterd, link the sites, and verify connectivity with a netcat
-  (nc) echo test. Use when a user wants to create a Skupper VAN between
-  two Linux hosts using systemd (not Podman/Docker), or when testing
-  inter-site connectivity on bare-metal or VM hosts.
-argument-hint: >
-  Usage: skupper-linux-two-site --local-site <name> --remote-site <name>
-    --remote-host <ssh-host> --namespace <ns>
-    [--firewall-zone <zone>] [--test-port <port>] [--routing-key <key>]
-  Example: skupper-linux-two-site --local-site my-local
-    --remote-site my-remote --remote-host my-remote-host
-    --namespace playground
-parameters:
-  LOCAL_SITE_NAME:
-    description: Name for the edge Skupper site on localhost
-    required: true
-    binding-cues: ["local site", "this host", "edge site"]
-    example: my-local
-  REMOTE_SITE_NAME:
-    description: Name for the interior (hub) Skupper site on the remote host
-    required: true
-    binding-cues: ["remote site", "hub site", "interior site", "other host"]
-    example: my-remote
-  REMOTE_SSH_HOST:
-    description: SSH target for the remote host (alias or user@host)
-    required: true
-    binding-cues: ["ssh host", "remote host", "connect to", "ssh alias"]
-    example: my-remote-host
-  NAMESPACE:
-    description: Skupper namespace (isolates sites on the same host)
-    required: true
-    binding-cues: ["namespace", "ns"]
-    example: playground
-  FIREWALL_ZONE:
-    description: Firewall zone on the interior site (remote host, auto-detected if omitted)
-    required: false
-    default: auto-detect via 'firewall-cmd --get-active-zones'
-    binding-cues: ["firewall zone", "zone"]
-    example: FedoraWorkstation
-  TEST_PORT:
-    description: Port number for the nc echo test
-    required: false
-    default: "9090"
-    binding-cues: ["test port", "port", "nc port"]
-    example: "9090"
-  TEST_ROUTING_KEY:
-    description: Skupper routing key for the nc test service
-    required: false
-    default: nc-test
-    binding-cues: ["routing key", "service key"]
-    example: nc-test
-compatibility: >
-  Requires: skrouterd (native) on both hosts, skupper CLI 2.x on both
-  hosts, systemd --user support, SSH access to remote host, firewall-cmd
-  (if firewall is active on interior site)
+  setup skupper linux, skupper two site, skupper systemd
+argument-hint: "Usage: skupper-linux-two-site --local-site <name> --remote-site <name>
+  --remote-host <ssh-host> --namespace <ns>
+  [--firewall-zone <zone>] [--test-port <port>] [--routing-key <key>]
+Example: skupper-linux-two-site --local-site my-local
+  --remote-site my-remote --remote-host my-remote-host
+  --namespace playground
+"
+compatibility: "Requires: skrouterd (native) on both hosts, skupper CLI 2.x on both hosts, systemd --user support, SSH access to remote host, firewall-cmd (if firewall is active on interior site)
+"
 metadata:
   author: agentfs
   version: "2.1.0"
   tags: [skupper, linux, systemd, two-site, van, networking, skrouterd]
-  signals: ["skupper linux", "skupper two site", "skupper systemd"]
 user-invocable: true
 disable-model-invocation: false
 ---

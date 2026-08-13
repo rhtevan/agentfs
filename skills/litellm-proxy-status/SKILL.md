@@ -1,11 +1,11 @@
 ---
 name: litellm-proxy-status
-description: "Check the health, configuration, and runtime status of the local LiteLLM proxy service"
-platforms: [linux]
+description: >
+  litellm status, check litellm, litellm health
+platforms: ['linux']
 metadata:
   version: "1.0.0"
   tags: [litellm, proxy, status, health, systemd]
-  signals: ["litellm status", "check litellm", "litellm health"]
   related_skills: [litellm-vertex-ai-proxy, hermes-litellm-provider]
 ---
 

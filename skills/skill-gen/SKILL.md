@@ -1,34 +1,34 @@
 ---
 name: skill-gen
 description: >
-  Create new skills, modify and improve existing skills. Operates in two
-  modes: simple (quick scaffold with AgentFS conventions) and advanced
-  (full eval/iterate/optimize loop using upstream Anthropic skill-creator).
-  Use when users want to create a skill from scratch, turn a workflow into
-  a reusable skill, edit or optimize an existing skill, or run evals to
-  test a skill. Default mode is simple; use advanced when the user says
-  "thorough", "with evals", "production quality", or "advanced".
+  create skill, new skill, edit skill, check skill, skill check,
+  audit skill, advanced skill
 argument-hint: "Describe what the skill should do. Add 'advanced' for full eval loop."
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "2.1.1"
+  version: "3.0.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
-  signals: ["create skill", "new skill", "make skill", "edit skill", "skill check", "check skill", "scan skill", "audit skill", "verify skill quality"]
 user-invocable: true
 disable-model-invocation: false
 ---
 
 # Skill Gen
 
-Create new skills or improve existing ones with built-in AgentFS conventions.
+Create new skills, modify and improve existing ones with built-in AgentFS
+conventions. Operates in three modes: **simple** (quick scaffold),
+**advanced** (full eval/iterate/optimize loop using upstream Anthropic
+skill-creator), and **skill check** (audit existing skills against five
+quality principles). Default mode is simple; use advanced when requesting
+"thorough", "with evals", or "production quality".
 
-This is a **proxy skill** that operates in two modes:
+This is a **proxy skill** that operates in three modes:
 
 | Mode | When | What Happens |
 |------|------|-------------|
 | **Simple** (default) | Quick utility skills, SOPs, small workflows | Scaffold + write + AgentFS post-creation checklist |
 | **Advanced** | "advanced", "thorough", "with evals", "production quality" | Full upstream eval/iterate/optimize loop + AgentFS checklist |
+| **Skill Check** | "check skill", "skill check", "audit skill" | Audit existing skill against five quality principles |
 
 ## Mode Selection
 
@@ -158,27 +158,23 @@ Generate a SKILL.md with this exact structure:
 ---
 name: <skill-name>
 description: >
-  <Concise description — WHAT it does and WHEN to use it. Keep short;
-  this is loaded into every session via the built-in skills listing.
-  Avoid repeating information available in the SKILL.md body.>
+  <signal phrase 1>, <signal phrase 2>, <signal phrase 3>,
+  <signal phrase 4>, <signal phrase 5>
 argument-hint: "<usage hint>"
 compatibility: "<requirements, if any>"
 metadata:
   author: agentfs
   version: "1.0.0"
   tags: [<relevant-tags>]
-  signals: ["<trigger phrase 1>", "<trigger phrase 2>"]
-    - "skill check"
-    - "scan skill"
-    - "audit skill"
-    - "check skill quality"
 user-invocable: true
 disable-model-invocation: false
 ---
 
 # <Title>
 
-<Overview paragraph — what this skill does and why>
+<Opening paragraph — human-readable explanation of what this skill does,
+why it exists, and when to use it. This is the hydrated context that
+the signal-phrase description cannot convey.>
 
 ## Prerequisites
 
@@ -208,12 +204,39 @@ disable-model-invocation: false
 | YYYY-MM-DD HH:MM | v1.0.0 — Initial skill |
 ```
 
-**Writing guidance:**
+**Description as signal phrases:**
+
+The `description` field contains **signal phrases** — the trigger
+phrases the LLM uses to match user intent to this skill. It is
+loaded into every session via the built-in skills listing, making
+it the only metadata always in the agent's context.
 
 - **Follow the canonical schema** — see
   [`references/skill-schema.md`](./references/skill-schema.md) for
-  required/optional fields, version format (quoted 3-part semver in
-  `metadata.version`), and changelog rules.
+  the full Signal Phrase Rules, required/optional fields, version
+  format, and changelog rules.
+- **Command pattern** (`verb + noun(s)`) — for actions that change
+  state: `setup agentfs`, `create skill`, `start crc`
+- **Query pattern** (`noun(s)`) — for retrieval/status/inspection:
+  `crc status`, `litellm health`, `skupper model topology`
+- **Three quality principles** — each phrase must be **concise**
+  (2-4 words), **non-redundant** (no two phrases matching the same
+  intent), and the set must be **complete** (every functional mode
+  covered)
+- **Smell test** — if 15+ phrases are needed, the skill may carry
+  too much responsibility; consider splitting per Separation of
+  Concerns
+
+**Opening paragraph:**
+
+Since the `description` field contains signal phrases (not prose),
+the SKILL.md body MUST include a **hydrated opening paragraph**
+immediately after the `# Title` heading. This paragraph provides
+the rich human-readable context: what the skill does, why it exists,
+and when to use it.
+
+**Writing guidance:**
+
 - **Explain the why** — don't just say MUST/NEVER; explain reasoning
   so the agent can generalize beyond the literal instructions
 - **Imperative form** — "Run the script" not "You should run the script"
@@ -229,8 +252,9 @@ disable-model-invocation: false
   malformed files from stale context or hallucinated schemas.
 - **Keep SKILL.md under 500 lines** — if longer, add `references/`
   directory with supporting docs and clear pointers from SKILL.md
-- **Progressive disclosure** — metadata (~100 words) always in context;
-  SKILL.md body loaded on trigger; bundled resources loaded as needed
+- **Progressive disclosure** — signal phrases always in context;
+  opening paragraph + body loaded on trigger; bundled resources
+  loaded as needed
 
 ### Step 5 — Write Scripts (if applicable)
 
@@ -257,22 +281,24 @@ set -euo pipefail
 - [ ] **Scope verification** — skill is in the correct directory
       (USER `~/.agents/skills/` or PROJECT `./.agents/skills/`)
 - [ ] **Frontmatter validation** — YAML frontmatter includes:
-      `name`, `description`, `metadata.version` (quoted 3-part semver,
-      e.g., `version: "1.0.0"`), `metadata.tags` (bracket notation,
-      e.g., `tags: [domain, function, artifact]`), `metadata.signals`
-      (list of natural-language trigger phrases, e.g.,
-      `signals: ["create skill", "new skill"]`), `user-invocable`.
+      `name`, `description` (signal phrases), `metadata.version`
+      (quoted 3-part semver, e.g., `version: "1.0.0"`),
+      `metadata.tags` (bracket notation, e.g.,
+      `tags: [domain, function, artifact]`), `user-invocable`.
       A skill without tags is invisible to tag-based discovery
-      (Guardrail #5, Index Currency). A skill without signals is
-      invisible to signal-based routing via `skills/index.md`.
+      (Guardrail #5, Index Currency).
       See [`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md)
       for the full canonical schema.
-- [ ] **Signal quality** — Signals should capture how users
-      naturally express intent for this skill. If the skill name
-      and description are self-explanatory, signals can mirror the
-      key phrases. If the mapping is non-obvious (e.g., "sync
-      agentfs" → `agentfs-setup`), signals are critical for
-      discoverability.
+- [ ] **Signal phrase quality** — The `description` field contains
+      signal phrases following Command (`verb+noun(s)`) or Query
+      (`noun(s)`) patterns. Verify the three principles:
+      (1) **Concise** — each phrase is 2-4 words;
+      (2) **No redundant** — no two phrases matching the same intent;
+      (3) **Complete** — every functional mode has at least one phrase.
+      Smell test: 15+ phrases suggests the skill should be split.
+- [ ] **Opening paragraph** — SKILL.md body has a hydrated
+      human-readable paragraph immediately after the `# Title`
+      heading, explaining what the skill does, why, and when to use it.
 - [ ] **Name consistency** — The `name` field in the YAML frontmatter
       MUST exactly match the skill's parent directory name. This is
       required by the Agent Skills open standard
@@ -426,6 +452,13 @@ like or provides a manual alternative, it stays inline.
 - [ ] **Gotchas/Known Issues** section captures environment-specific
       anomalies, historical corrections, and non-obvious behaviors
       discovered during development or usage
+- [ ] **Signal phrase quality** — `description` field contains signal
+      phrases (not prose). Each phrase follows Command (`verb+noun(s)`)
+      or Query (`noun(s)`) pattern. Three principles met: concise,
+      non-redundant, complete (all modes covered). No `metadata.signals`
+      field present (removed in schema v2.0.0)
+- [ ] **Opening paragraph** — SKILL.md body has a hydrated paragraph
+      after `# Title` explaining what, why, when
 
 #### Principle 2 — Autonomous & Currency
 
@@ -563,6 +596,7 @@ like or provides a manual alternative, it stays inline.
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-13 12:30 | v3.0.0 — Breaking: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); removed `metadata.signals` from schema; added Signal Phrase Rules with three quality principles (Concise, No redundant, Complete) and smell test; added Opening Paragraph requirement; updated SKILL.md template, Post-Creation Checklist (Step 6), and Skill Check P1; updated `references/skill-schema.md` to v2.0.0 |
 | 2026-08-10 16:11 | v2.1.1 — Strengthened Gotchas from suggestion ("Consider") to requirement ("Include"); added Gotchas section to SKILL.md template; added P1 checklist item for Gotchas/Known Issues section |
 | 2026-08-10 15:58 | v2.1.0 — P1: added inline code boundary guidance — reference code (templates, examples, one-liners, manual fallbacks) belongs in SKILL.md; execution code (multi-step, verification, discovery, conditionals) belongs in scripts/; added checklist item for not flagging reference code as 🟡 |
 | 2026-08-10 12:01 | v2.0.0 — Added Principle 5 (Security & Trust Boundary) to Skill Check: scripts scope, secrets handling, network calls, prompt injection; "Four Principles" → "Five Principles"; added "Real Expertise" anti-pattern guidance and Gotchas pattern to Step 1 (Capture Intent); added "loose steps → instructions, fragile steps → code" aphorism to Agent-as-Orchestrator |
