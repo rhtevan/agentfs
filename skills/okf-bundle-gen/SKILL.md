@@ -444,9 +444,9 @@ Record the details of what was generated/merged inside the session:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/<session-name>/log.md \
-  "* **Creation**: Generated N concept docs from session context.
-* **Update**: Updated M existing concepts with new information.
-* **Update**: Regenerated index.md for affected directories."
+  "- **Creation**: Generated N concept docs from session context.
+- **Update**: Updated M existing concepts with new information.
+- **Update**: Regenerated index.md for affected directories."
 ```
 
 Replace `N` and `M` with actual counts. Add detail as appropriate:
@@ -462,8 +462,8 @@ Record a summary-level entry at the bundle root:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/log.md \
-  "* **Creation**: Added session sub-bundle \`<session-name>/\` with N concept(s).
-* **Update**: Updated root index.md."
+  "- **Creation**: Added session sub-bundle \`<session-name>/\` with N concept(s).
+- **Update**: Updated root index.md."
 ```
 
 Or, if merging into an existing session sub-bundle:
@@ -471,8 +471,8 @@ Or, if merging into an existing session sub-bundle:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/log.md \
-  "* **Update**: Merged new knowledge into \`<session-name>/\` — N created, M updated.
-* **Update**: Updated root index.md."
+  "- **Update**: Merged new knowledge into \`<session-name>/\` — N created, M updated.
+- **Update**: Updated root index.md."
 ```
 
 Both entries are automatically prepended under today's date heading in
@@ -492,8 +492,8 @@ skills, knowledge, and other USER-scope resources.
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
-  "* **Creation**: Generated knowledge bundle \`knowledge/<session-name>/\` with N concept(s).
-* **Update**: Updated \`knowledge/index.md\`."
+  "- **Creation**: Generated knowledge bundle \`knowledge/<session-name>/\` with N concept(s).
+- **Update**: Updated \`knowledge/index.md\`."
 ```
 
 Or, if merging into an existing session sub-bundle:
@@ -501,8 +501,8 @@ Or, if merging into an existing session sub-bundle:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
-  "* **Update**: Merged new knowledge into \`knowledge/<session-name>/\` — N created, M updated.
-* **Update**: Updated \`knowledge/index.md\`."
+  "- **Update**: Merged new knowledge into \`knowledge/<session-name>/\` — N created, M updated.
+- **Update**: Updated \`knowledge/index.md\`."
 ```
 
 ### Phase 8 — Verify conformance

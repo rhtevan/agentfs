@@ -5,6 +5,9 @@
 #   bash up.sh HOST          — start only HOST + local (if not already running)
 #   bash up.sh all           — same as no args: start everything
 # Model containers are managed separately via hosted-model-ctl.
+#
+# Partial availability: unreachable hosts are skipped with warnings.
+# Exit code: 0 = full or partial success; 1 = all failed or setup missing.
 
 source "$(dirname "$0")/common.sh"
 
@@ -39,8 +42,6 @@ fi
 [[ "$SCOPED" == "true" ]] && echo "  Mode:  scoped"
 echo
 
-FAILED=0
-
 # ── Phase 1: Check prerequisites ──────────────────────────────
 echo "Phase 1: Prerequisites"
 
@@ -52,18 +53,43 @@ if [[ ! -d "${LOCAL_NS_DIR}/runtime/resources" ]]; then
 fi
 echo "  ✅ Setup detected"
 
+# Collect reachable vs unreachable hosts
+REACHABLE_HOSTS=()
+SKIPPED_HOSTS=()
+SKIPPED_REASONS=()
+
 for host in "${HOSTS[@]}"; do
-  if ! host_reachable "$host"; then
-    echo "  ❌ $host unreachable"
-    FAILED=1
-  else
+  if host_reachable "$host"; then
     echo "  ✅ $host reachable"
+    REACHABLE_HOSTS+=("$host")
+  else
+    echo "  ⚠️  $host unreachable — will be skipped"
+    SKIPPED_HOSTS+=("$host")
+    SKIPPED_REASONS+=("unreachable")
   fi
 done
 
-if [[ "$FAILED" -ne 0 ]]; then
+# Check CRC reachability early
+CRC_SKIPPED=false
+if [[ "$CRC_TARGET" == "true" ]]; then
+  if crc_reachable; then
+    echo "  ✅ CRC reachable"
+  else
+    echo "  ⚠️  CRC context (${CRC_OC_CONTEXT}) not authenticated — will be skipped"
+    CRC_SKIPPED=true
+  fi
+fi
+
+# If ALL remote hosts are unreachable and CRC is also skipped (or not targeted),
+# there's nothing to start
+if [[ ${#REACHABLE_HOSTS[@]} -eq 0 && "$CRC_SKIPPED" != "false" ]] && [[ "$CRC_TARGET" == "true" ]]; then
   echo
-  echo "❌ Prerequisites failed. Fix connectivity before proceeding."
+  echo "❌ All targets unreachable. Nothing to start."
+  exit 1
+fi
+if [[ ${#REACHABLE_HOSTS[@]} -eq 0 && ${#HOSTS[@]} -gt 0 && "$CRC_TARGET" != "true" ]]; then
+  echo
+  echo "❌ All targets unreachable. Nothing to start."
   exit 1
 fi
 echo
@@ -81,8 +107,8 @@ else
   echo "  ✅ Local controller started"
 fi
 
-# Remote controllers (only scoped hosts)
-for host in "${HOSTS[@]}"; do
+# Remote controllers (only reachable hosts)
+for host in "${REACHABLE_HOSTS[@]}"; do
   REMOTE_CTL=$(check_controller_status "$host")
   if [[ "$REMOTE_CTL" == *"Up"* ]]; then
     echo "  ✅ $host controller running"
@@ -97,11 +123,11 @@ echo
 # ── Phase 3: Start routers ────────────────────────────────────
 echo "Phase 3: Start routers"
 
-# Remote routers (only scoped hosts)
+# Remote routers (only reachable hosts)
 # All hosts use the same systemd start path. The tmpfs workaround
 # (rhel-ai) is applied at setup time only — the container retains
 # its flags across stop/start cycles.
-for host in "${HOSTS[@]}"; do
+for host in "${REACHABLE_HOSTS[@]}"; do
   REMOTE_ROUTER=$(check_router_status "$host")
   if [[ "$REMOTE_ROUTER" == *"Up"* ]]; then
     echo "  ✅ $host router running"
@@ -126,8 +152,8 @@ echo
 # ── Phase 4: Verify VAN connectivity ──────────────────────────
 echo "Phase 4: Verify VAN"
 
-# Verify scoped host ports are listening
-for host in "${HOSTS[@]}"; do
+# Verify reachable host ports are listening
+for host in "${REACHABLE_HOSTS[@]}"; do
   IFS='|' read -r _ _ _ MODEL_PORT _ <<< "${SITE_PROFILES[$host]}"
   LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${MODEL_PORT} " || true)
   LISTENING=${LISTENING:-0}
@@ -136,6 +162,12 @@ for host in "${HOSTS[@]}"; do
   else
     echo "  ⚠️  localhost:${MODEL_PORT} not listening yet ($host route)"
   fi
+done
+
+# Report skipped host ports
+for host in "${SKIPPED_HOSTS[@]}"; do
+  IFS='|' read -r _ _ _ MODEL_PORT _ <<< "${SITE_PROFILES[$host]}"
+  echo "  ⏭️  localhost:${MODEL_PORT} skipped ($host unreachable)"
 done
 
 # In scoped mode, verify other routes are unaffected
@@ -163,10 +195,8 @@ echo
 if [[ "$CRC_TARGET" == "true" ]]; then
   echo "Phase 5: CRC site"
 
-  if ! crc_reachable; then
-    echo "  ❌ CRC context (${CRC_OC_CONTEXT}) not authenticated"
-    echo "     Run: oc login -u kubeadmin -p kubeadmin https://api.crc.testing:6443"
-    FAILED=1
+  if [[ "$CRC_SKIPPED" == "true" ]]; then
+    echo "  ⏭️  CRC skipped (not authenticated)"
   else
     # Verify Site is Ready
     local_site_status=$(crc_site_status)
@@ -175,7 +205,6 @@ if [[ "$CRC_TARGET" == "true" ]]; then
     else
       echo "  ❌ Site ${CRC_SITE_NAME}: ${local_site_status}"
       echo "     Run: bash setup.sh to create the CRC site"
-      FAILED=1
     fi
 
     # Recreate Link if missing
@@ -238,5 +267,31 @@ LINKEOF
   echo
 fi
 
-echo "✅ Skupper VAN infrastructure UP."
+# ── Summary ────────────────────────────────────────────────────
+echo "=== Skupper VAN — START SUMMARY ==="
+
+# Collect UP sites
+UP_SITES=("localhost")
+for host in "${REACHABLE_HOSTS[@]}"; do
+  UP_SITES+=("$host")
+done
+[[ "$CRC_TARGET" == "true" && "$CRC_SKIPPED" != "true" ]] && UP_SITES+=("crc")
+
+# Collect SKIPPED sites
+SKIPPED_SUMMARY=()
+for i in "${!SKIPPED_HOSTS[@]}"; do
+  SKIPPED_SUMMARY+=("${SKIPPED_HOSTS[$i]} (${SKIPPED_REASONS[$i]})")
+done
+[[ "$CRC_TARGET" == "true" && "$CRC_SKIPPED" == "true" ]] && SKIPPED_SUMMARY+=("crc (not authenticated)")
+
+echo "  ✅ Up:      ${UP_SITES[*]}"
+if [[ ${#SKIPPED_SUMMARY[@]} -gt 0 ]]; then
+  echo "  ⏭️  Skipped: ${SKIPPED_SUMMARY[*]}"
+  echo
+  echo "⚠️  PARTIAL UP — Model containers should be started only on reachable provider hosts."
+  echo "   Reachable providers: $(printf '%s ' "${REACHABLE_HOSTS[@]}")"
+else
+  echo
+  echo "✅ FULL UP — All targeted sites are running."
+fi
 echo "   Model containers are managed via hosted-model-ctl."

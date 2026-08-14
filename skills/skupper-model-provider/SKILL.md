@@ -95,6 +95,16 @@ lifecycle is handled by `hosted-model-ctl` — the agent semantically
 triggers that skill (loads and follows its instructions), NOT by
 cross-referencing or invoking its scripts directly.
 
+### Site Roles
+
+| Role | Sites | What "start" includes |
+|------|-------|----------------------|
+| **Model Provider** | rhel-ai, rhtevan-work | VAN infra (controller + router) **+** model containers (via `hosted-model-ctl`) |
+| **Model Consumer** | localhost, CRC | VAN infra only (controller + router + listeners/links) |
+
+The agent MUST understand this distinction: `hosted-model-ctl` is only
+triggered for **Provider** sites that are up and reachable.
+
 ### Signal Routing Rules
 
 | Signal pattern | Skupper action | hosted-model-ctl delegation |
@@ -121,17 +131,37 @@ When any phase fails, the agent MUST:
 2. **STOP** — do not proceed to the next phase
 3. **WAIT** for user instructions before continuing
 
+### Partial Availability
+
+`up.sh` and `down.sh` handle unreachable hosts gracefully — skipping
+them with warnings instead of aborting entirely. The agent MUST follow
+this protocol after the scripts complete:
+
+1. Parse `up.sh` / `down.sh` output for `✅ Up` vs `⏭️ Skipped` hosts
+2. Classify skipped hosts by role (Provider vs Consumer)
+3. For each **UP Provider** host:
+   - Trigger `hosted-model-ctl` → start/stop default or requested model
+4. For each **SKIPPED Provider** host:
+   - Report: `⏭️ <host> skipped (<reason>) — models not started/stopped`
+5. For **SKIPPED Consumer** hosts:
+   - Report: `⏭️ <host> skipped (<reason>) — no model action needed`
+6. **Do NOT ask** "proceed with available hosts?" — partial success is
+   the default. The user said "start" or "stop", so act on what's
+   available.
+7. Present a **combined status report** at the end (VAN + model status
+   for all targeted sites, showing up/skipped/down for each).
+
 ### Startup Order
 
-1. Skupper controllers (systemd)
-2. Skupper routers (systemd)
-3. Model containers (via `hosted-model-ctl`)
+1. Skupper controllers (systemd) — Consumer + Provider sites
+2. Skupper routers (systemd) — Consumer + Provider sites
+3. Model containers (via `hosted-model-ctl`) — **Provider sites only**
 
 ### Shutdown Order (reverse)
 
-1. Model containers (via `hosted-model-ctl`)
-2. Skupper routers (systemd)
-3. Skupper controllers (systemd)
+1. Model containers (via `hosted-model-ctl`) — **Provider sites only**
+2. Skupper routers (systemd) — Consumer + Provider sites
+3. Skupper controllers (systemd) — Consumer + Provider sites
 
 ## Operations
 
@@ -236,7 +266,7 @@ remote host reachable, remote container running.
 | ID | Capability | Verifiable By |
 |:--:|-----------|---------------|
 | S1 | One-time VAN setup across 3 hosts | `setup.sh` → all sites Ready |
-| S2a | Start ALL VAN infrastructure | `up.sh` → all 3 sites up, both listeners active |
+| S2a | Start ALL VAN infrastructure | `up.sh` → all 4 sites up, both listeners active, CRC link connected |
 | S2b | Start scoped VAN (one host) | `up.sh HOST` → HOST up, its listener active, other routes unaffected |
 | S3a | Stop ALL VAN infrastructure | `down.sh` → all sites down, local stopped, no listeners |
 | S3b | Stop scoped VAN (one host, others active) | `down.sh HOST` → HOST down, its listener stopped, other routes **preserved** |
@@ -247,6 +277,9 @@ remote host reachable, remote container running.
 | S7a | Auto-restart on crash (normal hosts) | After VAN up → kill router on rhtevan-work → auto-restart within 10s |
 | S7b | Auto-restart on crash (tmpfs-workaround hosts) | After VAN up → kill router on rhel-ai → auto-restart within 10s |
 | S8 | Agent orchestration with `hosted-model-ctl` | Signal → VAN + model lifecycle coordinated |
+| S9a | Partial start — provider unreachable | `up.sh` with one provider down → other provider + consumers up, models on available provider only |
+| S9b | Partial start — consumer unreachable | `up.sh` with CRC down → all providers up with models, localhost up, CRC skipped |
+| S9c | Partial stop — provider unreachable | `down.sh` with one provider down → stop reachable hosts, report skipped |
 
 ## Tests
 
@@ -267,6 +300,9 @@ remote host reachable, remote container running.
 | T7a | S7a | VAN up (rhtevan-work running) | Kill rhtevan-work router, wait 12s | Router auto-restarted, service active |
 | T7b | S7b | VAN up (rhel-ai running) | Kill rhel-ai router, wait 12s | Router auto-restarted, service active |
 | T8 | S8 | All down | "start skupper model" signal | Agent: `up.sh` → `hosted-model-ctl start.sh` defaults → e2e ✅ |
+| T9a | S9a | rhel-ai unreachable, all down | `up.sh` | rhtevan-work + localhost up, models on rhtevan-work only, rhel-ai skipped |
+| T9b | S9b | CRC not authenticated, all down | `up.sh` | All providers up + models, localhost up, CRC skipped |
+| T9c | S9c | rhtevan-work unreachable, all up | `down.sh` | rhel-ai + localhost stopped, rhtevan-work skipped |
 
 ## Known Issues & Workarounds
 
@@ -280,7 +316,7 @@ remote host reachable, remote container running.
 | rhel-ai port 55671 not publicly accessible | AWS security group | Use port 8000 via `hub-rhel-ai-public` RouterAccess |
 | Cert verify failed on link | No SANs on server cert | Add `subjectAlternativeNames` to RouterAccess |
 | No CLI to stop controller | By design | `down.sh all` stops via systemctl; manual: `systemctl --user stop skupper-controller.service` |
-| Services auto-start on reboot | `WantedBy=default.target` + `Linger=yes` | Removed `[Install]` section from unit files; services are `disabled` — `up.sh` starts on demand, `Restart=on-failure` handles crashes |
+| Services auto-start on reboot | `skupper system start` creates `default.target.wants/` symlinks + `Linger=yes` | `install_*_auto_restart()` runs `systemctl --user disable` before writing unit files (no `[Install]` section). Survives re-running `setup.sh`. Services stay `static` — `up.sh` starts on demand, `Restart=on-failure` handles crashes |
 | system-controller doesn't restart crashed router | Podman platform limitation | Auto-restart via systemd patch |
 | Scoped `down.sh HOST` killed all routes | Local router/controller are shared infrastructure serving all links; v7.1.0 `down.sh` unconditionally stopped them even in scoped mode | v7.2.0: scoped mode checks if other remote hosts still have active routers before stopping local infrastructure. Only stops local when it's the last active host. |
 | rhel-ai router survives `systemctl stop` | On tmpfs-workaround hosts, `recreate_router_with_tmpfs()` creates the container via `podman run` outside full systemd lifecycle; `systemctl stop` may not reach it | v7.2.0: `down.sh` explicitly runs `podman stop` (NOT `podman rm`) on tmpfs-workaround hosts as a safety net after `systemctl stop` |

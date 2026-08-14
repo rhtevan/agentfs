@@ -366,15 +366,15 @@ Update log files at both levels:
 # Root log
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/log.md \
-  "* **Harvest**: Graduated N concepts from M project(s). Created harvest-<date>/ sub-bundle.
-* **Prune**: Removed N graduated entries from source MEMORY.md files.
-* **Update**: Updated root index.md."
+  "- **Harvest**: Graduated N concepts from M project(s). Created harvest-<date>/ sub-bundle.
+- **Prune**: Removed N graduated entries from source MEMORY.md files.
+- **Update**: Updated root index.md."
 
 # Sub-bundle log
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/harvest-<date>/log.md \
-  "* **Creation**: Harvested N concepts from project memories.
-* **Sources**: <list of project paths scanned>"
+  "- **Creation**: Harvested N concepts from project memories.
+- **Sources**: <list of project paths scanned>"
 ```
 
 #### 8e. Update USER-scope log
@@ -384,7 +384,7 @@ Since knowledge is USER-scoped, update `~/.agents/log.md`:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
-  "* **Harvest**: Graduated N concepts from MEMORY.md files across M project(s) into knowledge bundles"
+  "- **Harvest**: Graduated N concepts from MEMORY.md files across M project(s) into knowledge bundles"
 ```
 
 ### Phase 9 — Verify conformance

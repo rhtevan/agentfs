@@ -140,7 +140,7 @@ this table.
 | [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
 | [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
 | [4](#4-skill-placement-️) | ⚖️ | Skill Placement | Default USER \`~/.agents/skills/\`; PROJECT only when user explicitly signals |
-| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **STOP** after \`.agents/\` edit → preserve sections → regen index → update changelog + log → **RESUME** |
+| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **STOP** after \`.agents/\` edit → preserve sections → regen index (delegated) → update log → **RESUME** |
 | [6](#6-idempotency-) | 🔄 | Idempotency | Ongoing: existence checks, upsert patterns, no append-without-dedup |
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
@@ -226,82 +226,49 @@ guidelines in `AGENTS.md` take precedence.
 
 ### 5. Filesystem Integrity 🚧
 
-> **STOP — you are NOT done.** After editing any file under \`.agents/\`,
-> do NOT move to the next task or respond to the user until every item
-> in the Post-Edit Completeness checklist below is verified. This is a
-> gate, not a suggestion.
+> **STOP** after any `.agents/` edit — consult the delegation table
+> before responding.
 
-These rules apply to all `.md` files under `.agents/` in BOTH scopes.
+#### Editing Rules
 
-#### Link Integrity
+- **Prefer incremental edits over full rewrites** — full rewrites
+  risk dropping sections.
+- **Link integrity.** Every markdown link under `.agents/` MUST
+  resolve. When files are created, renamed, moved, or deleted,
+  update all affected links and `index.md` entries immediately.
+  Use `./` prefix for dot-directory paths.
 
-- **No broken links.** Every markdown link in `index.md`, `SKILL.md`,
-  concept docs, and other `.md` files under `.agents/` MUST resolve to
-  an existing file or directory.
-- **No obsolete links.** When a file is renamed, moved, or deleted,
-  update ALL links that reference it.
-- **No missing links.** When a new file or directory is created, add
-  a link to the appropriate `index.md` immediately.
-- **Use `./` prefix** for dot-directory paths (e.g., `./.agents/...`).
+#### Log & Index Delegation
 
-#### Log & Changelog Currency
+| File | Level | Owner | How to update |
+|------|-------|-------|---------------|
+| `~/.agents/log.md` | Root (USER) | Agent direct | `edit` with comment-line anchor |
+| `./.agents/log.md` | Root (PROJECT) | Agent direct | `edit` with comment-line anchor |
+| `skills/index.md` | Skills | `skill-index` | `load_skill(name: "skill-index")` |
+| `skills/*/CHANGELOG.md` | Skill | `skill-gen` | Agent direct (table format per `skill-schema.md`) |
+| `knowledge/index.md` | Knowledge root | `okf-bundle-index` | `load_skill(name: "okf-bundle-index")` |
+| `knowledge/log.md` | Knowledge root | `okf-bundle-gen` | `merge-log-entry.sh` |
+| `knowledge/*/index.md` | Knowledge bundle | `okf-bundle-index` | `load_skill(name: "okf-bundle-index")` |
+| `knowledge/*/log.md` | Knowledge bundle | `okf-bundle-gen` | `merge-log-entry.sh` |
+| `profiles/index.md` | Profiles | `agentfs-profile` | `load_skill(name: "agentfs-profile")` |
 
-- **Reverse chronological order** — newest entries FIRST (applies to
-  both `log.md` and any `Changelog` section in content files).
-- **ISO 8601 timestamp headings** — `## YYYY-MM-DD HH:MM`
-  (24-hour format; use `date '+%Y-%m-%d %H:%M'` for consistency).
-- **Log every material change** — file creation, renames, deletions,
-  structural updates.
-- **Insertion anchor.** New entries go at the top, immediately after
-  the comment line. The result MUST look like this — no double
-  blank lines:
-  \`\`\`
-  # Directory Update Log
-  <!-- Append-only. Newest entries at top. -->
+Every `SKILL.md` MUST have `metadata.tags` in YAML frontmatter
+(e.g., `tags: [agentfs, memory, harvest]`). A skill without tags
+is invisible to tag-based discovery.
 
-  ## YYYY-MM-DD HH:MM
+#### Root Log Format (agent-direct edits only)
 
-  - Entry text
-  \`\`\`
-  One blank line between the comment and the heading. One blank
-  line between the heading and the entries. Verify with
-  \`head -6 <log_file> | cat -An\` after insertion.
-- **Never modify or delete** existing log or changelog entries.
-- **Scope:** Each `log.md` MUST only describe changes within its scope
-  (`~/.agents/log.md` for USER, `./.agents/log.md` for PROJECT).
-  When a single action affects both scopes, log in each.
-- **Format:** Title `# Directory Update Log`,
-  headings `## YYYY-MM-DD HH:MM`, entries `- ` (dash prefix).
-
-#### Index Currency
-
-- **`skills/index.md` and `profiles/index.md` MUST stay current.**
-  When a skill or profile is created, renamed, modified, or deleted
-  in either scope, regenerate the corresponding `index.md` using
-  the `skill-index` skill — do NOT manually edit, and do NOT write
-  ad-hoc scripts. Always `load_skill(name: "skill-index")` and
-  follow its instructions. This includes metadata-only changes
-  (version bumps, tag edits, changelog additions) — not just
-  structural changes like creation or deletion.
-- **Every SKILL.md MUST have `metadata.tags`** in YAML frontmatter
-  (e.g., `tags: [agentfs, memory, harvest]`). A skill without tags
-  is invisible to tag-based discovery.
-- Entries MUST include ISO 8601 timestamps and be sorted newest-first.
-
-#### Post-Edit Completeness
-
-- **Prefer incremental edits over full rewrites** of files under
-  \`.agents/\` — full rewrites risk dropping sections (e.g., rendered
-  Changelog tables, verification checklists).
-- **After modifying any file under \`.agents/\`** (either scope), verify:
-  1. All existing sections in the file are preserved (especially
-     rendered Changelog sections — never drop during rewrites).
-  2. Corresponding \`index.md\` is regenerated if applicable.
-  3. Changes are logged in the appropriate \`log.md\` (both scopes
-     if both are affected by a single action).
-  4. If the change affects AgentFS design, guardrails, skills schema,
-     or template structure, update \`~/.agents/README.md\` in the
-     same session.
+- **Reverse chronological** — newest FIRST.
+- **ISO 8601 headings** — `## YYYY-MM-DD HH:MM`
+  (use `date '+%Y-%m-%d %H:%M'`).
+- **Bullet prefix** — `- ` (dash).
+- **Scope** — each `log.md` describes only its own scope. When a
+  single action affects both, log in each.
+- **Never modify or delete** existing entries.
+- **Insertion anchor.** The `before` anchor MUST be the comment line
+  (`<!-- Append-only. Newest entries at top. -->`), NEVER a `##`
+  heading — headings shift across sessions and after compaction.
+  Always `head -6 <log_file>` before editing to confirm current state.
 
 ### 6. Idempotency 🔄
 

@@ -308,7 +308,9 @@ set -euo pipefail
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
 - [ ] **Log update** — append entry to `~/.agents/log.md` (USER scope)
-      or `./.agents/log.md` (PROJECT scope) with ISO 8601 timestamp
+      or `./.agents/log.md` (PROJECT scope) with ISO 8601 timestamp.
+      Use the comment line (`<!-- Append-only... -->`) as insertion
+      anchor (see Guardrail #5, Root Log Format).
 
 ---
 

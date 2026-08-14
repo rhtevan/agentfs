@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-14 19:40 | v3.12.0 — Removed Post-Edit Completeness subsection from Guardrail #5 (redundant with delegation table). STOP block moved to top as one-liner. 64→45 lines. Template version 3.11→3.12. |
+| 2026-08-14 19:19 | v3.11.0 — Rewrote Guardrail #5 (Filesystem Integrity): replaced 4 subsections (Link Integrity, Log & Changelog Currency, Index Currency, Post-Edit Completeness) with 4 focused sections (Editing Rules, Log & Index Delegation table, Root Log Format, Post-Edit Gate). Added delegation table mapping every log/index file to its owning skill and update method. Removed 26 lines of redundancy. Updated Quick Reference row. Template version 3.10→3.11. |
 | 2026-08-12 22:55 | v3.10.1 — Guardrail #5 (Log & Changelog Currency): added 24-hour format hint with `date` command to ISO 8601 timestamp rule. Index Currency: consolidated `skill-index` requirement into the MUST-stay-current bullet (removed separate bullet); explicit `load_skill(name: "skill-index")` call-out. |
 | 2026-08-11 11:48 | v3.10.0 — Added Guardrail Type System (Gate 🚧, Rule ⚖️, Habit 🔄): Type column in Quick Reference table with verb-chain Key Actions; type badges on all 10 guardrail headings; gate blockquote notices on #5 (Filesystem Integrity), #9 (Checkpoints), #10 (Git Push Safety); design-spec updated with type rationale and Trigger/Invariant collapse analysis; template version 3.9→3.10 |
 | 2026-08-08 10:55 | v3.9.0 — Added "Never improvise when a skill exists" routing rule; added "Backup untracked files" to Guardrail #9 (Checkpoints); template version 3.8→3.9 |

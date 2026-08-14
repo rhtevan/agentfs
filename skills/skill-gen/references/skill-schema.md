@@ -127,8 +127,8 @@ why it exists, and when to use it.
      parameters, restructured steps
 
 4. **Sync with changelog:** The `metadata.version` value MUST match
-   the most recent version mentioned in the `## Changelog` section.
-   If the changelog says `v2.3.1`, then `metadata.version` must be
+   the most recent version in `CHANGELOG.md`.
+   If `CHANGELOG.md` says `v2.3.1`, then `metadata.version` must be
    `"2.3.1"`.
 
 ## Changelog Rules

@@ -530,6 +530,10 @@ chmod +x ${ns_dir}/internal/scripts/start-watch.sh"
   uid_num=$(run_on_host "$host" 'id -u')
   home_dir=$(run_on_host "$host" 'echo $HOME')
 
+  # Remove stale enable symlink left by 'skupper system start'
+  # (it creates default.target.wants/ symlinks that survive unit rewrites)
+  run_on_host "$host" "systemctl --user disable skupper-${NAMESPACE}.service 2>/dev/null || true"
+
   run_on_host "$host" "cat > ~/.config/systemd/user/skupper-${NAMESPACE}.service << EOF
 [Unit]
 Description=skupper-${NAMESPACE}.service
@@ -570,6 +574,9 @@ EOF
 chmod +x ~/.local/share/skupper/system-controller/internal/scripts/start-watch.sh"
 
   # Patch systemd unit
+  # Remove stale enable symlink left by 'skupper system start'
+  run_on_host "$host" "systemctl --user disable skupper-controller.service 2>/dev/null || true"
+
   run_on_host "$host" "cat > ~/.config/systemd/user/skupper-controller.service << EOF
 [Unit]
 Description=skupper-controller

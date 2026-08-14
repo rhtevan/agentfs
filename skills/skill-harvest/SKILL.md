@@ -380,7 +380,7 @@ Update `~/.agents/log.md`:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
-  "* **Skill Harvest**: Created N new skill(s) from MEMORY.md entries across M project(s): <skill-names>"
+  "- **Skill Harvest**: Created N new skill(s) from MEMORY.md entries across M project(s): <skill-names>"
 ```
 
 #### 8c. Update PROJECT-scope logs
@@ -391,7 +391,7 @@ For each project whose MEMORY.md was pruned, update
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   "$project/.agents/log.md" \
-  "* **Skill Harvest**: Graduated N entries to USER skills: <skill-names>"
+  "- **Skill Harvest**: Graduated N entries to USER skills: <skill-names>"
 ```
 
 ### Phase 9 — Verify

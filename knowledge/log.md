@@ -1,4 +1,6 @@
 # Directory Update Log
+<!-- Append-only. Newest entries at top. -->
+
 ## 2026-08-08 12:19
 
 - Created OKF knowledge bundle `skupper-vllm-deployment` with 5 concept documents (postmortem)

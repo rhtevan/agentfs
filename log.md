@@ -1,6 +1,45 @@
 # Directory Update Log
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-14 19:40
+
+- Guardrail #5 final trim: removed Post-Edit Completeness subsection (redundant with delegation table); STOP block moved to one-liner at top; 64→45 lines. `agentfs-setup` v3.11.0→v3.12.0, template version 3.11→3.12.
+
+## 2026-08-14 19:19
+
+- Rewrote Guardrail #5 in `AGENTS.md` and `agentfs-setup` template: replaced 4 bloated subsections (Link Integrity, Log & Changelog Currency, Index Currency, Post-Edit Completeness) with 4 focused sections (Editing Rules, Log & Index Delegation table, Root Log Format, Post-Edit Gate). Removed 26 lines of redundancy.
+- Added Log & Index Delegation table mapping every log/index file to its owning skill
+- Standardized bullet prefix `* ` → `- ` in `merge-log-entry.sh`, `skill-harvest`, `okf-bundle-gen`, `okf-bundle-harvest`, `okf-bundle-setup`
+- Fixed `~/.agents/knowledge/log.md` missing comment line
+- Fixed `skill-schema.md` stale `## Changelog` section → `CHANGELOG.md` reference
+- Added insertion anchor reference to `skill-gen` log update checklist item
+- Updated `okf-bundle-setup` log format rules to reference comment anchor and `- ` bullet
+- Regenerated `~/.agents/skills/index.md` (49 skills)
+
+## 2026-08-14 12:33
+
+- Strengthened Guardrail #5 Post-Edit Completeness with hard STOP gate in `AGENTS.md` and `agentfs-setup` template: "Do NOT respond until every box is checked"; clarified index scope includes supporting scripts
+
+## 2026-08-14 12:29
+
+- Strengthened Guardrail #5 insertion anchor rule in `AGENTS.md` and `agentfs-setup` template: `before` anchor MUST be the comment line, NEVER a `##` heading; always `head -6` before editing
+
+## 2026-08-14 12:13
+
+- Updated `skupper-model-provider` v8.2.0: Partial Availability — `up.sh`/`down.sh` skip unreachable hosts instead of hard-failing; added Site Roles (Provider/Consumer); added Partial Availability agent protocol; added S9a-c specs and T9a-c tests; updated CHANGELOG
+
+## 2026-08-14 09:30
+
+- Created skill: fedora-desktop-wmclass-fix (USER scope)
+- New files: SKILL.md, CHANGELOG.md, scripts/wmclass-audit.sh
+- Audits and fixes StartupWMClass in .desktop files for Electron apps on Wayland
+- Documents lowercase binary name convention for Electron Wayland app-ids
+- Regenerated ~/.agents/skills/index.md (49 skills)
+
+## 2026-08-13 19:50
+
+- Fixed `skupper-model-provider` service auto-start bug: `skupper system start` re-enables services via `default.target.wants/` symlinks on every run; added `systemctl --user disable` to `install_router_auto_restart()` and `install_controller_auto_restart()` in `common.sh`; applied fix to all 3 hosts; updated Known Issues, CHANGELOG (v8.1.1)
+
 ## 2026-08-13 19:23
 
 - Externalized `## Changelog` sections from all 48 skills' SKILL.md → `CHANGELOG.md` files

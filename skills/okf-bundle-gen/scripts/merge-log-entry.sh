@@ -8,7 +8,7 @@
 # created above all existing date sections (reverse chronological order).
 #
 # ENTRY_TEXT should be one or more bullet lines, e.g.:
-#   "* **Creation**: Generated 5 concept docs from session context."
+#   "- **Creation**: Generated 5 concept docs from session context."
 #
 # Multiple lines can be passed as a single string with embedded newlines.
 

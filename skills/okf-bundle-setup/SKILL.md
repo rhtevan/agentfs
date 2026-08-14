@@ -306,10 +306,11 @@ records what was done.
 
 - **No YAML frontmatter** — `log.md` is a reserved file (OKF §7).
 - **Reverse chronological order** — newest entries **first**, directly
-  after the `# Directory Update Log` heading. Older entries follow
-  below.
+  after the `<!-- Append-only. Newest entries at top. -->` comment
+  line. Older entries follow below.
+- **Bullet prefix** — `- ` (dash).
 - **ISO 8601 date headings** — each entry group is under an
-  `## YYYY-MM-DD` heading.
+  `## YYYY-MM-DD HH:MM` heading.
 - If today's date heading already exists at the top, append the new
   bullet points under it. If it does not exist, insert a new
   `## YYYY-MM-DD` section **above** all existing date sections.
@@ -340,8 +341,8 @@ reverse-chronological insertion automatically:
 ```bash
 bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
   "$BUNDLE_ROOT/log.md" \
-  "* **Reorganization**: Moved N files into reserved directories.
-* **Update**: Regenerated index.md."
+  "- **Reorganization**: Moved N files into reserved directories.
+- **Update**: Regenerated index.md."
 ```
 
 **Manual alternative** (if `okf-bundle-gen` is not available):
@@ -349,8 +350,8 @@ bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
 ```bash
 TODAY="$(date +%Y-%m-%d)"
 NEW_ENTRY="## ${TODAY}
-* **Reorganization**: Moved N files into reserved directories.
-* **Update**: Regenerated index.md.
+- **Reorganization**: Moved N files into reserved directories.
+- **Update**: Regenerated index.md.
 "
 {
   echo "# Directory Update Log"
