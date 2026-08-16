@@ -36,11 +36,8 @@ EOF
   exit 0
 fi
 
-# Read existing log
-EXISTING="$(cat "$LOG_FILE")"
-
 # Check if current timestamp heading already exists
-if echo "$EXISTING" | grep -q "^## ${NOW}"; then
+if grep -q "^## ${NOW}" "$LOG_FILE"; then
   # Heading exists — insert new entries right after it
   awk -v heading="## ${NOW}" -v entry="$ENTRY_TEXT" '
     $0 == heading {

@@ -2,6 +2,39 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-16 19:36
+
+agentfs-setup v4.10.0: merge-log-entry.sh duplicate heading fix; version bump
+
+## 2026-08-16 19:32
+
+merge-log-entry.sh: fixed duplicate heading bug — replaced echo-pipe grep with direct file grep for heading detection
+
+## 2026-08-16 19:27
+
+README.md: updated Guardrail #5 description to reflect edit-time logging rule and deterministic log coverage check
+Guardrail #5: added edit-time logging rule to seed-agents-md.sh; added log coverage check (Category 8) to pre-push-scan.sh; bumped agentfs-setup to 4.9.0
+
+## 2026-08-16 19:20
+
+README.md: fixed skill count (48→50), added 2 missing knowledge bundles (llm-inference-constrained-gpu, skupper-vllm-deployment), updated Guardrail #5 description to match current template (completion gate pattern)
+
+## 2026-08-16 19:11
+
+agentfs-setup v4.8.0 — integrated agentfs-readme-audit into Guardrail #10 (Git Push Safety): semantic README alignment check runs after pre-push-scan.sh returns Clean for README staleness
+
+## 2026-08-16 19:02
+
+Created agentfs-readme-audit skill v1.0.0 — semantic README alignment check complementing pre-push-scan.sh deterministic staleness check
+
+## 2026-08-16 18:41
+
+agentfs-setup v4.7.0 — pre-push-scan.sh: promoted README staleness check from interactive prompt to structured report row (Category 7); removed y/n notice that gets swallowed in non-interactive execution
+
+## 2026-08-16 17:45
+
+agentfs-setup v4.6.0: Guardrail #5 Filesystem Integrity rewrite — separated WHAT (completion gate) from HOW (delegation table with Gate column); added scope rule table for log routing; scripts path declared once, removed inline code block
+
 ## 2026-08-16 16:54
 
 agentfs-setup v4.4.0: Template version now derived from metadata.version (single source of truth).

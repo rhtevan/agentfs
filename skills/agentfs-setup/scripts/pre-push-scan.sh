@@ -130,11 +130,45 @@ PII=""
 [[ -n "$PHONE_MATCHES" ]] && PII+="${PII:+\n}$PHONE_MATCHES"
 report_category "PII (email, phone)" "$PII"
 
-# ── README Staleness Check ────────────────────────────────────────
+# ── Category 7: README Staleness ──────────────────────────────────
 CHANGED_FILES=$($DIFF_CMD --name-only 2>/dev/null || true)
-README_NOTICE=""
+README_STALE=""
 if echo "$CHANGED_FILES" | grep -qE '(skills/|knowledge/|AGENTS\.md|guardrail)'; then
-  README_NOTICE="📝 README Notice: This commit adds/modifies skills or knowledge.\n   Consider updating README.md. Update now? [y/n/skip]"
+  # Check if README.md is also being updated in this commit
+  if ! echo "$CHANGED_FILES" | grep -qE '^README\.md$'; then
+    README_STALE="skills/knowledge changed but README.md not updated"
+  fi
+fi
+if [[ -n "$README_STALE" ]]; then
+  FINDINGS=$((FINDINGS + 1))
+  DETAILS+="| README staleness | ⚠️  STALE — $README_STALE |\n"
+else
+  DETAILS+="| README staleness | ✅ Clean |\n"
+fi
+
+# ── Category 8: Log Coverage ───────────────────────────────────────
+# Check that edited scopes have a same-day log.md entry
+TODAY=$(date '+%Y-%m-%d')
+LOG_GAPS=""
+
+# USER scope: any file under the repo root changed (we're in ~/.agents)
+USER_SCOPE_EDITS=$(echo "$CHANGED_FILES" | grep -vE '^log\.md$' | head -1 || true)
+if [[ -n "$USER_SCOPE_EDITS" ]]; then
+  # Check if log.md has a today entry
+  if [[ -f "log.md" ]]; then
+    if ! grep -q "^## $TODAY" log.md; then
+      LOG_GAPS="Edited files in scope but log.md has no entry for $TODAY"
+    fi
+  else
+    LOG_GAPS="Edited files in scope but log.md does not exist"
+  fi
+fi
+
+if [[ -n "$LOG_GAPS" ]]; then
+  FINDINGS=$((FINDINGS + 1))
+  DETAILS+="| Log coverage (G#5) | ⚠️  GAP — $LOG_GAPS |\n"
+else
+  DETAILS+="| Log coverage (G#5) | ✅ Clean |\n"
 fi
 
 # ── Output Report ──────────────────────────────────────────────────
@@ -155,10 +189,7 @@ else
   echo "⚠️  Verdict: $FINDINGS category/categories with findings. Review before pushing."
 fi
 
-if [[ -n "$README_NOTICE" ]]; then
-  echo ""
-  echo -e "$README_NOTICE"
-fi
+
 
 echo ""
 if [[ $FINDINGS -gt 0 ]]; then

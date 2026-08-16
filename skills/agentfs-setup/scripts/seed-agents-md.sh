@@ -132,12 +132,12 @@ this table.
 | [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
 | [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
 | [4](#4-skill-placement-️) | ⚖️ | Skill Placement | Default USER \`~/.agents/skills/\`; PROJECT only when user explicitly signals |
-| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **Completion gate:** `post-edit.sh` → `log.md` → CHANGELOG → `metadata.version` bump |
+| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **Completion gate:** log.md → CHANGELOG + version bump → indexes → links |
 | [6](#6-idempotency-) | 🔄 | Idempotency | Ongoing: existence checks, upsert patterns, no append-without-dedup |
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
 | [9](#9-checkpoints--resumability-) | 🚧 | Checkpoints | **STOP** before destructive op → record affected files → execute → clear checkpoint |
-| [10](#10-git-push-safety-) | 🚧 | Git Push Safety | **STOP** → Scan → Report → **WAIT** for approval → Push |
+| [10](#10-git-push-safety-) | 🚧 | Git Push Safety | Stage → Scan → *(README audit if Clean)* → Report → **WAIT** → Commit → Push |
 
 ## Scope Definitions
 
@@ -192,30 +192,44 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 
 ### 5. Filesystem Integrity 🚧
 
-> **Completion gate:** before declaring a task complete, verify all `.agents/`
-> edits have been followed by:
-> 1. `post-edit.sh` (index regeneration)
-> 2. `log.md` entries via `merge-log-entry.sh`
-> 3. Skill `CHANGELOG.md` updates
-> 4. `metadata.version` bumps in any modified skill
-> ```bash
-> bash ~/.agents/skills/agentfs-setup/scripts/post-edit.sh
-> ```
+> **Edit-time rule:** after every write/edit to a file under `.agents/`
+> or `~/.agents/`, log the change to the scope's `log.md` **before
+> proceeding to the next step** — do not batch logging to end-of-task.
+>
+> **Completion gate:** before declaring a task complete, verify all
+> `.agents/` edits satisfy:
+> 1. Every modified scope has a new `log.md` entry
+> 2. Modified skills have a `CHANGELOG.md` row and `metadata.version` bump
+> 3. All indexes are current
+> 4. All markdown links under `.agents/` resolve
+>
+> The `pre-push-scan.sh` enforces log coverage deterministically —
+> it flags `⚠️ GAP` when staged files lack a same-day `log.md` entry.
+
+**Scope rule:** log to every scope you touched:
+
+| If you edited under… | Update this log |
+|-----------------------|-----------------|
+| `~/.agents/` (USER) | `~/.agents/log.md` |
+| `./.agents/` (PROJECT) | `./.agents/log.md` |
+| `~/.agents/knowledge/<bundle>/` | *also* that bundle's `log.md` |
+
+> Scripts below live in `~/.agents/skills/agentfs-setup/scripts/`.
+
+#### Delegation
+
+| Gate | What | How |
+|:----:|------|-----|
+| 1 | `log.md` (any scope) | `merge-log-entry.sh <path> "<msg>"` |
+| 2 | `skills/*/CHANGELOG.md` | Agent — table row (`date \| change`) |
+| 2 | `metadata.version` | Agent — edit skill frontmatter |
+| 3 | `skills/index.md` | Automatic via `post-edit.sh` |
+| 3 | `knowledge/` indexes | `load_skill(name: "okf-bundle-index")` |
+| 3 | `profiles/index.md` | `load_skill(name: "agentfs-profile")` |
+| 4 | Broken links | Agent — update on create/rename/move/delete |
 
 - Prefer incremental edits over full rewrites — full rewrites risk dropping sections.
-- Every markdown link under `.agents/` MUST resolve. On file create/rename/move/delete,
-  update all affected links and `index.md` entries. Use `./` prefix for dot-directory paths.
-
-#### Log & Index Delegation
-
-| File | How to update |
-|------|---------------|
-| `~/.agents/log.md`, `./.agents/log.md` | `merge-log-entry.sh` |
-| `skills/index.md` | Automatic via `post-edit.sh` |
-| `skills/*/CHANGELOG.md` | Agent — table format per `skill-schema.md` |
-| `knowledge/index.md`, `knowledge/*/index.md` | `load_skill(name: "okf-bundle-index")` |
-| `knowledge/log.md`, `knowledge/*/log.md` | `merge-log-entry.sh` |
-| `profiles/index.md` | `load_skill(name: "agentfs-profile")` |
+- Use `./` prefix for dot-directory paths.
 
 ### 7. Anti-Sycophancy ⚖️
 
@@ -249,10 +263,14 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 
 ### 10. Git Push Safety 🚧
 
-> **STOP** before `git push` → run `pre-push-scan.sh` → present report to user →
-> **WAIT** for explicit approval. Override requires `[OVERRIDE]` log per Guardrail #7.
+> **Workflow:** `git add -A` → `pre-push-scan.sh` → *(if README staleness ✅ Clean)*
+> `load_skill(name: "agentfs-readme-audit")` → present report → **WAIT** →
+> `git commit` → `git push`. The scan MUST run **before commit** on staged changes.
+> Override requires `[OVERRIDE]` log per Guardrail #7.
 > ```bash
-> bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh
+> bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh   # scans git diff --cached
+> # If README staleness is ✅ Clean, run semantic alignment check:
+> # load_skill(name: "agentfs-readme-audit")
 > ```
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned

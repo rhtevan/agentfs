@@ -3,6 +3,12 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-16 19:36 | v4.10.0 — `merge-log-entry.sh`: fixed duplicate heading bug — replaced `echo "$EXISTING" | grep` pipe with direct `grep` on file for heading detection. Eliminates false-miss when piping large file content through echo. |
+| 2026-08-16 19:27 | v4.9.0 — Guardrail #5: added edit-time logging rule to `seed-agents-md.sh` template (log immediately after each edit, not batch-at-end). Added log coverage check (Category 8) to `pre-push-scan.sh` — flags `⚠️ GAP` when staged files lack same-day `log.md` entry. README.md updated. |
+| 2026-08-16 19:11 | v4.8.0 — Guardrail #10 Git Push Safety: integrated `agentfs-readme-audit` skill as semantic README alignment check after `pre-push-scan.sh` returns ✅ Clean for README staleness. Updated Quick Reference row and workflow description. |
+| 2026-08-16 18:40 | v4.7.0 — pre-push-scan.sh: promoted README staleness from interactive prompt to structured report row (Category 7); removed swallowable y/n notice; exit code 1 when stale |
+| 2026-08-16 17:44 | v4.6.0 — Guardrail #5 Filesystem Integrity rewrite: separated WHAT (completion gate) from HOW (delegation table) with Gate column for traceability; added scope rule table (USER/PROJECT/knowledge log mapping); removed inline code block (scripts path declared once); Quick Reference row updated |
+| 2026-08-16 17:12 | v4.5.0 — Guardrail #10 Git Push Safety: clarified workflow order (stage → scan → report → wait → commit → push); scan MUST run before commit on staged changes; README staleness check preserved in `pre-push-scan.sh` |
 | 2026-08-16 16:52 | v4.4.0 — Template version in `seed-agents-md.sh` now reads from `SKILL.md` `metadata.version` (single source of truth). Eliminates manual template version bumps. |
 | 2026-08-16 16:49 | v4.3.0 — Made Guardrail #5 completion gate explicit with 4-item checklist (post-edit.sh, log.md, CHANGELOG, metadata.version). Aligned Quick Reference #5 row to match. |
 | 2026-08-16 16:39 | v4.2.0 — Added `metadata.version` bump to Guardrail #5 completion gate checklist (3 key actions: post-edit.sh, log/CHANGELOG, version bump). Template version updated. |
