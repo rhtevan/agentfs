@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# merge-log-entry.sh — Prepend a new log entry to an OKF log.md file.
+# merge-log-entry.sh — Prepend a new log entry to any log.md file.
 #
 # Usage: bash merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>
 #
@@ -15,7 +15,10 @@
 set -euo pipefail
 
 LOG_FILE="${1:?Usage: merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>}"
-ENTRY_TEXT="${2:?Usage: merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>}"
+ENTRY_TEXT_RAW="${2:?Usage: merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>}"
+# Interpret \n escape sequences so callers can pass multi-line entries
+# as a single argument: "- line1\n- line2"
+ENTRY_TEXT="$(printf '%b' "$ENTRY_TEXT_RAW")"
 NOW="$(date '+%Y-%m-%d %H:%M')"
 
 if [[ ! -f "$LOG_FILE" ]]; then

@@ -442,7 +442,7 @@ update its description if the content has changed.
 Record the details of what was generated/merged inside the session:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/<session-name>/log.md \
   "- **Creation**: Generated N concept docs from session context.
 - **Update**: Updated M existing concepts with new information.
@@ -460,7 +460,7 @@ Replace `N` and `M` with actual counts. Add detail as appropriate:
 Record a summary-level entry at the bundle root:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/log.md \
   "- **Creation**: Added session sub-bundle \`<session-name>/\` with N concept(s).
 - **Update**: Updated root index.md."
@@ -469,7 +469,7 @@ bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
 Or, if merging into an existing session sub-bundle:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/log.md \
   "- **Update**: Merged new knowledge into \`<session-name>/\` — N created, M updated.
 - **Update**: Updated root index.md."
@@ -490,7 +490,7 @@ the USER scope log tracks all changes under `~/.agents/` including
 skills, knowledge, and other USER-scope resources.
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
   "- **Creation**: Generated knowledge bundle \`knowledge/<session-name>/\` with N concept(s).
 - **Update**: Updated \`knowledge/index.md\`."
@@ -499,7 +499,7 @@ bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
 Or, if merging into an existing session sub-bundle:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
   "- **Update**: Merged new knowledge into \`knowledge/<session-name>/\` — N created, M updated.
 - **Update**: Updated \`knowledge/index.md\`."
@@ -685,7 +685,7 @@ existing ones updated:
 Skill directory: ~/.agents/skills/okf-bundle-gen
 
 - scripts/list-existing-concepts.sh → load_skill(name: "okf-bundle-gen/scripts/list-existing-concepts.sh")
-- scripts/merge-log-entry.sh → load_skill(name: "okf-bundle-gen/scripts/merge-log-entry.sh")
+- scripts/merge-log-entry.sh → load_skill(name: "agentfs-setup/scripts/merge-log-entry.sh")
 - scripts/scan-memories.sh → load_skill(name: "okf-bundle-gen/scripts/scan-memories.sh")
 Dependencies (from `okf-bundle-setup`):
 - scaffold-bundle.sh → load_skill(name: "okf-bundle-setup/scripts/scaffold-bundle.sh")

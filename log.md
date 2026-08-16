@@ -1,5 +1,22 @@
 # Directory Update Log
+
 <!-- Append-only. Newest entries at top. -->
+
+## 2026-08-16 13:38
+
+- Moved `merge-log-entry.sh` from `okf-bundle-gen` to `agentfs-setup` (shared utility in foundational skill). Updated 17 references across 6 skills.
+- Removed Root Log Format subsection from Guardrail #5 (mechanics now in script). Updated delegation table: root logs use `merge-log-entry.sh`, skills index uses `post-edit.sh`.
+- `agentfs-setup` v3.13.0→v3.14.0, template version 3.13→3.14
+
+## 2026-08-15 12:00
+
+- Added `post-edit.sh` to `agentfs-setup` skill: automates skills index regeneration and log.md anchor validation. Fragile steps → code (skill-gen principle).
+- Updated Guardrail #5 STOP block and Quick Reference row to reference `post-edit.sh` in both `AGENTS.md` and `seed-agents-md.sh` template
+- `agentfs-setup` v3.12.0→v3.13.0, template version 3.12→3.13
+
+## 2026-08-15 11:32
+
+- Fixed `agentfs-setup` template version mismatch: `seed-agents-md.sh` had `3.10`, should be `3.12` (matching SKILL.md and AGENTS.md). This blocked `agentfs-setup --sync` from updating project AGENTS.md files.
 
 ## 2026-08-14 19:40
 

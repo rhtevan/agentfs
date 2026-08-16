@@ -364,14 +364,14 @@ Update log files at both levels:
 
 ```bash
 # Root log
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/log.md \
   "- **Harvest**: Graduated N concepts from M project(s). Created harvest-<date>/ sub-bundle.
 - **Prune**: Removed N graduated entries from source MEMORY.md files.
 - **Update**: Updated root index.md."
 
 # Sub-bundle log
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/knowledge/harvest-<date>/log.md \
   "- **Creation**: Harvested N concepts from project memories.
 - **Sources**: <list of project paths scanned>"
@@ -382,7 +382,7 @@ bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
 Since knowledge is USER-scoped, update `~/.agents/log.md`:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
   "- **Harvest**: Graduated N concepts from MEMORY.md files across M project(s) into knowledge bundles"
 ```
@@ -488,7 +488,7 @@ Skill directory: `~/.agents/skills/okf-bundle-harvest`
 Dependencies (from `okf-bundle-gen`):
 - `scripts/scan-memories.sh` — Scan and display MEMORY.md entries
 - `scripts/list-existing-concepts.sh` — Inventory existing concepts
-- `scripts/merge-log-entry.sh` — Append entries to log.md
+- `agentfs-setup/scripts/merge-log-entry.sh` — Append entries to log.md (shared utility)
 
 Dependencies (from `okf-bundle-setup`):
 - `scripts/scaffold-bundle.sh` — Create OKF bundle structure

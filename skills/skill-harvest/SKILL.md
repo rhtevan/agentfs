@@ -378,7 +378,7 @@ This ensures the new skills appear in the index with correct timestamps.
 Update `~/.agents/log.md`:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   ~/.agents/log.md \
   "- **Skill Harvest**: Created N new skill(s) from MEMORY.md entries across M project(s): <skill-names>"
 ```
@@ -389,7 +389,7 @@ For each project whose MEMORY.md was pruned, update
 `./.agents/log.md`:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   "$project/.agents/log.md" \
   "- **Skill Harvest**: Graduated N entries to USER skills: <skill-names>"
 ```
@@ -505,7 +505,7 @@ Skill directory: `~/.agents/skills/skill-harvest`
 
 Dependencies (from `okf-bundle-gen`):
 - `scripts/scan-memories.sh` — Scan and display MEMORY.md entries
-- `scripts/merge-log-entry.sh` — Append entries to log.md
+- `agentfs-setup/scripts/merge-log-entry.sh` — Append entries to log.md (shared utility)
 
 Dependencies (from `okf-bundle-harvest`):
 - `scripts/prune-memory.sh` — Remove graduated entries from MEMORY.md

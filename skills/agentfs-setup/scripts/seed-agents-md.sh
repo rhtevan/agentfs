@@ -68,7 +68,7 @@ all guardrails, skills, and documentation reference them.\
 fi
 
 cat > "$TARGET" << 'AGENTSEOF'
-<!-- agentfs-template-version: 3.10 -->
+<!-- agentfs-template-version: 3.14 -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -140,7 +140,7 @@ this table.
 | [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
 | [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
 | [4](#4-skill-placement-️) | ⚖️ | Skill Placement | Default USER \`~/.agents/skills/\`; PROJECT only when user explicitly signals |
-| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **STOP** after \`.agents/\` edit → preserve sections → regen index (delegated) → update log → **RESUME** |
+| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **STOP** after `.agents/` edit → run `post-edit.sh` → log changes → **RESUME** |
 | [6](#6-idempotency-) | 🔄 | Idempotency | Ongoing: existence checks, upsert patterns, no append-without-dedup |
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
@@ -226,8 +226,12 @@ guidelines in `AGENTS.md` take precedence.
 
 ### 5. Filesystem Integrity 🚧
 
-> **STOP** after any `.agents/` edit — consult the delegation table
-> before responding.
+> **STOP** after any `.agents/` edit — run `post-edit.sh`, then
+> log changes before responding.
+>
+> ```bash
+> bash ~/.agents/skills/agentfs-setup/scripts/post-edit.sh
+> ```
 
 #### Editing Rules
 
@@ -242,33 +246,15 @@ guidelines in `AGENTS.md` take precedence.
 
 | File | Level | Owner | How to update |
 |------|-------|-------|---------------|
-| `~/.agents/log.md` | Root (USER) | Agent direct | `edit` with comment-line anchor |
-| `./.agents/log.md` | Root (PROJECT) | Agent direct | `edit` with comment-line anchor |
-| `skills/index.md` | Skills | `skill-index` | `load_skill(name: "skill-index")` |
-| `skills/*/CHANGELOG.md` | Skill | `skill-gen` | Agent direct (table format per `skill-schema.md`) |
+| `~/.agents/log.md` | Root (USER) | Agent | `merge-log-entry.sh` |
+| `./.agents/log.md` | Root (PROJECT) | Agent | `merge-log-entry.sh` |
+| `skills/index.md` | Skills | `post-edit.sh` | Automatic |
+| `skills/*/CHANGELOG.md` | Skill | Agent | Table format per `skill-schema.md` |
 | `knowledge/index.md` | Knowledge root | `okf-bundle-index` | `load_skill(name: "okf-bundle-index")` |
 | `knowledge/log.md` | Knowledge root | `okf-bundle-gen` | `merge-log-entry.sh` |
 | `knowledge/*/index.md` | Knowledge bundle | `okf-bundle-index` | `load_skill(name: "okf-bundle-index")` |
 | `knowledge/*/log.md` | Knowledge bundle | `okf-bundle-gen` | `merge-log-entry.sh` |
 | `profiles/index.md` | Profiles | `agentfs-profile` | `load_skill(name: "agentfs-profile")` |
-
-Every `SKILL.md` MUST have `metadata.tags` in YAML frontmatter
-(e.g., `tags: [agentfs, memory, harvest]`). A skill without tags
-is invisible to tag-based discovery.
-
-#### Root Log Format (agent-direct edits only)
-
-- **Reverse chronological** — newest FIRST.
-- **ISO 8601 headings** — `## YYYY-MM-DD HH:MM`
-  (use `date '+%Y-%m-%d %H:%M'`).
-- **Bullet prefix** — `- ` (dash).
-- **Scope** — each `log.md` describes only its own scope. When a
-  single action affects both, log in each.
-- **Never modify or delete** existing entries.
-- **Insertion anchor.** The `before` anchor MUST be the comment line
-  (`<!-- Append-only. Newest entries at top. -->`), NEVER a `##`
-  heading — headings shift across sessions and after compaction.
-  Always `head -6 <log_file>` before editing to confirm current state.
 
 ### 6. Idempotency 🔄
 

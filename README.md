@@ -221,7 +221,7 @@ Each guardrail is classified by its enforcement mechanism:
 2. ⚖️ **Memory Scope** — `memories/` is PROJECT-only; experiences not rules; graduation path to OKF knowledge
 3. 🔄 **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
 4. ⚖️ **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
-5. 🚧 **Filesystem Integrity** — STOP after `.agents/` edit → preserve sections → regen index (delegated) → update log → RESUME
+5. 🚧 **Filesystem Integrity** — STOP after `.agents/` edit → run `post-edit.sh` → log changes → RESUME
 6. 🔄 **Idempotency** — Same inputs → same filesystem state
 7. ⚖️ **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
 8. 🔄 **Anti-Daydreaming** — Ephemeral session canary name; spot-check for context drift; never persisted to AgentFS files

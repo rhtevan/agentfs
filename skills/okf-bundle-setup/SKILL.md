@@ -335,11 +335,11 @@ Record every material change the skill made. Common entries:
 #### Inserting at the top (reverse chronological)
 
 **Preferred**: Use the `merge-log-entry.sh` script from the
-`okf-bundle-gen` skill — it handles today-heading dedup and
+`agentfs-setup` skill — it handles today-heading dedup and
 reverse-chronological insertion automatically:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   "$BUNDLE_ROOT/log.md" \
   "- **Reorganization**: Moved N files into reserved directories.
 - **Update**: Regenerated index.md."

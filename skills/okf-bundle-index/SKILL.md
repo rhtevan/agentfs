@@ -198,10 +198,10 @@ If any issues remain, repeat Phases 5–6 for those directories.
 If any changes were made, record them in the bundle root's `log.md`.
 
 **Preferred** — use the `merge-log-entry.sh` script from
-`okf-bundle-gen`:
+`agentfs-setup`:
 
 ```bash
-bash ~/.agents/skills/okf-bundle-gen/scripts/merge-log-entry.sh \
+bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh \
   "$BUNDLE_ROOT/log.md" \
   "* **Update**: Audited index.md files — fixed N broken link(s), added M missing entry/entries, created K new index file(s)."
 ```
@@ -305,7 +305,7 @@ Skill directory: ~/.agents/skills/okf-bundle-index
 
 ### Cross-skill dependencies
 
-- `okf-bundle-gen` scripts: `merge-log-entry.sh` (Phase 8 logging)
+- `agentfs-setup` scripts: `merge-log-entry.sh` (shared log utility)
 - `okf-bundle-setup` scripts: `verify-bundle.sh` (optional full
   conformance check after index repair)
 

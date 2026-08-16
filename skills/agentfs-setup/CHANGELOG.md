@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-16 13:26 | v3.14.0 — Moved `merge-log-entry.sh` from `okf-bundle-gen` to `agentfs-setup` (foundational skill owns shared utilities). Updated 17 references across 6 skills. Removed Root Log Format subsection from Guardrail #5 (mechanics now in script). Updated delegation table: root logs use `merge-log-entry.sh`, skills index uses `post-edit.sh`. Template version 3.13→3.14. |
+| 2026-08-15 11:57 | v3.13.0 — Added `post-edit.sh` script: automates fragile post-edit steps (skills index regeneration, log.md anchor validation). Guardrail #5 STOP block now references `post-edit.sh` instead of delegation table. Quick Reference row updated. Follows skill-gen principle: loose steps → instructions, fragile steps → code. |
 | 2026-08-14 19:40 | v3.12.0 — Removed Post-Edit Completeness subsection from Guardrail #5 (redundant with delegation table). STOP block moved to top as one-liner. 64→45 lines. Template version 3.11→3.12. |
 | 2026-08-14 19:19 | v3.11.0 — Rewrote Guardrail #5 (Filesystem Integrity): replaced 4 subsections (Link Integrity, Log & Changelog Currency, Index Currency, Post-Edit Completeness) with 4 focused sections (Editing Rules, Log & Index Delegation table, Root Log Format, Post-Edit Gate). Added delegation table mapping every log/index file to its owning skill and update method. Removed 26 lines of redundancy. Updated Quick Reference row. Template version 3.10→3.11. |
 | 2026-08-12 22:55 | v3.10.1 — Guardrail #5 (Log & Changelog Currency): added 24-hour format hint with `date` command to ISO 8601 timestamp rule. Index Currency: consolidated `skill-index` requirement into the MUST-stay-current bullet (removed separate bullet); explicit `load_skill(name: "skill-index")` call-out. |
