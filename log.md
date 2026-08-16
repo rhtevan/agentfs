@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-16 16:54
+
+agentfs-setup v4.4.0: Template version now derived from metadata.version (single source of truth).
+
+## 2026-08-16 16:49
+
+agentfs-setup v4.3.0: Made Guardrail #5 completion gate explicit (4-item checklist). Added version-CHANGELOG alignment check to regen-skill-index.py (v4.1.0). Synced AGENTS.md to v4.3.0.
+
+## 2026-08-16 16:19
+
+AGENTS.md optimization (v3.14→v4.0): extracted regen-skill-index.py from post-edit.sh (DRY), created pre-push-scan.sh and checkpoint.sh (Strategy A), compressed guardrails prose (Strategy C), added completion gate to Guardrail #5, updated seed-agents-md.sh template, updated skill-index/SKILL.md to use canonical script, added test scripts for validation.
+
 ## 2026-08-16 13:38
 
 - Moved `merge-log-entry.sh` from `okf-bundle-gen` to `agentfs-setup` (shared utility in foundational skill). Updated 17 references across 6 skills.

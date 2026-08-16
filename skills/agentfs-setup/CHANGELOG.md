@@ -3,6 +3,11 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-16 16:52 | v4.4.0 — Template version in `seed-agents-md.sh` now reads from `SKILL.md` `metadata.version` (single source of truth). Eliminates manual template version bumps. |
+| 2026-08-16 16:49 | v4.3.0 — Made Guardrail #5 completion gate explicit with 4-item checklist (post-edit.sh, log.md, CHANGELOG, metadata.version). Aligned Quick Reference #5 row to match. |
+| 2026-08-16 16:39 | v4.2.0 — Added `metadata.version` bump to Guardrail #5 completion gate checklist (3 key actions: post-edit.sh, log/CHANGELOG, version bump). Template version updated. |
+| 2026-08-16 16:36 | v4.1.0 — Added version-CHANGELOG alignment check to `regen-skill-index.py`: compares `metadata.version` against latest CHANGELOG entry, warns on mismatch. Normalizes trailing `.0` to avoid false positives (e.g., `1.0.0` matches `1.0`). |
+| 2026-08-16 16:22 | v4.0.0 — AGENTS.md token optimization (39% reduction). Extracted `regen-skill-index.py` from `post-edit.sh` inline heredoc (DRY). Created `pre-push-scan.sh` (replaces Guardrail #10 prose), `checkpoint.sh` (replaces #9 prose). Compressed guardrails #2, #3, #7, #8 prose; removed #1, #6 detail (table-only). Added completion gate to Guardrail #5 (forward-carry pattern). Added test scripts: `test-pre-push-scan.sh`, `test-checkpoint.sh`, `test-agents-md-fidelity.sh`. Template version 3.14→4.0. |
 | 2026-08-16 13:26 | v3.14.0 — Moved `merge-log-entry.sh` from `okf-bundle-gen` to `agentfs-setup` (foundational skill owns shared utilities). Updated 17 references across 6 skills. Removed Root Log Format subsection from Guardrail #5 (mechanics now in script). Updated delegation table: root logs use `merge-log-entry.sh`, skills index uses `post-edit.sh`. Template version 3.13→3.14. |
 | 2026-08-15 11:57 | v3.13.0 — Added `post-edit.sh` script: automates fragile post-edit steps (skills index regeneration, log.md anchor validation). Guardrail #5 STOP block now references `post-edit.sh` instead of delegation table. Quick Reference row updated. Follows skill-gen principle: loose steps → instructions, fragile steps → code. |
 | 2026-08-14 19:40 | v3.12.0 — Removed Post-Edit Completeness subsection from Guardrail #5 (redundant with delegation table). STOP block moved to top as one-liner. 64→45 lines. Template version 3.11→3.12. |

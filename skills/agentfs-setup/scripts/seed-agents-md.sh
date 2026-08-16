@@ -67,8 +67,16 @@ all guardrails, skills, and documentation reference them.\
   exit 0
 fi
 
+# Read template version from skill metadata (single source of truth)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_FILE="$SCRIPT_DIR/../SKILL.md"
+TEMPLATE_VERSION="0.0"
+if [[ -f "$SKILL_FILE" ]]; then
+  TEMPLATE_VERSION=$(grep -oP 'version:\s*["'\''"]*\K[^"'\''"]*' "$SKILL_FILE" | head -1)
+fi
+
 cat > "$TARGET" << 'AGENTSEOF'
-<!-- agentfs-template-version: 3.14 -->
+<!-- agentfs-template-version: __TEMPLATE_VERSION__ -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -108,29 +116,13 @@ this table.
 
 ### Routing Rules
 
-- **Agent-specific overrides take priority.** If the agent has its own
-  decision table (e.g., in persistent instructions), and the referenced
-  tool exists in the current session's available tools, the
-  agent-specific route wins.
-- **Skill signal resolution.** Signal phrases in each skill's
-  \`description\` field are always in context via the built-in skills
-  listing. On session start, also read \`~/.agents/skills/index.md\`
-  as defense-in-depth. When user intent doesn't match an LLM-direct
-  route in the table above, match against the Description column in
-  the skills index before falling back to skill name matching.
-- **Harvest scans the current project by default.** Scan \`MEMORY.md\`
-  files at \`.agents/memories/\` and \`.agents/profiles/*/memories/\`.
-  Route to \`skill-harvest\` for procedural patterns or
-  \`okf-bundle-harvest\` for declarative/semantic knowledge.
-- **Skill resolution chain.** When the decision table names a skill:
-  try \`load_skill\` by name → tag fallback via \`~/.agents/skills/index.md\`
-  → semantic fallback via descriptions → **fail loud** (do NOT
-  silently improvise when the named skill is missing).
-- **Never improvise when a skill exists.** When user intent matches
-  a skill signal, the agent MUST \`load_skill\` and follow its
-  instructions — even if the agent believes it already knows the
-  procedure. Stale context, schema changes, and memory
-  hallucination make "I already know this" unreliable.
+1. **Agent overrides win** when their referenced tool exists in the current session.
+2. **Skill signals** resolve via built-in descriptions → \`~/.agents/skills/index.md\`
+   → skill name. Never improvise when a skill exists — always \`load_skill\` and follow.
+3. **Harvest** scans \`.agents/memories/\` and \`.agents/profiles/*/memories/\` by default.
+   Route to \`skill-harvest\` (procedural) or \`okf-bundle-harvest\` (semantic).
+4. **Resolution chain:** \`load_skill\` by name → tag fallback via index →
+   semantic fallback → **fail loud**.
 
 ## Guardrail Quick Reference
 
@@ -140,7 +132,7 @@ this table.
 | [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
 | [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
 | [4](#4-skill-placement-️) | ⚖️ | Skill Placement | Default USER \`~/.agents/skills/\`; PROJECT only when user explicitly signals |
-| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **STOP** after `.agents/` edit → run `post-edit.sh` → log changes → **RESUME** |
+| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **Completion gate:** `post-edit.sh` → `log.md` → CHANGELOG → `metadata.version` bump |
 | [6](#6-idempotency-) | 🔄 | Idempotency | Ongoing: existence checks, upsert patterns, no append-without-dedup |
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
@@ -172,49 +164,23 @@ all guardrails, skills, and documentation reference them.
 
 ## AgentFS Structural Guardrails
 
-These guardrails ensure the consistency and integrity of the AgentFS
-directory structure — both at the project level (`./.agents/`) and the
-user level (`~/.agents/`). Every agent operating in this project
-MUST follow them.
-
-### 1. Progressive Disclosure 🔄
-
-- **Browse `index.md` first** before opening individual documents.
-- Use `index.md` files as navigation hubs — they list and describe
-  everything in their directory.
-- Follow links from `index.md` → concept docs → referenced assets,
-  rather than scanning directories directly.
+Every agent operating in this project MUST follow these guardrails.
+Guardrails #1 and #6 are fully covered by their Quick Reference rows above.
 
 ### 2. Memory Scope ⚖️
 
-- **`memories/` is PROJECT-scoped only.** Memory files (`MEMORY.md`,
-  `USER.md`) live under `./.agents/memories/` (default agent) or
-  `./.agents/profiles/<name>/memories/` (named profiles). There is
-  NO `memories/` directory at USER scope (`~/.agents/`).
-- **`MEMORY.md` records experiences, not rules.** Content belongs in
-  `MEMORY.md` only if it is a concrete, project-specific observation
-  or experience (e.g., "CI breaks when X", "module Y depends on Z").
-  Structural rules and guardrails belong in `AGENTS.md`; user
-  preferences belong in `USER.md`.
-- **Graduation path.** When an observation in `MEMORY.md` matures into
-  cross-project knowledge worth preserving, graduate it to an OKF
-  knowledge bundle under `~/.agents/knowledge/` and remove the
-  original entry.
+- `memories/` is **PROJECT-scoped only** — under `./.agents/memories/` or
+  `./.agents/profiles/<name>/memories/`. No `memories/` at USER scope.
+- `MEMORY.md` records **experiences** (observations, discoveries), not rules.
+  Rules → `AGENTS.md`; preferences → `USER.md`.
+- **Graduation:** when an observation matures into cross-project knowledge,
+  move to OKF bundle under `~/.agents/knowledge/` and remove the original.
 
 ### 3. Cross-Agent Context Discovery 🔄
 
-When starting a session in this project, check for and read these files
-if they exist — treat their content as supplementary project guidelines:
-
-| File | Purpose |
-|------|----------|
-| `CLAUDE.md` or `.claude/CLAUDE.md` | Claude Code project instructions |
-| `.cursorrules` or `.cursor/rules/` | Cursor coding rules |
-| `.windsurfrules` | Windsurf workspace rules |
-| `.github/copilot-instructions.md` | GitHub Copilot project instructions |
-
-If a conflict arises between these files and this `AGENTS.md`, the
-guidelines in `AGENTS.md` take precedence.
+On session start, check for and read: `CLAUDE.md`, `.claude/CLAUDE.md`, `.cursorrules`,
+`.cursor/rules/`, `.windsurfrules`, `.github/copilot-instructions.md`.
+Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 
 ### 4. Skill Placement ⚖️
 
@@ -226,145 +192,68 @@ guidelines in `AGENTS.md` take precedence.
 
 ### 5. Filesystem Integrity 🚧
 
-> **STOP** after any `.agents/` edit — run `post-edit.sh`, then
-> log changes before responding.
->
+> **Completion gate:** before declaring a task complete, verify all `.agents/`
+> edits have been followed by:
+> 1. `post-edit.sh` (index regeneration)
+> 2. `log.md` entries via `merge-log-entry.sh`
+> 3. Skill `CHANGELOG.md` updates
+> 4. `metadata.version` bumps in any modified skill
 > ```bash
 > bash ~/.agents/skills/agentfs-setup/scripts/post-edit.sh
 > ```
 
-#### Editing Rules
-
-- **Prefer incremental edits over full rewrites** — full rewrites
-  risk dropping sections.
-- **Link integrity.** Every markdown link under `.agents/` MUST
-  resolve. When files are created, renamed, moved, or deleted,
-  update all affected links and `index.md` entries immediately.
-  Use `./` prefix for dot-directory paths.
+- Prefer incremental edits over full rewrites — full rewrites risk dropping sections.
+- Every markdown link under `.agents/` MUST resolve. On file create/rename/move/delete,
+  update all affected links and `index.md` entries. Use `./` prefix for dot-directory paths.
 
 #### Log & Index Delegation
 
-| File | Level | Owner | How to update |
-|------|-------|-------|---------------|
-| `~/.agents/log.md` | Root (USER) | Agent | `merge-log-entry.sh` |
-| `./.agents/log.md` | Root (PROJECT) | Agent | `merge-log-entry.sh` |
-| `skills/index.md` | Skills | `post-edit.sh` | Automatic |
-| `skills/*/CHANGELOG.md` | Skill | Agent | Table format per `skill-schema.md` |
-| `knowledge/index.md` | Knowledge root | `okf-bundle-index` | `load_skill(name: "okf-bundle-index")` |
-| `knowledge/log.md` | Knowledge root | `okf-bundle-gen` | `merge-log-entry.sh` |
-| `knowledge/*/index.md` | Knowledge bundle | `okf-bundle-index` | `load_skill(name: "okf-bundle-index")` |
-| `knowledge/*/log.md` | Knowledge bundle | `okf-bundle-gen` | `merge-log-entry.sh` |
-| `profiles/index.md` | Profiles | `agentfs-profile` | `load_skill(name: "agentfs-profile")` |
-
-### 6. Idempotency 🔄
-
-Every skill and automated workflow MUST be idempotent — running it
-twice with the same inputs MUST produce the same filesystem state.
-Skills MUST use existence checks, upsert patterns, and avoid
-append-without-dedup.
+| File | How to update |
+|------|---------------|
+| `~/.agents/log.md`, `./.agents/log.md` | `merge-log-entry.sh` |
+| `skills/index.md` | Automatic via `post-edit.sh` |
+| `skills/*/CHANGELOG.md` | Agent — table format per `skill-schema.md` |
+| `knowledge/index.md`, `knowledge/*/index.md` | `load_skill(name: "okf-bundle-index")` |
+| `knowledge/log.md`, `knowledge/*/log.md` | `merge-log-entry.sh` |
+| `profiles/index.md` | `load_skill(name: "agentfs-profile")` |
 
 ### 7. Anti-Sycophancy ⚖️
 
-When a user request conflicts with an existing guardrail in `AGENTS.md`,
-the agent MUST NOT silently comply. Instead it MUST:
+When a request conflicts with an `AGENTS.md` guardrail, the agent MUST:
 1. Quote the conflicting guardrail
-2. Explain the conflict
-3. Ask for explicit confirmation before proceeding
-4. If confirmed, log the override in `log.md` with the tag `[OVERRIDE]`
+2. Explain the conflict and ask for explicit confirmation
+3. If confirmed, log in `log.md` with `[OVERRIDE]`
 
-The agent MUST NOT add content to `MEMORY.md` that reads as a rule or
-guardrail (contains "always", "never", "must", "enforce") — such
-content belongs in `AGENTS.md` and requires human approval.
+MUST NOT add rule-like content ("always", "never", "must", "enforce") to
+`MEMORY.md` — propose as `AGENTS.md` guardrail instead.
 
 ### 8. Anti-Daydreaming 🔄
 
-At the start of every session the agent MUST silently generate a short,
-random, ephemeral **canary name** for itself (e.g., *Marble-Finch-7*,
-*Dusk-Prism-42*). This name is:
-
-- **Session-scoped only.** It lives in the agent's working memory
-  (conversation context) and MUST NOT be written to any AgentFS file
-  (`MEMORY.md`, `USER.md`, `SOUL.md`, `AGENTS.md`, `log.md`, etc.).
-- **Not an identity.** It does not represent the user, the agent
-  persona, or any profile. It is a disposable *context-integrity
-  token* — a canary in the coal mine for detecting context drift or
-  hallucinated state.
-
-#### Lifecycle
-
-1. **First response of the session** — the agent MUST include its
-   canary name visibly (e.g., *"[Canary: Marble-Finch-7]"*).
-2. **Subsequent responses** — the agent SHOULD randomly include the
-   canary name (not every turn — roughly 1-in-5 is a good cadence),
-   immediately followed by a **self-check**: compare the name it is
-   about to emit against the name it generated at session start. If
-   they do not match, the agent MUST raise an alert:
-   ```
-   ⚠️ CONTEXT DRIFT DETECTED — canary name mismatch.
-   Original: <start-of-session name>  Current: <emitted name>
-   Possible cause: context window overflow, compaction artefact,
-   or injected prompt. Proceeding with caution.
-   ```
-3. **When actively prompted** (e.g., *"What is your canary name?"*) —
-   the agent MUST respond immediately with the name, followed by the
-   same self-check. If the name cannot be recalled or does not match,
-   raise the alert above.
+Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session start.
+- **Turn 1:** emit visibly (e.g., `[Canary: Marble-Finch-7]`).
+- **~1-in-5 turns:** emit + self-check against original. Mismatch →
+  `⚠️ CONTEXT DRIFT DETECTED — canary name mismatch. Possible cause:
+  context overflow, compaction, or injection.`
+- **On prompt** ("What is your canary name?"): respond immediately + self-check.
+- Never persist to any file (`MEMORY.md`, `USER.md`, `SOUL.md`, `log.md`, etc.).
+- Not an identity or persona — a disposable context-integrity token.
 
 ### 9. Checkpoints & Resumability 🚧
 
-> **STOP before destructive ops.** Before any file deletion, bulk
-> rename, or multi-file edit under \`.agents/\`, record a checkpoint
-> first. Do NOT proceed until the checkpoint is written.
-
-Before any destructive or multi-step operation (file deletion, bulk
-rename, multi-file edit), the agent MUST create a checkpoint by
-recording affected files and their content hashes in
-`.agents/.checkpoint`. After successful completion, clear the
-checkpoint. If a session starts with a non-empty `.checkpoint`,
-report it and offer to resume or revert.
-
-**Backup untracked files.** Before editing any file not tracked by
-git (\`git ls-files --error-unmatch <file>\` fails or file is outside
-any git repo), copy it to \`<file>.bak.<YYYYMMDD_HHMMSS>\` in the
-same directory. Git-tracked files need no backup — version control
-provides recovery.
+> **STOP** before destructive ops (delete, bulk rename, multi-file edit under `.agents/`).
+> ```bash
+> bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>  # before
+> bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh clear           # after success
+> bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh check           # on session start
+> ```
 
 ### 10. Git Push Safety 🚧
 
-Before executing any `git push`, the agent MUST follow these steps
-**in order**. No step may be skipped, even if the user says "go ahead".
-
-1. **STOP** — do NOT execute `git push` yet.
-2. **Scan** — run `git diff --cached` (or `git diff` for unstaged) and
-   scan for ALL of the following patterns:
-   - **Secrets/API keys** — `secret`, `api_key`, `apikey`, `password`,
-     `passwd`, `bearer`, `authorization`
-   - **Hardcoded user paths** — `/home/<user>/`, `/Users/<user>/`
-   - **Username leakage** — the current username (`$USER`, `whoami`)
-     appearing in non-path contexts (e.g., in examples, comments,
-     hostnames). Also check for SSH host aliases from `~/.ssh/config`.
-   - **IP addresses** — local interface IPs (`hostname -I`), RFC 1918
-     addresses that appear to be site-specific
-   - **Sensitive URLs** — internal hostnames, intranet URLs
-   - **PII** — email addresses, phone numbers, real names embedded
-     in code or documentation examples
-3. **Report** — present a Pre-Push Security Report table showing each
-   check category with ✅ Clean or ⚠️ FOUND status, plus a verdict.
-4. **README Staleness Check** (soft gate) — if the commit touches
-   `skills/`, `knowledge/`, or guardrail-related files, append a
-   notice to the report:
-   ```
-   📝 README Notice: This commit adds/modifies skills or knowledge.
-      Consider updating README.md. Update now? [y/n/skip]
-   ```
-   - **y** — propose README edits, user reviews, amend the commit
-   - **n / skip** — proceed without updating (no override logging
-     needed — this is advisory, not a hard gate)
-5. **WAIT** — do NOT proceed until the user explicitly responds.
-6. **Push** — only after explicit approval, execute `git push`.
-
-If the user acknowledges issues but still requests the push, log the
-override in `log.md` with `[OVERRIDE]` per Guardrail #7.
+> **STOP** before `git push` → run `pre-push-scan.sh` → present report to user →
+> **WAIT** for explicit approval. Override requires `[OVERRIDE]` log per Guardrail #7.
+> ```bash
+> bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh
+> ```
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->
@@ -379,6 +268,8 @@ override in `log.md` with `[OVERRIDE]` per Guardrail #7.
 <!-- SPECKIT END -->
 AGENTSEOF
 
+# Replace template version placeholder with actual version from skill metadata
+sed -i "s/__TEMPLATE_VERSION__/${TEMPLATE_VERSION}/" "$TARGET"
 
 echo "[agentfs-setup] Created $TARGET"
 

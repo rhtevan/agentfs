@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-16 16:22 | v4.0.0 — Replaced 180-line procedural prose with invocation of canonical `regen-skill-index.py` script (DRY with `post-edit.sh`). SKILL.md 175→57 lines. |
 | 2026-08-13 12:35 | v3.0.0 — Breaking: index columns changed from `Skill \| Tags \| Signals \| Updated` to `Skill \| Tags \| Description \| Updated`; Description column populated from `description` frontmatter field (signal phrases) instead of `metadata.signals`; removed `metadata.signals` extraction code (state machine parser); added Step 5 to warn on legacy `metadata.signals` field; updated verification checklist |
 | 2026-08-06 20:58 | v2.4.0 — Fixed signals extraction bug: replaced fragile metadata block regex (`((?:[ \t]+.*(?:\n|$))*)`) with line-by-line state machine parser; regex silently failed due to Python `$` escaping causing zero-length match on `metadata:` block, resulting in empty Signals columns; new approach correctly handles signals at any position including last field before `---` |
 | 2026-08-04 23:52 | v2.3.0 — Added `metadata.version` presence validation; emits warning for skills missing `metadata.version`; references canonical schema (`skill-gen/references/skill-schema.md`) |
