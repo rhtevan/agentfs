@@ -215,7 +215,7 @@ Each guardrail is classified by its enforcement mechanism:
 
 | Type | Marker | Mechanism |
 |------|--------|-----------|
-| **Gate** | 🚧 | Hard stop at action point — STOP → checklist → RESUME |
+| **Gate** | ⛔ | Hard stop — STOP before proceeding. Must pass. No exceptions without [OVERRIDE]. |
 | **Rule** | ⚖️ | Constrained choice at decision point — Default X; exception when Y |
 | **Habit** | 🔄 | Ongoing behavioral norm — maintain throughout session |
 
@@ -223,12 +223,12 @@ Each guardrail is classified by its enforcement mechanism:
 2. ⚖️ **Memory Scope** — `memories/` is PROJECT-only; experiences not rules; graduation path to OKF knowledge
 3. 🔄 **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
 4. ⚖️ **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
-5. 🚧 **Filesystem Integrity** — Edit-time logging rule + completion gate; `pre-push-scan.sh` enforces log coverage deterministically
+5. ⛔ **Filesystem Integrity** — STOP before declaring done. log.md → CHANGELOG + version bump → indexes → links → all pass → THEN summarize
 6. 🔄 **Idempotency** — Same inputs → same filesystem state
 7. ⚖️ **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
 8. 🔄 **Anti-Daydreaming** — Ephemeral session canary name; spot-check for context drift; never persisted to AgentFS files
-9. 🚧 **Checkpoints & Resumability** — STOP before destructive op → record affected files → execute → clear checkpoint
-10. 🚧 **Git Push Safety** — STOP → Scan (secrets, usernames, IPs, PII, README staleness) → Report → WAIT → Push
+9. ⛔ **Checkpoints & Resumability** — STOP before destructive op. Record affected files → execute → clear checkpoint
+10. ⛔ **Git Push Safety** — STOP before commit. Stage → Scan → Report → WAIT for user confirmation → Commit → Push
 
 The canonical source for guardrails is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered guardrails.

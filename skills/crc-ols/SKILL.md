@@ -3,8 +3,8 @@ name: crc-ols
 description: >
   install lightspeed, configure lightspeed, openshift lightspeed, ols setup
 metadata:
-  version: "2.1.0"
-  tags: [openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, provider-management]
+  version: "2.2.0"
+  tags: [openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, skupper, granite, self-hosted, provider-management]
 ---
 
 # OpenShift Lightspeed on CRC — Multi-Provider Management
@@ -425,7 +425,8 @@ oc get olsconfig cluster -o jsonpath='{.status.overallStatus}'
 
 | Type | `type` value | URL Required | Credential Format | Extra Config |
 |------|-------------|-------------|-------------------|-------------|
-| OpenAI / OpenAI-compatible (LiteLLM, MaaS, vLLM) | `openai` | ✅ Yes | API key in secret (`--from-literal=apitoken=KEY`) | None |
+| OpenAI / OpenAI-compatible (LiteLLM, MaaS, vLLM) | `openai` | ✅ Yes | API key in secret (`--from-file=apitoken=FILE`) | None |
+| Self-hosted via Skupper (Granite, vLLM) | `openai` | ✅ Yes (in-cluster) | Dummy key (`no-key-required`) | Requires `skupper-model-provider` VAN running |
 | Google Vertex AI Anthropic | `google_vertex_anthropic` | ❌ No | GCP SA key JSON (`--from-file=gcp-service-account.json=FILE`) | `googleVertexAnthropicConfig` (projectID, location) |
 | Azure OpenAI | `azure_openai` | ✅ Yes | API key in secret | `azureOpenAIConfig` |
 | WatsonX | `watsonx` | ✅ Yes | API key in secret | None |
@@ -437,6 +438,49 @@ oc get olsconfig cluster -o jsonpath='{.status.overallStatus}'
 - Each provider should use a **separate secret** for isolation
 - Secret names should be descriptive (e.g., `llmcreds`, `maas-llmcreds`)
 - The `credentialKey` in OLSConfig must match the key name used when creating the secret
+
+### Self-Hosted Models via Skupper
+
+Models served by `hosted-model-ctl` on remote GPU hosts can be exposed to the CRC cluster through the Skupper VAN (managed by `skupper-model-provider`). These appear as in-cluster OpenAI-compatible endpoints.
+
+**How it works:**
+1. `skupper-model-provider` creates a Listener + Service inside the CRC namespace (e.g., `model-listener-rhel-ai.model-provider-crc:9000`)
+2. Traffic is routed over the Skupper link to the remote host's model container
+3. OLS connects to this in-cluster service as an `openai` type provider
+
+**Setup pattern:**
+```bash
+# 1. Create a dummy credentials secret (self-hosted vLLM has no auth)
+echo -n 'no-key-required' > /tmp/llm-key.txt
+oc create secret generic skupper-model-llmcreds \
+  --from-file=apitoken=/tmp/llm-key.txt \
+  -n openshift-lightspeed
+rm /tmp/llm-key.txt
+
+# 2. Add provider pointing at the Skupper in-cluster service
+oc patch olsconfig cluster --type=json -p '[
+  {
+    "op": "add",
+    "path": "/spec/llm/providers/-",
+    "value": {
+      "name": "skupper-model",
+      "type": "openai",
+      "url": "http://model-listener-rhel-ai.model-provider-crc:9000/v1",
+      "credentialsSecretRef": {"name": "skupper-model-llmcreds"},
+      "credentialKey": "apitoken",
+      "models": [{"name": "ibm-granite/granite-4.1-8b"}]
+    }
+  }
+]'
+```
+
+**Dependencies:** Requires `skupper-model-provider` VAN to be running (`start skupper model`) and a model started via `hosted-model-ctl` on the target host.
+
+**Available models:** Check dynamically with:
+```bash
+oc exec deployment/skupper-router -n model-provider-crc -- \
+  curl -s http://model-listener-rhel-ai.model-provider-crc:9000/v1/models
+```
 
 ---
 

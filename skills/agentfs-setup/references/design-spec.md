@@ -276,14 +276,14 @@ Defines ten structural guardrails (reordered by usage frequency):
 2. ⚖️ **Memory Scope** — memories are PROJECT-only; graduation path to OKF
 3. 🔄 **Cross-Agent Discovery** — read CLAUDE.md, .cursorrules, etc.
 4. ⚖️ **Skill Placement** — default to USER, PROJECT only when explicit
-5. 🚧 **Filesystem Integrity** — link integrity, log currency, content
+5. ⛔ **Filesystem Integrity** — link integrity, log currency, content
    file currency, and index currency in a single guardrail
 6. 🔄 **Idempotency** — every skill and workflow must be idempotent
 7. ⚖️ **Anti-Sycophancy** — refuse conflicting requests, log overrides
 8. 🔄 **Anti-Daydreaming** — ephemeral session canary name; spot-check
    for context drift; never persisted to AgentFS files
-9. 🚧 **Checkpoints & Resumability** — checkpoint before destructive ops
-10. 🚧 **Git Push Safety** — mandatory 5-step preflight before any
+9. ⛔ **Checkpoints & Resumability** — checkpoint before destructive ops
+10. ⛔ **Git Push Safety** — mandatory 5-step preflight before any
     `git push`: stop → scan → present report → wait for approval → push
 
 ### Guardrail Type System
@@ -292,7 +292,7 @@ Each guardrail is classified by its enforcement mechanism:
 
 | Type | Marker | Trigger | Agent Behavior | Key Action Pattern |
 |------|--------|---------|---------------|--------------------|
-| **Gate** | 🚧 | Specific action point | STOP, complete checklist, then proceed | `STOP → [verb chain] → RESUME/WAIT` |
+| **Gate** | ⛔ | Specific action point | STOP, complete checklist, then proceed | `STOP → [verb chain] → RESUME/WAIT` |
 | **Rule** | ⚖️ | Decision point | Choose correctly from constrained options | `Default X; exception when Y` |
 | **Habit** | 🔄 | Continuous / periodic | Maintain behavioral norm throughout session | `[trigger]: action` |
 

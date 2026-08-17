@@ -132,12 +132,12 @@ this table.
 | [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
 | [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
 | [4](#4-skill-placement-️) | ⚖️ | Skill Placement | Default USER \`~/.agents/skills/\`; PROJECT only when user explicitly signals |
-| [5](#5-filesystem-integrity-) | 🚧 | Filesystem Integrity | **Completion gate:** log.md → CHANGELOG + version bump → indexes → links |
+| [5](#5-filesystem-integrity-) | ⛔ GATE | Filesystem Integrity | **STOP before declaring done.** log.md → CHANGELOG + version bump → indexes → links → all pass → THEN summarize |
 | [6](#6-idempotency-) | 🔄 | Idempotency | Ongoing: existence checks, upsert patterns, no append-without-dedup |
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
-| [9](#9-checkpoints--resumability-) | 🚧 | Checkpoints | **STOP** before destructive op → record affected files → execute → clear checkpoint |
-| [10](#10-git-push-safety-) | 🚧 | Git Push Safety | Stage → Scan → *(README audit if Clean)* → Report → **WAIT** → Commit → Push |
+| [9](#9-checkpoints--resumability-) | ⛔ GATE | Checkpoints | **STOP before destructive op.** Record affected files → execute → clear checkpoint |
+| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(README audit if Clean)* → Report → **WAIT for user** → Commit → Push |
 
 ## Scope Definitions
 
@@ -190,18 +190,22 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
   `./.agents/skills/<skill-name>/` when the user specifically says
   "project skill", "for this project", "local skill", or similar.
 
-### 5. Filesystem Integrity 🚧
+### 5. Filesystem Integrity ⛔ GATE
 
 > **Edit-time rule:** after every write/edit to a file under `.agents/`
 > or `~/.agents/`, log the change to the scope's `log.md` **before
 > proceeding to the next step** — do not batch logging to end-of-task.
 >
-> **Completion gate:** before declaring a task complete, verify all
-> `.agents/` edits satisfy:
+> **⛔ GATE — STOP before declaring any task complete.** Do NOT present
+> a summary, "done" message, or "all set" response until every check
+> below passes. If any check fails, fix it before proceeding.
+>
 > 1. Every modified scope has a new `log.md` entry
 > 2. Modified skills have a `CHANGELOG.md` row and `metadata.version` bump
-> 3. All indexes are current
+> 3. All indexes are current (`post-edit.sh` runs clean for your changes)
 > 4. All markdown links under `.agents/` resolve
+>
+> **Violation = declaring done without running the gate checks.**
 >
 > The `pre-push-scan.sh` enforces log coverage deterministically —
 > it flags `⚠️ GAP` when staged files lack a same-day `log.md` entry.
@@ -252,26 +256,39 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 - Never persist to any file (`MEMORY.md`, `USER.md`, `SOUL.md`, `log.md`, etc.).
 - Not an identity or persona — a disposable context-integrity token.
 
-### 9. Checkpoints & Resumability 🚧
+### 9. Checkpoints & Resumability ⛔ GATE
 
-> **STOP** before destructive ops (delete, bulk rename, multi-file edit under `.agents/`).
+> **⛔ GATE — STOP before destructive ops** (delete, bulk rename,
+> multi-file edit under `.agents/`). Do NOT execute until checkpoint
+> is recorded.
+>
 > ```bash
-> bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>  # before
+> bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>  # before — MUST pass
 > bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh clear           # after success
 > bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh check           # on session start
 > ```
+>
+> **Violation = executing a destructive op without creating a checkpoint first.**
 
-### 10. Git Push Safety 🚧
+### 10. Git Push Safety ⛔ GATE
 
-> **Workflow:** `git add -A` → `pre-push-scan.sh` → *(if README staleness ✅ Clean)*
-> `load_skill(name: "agentfs-readme-audit")` → present report → **WAIT** →
-> `git commit` → `git push`. The scan MUST run **before commit** on staged changes.
+> **⛔ GATE — STOP before commit.** Do NOT run `git commit` until
+> the scan passes and the user explicitly confirms.
+>
+> **Workflow:** `git add -A` → `pre-push-scan.sh` → *(if README
+> staleness ✅ Clean)* → `load_skill(name: "agentfs-readme-audit")`
+> → present report → **WAIT for user confirmation** → `git commit`
+> → `git push`.
+>
 > Override requires `[OVERRIDE]` log per Guardrail #7.
+>
 > ```bash
 > bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh   # scans git diff --cached
 > # If README staleness is ✅ Clean, run semantic alignment check:
 > # load_skill(name: "agentfs-readme-audit")
 > ```
+>
+> **Violation = committing without running `pre-push-scan.sh` or without user confirmation.**
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->

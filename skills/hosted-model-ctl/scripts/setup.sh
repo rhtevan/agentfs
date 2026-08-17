@@ -73,8 +73,8 @@ case "$ENGINE" in
 
   llamacpp)
     # Check GGUF file exists
-    local gguf_file="granite-4.1-8b-Q4_K_M.gguf"
-    local gguf_path="~/.cache/huggingface/gguf/$gguf_file"
+    gguf_file="granite-4.1-8b-Q4_K_M.gguf"
+    gguf_path="~/.cache/huggingface/gguf/$gguf_file"
     run_on_host "$HOST" "test -f $gguf_path" || {
       echo "Downloading $gguf_file (~5.35 GB)..."
       run_on_host "$HOST" "curl -L -o $gguf_path \
@@ -96,7 +96,7 @@ case "$ENGINE" in
     ;;
 
   vllm-ilab)
-    local hf_cache
+    hf_cache=""
     case "$HOST" in
       rhel-ai) hf_cache="/var/home/cloud-user/.cache/huggingface" ;;
       *)       hf_cache="$HOME/.cache/huggingface" ;;
@@ -119,7 +119,9 @@ case "$ENGINE" in
       --gpu-memory-utilization 0.95 \
       --trust-remote-code \
       --disable-custom-all-reduce \
-      --dtype bfloat16"
+      --dtype bfloat16 \
+      --enable-auto-tool-choice \
+      --tool-call-parser granite"
     ;;
 
   *)

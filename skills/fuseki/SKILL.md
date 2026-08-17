@@ -6,7 +6,7 @@ argument-hint: "fuseki {setup|start|stop|status}"
 compatibility: "Linux with systemd user sessions, Java 17+"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [fuseki, jena, sparql, rdf, infrastructure, service]
 user-invocable: true
 disable-model-invocation: false

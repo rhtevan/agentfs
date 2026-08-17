@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-17 11:22
+
+agentfs-setup v4.11.0 — Enhanced Gate guardrails (⛔ GATE with STOP language) in seed-agents-md.sh template and design-spec.md
+
+## 2026-08-17 11:16
+
+Fixed 5 pre-existing version mismatches (fuseki 1.1.0, goose-agentfs-setup 1.4.0, hermes-desktop-fixes 2.1.0, hermes-headroom-provider 1.2.1, skupper-model-provider 8.1.1). Updated AGENTS.md Guardrails #5, #9, #10 from 🚧 to ⛔ GATE with STOP language and explicit violation definitions.
+
+## 2026-08-17 10:08
+
+hosted-model-ctl v5.3.0 — Added tool-calling flags to vllm-ilab engine, fixed local keyword outside function in setup.sh
+
+## 2026-08-17 10:01
+
+crc-ols v2.2.0 — Added self-hosted Skupper model provider documentation (setup pattern, Provider Types Reference, dependency notes)
+
 ## 2026-08-16 19:36
 
 agentfs-setup v4.10.0: merge-log-entry.sh duplicate heading fix; version bump

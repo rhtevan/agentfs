@@ -6,7 +6,7 @@ argument-hint: "Run when setting up Hermes to use Headroom proxy"
 compatibility: "Requires Hermes Agent, Headroom proxy, and LiteLLM proxy"
 metadata:
   author: agentfs
-  version: "1.2.0"
+  version: "1.2.1"
   tags: [hermes, headroom, proxy, provider, llm]
 user-invocable: true
 disable-model-invocation: false
