@@ -1,3 +1,7 @@
+---
+permalink: /
+---
+
 # AgentFS
 
 **Shared agent scaffolding with skills, knowledge bundles, and cross-agent context.**

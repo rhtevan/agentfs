@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 21:32
+
+Added _config.yml (Jekyll theme: minimal) and permalink front matter to README.md to enable GitHub Pages rendering with README.md as homepage
+
 ## 2026-08-17 11:22
 
 agentfs-setup v4.11.0 — Enhanced Gate guardrails (⛔ GATE with STOP language) in seed-agents-md.sh template and design-spec.md
