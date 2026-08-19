@@ -137,7 +137,7 @@ this table.
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
 | [9](#9-checkpoints--resumability-) | ⛔ GATE | Checkpoints | **STOP before destructive op.** Record affected files → execute → clear checkpoint |
-| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(README audit if Clean)* → Report → **WAIT for user** → Commit → Push |
+| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(Allowlist filter)* → *(README audit if Clean)* → Report → **WAIT for user** → Commit → Push |
 
 ## Scope Definitions
 
@@ -275,15 +275,23 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 > **⛔ GATE — STOP before commit.** Do NOT run `git commit` until
 > the scan passes and the user explicitly confirms.
 >
-> **Workflow:** `git add -A` → `pre-push-scan.sh` → *(if README
-> staleness ✅ Clean)* → `load_skill(name: "agentfs-readme-audit")`
-> → present report → **WAIT for user confirmation** → `git commit`
-> → `git push`.
+> **Workflow:** `git add -A` → `pre-push-scan.sh` → *(allowlist
+> filtering)* → *(if README staleness ✅ Clean)* →
+> `load_skill(name: "agentfs-readme-audit")` → present report →
+> **WAIT for user confirmation** → `git commit` → `git push`.
+>
+> **Allowlist filtering:** When `pre-push-scan.sh` reports findings,
+> the agent reads `.pre-push-allowlist` (at repo root, e.g.
+> `~/.agents/.pre-push-allowlist`) and semantically matches each
+> finding against the allowlist descriptions. Findings that match a
+> known false positive are reported as `✅ Known FP` instead of
+> `⚠️ FOUND`, and do not count toward the blocking verdict.
 >
 > Override requires `[OVERRIDE]` log per Guardrail #7.
 >
 > ```bash
 > bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh   # scans git diff --cached
+> # Agent reads .pre-push-allowlist and filters findings semantically
 > # If README staleness is ✅ Clean, run semantic alignment check:
 > # load_skill(name: "agentfs-readme-audit")
 > ```

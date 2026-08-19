@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-19 16:18
+
+Added .pre-push-allowlist for semantic false-positive filtering in Guardrail #10 Git Push Safety. Updated seed-agents-md.sh workflow and Quick Reference. Bumped agentfs-setup to v4.12.0. Removed hardcoded skill count from README.md.
+
+## 2026-08-19 14:56
+
+hosted-model-ctl: simplified report signal phrases to 'model hosting report' and 'hosting machine report'
+
+## 2026-08-19 13:59
+
+hosted-model-ctl: strengthened report rendering instruction — agent MUST echo full stdout in response message since tool outputs may not be visible to user in many UIs
+
+## 2026-08-19 13:22
+
+hosted-model-ctl v5.4.1 — Fixed report operation agent instruction (present output as-is). Fixed signal phrases with hosted model prefix for reliable routing.
+
 ## 2026-08-19 11:31
 
 hosted-model-ctl v5.4.0 — Added report operation (S8) with report.sh script generating 3-section platform report (basic specs, accelerator, model recommendations by VRAM tier). Added references/model-landscape.md curated model database. New signals: hosted model report, machine spec, host report. Updated rhtevan-work gotcha: nvidia-smi now available.

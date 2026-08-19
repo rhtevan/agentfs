@@ -151,7 +151,7 @@ Skills cover topics like:
 | **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes |
 
-See [`skills/index.md`](skills/index.md) for the full catalog (51 skills).
+See [`skills/index.md`](skills/index.md) for the full catalog.
 
 #### SKILL.md Frontmatter
 

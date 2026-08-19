@@ -3,13 +3,13 @@ name: hosted-model-ctl
 description: >
   hosted model list, setup hosted model, start hosted model,
   stop hosted model, hosted model status, test hosted model,
-  teardown hosted model, precheck hosted model, hosted model report,
-  machine spec, host report
+  teardown hosted model, precheck hosted model,
+  model hosting report, hosting machine report
 argument-hint: "hosted model list | hosted model report | hosted model start g350m | hosted model status g8b-128k"
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "5.4.0"
+  version: "5.4.1"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted]
 user-invocable: true
 disable-model-invocation: false
@@ -147,21 +147,31 @@ Runs 4 tests: container running, API health, model ID, chat completion.
 
 ### 8. Report
 
+> **Agent instruction — MANDATORY RENDERING:** Run the script below,
+> then **copy-paste the entire stdout into your response message verbatim.**
+> Tool call outputs are NOT visible to the user in many UIs — the report
+> ONLY exists if you echo it in your reply. Do NOT summarize, reformat,
+> abbreviate, or add commentary. The script output IS the complete report.
+> **Failure to echo = the user sees nothing.**
+
 ```bash
 bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh           # all hosts
 bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhtevan-work  # single host
 bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhel-ai       # single host
 ```
 
-Generates a 3-section markdown report:
-1. **Basic Specs** — OS, CPU, RAM, disk, podman
-2. **Accelerator Specs** — GPU model, VRAM, PCIe, compute capability, topology
-3. **Model Recommendations** — top 3 models per host based on VRAM tier,
-   with runtime preference (vLLM first, llama.cpp fallback), quantization,
-   context/speed trade-offs. Minimum 64K context target.
+The script generates a deterministic 3-section markdown report:
+1. **Section 1 — Basic Specs** — OS, CPU, RAM, disk, podman
+2. **Section 2 — Accelerator Specs** — GPU model, VRAM, PCIe, compute capability, topology, per-GPU detail
+3. **Section 3 — Model Recommendations** — top 3 models per host based on VRAM tier,
+   runtime preference (vLLM/llm-d first, llama.cpp when VRAM insufficient),
+   quantization, tensor parallelism, context/speed trade-offs, co-hosting combos.
+   Minimum 64K context target (128K preferred).
 
 Model recommendations are driven by
 [references/model-landscape.md](./references/model-landscape.md).
+
+Default: `report.sh` with no arguments reports on **all** registered hosts.
 
 ### 9. Teardown (Remove)
 

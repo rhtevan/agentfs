@@ -1,0 +1,13 @@
+# Known False Positives for Pre-Push Scan
+#
+# Each entry describes a pattern the agent should recognize as a false
+# positive when reviewing pre-push-scan.sh findings. The agent uses
+# semantic matching — descriptions should explain the *reason* a finding
+# is benign, not provide a grep pattern.
+#
+# Format: One description per bullet. Blank lines and comment lines
+# (starting with #) are ignored.
+
+- Username or SSH host alias matching against skill or knowledge
+  description keywords in index files (e.g., model names like "granite"
+  in skills/index.md coincidentally matching an SSH host alias)
