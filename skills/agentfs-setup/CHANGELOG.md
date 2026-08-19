@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-18 | Fixed regen-skill-index.py: uses max mtime across all files in skill directory instead of SKILL.md only |
 | 2026-08-17 11:20 | v4.11.0 — Enhanced Gate guardrails: changed type icon from 🚧 to ⛔ GATE for #5 (Filesystem Integrity), #9 (Checkpoints), #10 (Git Push Safety). Added "STOP before" language, explicit violation definitions, and stronger Key Action phrasing in Quick Reference table. Updated seed-agents-md.sh template and design-spec.md to match. Template version 4.10→4.11. |
 | 2026-08-16 19:36 | v4.10.0 — `merge-log-entry.sh`: fixed duplicate heading bug — replaced `echo "$EXISTING" | grep` pipe with direct `grep` on file for heading detection. Eliminates false-miss when piping large file content through echo. |
 | 2026-08-16 19:27 | v4.9.0 — Guardrail #5: added edit-time logging rule to `seed-agents-md.sh` template (log immediately after each edit, not batch-at-end). Added log coverage check (Category 8) to `pre-push-scan.sh` — flags `⚠️ GAP` when staged files lack same-day `log.md` entry. README.md updated. |

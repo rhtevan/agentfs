@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 23:23
+
+[OVERRIDE] Pre-push scan: hostname in index (intentional) and README staleness (false positive — skill count unchanged, only sort order). User confirmed.
+
+## 2026-08-18 23:20
+
+Fixed regen-skill-index.py: now uses max mtime across all files in skill directory instead of SKILL.md only; ensures index date reflects any file change (docs, CHANGELOG, scripts)
+
+## 2026-08-18 23:16
+
+Added CHANGELOG.md entry for skupper-model-provider: architecture and lifecycle diagrams added to docs/
+
 ## 2026-08-18 23:11
 
 [OVERRIDE] Pre-push scan: 5 false-positive categories overridden (archify test fixtures: mock emails, SVG coordinates as phone numbers, test URLs, variable name 'authorization', hostnames in diagram content). User confirmed.

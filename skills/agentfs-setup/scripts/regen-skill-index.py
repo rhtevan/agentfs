@@ -125,7 +125,13 @@ def main():
                 description = line
                 break
 
-        mtime = os.stat(skill_file).st_mtime
+        # Use newest mtime across all files in the skill directory
+        skill_dir = os.path.dirname(skill_file)
+        mtime = max(
+            os.stat(os.path.join(root, f)).st_mtime
+            for root, _, files in os.walk(skill_dir)
+            for f in files
+        )
         ts = datetime.datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M')
         entries.append((ts, d, name, tags, description))
 
