@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-19 11:31
+
+hosted-model-ctl v5.4.0 — Added report operation (S8) with report.sh script generating 3-section platform report (basic specs, accelerator, model recommendations by VRAM tier). Added references/model-landscape.md curated model database. New signals: hosted model report, machine spec, host report. Updated rhtevan-work gotcha: nvidia-smi now available.
+
 ## 2026-08-18 23:29
 
 Added interactive diagram links to skupper-model-provider SKILL.md Architecture section

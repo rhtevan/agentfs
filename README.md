@@ -147,7 +147,8 @@ Skills cover topics like:
 | **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes provider config, Headroom proxy, MaaS providers |
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster config |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
-| **Networking** | Skupper V2 Linux/systemd two-site VAN setup, Skupper model provider (VAN topology precheck, remote GPU model exposure) |
+| **Model Serving** | Hosted model lifecycle (deploy, start, stop, test on NVIDIA GPUs via Podman), platform report (specs, accelerator, model recommendations by VRAM tier), Skupper model provider (remote GPU exposure via VAN) |
+| **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes |
 
 See [`skills/index.md`](skills/index.md) for the full catalog (51 skills).

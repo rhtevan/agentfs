@@ -3,12 +3,13 @@ name: hosted-model-ctl
 description: >
   hosted model list, setup hosted model, start hosted model,
   stop hosted model, hosted model status, test hosted model,
-  teardown hosted model, precheck hosted model
-argument-hint: "hosted model list | hosted model start g350m | hosted model status g8b-128k"
+  teardown hosted model, precheck hosted model, hosted model report,
+  machine spec, host report
+argument-hint: "hosted model list | hosted model report | hosted model start g350m | hosted model status g8b-128k"
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "5.3.0"
+  version: "5.4.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted]
 user-invocable: true
 disable-model-invocation: false
@@ -79,6 +80,7 @@ Full container details (images, flags, VRAM budgets) in
 | S5b | Stop all model containers across both hosts | `scripts/stop.sh all` → all containers exited |
 | S6 | Show status of specific model or all models | `scripts/status.sh [ALIAS]` → status report |
 | S7 | Test running model (health, model ID, chat completion) | `scripts/test.sh ALIAS` → 4 tests pass |
+| S8 | Generate platform report (basic specs, accelerator, model recommendations) | `scripts/report.sh [HOST\|all]` → 3-section markdown report |
 
 ## Operations
 
@@ -143,7 +145,25 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/test.sh g350m
 
 Runs 4 tests: container running, API health, model ID, chat completion.
 
-### 8. Teardown (Remove)
+### 8. Report
+
+```bash
+bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh           # all hosts
+bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhtevan-work  # single host
+bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhel-ai       # single host
+```
+
+Generates a 3-section markdown report:
+1. **Basic Specs** — OS, CPU, RAM, disk, podman
+2. **Accelerator Specs** — GPU model, VRAM, PCIe, compute capability, topology
+3. **Model Recommendations** — top 3 models per host based on VRAM tier,
+   with runtime preference (vLLM first, llama.cpp fallback), quantization,
+   context/speed trade-offs. Minimum 64K context target.
+
+Model recommendations are driven by
+[references/model-landscape.md](./references/model-landscape.md).
+
+### 9. Teardown (Remove)
 
 ```bash
 bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g350m --remove    # stop + remove specific
@@ -178,7 +198,7 @@ preserved. Does NOT delete downloaded model weights from the HF cache.
 
 ### Fedora / rhtevan-work
 
-- **No `nvidia-smi`** — use Python NVML script for GPU checks
+- **`nvidia-smi`** — available via `xorg-x11-drv-nvidia-cuda` package
 - **SELinux volume mounts** — use `:Z` suffix on `-v` flags
 - **Short-name resolution** — always use full image paths
 - **`pasta` network** — use `--network host` to avoid port issues

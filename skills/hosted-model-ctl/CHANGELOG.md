@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-19 | v5.4.0 — Added `report` operation (S8) with `report.sh` script. Generates 3-section platform report: basic specs, accelerator specs, model recommendations by VRAM tier. Added `references/model-landscape.md` curated model database. New signals: `hosted model report`, `machine spec`, `host report`. Runtime preference: vLLM/llm-d first, llama.cpp when VRAM insufficient. Minimum 64K context target with trade-off guidance for constrained hosts. Updated rhtevan-work gotcha: nvidia-smi now available. |
 | 2026-08-17 | v5.3.0 — Added `--enable-auto-tool-choice --tool-call-parser granite` to vllm-ilab engine in setup.sh (required for OLS tool calling via Skupper). Fixed `local` keyword used outside function context in setup.sh (llama-cpp and vllm-ilab paths). |
 | 2026-08-12 | v5.2.0 — Split S5 into S5a (stop single alias, others unaffected) and S5b (stop all). Added negative assertion to T5a verifying models on other hosts are preserved. Added Scoping Safety gotcha. Prompted by skupper-model-provider v7.2.0 scoped-shutdown incident. |
 | 2026-08-12 | v5.1.0 — Changed default rhel-ai model from `g30b-96k` to `g8b-128k`. Removed ambiguous bare signals (`model list/start/stop/status`); added `hosted model teardown`/`teardown hosted model` signals. Added teardown operation via `stop.sh --remove`. Clarified signal boundaries with `skupper-model-provider`. |
