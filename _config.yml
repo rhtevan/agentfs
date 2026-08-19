@@ -1,4 +1,4 @@
-theme: jekyll-theme-minimal
+theme: jekyll-theme-cayman
 title: AgentFS
 description: Shared agent scaffolding with skills, knowledge bundles, and cross-agent context
 exclude:

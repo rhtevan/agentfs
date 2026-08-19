@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 21:55
+
+Changed GitHub Pages theme from minimal to cayman for wider content area
+
 ## 2026-08-18 21:48
 
 Excluded index.md from Jekyll build in _config.yml so README.md serves as GitHub Pages homepage
