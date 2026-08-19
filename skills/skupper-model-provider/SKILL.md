@@ -23,6 +23,8 @@ from daily start/stop operations.
 
 ## Architecture
 
+**Interactive diagrams:** [VAN Topology](docs/van-topology.architecture.html) · [Operational Lifecycle](docs/operations.lifecycle.html)
+
 ```
 LOCAL: LOCAL_SITE_NAME (localhost, podman)
   ├── link → hub-rhel-ai

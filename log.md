@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 23:29
+
+Added interactive diagram links to skupper-model-provider SKILL.md Architecture section
+
 ## 2026-08-18 23:23
 
 [OVERRIDE] Pre-push scan: hostname in index (intentional) and README staleness (false positive — skill count unchanged, only sort order). User confirmed.
