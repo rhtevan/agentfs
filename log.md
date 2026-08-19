@@ -2,6 +2,38 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 23:11
+
+[OVERRIDE] Pre-push scan: 5 false-positive categories overridden (archify test fixtures: mock emails, SVG coordinates as phone numbers, test URLs, variable name 'authorization', hostnames in diagram content). User confirmed.
+
+## 2026-08-18 23:10
+
+Updated README.md skill count 50 → 51 (archify added)
+
+## 2026-08-18 23:05
+
+Created architecture and lifecycle diagrams for skupper-model-provider skill using archify: van-topology.architecture.html and operations.lifecycle.html in docs/
+
+## 2026-08-18 22:39
+
+Added Defaults section to archify SKILL.md: working directory (project root), output location (docs/).
+
+## 2026-08-18 22:32
+
+Updated archify description to all Command-pattern signal phrases (verb+noun), 9 signals covering all 5 diagram types + mermaid conversion
+
+## 2026-08-18 22:22
+
+Restored original archify description as first paragraph in SKILL.md body, preserving context for agents loading the skill
+
+## 2026-08-18 22:20
+
+Updated archify skill frontmatter: added metadata.tags, converted description to concise signal phrases per AgentFS skill conventions
+
+## 2026-08-18 22:11
+
+Installed archify skill (v2.15.0) via npx skills add tt-a1i/archify -g; doctor checks all passed
+
 ## 2026-08-18 22:00
 
 Added custom CSS override to reduce Cayman theme header height

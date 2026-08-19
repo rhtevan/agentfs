@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Skupper Model Provider — Operational Lifecycle",
+    "quality_profile": "showcase",
+    "viewBox": [980, 660],
+    "views": [
+      { "id": "happy-path", "label": "Happy path", "focus": ["clean", "setup", "ready", "van-up", "running"], "note": "Follow the full startup sequence from clean state to serving models." },
+      { "id": "daily-ops", "label": "Daily start/stop", "focus": ["ready", "van-up", "running"], "note": "The daily operational cycle after one-time setup." },
+      { "id": "failure-recovery", "label": "Failure and recovery", "focus": ["running", "degraded", "crashed"], "note": "Partial availability and auto-restart on crash." }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "Operational phases" },
+    { "id": "recovery", "label": "Recovery" },
+    { "id": "terminal", "label": "Terminal" }
+  ],
+  "states": [
+    { "id": "clean", "type": "start", "label": "Clean", "sublabel": "no infrastructure", "lane": "main", "col": 0, "step": "01", "tag": "entry" },
+    { "id": "setup", "type": "active", "label": "Setup", "sublabel": "6-phase idempotent", "lane": "main", "col": 1, "step": "02", "tag": "one-time" },
+    { "id": "ready", "type": "waiting", "label": "Ready (Down)", "sublabel": "VAN stopped", "lane": "main", "col": 2, "step": "03", "tag": "idle" },
+    { "id": "van-up", "type": "active", "label": "VAN + Models Up", "sublabel": "up.sh + hosted-model-ctl", "lane": "main", "col": 3, "step": "04", "tag": "starting" },
+    { "id": "running", "type": "success", "label": "Running", "sublabel": "serving inference", "lane": "main", "col": 4, "step": "05", "tag": "live" },
+    { "id": "degraded", "type": "failure", "label": "Degraded", "sublabel": "partial availability", "lane": "recovery", "col": 2, "tag": "partial" },
+    { "id": "crashed", "type": "failure", "label": "Crashed", "sublabel": "router/controller down", "lane": "recovery", "col": 1, "tag": "auto-fix" },
+    { "id": "teardown", "type": "failure", "label": "Teardown", "sublabel": "remove all infra", "lane": "terminal", "col": 0, "tag": "terminal" }
+  ],
+  "transitions": [
+    { "id": "do-setup", "from": "clean", "to": "setup" },
+    { "id": "setup-done", "from": "setup", "to": "ready" },
+    { "id": "start-van", "from": "ready", "to": "van-up", "label": "up.sh", "variant": "emphasis", "labelDy": -20 },
+    { "id": "models-ready", "from": "van-up", "to": "running", "variant": "emphasis" },
+    { "id": "stop-all", "from": "running", "to": "ready", "label": "down.sh", "variant": "dashed", "fromSide": "top", "toSide": "top", "route": "top-channel" },
+    { "id": "host-unreachable", "from": "running", "to": "degraded", "variant": "security", "route": "drop" },
+    { "id": "degraded-recover", "from": "degraded", "to": "running", "variant": "emphasis", "fromSide": "right", "toSide": "bottom" },
+    { "id": "router-crash", "from": "running", "to": "crashed", "variant": "security", "fromSide": "bottom", "toSide": "right" },
+    { "id": "auto-restart", "from": "crashed", "to": "running", "label": "systemd 10s", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+    { "id": "do-teardown", "from": "ready", "to": "teardown", "label": "teardown.sh", "variant": "security", "route": "drop" },
+    { "id": "teardown-clean", "from": "teardown", "to": "clean", "label": "rebuild", "variant": "dashed", "route": "left-channel" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Daily Operations", "items": ["up.sh starts controllers then routers across all sites", "hosted-model-ctl starts GPU containers on providers", "down.sh reverses: models, routers, controllers"] },
+    { "dot": "amber", "title": "Partial Availability", "items": ["Unreachable hosts are skipped, not fatal", "Models only started on reachable providers", "Combined status report: up/skipped/down per site"] },
+    { "dot": "rose", "title": "Auto-Recovery", "items": ["systemd start-watch.sh detects crash", "Restart=on-failure within 10 seconds", "No manual intervention for transient failures"] }
+  ]
+}
