@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 22:00
+
+Added custom CSS override to reduce Cayman theme header height
+
 ## 2026-08-18 21:55
 
 Changed GitHub Pages theme from minimal to cayman for wider content area
