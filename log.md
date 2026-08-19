@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-18 21:48
+
+Excluded index.md from Jekyll build in _config.yml so README.md serves as GitHub Pages homepage
+
 ## 2026-08-18 21:32
 
 Added _config.yml (Jekyll theme: minimal) and permalink front matter to README.md to enable GitHub Pages rendering with README.md as homepage

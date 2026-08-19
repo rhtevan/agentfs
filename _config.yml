@@ -1,3 +1,5 @@
 theme: jekyll-theme-minimal
 title: AgentFS
 description: Shared agent scaffolding with skills, knowledge bundles, and cross-agent context
+exclude:
+  - index.md
