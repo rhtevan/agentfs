@@ -128,7 +128,7 @@ assert_contains "checkpoint clear subcommand" 'checkpoint\.sh clear'
 assert_contains "checkpoint check subcommand" 'checkpoint\.sh check'
 # Git push
 assert_contains "pre-push-scan invocation" 'pre-push-scan\.sh'
-assert_contains "Explicit approval required" 'explicit approval|WAIT.*approval'
+assert_contains "Explicit approval required" 'explicit approval|WAIT.*approval|WAIT for user'
 
 # ── Signal routing table completeness ──────────────────────────────
 echo "=== Signal Routing Table ==="

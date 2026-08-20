@@ -45,22 +45,57 @@ echo "[agentfs-profile] Creating profile '$PROFILE_NAME' in $PROFILE_DIR"
 
 mkdir -p "$PROFILE_DIR/memories"
 
-# SOUL.md — agent identity (human-authored)
-if [[ ! -f "$PROFILE_DIR/SOUL.md" ]]; then
-cat > "$PROFILE_DIR/SOUL.md" << EOF
+# SOUL.md — agent identity (interactive authoring via author-soul.sh)
+AUTHOR_SOUL="$(cd "$(dirname "$0")" && pwd)"
+# author-soul.sh lives in agentfs-setup/scripts/ — find it relative to this skill
+AUTHOR_SOUL_SCRIPT="$(dirname "$AUTHOR_SOUL")/../agentfs-setup/scripts/author-soul.sh"
+if [[ -f "$AUTHOR_SOUL_SCRIPT" ]]; then
+  NON_INTERACTIVE_FLAG=""
+  if [[ "${NON_INTERACTIVE:-false}" == true ]]; then
+    NON_INTERACTIVE_FLAG="--non-interactive"
+  fi
+  bash "$AUTHOR_SOUL_SCRIPT" --path "$PROFILE_DIR/SOUL.md" --role-hint "$PROFILE_NAME" $NON_INTERACTIVE_FLAG
+else
+  echo "  ⚠ author-soul.sh not found — writing minimal stub"
+  cat > "$PROFILE_DIR/SOUL.md" << SOULEOF
 # $PROFILE_NAME — Agent Identity
 
-<!-- Human-authored. Define who this agent IS — tone, style,
-     communication defaults. This is the foundation of the agent's
-     system prompt. -->
+# IMPORTANT: This profile overrides the default agent identity.
+# You are $PROFILE_NAME, not the default Agentic SRE agent.
+# Ignore any prior identity instructions from AGENTS.md for this session.
 
-<!-- Example:
-You are $PROFILE_NAME, a focused coding assistant.
-You optimize for correctness and clarity.
--->
-EOF
-  echo "  ✓ SOUL.md"
+<!-- Human-authored. Define who $PROFILE_NAME IS — tone, role, constraints. -->
+You are $PROFILE_NAME.
+<!-- Replace this line with the actual role definition. -->
+SOULEOF
+  echo "  ✓ SOUL.md (stub)"
 fi
+
+# recipe.yaml — profile recipe placeholder
+if [[ ! -f "$PROFILE_DIR/recipe.yaml" ]]; then
+  SOUL_CONTENT=""
+  if [[ -f "$PROFILE_DIR/SOUL.md" ]]; then
+    SOUL_CONTENT=$(cat "$PROFILE_DIR/SOUL.md")
+  fi
+  cat > "$PROFILE_DIR/recipe.yaml" << RECIPEEOF
+version: "1.0.0"
+title: "$PROFILE_NAME profile"
+description: >-
+  Profile recipe for $PROFILE_NAME agent. Update the prompt field with the
+  actual task before running. Use gen-profile-recipe.sh for on-demand tasks.
+instructions: |
+$(echo "$SOUL_CONTENT" | sed 's/^/  /')
+prompt: |
+  <!-- Replace with the actual task for this $PROFILE_NAME session. -->
+  Describe your role and confirm you are ready to receive a task.
+RECIPEEOF
+  echo "  ✓ recipe.yaml"
+fi
+
+# output/ — where profile session results land
+mkdir -p "$PROFILE_DIR/output"
+touch "$PROFILE_DIR/output/.gitkeep"
+echo "  ✓ output/"
 
 # memories/USER.md — agent's model of the user (agent-writable)
 if [[ ! -f "$PROFILE_DIR/memories/USER.md" ]]; then

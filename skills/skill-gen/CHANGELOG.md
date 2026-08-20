@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-20 10:30 | v3.2.0 — Added explicit ⛔ GATE to Post-Creation Checklist requiring user permission before skipping Principle 4 (Spec/Tests) or Principle 5 (Security) |
 | 2026-08-13 19:22 | v3.1.0 — Externalized changelogs: SKILL.md template now scaffolds `CHANGELOG.md` as separate file with reference link in SKILL.md; updated Post-Creation Checklist, Skill Check P3, and edit-existing guidance; updated `references/skill-schema.md` to v2.1.0 with new Changelog Rules |
 | 2026-08-13 12:30 | v3.0.0 — Breaking: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); removed `metadata.signals` from schema; added Signal Phrase Rules with three quality principles (Concise, No redundant, Complete) and smell test; added Opening Paragraph requirement; updated SKILL.md template, Post-Creation Checklist (Step 6), and Skill Check P1; updated `references/skill-schema.md` to v2.0.0 |
 | 2026-08-10 16:11 | v2.1.1 — Strengthened Gotchas from suggestion ("Consider") to requirement ("Include"); added Gotchas section to SKILL.md template; added P1 checklist item for Gotchas/Known Issues section |

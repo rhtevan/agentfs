@@ -113,12 +113,18 @@ A **per-repository agent workspace** that adds identity, memory, and
 multi-agent collaboration on top of skills. Each project can have its
 own agent profiles with independent memories.
 
+Each profile is a distinct agent identity with its own `SOUL.md`,
+`recipe.yaml` (for spawning as a Goose recipe session), `memories/`,
+and `output/` directory. The default agent SOUL is interactively
+authored via `author-soul.sh` and loaded automatically at session
+start via `@import` in `AGENTS.md`.
+
 ```
 ./
 ├── AGENTS.md                # Workspace entry point
 └── .agents/
     ├── SOUL.md              # Default agent identity
-    ├── profiles/            # Named agent profiles (each with SOUL.md + memories)
+    ├── profiles/            # Named agent profiles (each with SOUL.md, recipe.yaml, memories/, output/)
     ├── memories/            # Default agent's learned context (USER.md, MEMORY.md)
     ├── skills/              # Project-specific skills
     ├── index.md
@@ -143,7 +149,7 @@ Skills cover topics like:
 
 | Category | Examples |
 |----------|----------|
-| **Agent Setup** | AgentFS scaffolding, Goose/Hermes configuration, agent profiles |
+| **Agent Setup** | AgentFS scaffolding, Goose/Hermes configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`) |
 | **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes provider config, Headroom proxy, MaaS providers |
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster config |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
@@ -253,8 +259,10 @@ Each layer serves a distinct purpose, scope, and mutability model.
   │  auto-loaded at session start:                  │
   │    AGENTS.md, .goosehints, CLAUDE.md, ...       │
   │    + agent persistent instructions              │
+  │  auto-loaded via @import in AGENTS.md:          │
+  │    SOUL.md                                      │
   │  read on first use (agent-initiated):           │
-  │    SOUL.md, USER.md                             │
+  │    USER.md                                      │
   └──────────┬──────────────────────────────────────┘
              │
              │ on-demand capture
@@ -293,7 +301,7 @@ control over what persists and what graduates.
 | **MEMORY.md** | Episodic / experiential | PROJECT | `.agents/memories/` | Agent-written, session-to-session |
 | **OKF bundles** | Semantic / conceptual | USER | `~/.agents/knowledge/` | Distilled, graduated |
 | **SKILLs** | Procedural / SOP | Both | `~/.agents/skills/` or `.agents/skills/` | Human + agent authored |
-| **SOUL.md** | Identity | PROJECT | `.agents/SOUL.md` | Human-authored |
+| **SOUL.md** | Identity | PROJECT | `.agents/SOUL.md` | Human-authored (guided by `author-soul.sh`) |
 | **USER.md** | User model | PROJECT | `.agents/memories/USER.md` | Agent-written |
 | **AGENTS.md** | Working agreements | PROJECT | `./AGENTS.md` | Human-authored + templated |
 | **instructions.md** | Agent instincts | USER (agent-specific) | e.g. `~/.config/goose/instructions.md` | Human-authored |
@@ -321,9 +329,10 @@ is the "RAM" of the agent — everything the model can attend to right now.
   configured in `CONTEXT_FILE_NAMES` — typically `AGENTS.md`,
   `.goosehints`, `CLAUDE.md`; plus agent persistent instructions
   (e.g. `~/.config/goose/instructions.md`)
-- **Read on first use** (agent-initiated, not auto-loaded): `SOUL.md`,
-  `USER.md` — referenced from AGENTS.md but loaded by the agent when
-  it needs identity or user preferences
+- **Auto-loaded via `@import`** in `AGENTS.md` at session start: `SOUL.md`
+  — inlined by Goose's `load_hint_files()` pipeline, no agent navigation required
+- **Read on first use** (agent-initiated): `USER.md` — referenced from
+  AGENTS.md but loaded by the agent when it needs user preferences
 - **On-demand** (progressive disclosure, Guardrail #1): skills, knowledge
   bundles — loaded only when relevant to the current task
 - **NOT loaded at session start**: `MEMORY.md` — not auto-loaded into

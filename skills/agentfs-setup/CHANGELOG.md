@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-20 | v4.13.0 — Add author-soul.sh (interactive SOUL authoring); refactor scaffold-dotagents.sh to delegate SOUL creation; add @.agents/SOUL.md import to AGENTS.md template; expand Guardrail #7 anti-sycophancy (pushback capitulation, steelman, praise-opener ban); update verify-setup.sh with SOUL content checks; add test-soul-authoring.sh (21 tests); fix test-agents-md-fidelity.sh assertion |
 | 2026-08-19 | v4.12.0 — Guardrail #10 Git Push Safety: added `.pre-push-allowlist` semantic filtering step. Agent reads allowlist at repo root and semantically matches scan findings against known false positive descriptions. Findings matching allowlist are reported as Known FP and don't block. Updated workflow and Quick Reference in seed-agents-md.sh. |
 | 2026-08-18 | Fixed regen-skill-index.py: uses max mtime across all files in skill directory instead of SKILL.md only |
 | 2026-08-17 11:20 | v4.11.0 — Enhanced Gate guardrails: changed type icon from 🚧 to ⛔ GATE for #5 (Filesystem Integrity), #9 (Checkpoints), #10 (Git Push Safety). Added "STOP before" language, explicit violation definitions, and stronger Key Action phrasing in Quick Reference table. Updated seed-agents-md.sh template and design-spec.md to match. Template version 4.10→4.11. |

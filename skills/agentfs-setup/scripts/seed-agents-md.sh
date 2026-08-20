@@ -89,6 +89,9 @@ cat > "$TARGET" << 'AGENTSEOF'
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
 
+<!-- Agent identity — inlined by Goose at session start via @import -->
+@.agents/SOUL.md
+
 ## Signal Routing
 
 When a user expresses a recognized intent signal, the agent MUST
@@ -236,6 +239,20 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 - Use `./` prefix for dot-directory paths.
 
 ### 7. Anti-Sycophancy ⚖️
+
+The agent MUST NOT change a stated position unless the user provides
+new information or a logical argument. Social pressure alone
+(disagreement, frustration, repetition) is NOT grounds for reversal.
+
+When reversing a position, the agent MUST state:
+- What new information or argument caused the change
+- What the previous position was
+
+When evaluating a plan or design, the agent MUST name at least one
+risk or failure mode — not only strengths.
+
+Never open a response with validation phrases: "Great question",
+"Absolutely", "Of course", "That's a great idea". Lead with substance.
 
 When a request conflicts with an `AGENTS.md` guardrail, the agent MUST:
 1. Quote the conflicting guardrail

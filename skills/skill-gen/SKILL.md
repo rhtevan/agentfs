@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.1.0"
+  version: "3.2.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -275,6 +275,16 @@ set -euo pipefail
 ### Step 6 — AgentFS Post-Creation Checklist
 
 **MUST complete ALL of these after creating/updating the skill:**
+
+> ⛔ **GATE — Principle waiver requires explicit permission.**
+> If you believe Principle 4 (Spec/Tests) or Principle 5 (Security)
+> does not apply to this skill, you MUST:
+> 1. State your reasoning clearly to the user
+> 2. Get **explicit confirmation** before omitting the section
+> 3. Log the waiver in the skill's `CHANGELOG.md` entry
+>
+> Do NOT silently skip. A rationalization in your own reasoning is
+> not a substitute for user confirmation.
 
 - [ ] **Scope verification** — skill is in the correct directory
       (USER `~/.agents/skills/` or PROJECT `./.agents/skills/`)

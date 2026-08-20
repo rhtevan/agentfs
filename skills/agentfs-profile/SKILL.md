@@ -3,7 +3,7 @@ name: agentfs-profile
 description: >
   create profile, new agent profile, add agent
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
   tags: [agentfs, profiles, multi-agent, identity]
 ---
 

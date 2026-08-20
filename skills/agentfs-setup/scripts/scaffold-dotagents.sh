@@ -166,21 +166,24 @@ EOF
     echo "  ✓ profiles/index.md"
   fi
 
-  # SOUL.md — default agent identity (human-authored)
-  if [[ ! -f "$AGENTS/SOUL.md" ]]; then
-cat > "$AGENTS/SOUL.md" << 'EOF'
+  # SOUL.md — default agent identity (interactive authoring via author-soul.sh)
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  AUTHOR_SOUL="$SCRIPT_DIR/author-soul.sh"
+  if [[ -f "$AUTHOR_SOUL" ]]; then
+    NON_INTERACTIVE_FLAG=""
+    if [[ "${NON_INTERACTIVE:-false}" == true ]]; then
+      NON_INTERACTIVE_FLAG="--non-interactive"
+    fi
+    bash "$AUTHOR_SOUL" --path "$AGENTS/SOUL.md" $NON_INTERACTIVE_FLAG
+  else
+    echo "  ⚠ author-soul.sh not found at $AUTHOR_SOUL — writing minimal stub"
+    cat > "$AGENTS/SOUL.md" << 'SOULEOF'
 # Agent Identity
 
 <!-- Human-authored. Define who the default agent IS — tone, style,
      communication defaults. This is the foundation of the system prompt. -->
-
-<!-- Example:
-You are a pragmatic senior engineer who values clarity over ceremony.
-You push back when something is a bad idea.
-You prefer simple systems over clever systems.
--->
-EOF
-    echo "  ✓ SOUL.md"
+SOULEOF
+    echo "  ✓ SOUL.md (stub)"
   fi
 
   # memories/USER.md — default agent's model of the user (agent-writable)

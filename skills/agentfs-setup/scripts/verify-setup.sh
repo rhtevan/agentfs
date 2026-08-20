@@ -332,6 +332,14 @@ else
     "[[ -f '$AGENTS/SOUL.md' ]]" \
     "seed_soul"
 
+  check ".agents/SOUL.md is non-stub (contains identity content)" \
+    "grep -qv '^[[:space:]]*$\|^[[:space:]]*<!--\|^[[:space:]]*-->\|^#' '$AGENTS/SOUL.md' 2>/dev/null" \
+    "echo '  ⚠ SOUL.md exists but appears to be a stub — run author-soul.sh to add identity content'"
+
+  check "AGENTS.md loads SOUL.md via @import" \
+    "grep -q '@\.agents/SOUL\.md' '$ROOT/AGENTS.md' 2>/dev/null" \
+    "echo '  ⚠ AGENTS.md missing @.agents/SOUL.md import — run agentfs-setup --sync to update template'"
+
   check ".agents/profiles/ directory exists" \
     "[[ -d '$AGENTS/profiles' ]]" \
     "mkdir -p '$AGENTS/profiles'"

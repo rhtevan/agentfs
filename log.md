@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-20 19:04
+
+README.md: fixed SOUL.md auto-load description (@import, not agent-initiated); updated profiles/ tree entry (recipe.yaml, output/); added author-soul.sh and gen-profile-recipe.sh to Agent Setup category; updated memory model table
+
+## 2026-08-20 18:44
+agentfs-profile v1.9.0: refactor create-profile.sh (delegate SOUL to author-soul.sh), add recipe.yaml + output/ dir, add gen-profile-recipe.sh
+
+agentfs-setup v4.13.0: add author-soul.sh, @.agents/SOUL.md import, expanded Guardrail #7, SOUL verify checks, test suite (21 tests)
+
+## 2026-08-20 10:30
+Updated fedora-nm-boot-slow to v1.1.0 — added Specification and Tests sections for P4 compliance
+
+Updated skill-gen to v3.2.0 — added explicit GATE requiring user permission before skipping P4/P5 principles
+
+## 2026-08-20 10:16
+
+Created skill fedora-nm-boot-slow v1.0.0 — documents root cause and remediation of NM-wait-online boot delay on Fedora
+
 ## 2026-08-19 16:18
 
 Added .pre-push-allowlist for semantic false-positive filtering in Guardrail #10 Git Push Safety. Updated seed-agents-md.sh workflow and Quick Reference. Bumped agentfs-setup to v4.12.0. Removed hardcoded skill count from README.md.
