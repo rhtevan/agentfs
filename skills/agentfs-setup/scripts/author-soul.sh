@@ -54,13 +54,18 @@ fi
 is_stub() {
   local file="$1"
   # A file is a stub if it exists but contains only comments/whitespace
-  # (no non-comment, non-empty lines outside the heading)
+  # (no non-comment, non-empty lines outside the heading).
+  # Uses awk-based multi-line comment stripping so content inside <!-- -->
+  # blocks (e.g. examples) is correctly excluded from the line count.
   local non_comment_lines
-  non_comment_lines=$(grep -v '^[[:space:]]*$' "$file" \
-    | grep -v '^[[:space:]]*<!--' \
-    | grep -v '^[[:space:]]*-->' \
-    | grep -v '^#' \
-    | wc -l)
+  non_comment_lines=$(awk '
+    /<!--/ { in_comment=1 }
+    /-->/ { in_comment=0; next }
+    in_comment { next }
+    /^[[:space:]]*$/ { next }
+    /^#/ { next }
+    { print }
+  ' "$file" | wc -l)
   [[ "$non_comment_lines" -eq 0 ]]
 }
 

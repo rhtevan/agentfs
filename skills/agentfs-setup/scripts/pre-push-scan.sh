@@ -130,20 +130,20 @@ PII=""
 [[ -n "$PHONE_MATCHES" ]] && PII+="${PII:+\n}$PHONE_MATCHES"
 report_category "PII (email, phone)" "$PII"
 
-# ── Category 7: README Staleness ──────────────────────────────────
+# ── Category 7: README Audit Signal ──────────────────────────────
+# When agentfs files (skills/, knowledge/, AGENTS.md) are staged,
+# emit README_AUDIT_REQUIRED so the agent runs agentfs-readme-audit
+# to semantically compare the existing README against staged changes.
+# This fires regardless of whether README.md is itself staged.
 CHANGED_FILES=$($DIFF_CMD --name-only 2>/dev/null || true)
-README_STALE=""
-if echo "$CHANGED_FILES" | grep -qE '(skills/|knowledge/|AGENTS\.md|guardrail)'; then
-  # Check if README.md is also being updated in this commit
-  if ! echo "$CHANGED_FILES" | grep -qE '^README\.md$'; then
-    README_STALE="skills/knowledge changed but README.md not updated"
-  fi
+README_AUDIT_REQUIRED=""
+if echo "$CHANGED_FILES" | grep -qE '(skills/|knowledge/|AGENTS\.md)'; then
+  README_AUDIT_REQUIRED="yes"
 fi
-if [[ -n "$README_STALE" ]]; then
-  FINDINGS=$((FINDINGS + 1))
-  DETAILS+="| README staleness | ⚠️  STALE — $README_STALE |\n"
+if [[ -n "$README_AUDIT_REQUIRED" ]]; then
+  DETAILS+="| README audit | ⚠️  README_AUDIT_REQUIRED — agentfs files staged; agent must run agentfs-readme-audit |\n"
 else
-  DETAILS+="| README staleness | ✅ Clean |\n"
+  DETAILS+="| README audit | ✅ N/A — no agentfs files staged |\n"
 fi
 
 # ── Category 8: Log Coverage ───────────────────────────────────────

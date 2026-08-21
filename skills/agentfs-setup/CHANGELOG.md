@@ -3,6 +3,9 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-20 23:27 | v4.17.5 — author-soul.sh: fix is_stub() — replace grep-based line filter with awk multi-line comment stripper (matches sync-agents-md.sh logic); content inside <!-- --> example blocks no longer falsely marks file as non-stub |
+| 2026-08-20 23:24 | v4.17.4 — sync-agents-md.sh + SKILL.md: replace raw bash hints with SOUL_ACTION_REQUIRED machine signal; agent now guides user conversationally (apply default / customise / skip) instead of printing bare shell commands. Updated SKILL.md with agent post-sync action spec. |
+| 2026-08-20 23:17 | v4.17.3 — sync-agents-md.sh: detect stub SOUL.md during sync (both up-to-date and upgrade paths); emit actionable warning with author-soul.sh command when SOUL is empty or missing. Uses awk-based multi-line comment stripping for accurate stub detection. |
 | 2026-08-20 22:55 | v4.17.2 — Fix merge-changelog-entry.sh: use YYYY-MM-DD HH:MM timestamp (consistent with merge-log-entry.sh); fix dedup to match on date+version regardless of time component |
 | 2026-08-20 00:00 | v4.17.1 — Backlog: add test-pre-push-scan.sh Category 9+10 tests (25/25 pass); fix test setup (log.md pre-seeded, README assertion); update test-agents-md-fidelity.sh (merge-changelog-entry.sh + WAIT-in-same-turn assertions, 84/84); sync-agents-md.sh pre-versioning fallback |
 | 2026-08-20 00:00 | v4.17.0 — Add sync-agents-md.sh: deterministic idempotent AGENTS.md sync (version check, profile row extraction excluding default, awk-based re-injection, SPECKIT preservation); fix Agent Profiles duplication bug from ad-hoc sed commands; update SKILL.md sync mode docs and Scripts table |

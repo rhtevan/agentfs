@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
@@ -31,25 +31,26 @@ This skill activates in two scenarios:
 
 ### 1. During Pre-Push (Guardrail #10)
 
-Run this skill when **both** conditions are true:
-- `README.md` is in the staged files (`git diff --cached --name-only`)
-- `pre-push-scan.sh` returns **✅ Clean** for README staleness
+Run this skill when **any** agentfs files are staged:
+- `skills/`, `knowledge/`, or `AGENTS.md` appear in `git diff --cached --name-only`
+- `pre-push-scan.sh` emits `README_AUDIT_REQUIRED` in its output
+
+`README.md` does **not** need to be staged — the audit compares the
+*existing* README against the staged changes to detect drift.
+If `README.md` is also staged, the audit additionally validates whether
+the in-progress README update is sufficient.
 
 **Flow:**
 ```
 git diff --cached --name-only
-  └─ README.md present in staged files?
-       └─ YES → pre-push-scan.sh README staleness = ✅ Clean?
-                  └─ YES → Agent runs this skill (semantic check)
+  └─ skills/ or knowledge/ or AGENTS.md staged?
+       └─ YES → pre-push-scan.sh emits README_AUDIT_REQUIRED
+                  └─ Agent runs this skill (semantic comparison)
                        └─ If aligned → proceed to push approval
-                       └─ If misaligned → report drift, fix before push
-                  └─ NO (STALE) → skip skill, staleness check already flagged
+                       └─ If drift detected → report specifics, recommend fixes
+                            └─ User decides whether to fix before push
        └─ NO → skip skill entirely
 ```
-
-If `README.md` is not staged, skip this skill — no README changes
-to verify. If staleness is **⚠️ STALE**, skip this skill — the
-deterministic check already flagged the problem.
 
 ### 2. Explicit Invocation
 
@@ -139,10 +140,10 @@ Guardrail #10's wait-for-approval pattern.
 When acting as part of the pre-push workflow, the agent should:
 
 1. Run `pre-push-scan.sh` (deterministic)
-2. If README staleness is ✅ Clean **and** `README.md` is in staged
-   changes, run this semantic audit
+2. If output contains `README_AUDIT_REQUIRED`, run this semantic audit —
+   regardless of whether `README.md` is itself staged
 3. Present both reports together before the push approval prompt
-4. If semantic drift is found, recommend fixing before pushing
+4. If semantic drift is found, recommend specific fixes before pushing
    (but don't block — user decides)
 
 ## What This Skill Does NOT Do

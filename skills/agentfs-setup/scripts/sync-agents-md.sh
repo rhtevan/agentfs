@@ -17,6 +17,12 @@
 #   4. Regenerates AGENTS.md from current template via seed-agents-md.sh
 #   5. Re-injects preserved project-owned rows using awk (idempotent)
 #   6. Reports what changed
+#   7. Checks SOUL.md — emits SOUL_ACTION_REQUIRED signal if missing or stub
+#
+# Agent signal:
+#   When output contains 'SOUL_ACTION_REQUIRED path=<path>', the agent MUST
+#   NOT show a raw bash command. Instead, the agent guides the user through
+#   a conversational choice: apply default Agentic SRE / customise / skip.
 #
 # Idempotency:
 #   Running twice produces identical output. The default row is never
@@ -57,6 +63,30 @@ if [[ "$CURRENT_VERSION" == "unknown" ]]; then
 elif [[ "$CURRENT_VERSION" == "$TEMPLATE_VERSION" ]]; then
   echo "[sync-agents-md] Current: v$CURRENT_VERSION → Template: v$TEMPLATE_VERSION"
   echo "[sync-agents-md] Already up to date (v$TEMPLATE_VERSION). No changes needed."
+  # Still check SOUL.md even when AGENTS.md is current
+  SOUL_PATH="$PROJECT_DIR/.agents/SOUL.md"
+  AUTHOR_SOUL_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")"; pwd)/author-soul.sh"
+  if [[ ! -f "$SOUL_PATH" ]]; then
+    echo ""
+    echo "[sync-agents-md] ⚠️  SOUL.md missing — no agent identity defined."
+    echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
+    echo ""
+  else
+    SOUL_NON_STUB_LINES=$(awk '
+      /<!--/ { in_comment=1 }
+      /-->/ { in_comment=0; next }
+      in_comment { next }
+      /^[[:space:]]*$/ { next }
+      /^#/ { next }
+      { print }
+    ' "$SOUL_PATH" | wc -l)
+    if [[ "$SOUL_NON_STUB_LINES" -eq 0 ]]; then
+      echo ""
+      echo "[sync-agents-md] ⚠️  SOUL.md is empty (stub only) — no agent identity defined."
+      echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
+      echo ""
+    fi
+  fi
   exit 0
 else
   echo "[sync-agents-md] Current: v$CURRENT_VERSION → Template: v$TEMPLATE_VERSION"
@@ -134,6 +164,32 @@ if [[ -n "$(echo "$SPECKIT_INNER" | tr -d '[:space:]')" ]]; then
     /<!-- SPECKIT END -->/ { skip=0; next }
     !skip { print }
   ' "$AGENTS" > "$AGENTS.tmp" && mv "$AGENTS.tmp" "$AGENTS"
+fi
+
+# ── SOUL.md stub detection ────────────────────────────────────────
+SOUL_PATH="$PROJECT_DIR/.agents/SOUL.md"
+AUTHOR_SOUL_SCRIPT="$SCRIPT_DIR/author-soul.sh"
+
+if [[ ! -f "$SOUL_PATH" ]]; then
+  echo ""
+  echo "[sync-agents-md] ⚠️  SOUL.md missing — no agent identity defined."
+  echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
+  echo ""
+else
+  SOUL_NON_STUB_LINES=$(awk '
+      /<!--/ { in_comment=1 }
+      /-->/ { in_comment=0; next }
+      in_comment { next }
+      /^[[:space:]]*$/ { next }
+      /^#/ { next }
+      { print }
+    ' "$SOUL_PATH" | wc -l)
+  if [[ "$SOUL_NON_STUB_LINES" -eq 0 ]]; then
+    echo ""
+    echo "[sync-agents-md] ⚠️  SOUL.md is empty (stub only) — no agent identity defined."
+    echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
+    echo ""
+  fi
 fi
 
 echo "[sync-agents-md] ✅ Synced $AGENTS (v$CURRENT_VERSION → v$TEMPLATE_VERSION)"

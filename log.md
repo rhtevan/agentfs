@@ -2,6 +2,26 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-20 23:52
+
+README.md: fix Guardrail #10 description — README audit trigger updated from 'README.md staged + staleness Clean' to 'agentfs files staged'
+
+## 2026-08-20 23:44
+
+agentfs-readme-audit v1.2.0 + pre-push-scan.sh: fix README audit trigger — runs whenever agentfs files staged (not gated on README.md being staged); Category 7 replaced with README_AUDIT_REQUIRED signal; seed-agents-md.sh Guardrail #10 updated to match
+
+## 2026-08-20 23:27
+
+agentfs-setup: v4.17.5 — author-soul.sh is_stub() fixed to use awk multi-line comment stripping, consistent with sync-agents-md.sh
+
+## 2026-08-20 23:24
+
+agentfs-setup: v4.17.4 — sync-agents-md.sh emits SOUL_ACTION_REQUIRED signal; SKILL.md documents agent post-sync guidance flow (apply default / customise / skip)
+
+## 2026-08-20 23:17
+
+agentfs-setup: sync-agents-md.sh — added SOUL.md stub detection; warns with author-soul.sh command when SOUL is empty or missing, even when AGENTS.md is already up to date
+
 ## 2026-08-20 22:55
 
 agentfs-setup v4.17.2: fix merge-changelog-entry.sh timestamp format (HH:MM added); dedup now matches on date+version

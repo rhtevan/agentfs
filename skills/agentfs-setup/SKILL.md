@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "4.17.2"
+  version: "4.17.5"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -161,6 +161,26 @@ bash ~/.agents/skills/agentfs-setup/scripts/sync-agents-md.sh [PROJECT_DIR]
 5. Regenerates AGENTS.md from current template via `seed-agents-md.sh`
 6. Re-injects preserved rows using awk (idempotent, no duplicates)
 7. Reports what changed
+
+**Agent post-sync actions (REQUIRED):**
+
+After `sync-agents-md.sh` completes, the agent MUST inspect the output
+for a `⚠️  SOUL.md` warning. If detected, the agent MUST NOT present a
+raw bash command to the user. Instead, the agent MUST:
+
+1. **Inform** the user: explain that SOUL.md defines the agent's identity
+   and that the Agentic SRE default is available.
+2. **Ask** the user to choose one of:
+   - **Apply default** — Agentic SRE identity, no questions asked
+   - **Customise** — agent asks 2–3 targeted questions, then writes SOUL.md
+   - **Skip** — leave SOUL.md empty for now
+3. **Execute** the user's choice by running `author-soul.sh` directly:
+   - Apply default: `bash author-soul.sh --path <SOUL_PATH> --non-interactive`
+   - Customise: gather answers, then write SOUL.md directly (do NOT run
+     interactive shell — instead collect answers in the conversation and
+     use the write tool to produce the file)
+   - Skip: acknowledge and move on
+4. **Confirm** the result to the user once SOUL.md is written.
 
 ### Verification
 

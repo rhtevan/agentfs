@@ -140,7 +140,7 @@ this table.
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
 | [9](#9-checkpoints--resumability-) | ⛔ GATE | Checkpoints | **STOP before destructive op.** Record affected files → execute → clear checkpoint |
-| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(Allowlist filter)* → *(README audit if README.md staged + staleness Clean)* → Report as rendered Markdown → **WAIT in same turn** → Commit → Push |
+| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(Allowlist filter)* → *(README audit if agentfs files staged)* → Report as rendered Markdown → **WAIT in same turn** → Commit → Push |
 
 ## Scope Definitions
 
@@ -297,8 +297,9 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 > 1. `git add -A`
 > 2. `pre-push-scan.sh` — scans staged diff
 > 3. Allowlist filtering — read `.pre-push-allowlist`, mark known FPs
-> 4. README audit — **only if** `README.md` is in staged files **AND**
->    staleness = ✅ Clean → `load_skill(name: "agentfs-readme-audit")`
+> 4. README audit — **if** `pre-push-scan.sh` output contains `README_AUDIT_REQUIRED`
+>    (i.e., `skills/`, `knowledge/`, or `AGENTS.md` are staged) →
+>    `load_skill(name: "agentfs-readme-audit")`
 > 5. Present complete report (scan + audit) in a **single turn**,
 >    rendered as Markdown (no code fence) so tables display natively
 > 6. **WAIT** — do NOT commit until user replies to **this turn**
@@ -317,14 +318,14 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 > ```bash
 > bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh   # scans git diff --cached
 > # Agent reads .pre-push-allowlist and filters findings semantically
-> # If README.md is staged AND staleness = ✅ Clean:
+> # If output contains README_AUDIT_REQUIRED:
 > #   load_skill(name: "agentfs-readme-audit")
 > ```
 >
 > **Violations:**
 > - Committing without running `pre-push-scan.sh`
 > - Committing without user confirmation in the same turn as the report
-> - Skipping README audit when `README.md` is staged and staleness = ✅ Clean
+> - Skipping README audit when `pre-push-scan.sh` emits `README_AUDIT_REQUIRED`
 > - Skipping semantic PII review when memory files are flagged in the report
 > - Merging report presentation and execution into a single agent action
 
