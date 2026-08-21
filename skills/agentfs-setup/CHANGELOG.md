@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-20 | v4.14.0 — Add merge-changelog-entry.sh (deterministic CHANGELOG updates, repair, dedup); add CHANGELOG coverage check to pre-push-scan.sh (Category 9); update post-edit.sh reminder; update seed-agents-md.sh delegation table; update README Guardrail #5 summary |
 | 2026-08-20 | v4.13.0 — Add author-soul.sh (interactive SOUL authoring); refactor scaffold-dotagents.sh to delegate SOUL creation; add @.agents/SOUL.md import to AGENTS.md template; expand Guardrail #7 anti-sycophancy (pushback capitulation, steelman, praise-opener ban); update verify-setup.sh with SOUL content checks; add test-soul-authoring.sh (21 tests); fix test-agents-md-fidelity.sh assertion |
 | 2026-08-19 | v4.12.0 — Guardrail #10 Git Push Safety: added `.pre-push-allowlist` semantic filtering step. Agent reads allowlist at repo root and semantically matches scan findings against known false positive descriptions. Findings matching allowlist are reported as Known FP and don't block. Updated workflow and Quick Reference in seed-agents-md.sh. |
 | 2026-08-18 | Fixed regen-skill-index.py: uses max mtime across all files in skill directory instead of SKILL.md only |

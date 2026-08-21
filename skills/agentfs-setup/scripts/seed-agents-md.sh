@@ -228,7 +228,7 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 | Gate | What | How |
 |:----:|------|-----|
 | 1 | `log.md` (any scope) | `merge-log-entry.sh <path> "<msg>"` |
-| 2 | `skills/*/CHANGELOG.md` | Agent — table row (`date \| change`) |
+| 2 | `skills/*/CHANGELOG.md` | `merge-changelog-entry.sh <path> "<version>" "<description>"` |
 | 2 | `metadata.version` | Agent — edit skill frontmatter |
 | 3 | `skills/index.md` | Automatic via `post-edit.sh` |
 | 3 | `knowledge/` indexes | `load_skill(name: "okf-bundle-index")` |

@@ -234,7 +234,7 @@ Each guardrail is classified by its enforcement mechanism:
 2. ⚖️ **Memory Scope** — `memories/` is PROJECT-only; experiences not rules; graduation path to OKF knowledge
 3. 🔄 **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
 4. ⚖️ **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
-5. ⛔ **Filesystem Integrity** — STOP before declaring done. log.md → CHANGELOG + version bump → indexes → links → all pass → THEN summarize
+5. ⛔ **Filesystem Integrity** — STOP before declaring done. `merge-log-entry.sh` → `merge-changelog-entry.sh` + version bump → `post-edit.sh` → links → all pass → THEN summarize
 6. 🔄 **Idempotency** — Same inputs → same filesystem state
 7. ⚖️ **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
 8. 🔄 **Anti-Daydreaming** — Ephemeral session canary name; spot-check for context drift; never persisted to AgentFS files

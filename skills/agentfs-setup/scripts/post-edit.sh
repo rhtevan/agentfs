@@ -121,6 +121,8 @@ else
   echo "  ⚠️  $ISSUES issue(s) found."
 fi
 echo
-echo "Reminder: Log entries (log.md, CHANGELOG.md) require agent judgment — not automated."
+echo "Reminder: If you modified a skill, run:"
+echo "  bash ~/.agents/skills/agentfs-setup/scripts/merge-changelog-entry.sh <skill-path>/CHANGELOG.md <version> \"<description>\""
+echo "  bash ~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh <scope-log.md> \"- <entry>\""
 
 exit $( [[ $ISSUES -eq 0 ]] && echo 0 || echo 1 )

@@ -171,6 +171,29 @@ else
   DETAILS+="| Log coverage (G#5) | ✅ Clean |\n"
 fi
 
+# ── Category 9: CHANGELOG Coverage ────────────────────────────────
+# Check that staged SKILL.md files have a same-day CHANGELOG.md entry
+CHANGELOG_GAPS=""
+STAGED_SKILL_MDS=$(echo "$CHANGED_FILES" | grep 'SKILL\.md$' || true)
+if [[ -n "$STAGED_SKILL_MDS" ]]; then
+  while IFS= read -r skill_md; do
+    SKILL_DIR=$(dirname "$skill_md")
+    CHANGELOG="$SKILL_DIR/CHANGELOG.md"
+    if [[ ! -f "$CHANGELOG" ]]; then
+      CHANGELOG_GAPS+="$SKILL_DIR: CHANGELOG.md missing; "
+    elif ! grep -q "^| $TODAY" "$CHANGELOG" 2>/dev/null; then
+      CHANGELOG_GAPS+="$SKILL_DIR: no entry for $TODAY; "
+    fi
+  done <<< "$STAGED_SKILL_MDS"
+fi
+
+if [[ -n "$CHANGELOG_GAPS" ]]; then
+  FINDINGS=$((FINDINGS + 1))
+  DETAILS+="| CHANGELOG coverage (G#5) | ⚠️  GAP — ${CHANGELOG_GAPS%; } |\n"
+else
+  DETAILS+="| CHANGELOG coverage (G#5) | ✅ Clean |\n"
+fi
+
 # ── Output Report ──────────────────────────────────────────────────
 echo ""
 echo "╔══════════════════════════════════════════════╗"

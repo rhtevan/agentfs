@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-20 21:45
+
+agentfs-setup v4.14.0: add merge-changelog-entry.sh (deterministic CHANGELOG, repair, dedup); CHANGELOG coverage in pre-push-scan.sh (Cat 9); post-edit.sh reminder; seed-agents-md.sh delegation table; README Guardrail #5
+
 ## 2026-08-20 19:04
 
 README.md: fixed SOUL.md auto-load description (@import, not agent-initiated); updated profiles/ tree entry (recipe.yaml, output/); added author-soul.sh and gen-profile-recipe.sh to Agent Setup category; updated memory model table
