@@ -140,7 +140,7 @@ this table.
 | [7](#7-anti-sycophancy-️) | ⚖️ | Anti-Sycophancy | Default: quote conflict + ask; override only with explicit user confirmation + log \`[OVERRIDE]\` |
 | [8](#8-anti-daydreaming-) | 🔄 | Anti-Daydreaming | Periodic (~1-in-5): emit canary name + self-check for context drift |
 | [9](#9-checkpoints--resumability-) | ⛔ GATE | Checkpoints | **STOP before destructive op.** Record affected files → execute → clear checkpoint |
-| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(Allowlist filter)* → *(README audit if Clean)* → Report → **WAIT for user** → Commit → Push |
+| [10](#10-git-push-safety-) | ⛔ GATE | Git Push Safety | **STOP before commit.** Stage → Scan → *(Allowlist filter)* → *(README audit if README.md staged + staleness Clean)* → Report as rendered Markdown → **WAIT in same turn** → Commit → Push |
 
 ## Scope Definitions
 
@@ -290,12 +290,20 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 ### 10. Git Push Safety ⛔ GATE
 
 > **⛔ GATE — STOP before commit.** Do NOT run `git commit` until
-> the scan passes and the user explicitly confirms.
+> the scan passes and the user explicitly confirms **in the same turn
+> as the report**.
 >
-> **Workflow:** `git add -A` → `pre-push-scan.sh` → *(allowlist
-> filtering)* → *(if README staleness ✅ Clean)* →
-> `load_skill(name: "agentfs-readme-audit")` → present report →
-> **WAIT for user confirmation** → `git commit` → `git push`.
+> **Workflow:**
+> 1. `git add -A`
+> 2. `pre-push-scan.sh` — scans staged diff
+> 3. Allowlist filtering — read `.pre-push-allowlist`, mark known FPs
+> 4. README audit — **only if** `README.md` is in staged files **AND**
+>    staleness = ✅ Clean → `load_skill(name: "agentfs-readme-audit")`
+> 5. Present complete report (scan + audit) in a **single turn**,
+>    rendered as Markdown (no code fence) so tables display natively
+> 6. **WAIT** — do NOT commit until user replies to **this turn**
+> 7. `git commit`
+> 8. `git push`
 >
 > **Allowlist filtering:** When `pre-push-scan.sh` reports findings,
 > the agent reads `.pre-push-allowlist` (at repo root, e.g.
@@ -309,11 +317,16 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 > ```bash
 > bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh   # scans git diff --cached
 > # Agent reads .pre-push-allowlist and filters findings semantically
-> # If README staleness is ✅ Clean, run semantic alignment check:
-> # load_skill(name: "agentfs-readme-audit")
+> # If README.md is staged AND staleness = ✅ Clean:
+> #   load_skill(name: "agentfs-readme-audit")
 > ```
 >
-> **Violation = committing without running `pre-push-scan.sh` or without user confirmation.**
+> **Violations:**
+> - Committing without running `pre-push-scan.sh`
+> - Committing without user confirmation in the same turn as the report
+> - Skipping README audit when `README.md` is staged and staleness = ✅ Clean
+> - Skipping semantic PII review when memory files are flagged in the report
+> - Merging report presentation and execution into a single agent action
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->

@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
@@ -19,7 +19,7 @@ deterministic README staleness check in `pre-push-scan.sh`.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.0 |
+| **Version** | 1.1 |
 | **Trigger** | Automatic during Guardrail #10 (Git Push Safety), or explicit |
 | **Scope** | USER scope `~/.agents/README.md` only |
 | **Dependencies** | `ls`, `grep`, `wc`, `cat` — data gathering is deterministic |
@@ -31,21 +31,25 @@ This skill activates in two scenarios:
 
 ### 1. During Pre-Push (Guardrail #10)
 
-After `pre-push-scan.sh` returns **✅ Clean** for the README
-staleness category, the agent SHOULD run this semantic check
-before presenting the push approval prompt.
+Run this skill when **both** conditions are true:
+- `README.md` is in the staged files (`git diff --cached --name-only`)
+- `pre-push-scan.sh` returns **✅ Clean** for README staleness
 
 **Flow:**
 ```
-pre-push-scan.sh
-  └─ README staleness: ✅ Clean
-       └─ Agent runs this skill (semantic check)
-            └─ If aligned → proceed to push approval
-            └─ If misaligned → report drift, recommend fix before push
+git diff --cached --name-only
+  └─ README.md present in staged files?
+       └─ YES → pre-push-scan.sh README staleness = ✅ Clean?
+                  └─ YES → Agent runs this skill (semantic check)
+                       └─ If aligned → proceed to push approval
+                       └─ If misaligned → report drift, fix before push
+                  └─ NO (STALE) → skip skill, staleness check already flagged
+       └─ NO → skip skill entirely
 ```
 
-If `pre-push-scan.sh` returns **⚠️ STALE** for README, skip this
-skill — the deterministic check already flagged the problem.
+If `README.md` is not staged, skip this skill — no README changes
+to verify. If staleness is **⚠️ STALE**, skip this skill — the
+deterministic check already flagged the problem.
 
 ### 2. Explicit Invocation
 

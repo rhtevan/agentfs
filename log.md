@@ -2,6 +2,27 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-20 22:55
+
+agentfs-setup v4.17.2: fix merge-changelog-entry.sh timestamp format (HH:MM added); dedup now matches on date+version
+
+## 2026-08-20 22:48
+agentfs-readme-audit v1.1.0: trigger condition corrected (staged AND Clean); flow diagram updated
+
+agentfs-setup v4.17.1: test-pre-push-scan.sh Cat 9+10 (25 pass); test-agents-md-fidelity.sh 84 checks; sync-agents-md.sh pre-versioning fallback; agentfs-readme-audit v1.1.0 trigger fix
+
+## 2026-08-20 22:40
+
+agentfs-setup v4.17.0: add sync-agents-md.sh (deterministic idempotent sync, fixes Agent Profiles duplication bug); update SKILL.md docs
+
+## 2026-08-20 22:26
+
+agentfs-setup v4.16.0: Guardrail #10 rendered Markdown report; Category 10 memory PII detection in pre-push-scan.sh; 5th violation added; project AGENTS.md synced
+
+## 2026-08-20 22:07
+
+agentfs-setup v4.15.0: harden Guardrail #10 — numbered workflow, README audit trigger fix, same-turn confirmation, 4 explicit violations
+
 ## 2026-08-20 21:45
 
 agentfs-setup v4.14.0: add merge-changelog-entry.sh (deterministic CHANGELOG, repair, dedup); CHANGELOG coverage in pre-push-scan.sh (Cat 9); post-edit.sh reminder; seed-agents-md.sh delegation table; README Guardrail #5

@@ -82,12 +82,17 @@ assert_script_exists "post-edit.sh exists" "$SCRIPTS_DIR/post-edit.sh"
 assert_script_exists "pre-push-scan.sh exists" "$SCRIPTS_DIR/pre-push-scan.sh"
 assert_script_exists "checkpoint.sh exists" "$SCRIPTS_DIR/checkpoint.sh"
 assert_script_exists "merge-log-entry.sh exists" "$SCRIPTS_DIR/merge-log-entry.sh"
+assert_script_exists "merge-changelog-entry.sh exists" "$SCRIPTS_DIR/merge-changelog-entry.sh"
+assert_script_exists "sync-agents-md.sh exists" "$SCRIPTS_DIR/sync-agents-md.sh"
+assert_script_exists "author-soul.sh exists" "$SCRIPTS_DIR/author-soul.sh"
 assert_script_exists "regen-skill-index.py exists" "$SCRIPTS_DIR/regen-skill-index.py"
 
 assert_contains "References post-edit.sh" 'post-edit\.sh'
 assert_contains "References pre-push-scan.sh" 'pre-push-scan\.sh'
 assert_contains "References checkpoint.sh" 'checkpoint\.sh'
 assert_contains "References merge-log-entry.sh" 'merge-log-entry\.sh'
+assert_contains "References merge-changelog-entry.sh" 'merge-changelog-entry\.sh'
+# sync-agents-md.sh is referenced in SKILL.md, not required in AGENTS.md
 
 # ── Critical behavioral keywords ──────────────────────────────────
 echo "=== Critical Keywords ==="
@@ -128,7 +133,7 @@ assert_contains "checkpoint clear subcommand" 'checkpoint\.sh clear'
 assert_contains "checkpoint check subcommand" 'checkpoint\.sh check'
 # Git push
 assert_contains "pre-push-scan invocation" 'pre-push-scan\.sh'
-assert_contains "Explicit approval required" 'explicit approval|WAIT.*approval|WAIT for user'
+assert_contains "Explicit approval required" 'explicit approval|WAIT.*approval|WAIT for user|WAIT in same turn'
 
 # ── Signal routing table completeness ──────────────────────────────
 echo "=== Signal Routing Table ==="

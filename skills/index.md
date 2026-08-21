@@ -4,7 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-08-20 21:45 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-08-20 22:55 |
+| [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-08-20 22:45 |
 | [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-08-20 18:49 |
 | [fedora-nm-boot-slow](./fedora-nm-boot-slow/SKILL.md) | fedora, network, boot, networkmanager, performance | slow boot network, nm-wait-online slow, network boot delay, diagnose boot network, fix nm-wait-online | 2026-08-20 10:30 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, edit skill, check skill, skill check, audit skill, advanced skill | 2026-08-20 10:29 |
@@ -16,7 +17,6 @@
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-08-17 11:16 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | configure hermes headroom, hermes headroom provider | 2026-08-17 11:16 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, skupper, granite, self-hosted, provider-management | install lightspeed, configure lightspeed, openshift lightspeed, ols setup | 2026-08-17 10:00 |
-| [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-08-16 19:02 |
 | [skill-index](./skill-index/SKILL.md) | agentfs, skills, index, discovery | refresh skill index, index skills, regenerate skill index | 2026-08-16 16:22 |
 | [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-08-16 13:30 |
 | [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | agentfs, okf, knowledge, scaffolding, setup | setup knowledge bundle, scaffold knowledge bundle, okf setup | 2026-08-16 13:30 |

@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "4.14.0"
+  version: "4.17.2"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -19,7 +19,7 @@ AI coding agents.
 | ---------------- | ----------------------------------------------------------------- |
 | **Default mode** | `project`                                                         |
 | **Modes**        | `project` (per-repo context) · `user` (shared library)            |
-| **Scripts**      | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `verify-setup.sh` |
+| **Scripts**      | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `sync-agents-md.sh` · `verify-setup.sh` |
 | **Design spec**  | [references/design-spec.md](./references/design-spec.md)          |
 
 ## Scope Definitions
@@ -145,24 +145,22 @@ use sync to bring it up to date:
 
 > *"sync agentfs"* or *"update agentfs"*
 
-The agent performs these steps:
+The agent runs:
 
-1. **Read the current AGENTS.md** and extract the template version
-   from `<!-- agentfs-template-version: X.Y -->` (if absent, assume
-   pre-versioning).
-2. **Compare** against the current template version in
-   `seed-agents-md.sh`.
-3. **If versions match** — report "already up to date" and stop.
-4. **If versions differ** — extract project-owned sections:
-   - Agent Profiles table rows (below `## Agent Profiles`)
-   - SPECKIT block content (between `<!-- SPECKIT START/END -->`)
-5. **Regenerate** AGENTS.md from the current template via
-   `seed-agents-md.sh` (delete the old file first so the script
-   generates a fresh one).
-6. **Re-inject** the preserved project-owned sections into the
-   newly generated file.
-7. **Report** what changed (old version → new version, sections
-   updated).
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/sync-agents-md.sh [PROJECT_DIR]
+```
+
+`sync-agents-md.sh` handles the full workflow:
+1. Reads current template version from `<!-- agentfs-template-version: X.Y -->`
+2. Compares against installed template version in `SKILL.md`
+3. If versions match — reports "already up to date" and exits
+4. Extracts project-owned sections:
+   - Agent Profiles rows (excluding `default` — owned by template)
+   - SPECKIT block content
+5. Regenerates AGENTS.md from current template via `seed-agents-md.sh`
+6. Re-injects preserved rows using awk (idempotent, no duplicates)
+7. Reports what changed
 
 ### Verification
 
@@ -212,6 +210,7 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 
 - `scripts/scaffold-dotagents.sh` → `load_skill(name: "agentfs-setup/scripts/scaffold-dotagents.sh")`
 - `scripts/seed-agents-md.sh` → `load_skill(name: "agentfs-setup/scripts/seed-agents-md.sh")`
+- `scripts/sync-agents-md.sh` → `load_skill(name: "agentfs-setup/scripts/sync-agents-md.sh")`
 - `scripts/verify-setup.sh` → `load_skill(name: "agentfs-setup/scripts/verify-setup.sh")`
 - `references/design-spec.md` → `load_skill(name: "agentfs-setup/references/design-spec.md")`
 

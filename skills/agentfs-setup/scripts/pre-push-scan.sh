@@ -194,6 +194,18 @@ else
   DETAILS+="| CHANGELOG coverage (G#5) | ✅ Clean |\n"
 fi
 
+# ── Category 10: Memory File PII Risk ─────────────────────────────
+# Detect staged memory files — flag for agent semantic PII review
+STAGED_MEMORY_FILES=$(echo "$CHANGED_FILES" | grep -E '(\.agents/memories/|profiles/.*/memories/)' || true)
+if [[ -n "$STAGED_MEMORY_FILES" ]]; then
+  MEMORY_LIST=$(echo "$STAGED_MEMORY_FILES" | tr '\n' ' ' | sed 's/ $//')
+  DETAILS+="| Memory files staged | ⚠️  REVIEW — agent must read staged diff for PII: $MEMORY_LIST |\n"
+  # Note: this does not increment FINDINGS — it is a mandatory agent review
+  # flag, not a blocker. The agent performs the semantic check.
+else
+  DETAILS+="| Memory files staged | ✅ None |\n"
+fi
+
 # ── Output Report ──────────────────────────────────────────────────
 echo ""
 echo "╔══════════════════════════════════════════════╗"

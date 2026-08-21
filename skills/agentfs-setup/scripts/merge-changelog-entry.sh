@@ -32,7 +32,8 @@ CHANGELOG_FILE="${1:?Usage: merge-changelog-entry.sh <CHANGELOG_FILE> <VERSION> 
 VERSION="${2:?Usage: merge-changelog-entry.sh <CHANGELOG_FILE> <VERSION> <DESCRIPTION>}"
 DESCRIPTION="${3:?Usage: merge-changelog-entry.sh <CHANGELOG_FILE> <VERSION> <DESCRIPTION>}"
 
-TODAY="$(date '+%Y-%m-%d')"
+TODAY="$(date '+%Y-%m-%d %H:%M')"
+DATE_ONLY="$(date '+%Y-%m-%d')"
 
 # Derive skill name from changelog path for the title
 SKILL_NAME=$(basename "$(dirname "$CHANGELOG_FILE")")
@@ -77,14 +78,8 @@ fi
 # ── Deduplication check ───────────────────────────────────────────────
 NEW_ROW="| ${TODAY} | v${VERSION} — ${DESCRIPTION} |"
 
-if grep -qF "| ${TODAY} | v${VERSION} —" "$CHANGELOG_FILE" 2>/dev/null; then
-  # Row for today+version exists — update description in-place
-  # Escape special chars in VERSION for sed
-  ESCAPED_VERSION=$(printf '%s' "$VERSION" | sed 's/[.[\/^$*]/\\&/g')
-  ESCAPED_ROW=$(printf '%s' "$NEW_ROW" | sed 's/[&/\]/\\&/g')
-  sed -i "s|^| ${TODAY} | v${ESCAPED_VERSION} —.*|$ESCAPED_ROW|" "$CHANGELOG_FILE" 2>/dev/null || true
-  # Simpler fallback: just report it and skip
-  echo "[merge-changelog] Entry for ${TODAY} v${VERSION} already exists — skipping duplicate."
+if grep -qF "| ${DATE_ONLY}" "$CHANGELOG_FILE" 2>/dev/null && grep -qF "v${VERSION} —" "$CHANGELOG_FILE" 2>/dev/null; then
+  echo "[merge-changelog] Entry for ${DATE_ONLY} v${VERSION} already exists — skipping duplicate."
   exit 0
 fi
 

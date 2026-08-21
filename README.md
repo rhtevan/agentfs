@@ -239,7 +239,7 @@ Each guardrail is classified by its enforcement mechanism:
 7. ⚖️ **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
 8. 🔄 **Anti-Daydreaming** — Ephemeral session canary name; spot-check for context drift; never persisted to AgentFS files
 9. ⛔ **Checkpoints & Resumability** — STOP before destructive op. Record affected files → execute → clear checkpoint
-10. ⛔ **Git Push Safety** — STOP before commit. Stage → Scan → Report → WAIT for user confirmation → Commit → Push
+10. ⛔ **Git Push Safety** — STOP before commit. Stage → Scan → README audit (if README.md staged + staleness Clean) → Report → **WAIT in same turn** → Commit → Push
 
 The canonical source for guardrails is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered guardrails.

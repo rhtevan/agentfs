@@ -55,8 +55,11 @@ git config user.email "test@test.com"
 git config user.name "Test"
 
 # Create initial commit so we can diff
+# Pre-populate log.md with today's date so Log coverage check passes
+TODAY=$(date '+%Y-%m-%d')
 echo "init" > init.txt
-git add init.txt
+printf '# Log\n\n<!-- anchor -->\n\n## %s\n\n- init\n' "$TODAY" > log.md
+git add init.txt log.md
 git commit -q -m "init"
 
 # ── Test 1: Clean file ─────────────────────────────────────────────
@@ -139,7 +142,7 @@ mkdir -p skills
 echo "new skill" > skills/test-skill.txt
 git add skills/test-skill.txt
 run_scan
-assert_output_contains "README notice" "README Notice" "$SCAN_OUTPUT"
+assert_output_contains "README notice" "README staleness.*STALE" "$SCAN_OUTPUT"
 git reset -q HEAD skills/test-skill.txt
 rm -rf skills
 
@@ -163,6 +166,93 @@ assert_output_contains "Multi: URLs" "Sensitive.*FOUND" "$SCAN_OUTPUT"
 assert_output_contains "Multi: PII" "PII.*FOUND" "$SCAN_OUTPUT"
 git reset -q HEAD multi.txt
 rm -f multi.txt
+
+# ── Test 9: CHANGELOG coverage (Category 9) ───────────────────────
+echo "=== Test 9: CHANGELOG coverage ==="
+
+# T-C9.1: Staged SKILL.md with no same-day CHANGELOG entry → GAP
+mkdir -p skills/myskill
+cat > skills/myskill/SKILL.md << 'EOF'
+---
+metadata:
+  name: myskill
+  version: "1.0.0"
+---
+# myskill
+EOF
+# Write a CHANGELOG with an old date only
+cat > skills/myskill/CHANGELOG.md << 'EOF'
+# myskill Changelog
+| Updated | Change |
+|---------|--------|
+| 2020-01-01 | v1.0.0 — old entry |
+EOF
+git add skills/myskill/
+run_scan
+assert_output_contains "C9.1: CHANGELOG gap detected" "CHANGELOG.*GAP" "$SCAN_OUTPUT"
+git reset -q HEAD skills/myskill/
+rm -rf skills/myskill
+
+# T-C9.2: Staged SKILL.md with same-day CHANGELOG entry → Clean
+TODAY=$(date '+%Y-%m-%d')
+mkdir -p skills/myskill2
+cat > skills/myskill2/SKILL.md << 'EOF'
+---
+metadata:
+  name: myskill2
+  version: "1.0.0"
+---
+# myskill2
+EOF
+printf '# myskill2 Changelog\n| Updated | Change |\n|---------|--------|\n| %s | v1.0.0 — today entry |\n' "$TODAY" > skills/myskill2/CHANGELOG.md
+git add skills/myskill2/
+run_scan
+assert_output_contains "C9.2: CHANGELOG clean" "CHANGELOG coverage.*✅" "$SCAN_OUTPUT"
+git reset -q HEAD skills/myskill2/
+rm -rf skills/myskill2
+
+# T-C9.3: No staged SKILL.md → CHANGELOG clean (stage a neutral file)
+echo 'neutral' > neutral-c9.txt
+git add neutral-c9.txt
+run_scan
+assert_output_contains "C9.3: No SKILL.md staged → clean" "CHANGELOG coverage.*✅" "$SCAN_OUTPUT"
+git reset -q HEAD neutral-c9.txt
+rm -f neutral-c9.txt
+
+# ── Test 10: Memory file PII detection (Category 10) ───────────────
+echo "=== Test 10: Memory file PII detection ==="
+
+# T-C10.1: Staged memory file → REVIEW flag
+mkdir -p .agents/memories
+cat > .agents/memories/MEMORY.md << 'EOF'
+# Memories
+- User prefers concise answers
+EOF
+git add .agents/memories/MEMORY.md
+run_scan
+assert_output_contains "C10.1: Memory file flagged" "Memory files staged.*REVIEW" "$SCAN_OUTPUT"
+git reset -q HEAD .agents/memories/MEMORY.md
+rm -rf .agents
+
+# T-C10.2: Staged profile memory file → REVIEW flag
+mkdir -p .agents/profiles/verifier/memories
+cat > .agents/profiles/verifier/memories/MEMORY.md << 'EOF'
+# Verifier Memories
+- Checks plans for gaps
+EOF
+git add .agents/profiles/verifier/memories/MEMORY.md
+run_scan
+assert_output_contains "C10.2: Profile memory file flagged" "Memory files staged.*REVIEW" "$SCAN_OUTPUT"
+git reset -q HEAD .agents/profiles/verifier/memories/MEMORY.md
+rm -rf .agents
+
+# T-C10.3: No memory files staged → None (stage a neutral file)
+echo 'neutral' > neutral-c10.txt
+git add neutral-c10.txt
+run_scan
+assert_output_contains "C10.3: No memory files → None" "Memory files staged.*✅" "$SCAN_OUTPUT"
+git reset -q HEAD neutral-c10.txt
+rm -f neutral-c10.txt
 
 # ── Summary ────────────────────────────────────────────────────────
 echo ""
