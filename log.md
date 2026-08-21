@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-21 00:04
+agentfs-setup v4.17.6: bump version for Guardrail #5 scope note addition
+
+agentfs-setup seed-agents-md.sh: add Guardrail #5 scope note — README.md at ~/.agents/ is AgentFS-managed and not exempt from post-edit.sh + log.md requirements
+
 ## 2026-08-20 23:52
 
 README.md: fix Guardrail #10 description — README audit trigger updated from 'README.md staged + staleness Clean' to 'agentfs files staged'

@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-21 00:04 | v4.17.6 — seed-agents-md.sh + AGENTS.md: add Guardrail #5 scope note clarifying that README.md at ~/.agents/ is AgentFS-managed and not exempt from post-edit.sh and log.md requirements |
 | 2026-08-20 23:27 | v4.17.5 — author-soul.sh: fix is_stub() — replace grep-based line filter with awk multi-line comment stripper (matches sync-agents-md.sh logic); content inside <!-- --> example blocks no longer falsely marks file as non-stub |
 | 2026-08-20 23:24 | v4.17.4 — sync-agents-md.sh + SKILL.md: replace raw bash hints with SOUL_ACTION_REQUIRED machine signal; agent now guides user conversationally (apply default / customise / skip) instead of printing bare shell commands. Updated SKILL.md with agent post-sync action spec. |
 | 2026-08-20 23:17 | v4.17.3 — sync-agents-md.sh: detect stub SOUL.md during sync (both up-to-date and upgrade paths); emit actionable warning with author-soul.sh command when SOUL is empty or missing. Uses awk-based multi-line comment stripping for accurate stub detection. |

@@ -210,6 +210,11 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 >
 > **Violation = declaring done without running the gate checks.**
 >
+> **Scope note:** `README.md` at `~/.agents/README.md` is an AgentFS-managed
+> file. Edits to it MUST trigger `post-edit.sh` and a `log.md` entry,
+> exactly like any skill or knowledge file. It is NOT exempt because it
+> is prose.
+>
 > The `pre-push-scan.sh` enforces log coverage deterministically —
 > it flags `⚠️ GAP` when staged files lack a same-day `log.md` entry.
 
