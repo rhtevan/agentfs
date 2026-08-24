@@ -3,7 +3,7 @@ name: goose-desktop-env-fix
 description: >
   fix goose desktop, goose shell environment, goose env fix
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---
 
@@ -363,6 +363,53 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
       (`ps aux | grep 'devbox global shellenv' | grep -v grep | wc -l` should be 0)
 - [ ] `refresh-global` alias is available inside `devbox shell` sessions
       (run `devbox shell` then `type refresh-global`)
+
+## Gotchas
+
+- **Goose's hermit `node` wrapper breaks non-Goose Node.js workflows.**
+  Goose ships `/usr/lib/Goose/resources/bin/` containing wrapper scripts
+  for `node`, `npx`, `uvx`, and `jbang`. These wrappers exist so Goose's
+  MCP server extensions can find a Node.js runtime even when the user
+  hasn't installed one. Each wrapper sources `node-setup-common.sh`,
+  which `cd`s into `~/.config/goose/mcp-hermit/` and prepends
+  `~/.config/goose/mcp-hermit/bin/` to PATH before running the real
+  command. This CWD change breaks any npm/pnpm post-install script
+  that uses relative paths (e.g., `node scripts/prebuild.js` resolves
+  to `~/.config/goose/mcp-hermit/scripts/prebuild.js` instead of the
+  package directory).
+
+  **Affected binaries:** `node`, `npx`, `uvx`, `jbang` only. Commands
+  like `bash`, `python3`, `curl`, `git` are NOT wrapped.
+
+  **Why `goose-shell` can't fix this:** The Goose Electron process
+  itself injects `/usr/lib/Goose/resources/bin/` onto PATH before
+  the `goose-shell` wrapper runs. The wrapper sources `~/.bashrc` to
+  restore user tools, but Goose's bin dir still wins because it's
+  earlier on PATH.
+
+  **Per-skill workaround pattern** (recommended for any skill that
+  runs Node.js commands through Goose's shell tool):
+
+  ```bash
+  # Use system node directly
+  NODE="/usr/bin/node"
+
+  # Strip hermit from PATH for pnpm/npm build scripts
+  CLEAN_PATH=$(echo "$PATH" | tr ':' '\n' \
+    | grep -v 'goose.*hermit' \
+    | grep -v 'Goose.*bin' \
+    | tr '\n' ':')
+  CLEAN_PATH="${CLEAN_PATH%:}"
+
+  PATH="$CLEAN_PATH" $NODE some-command
+  ```
+
+  **Do NOT fix globally** by reordering PATH to put `/usr/bin` before
+  Goose's bin dir — this could break MCP server extensions that depend
+  on hermit's isolated Node.js runtime (which may be a different
+  version than the system Node.js).
+
+  **Skills using this pattern:** `dsh-setup` (pnpm builds for DSH).
 
 ## Affected Files
 

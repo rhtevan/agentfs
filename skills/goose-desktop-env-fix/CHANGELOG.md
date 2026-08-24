@@ -1,5 +1,9 @@
 # goose-desktop-env-fix Changelog
 
+| Updated | Change |
+|---------|--------|
+| 2026-08-24 14:24 | v1.3.0 — Added Gotchas section documenting hermit node wrapper PATH interference and per-skill workaround pattern for Node.js-based skills |
+
 
 | Date | Change |
 |------|--------|

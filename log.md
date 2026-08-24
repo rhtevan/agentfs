@@ -2,6 +2,34 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-24 19:29
+
+dsh-setup v1.2.1: separate Chrome profile for security/maximize/process tracking; replaced connection monitoring with wait \'$CHROME_PID\'; fixed WMClass to chrome-127.0.0.1__-Default for Wayland icon matching; updated SKILL.md, CHANGELOG.md, install-desktop.sh, launcher, teardown.sh, verify.sh
+
+## 2026-08-24 17:58
+
+dsh-setup v1.2.0: replaced PID-based idle detection with systemd user service (dsh.service) + TCP connection monitoring; fixed ss header line false-positive; updated SKILL.md, install-desktop.sh, verify.sh, teardown.sh, launcher
+
+## 2026-08-24 16:59
+
+dsh-litellm-provider v1.1.0: fixed apiKeyEnv (DSH rejects empty — now uses LITELLM_VERTEX_AI_API_KEY with dummy value), fixed verify.sh bash arithmetic and model grep patterns; dsh-setup: updated launcher and install-desktop.sh to export dummy API key env var; dsh icon whale size bumped 680→760px
+
+## 2026-08-24 14:26
+
+Guardrail #5 catch-up: bumped dsh-setup v1.0.0→v1.1.0 (post-install fixes), dsh-litellm-provider v1.0.0→v1.0.1 (markdown fix), updated changelogs, regenerated skills/index.md
+
+## 2026-08-24 14:24
+
+Updated goose-desktop-env-fix v1.2.0 → v1.3.0: added Gotchas section documenting hermit node wrapper PATH interference and per-skill workaround pattern
+
+## 2026-08-24 14:01
+
+Fixed dsh-litellm-provider/SKILL.md markdown rendering (blank lines around code fence). Added official DSH whale icon (favicon.svg → dsh.png) to dsh-setup/assets/.
+
+## 2026-08-24 13:52
+
+Created skills: dsh-setup v1.0.0 (pnpm-based DSH install, Chrome app-mode launcher, .desktop integration, update/teardown/verify) and dsh-litellm-provider v1.0.0 (auto-discover models from LiteLLM, write DSH settings.yaml with compat flags). Regenerated skills/index.md.
+
 ## 2026-08-21 00:04
 agentfs-setup v4.17.6: bump version for Guardrail #5 scope note addition
 
