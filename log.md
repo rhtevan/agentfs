@@ -2,6 +2,126 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-26 18:42
+
+README.md: added Goose Desktop Operations to knowledge bundle list (README audit fix)
+
+## 2026-08-26 17:49
+
+hosted-model-ctl v7.4.0 (cont): updated SKILL.md profile table and references/deployment-profiles.md to version-agnostic Granite 3B naming. All 4.2-specific model references removed from user-facing docs.
+
+## 2026-08-26 17:31
+
+hosted-model-ctl v7.4.0: rollback g3b-16k profile to version-agnostic granite-3b (auto-detect GGUF, prefer 4.1). Container rolled back to granite-4.1-3b on rhtevan-work. Goose config updated.
+
+## 2026-08-26 17:07
+
+goose-skupper-provider v5.3.0: Fix test.sh chat completion for Granite 4.2 reasoning models — increase max_tokens, add reasoning_content fallback
+
+## 2026-08-26 17:06
+
+hosted-model-ctl v7.3.1: Fix test.sh for Granite 4.2 reasoning models — increase max_tokens, add reasoning_content fallback
+
+## 2026-08-26 17:03
+
+hosted-model-ctl v7.3.0: Upgrade g3b-16k profile from Granite 4.1 to 4.2 — model ID, GGUF repo/filename, deployment-profiles.md, SKILL.md
+
+## 2026-08-26 14:29
+
+hosted-model-ctl: Added Section 12 (Self-Hosted vs Cloud Provider Comparison) to benchmark-report.md — measured Granite 8B FP8 spec-decode vs Opus 4.6 via GCP Vertex. Granite 2.4-3.3× faster on short/tool-call workloads (0.34s vs 2.54s tool-call latency), Opus 1.1× faster on sustained 1K token generation. Updated Section 8 speed table and Section 10 recommendations with measured cloud data.
+
+## 2026-08-26 14:08
+
+goose-skupper-provider v5.2.0: Set supports_streaming:false in setup.sh and PROVIDER.md to work around goose v1.47.0 streaming parser bug with vLLM hermes tool calls. Confirmed fix in Test rhel-ai v3 session — model correctly called load_skill(agentfs-setup) and completed sync.
+
+## 2026-08-26 14:01
+
+Updated goose-desktop-operations knowledge bundle: documented vLLM hermes streaming bug in goose v1.47.0 (streaming tool-call accumulator drops initial argument fragment when vLLM sends name and args as separate entries in same chunk). Fix: set supports_streaming:false in custom_skupper provider JSON. Updated custom_skupper.json provider config.
+
+## 2026-08-26 13:40
+
+agentfs-setup v4.18.0: Added Guardrail #0 (Signal-First Dispatch) — ⛔ GATE requiring models to scan skill description signals in system prompt before generic interpretation. Addresses signal-routing failures observed on smaller models (Granite 8B failed to match 'sync agentfs' despite exact match in skill descriptions). Updated Guardrail Quick Reference table. Bumped template version.
+
+## 2026-08-26 12:36
+
+okf-bundle-index v1.4.0: rebuild-index.sh sorts newest-first by mtime. agentfs-setup v4.17.8: post-edit.sh audits knowledge indexes, Gate 3 MUST use rebuild-index.sh.
+
+## 2026-08-26 12:22
+
+agentfs-setup v4.17.7: Guardrail #5 template — log.md entries MUST use merge-log-entry.sh; added knowledge root log to scope table
+
+## 2026-08-26 12:09
+
+Created knowledge bundle goose-desktop-operations (toolshim-and-tool-calls.md, custom-provider-schema.md). Moved Incident 5 from skupper-vllm-deployment to new bundle. Updated knowledge/index.md.
+
+## 2026-08-26 12:04
+
+Added Incident 5 (GOOSE_TOOLSHIM Desktop hang) to skupper-vllm-deployment/agentfs-process-lessons.md knowledge bundle
+
+## 2026-08-26 11:07
+
+goose-skupper-provider v5.1.0: Skill check fixes — added Signal Routing Table (10 patterns), expanded opening paragraph, updated signal phrases (test/recreate/check), fixed heredoc injection (env vars + single-quoted PYEOF), removed redundant PROVIDER.md changelog, concrete T8 test.
+
+## 2026-08-26 10:33
+
+goose-skupper-provider v5.0.0: Replaced static alias mapping with API-driven model discovery. setup.sh accepts host/profile names, discovers model ID + context from live API. Added poison-JSON safeguard (Python json.dumps + round-trip + post-write validation + backup restore). Rewrote SKILL.md and PROVIDER.md.
+
+## 2026-08-26 09:52
+
+skupper-model-provider v8.3.0: Aligned with hosted-model-ctl v7.2.0. Replaced alias layer with host-based routing (common.sh, test-model.sh, up.sh, down.sh). Updated SKILL.md routing table, signal routing, scoping rules. Updated van-topology diagram and re-delivered HTML.
+
+## 2026-08-25 22:43
+
+hosted-model-ctl sanity check complete: Fixed --tool-call-parser granite→hermes in report.sh (8 occurrences). Replaced co-hosting combos with speculative decoding recommendation in Large tier report. Fixed vLLM ≥0.9→nightly in model-landscape.md (3 occurrences). Fixed --profile→direct profile name in benchmark-report.md (3 occurrences). Rewrote memory-budget.md to match current 4-profile architecture. Updated co-hosting finding to historical context in benchmark-report.md.
+
+## 2026-08-25 22:11
+
+hosted-model-ctl: Removed gemma4-128k and qwen38-128k profiles — 11.8-13.4 tok/s not usable vs 58-79 tok/s default. Now 4 profiles total (2 per host). Cleaned all scripts, SKILL.md, deployment-profiles.md.
+
+## 2026-08-25 22:07
+
+v7.1.0 hosted-model-ctl: Profile-only architecture. Removed Model Registry and on-demand individual aliases. All deployments go through profiles. Added g350m-2k profile. Renamed gemma4-31b→gemma4-128k, qwen38-27b→qwen38-128k. Rewrote all scripts (setup.sh, start.sh, stop.sh, status.sh, test.sh, list.sh) to accept profile names directly. Rewrote deployment-profiles.md as canonical reference with full specs per profile. Updated SKILL.md to v7.1.0.
+
+## 2026-08-25 21:51
+
+v7.0.0 hosted-model-ctl: Major simplification — removed all co-hosting and solo-* profiles. New naming: g3b-16k, g8b-spec-128k, g8b-fp8-spec-128k. Added vllm-spec engine with SPEC_CONFIGS for speculative decoding. Added FP8+CUDA graphs benchmark results (58-79 tok/s). Updated common.sh, setup.sh, SKILL.md, CHANGELOG.md, benchmark-report.md. Removed obsolete aliases (g350m, g1b, g8b-lc), legacy engines (vllm-ilab, vllm-bnb), co-host GPU pinning logic.
+
+## 2026-08-25 21:04
+
+Created benchmark-report.md under hosted-model-ctl/references — comprehensive 7-test benchmark results across all models (Granite 350M/3B/8B, Qwen3.8-27B, Gemma 4 31B), hosts (rhtevan-work, rhel-ai), and speculative decoding strategies (ngram, gemma4_mtp, draft_model). Includes hardware analysis, failed experiments, and final deployment recommendations.
+
+## 2026-08-25 16:23
+
+hosted-model-ctl: Removed g1b model (Granite 4.0 1B vLLM-BnB) from common.sh and rhtevan-work. Cleaned container. Conducted benchmark tests on rhtevan-work: solo-g3b (Granite 3B Q4, ~22 tok/s) and solo-g8b-lc (Granite 8B Q4, ~6.5 tok/s). Both pass all 7 benchmark tests (instruction following, reasoning, tool calling, code gen, multi-step, conciseness, speed). g3b is 3.4x faster with comparable quality — confirms default profile choice.
+
+## 2026-08-25 16:05
+
+hosted-model-ctl: Switched ALL Qwen3.8 entries from vLLM v0.27.1 to nightly image. Added --reasoning-parser qwen3 flag to both qwen38-27b and qwen38-27b-40k aliases. This fixes the thinking token leak in content field (CoT now routed to reasoning_content). Solo profile (solo-qwen38) will now use nightly + reasoning parser automatically — same fix as validated in co-host testing.
+
+## 2026-08-25 15:23
+
+hosted-model-ctl: Fixed tool calling for ALL models. Root cause: Granite 4.1 outputs <tool_call>JSON</tool_call> XML format but the 'granite' parser in vLLM 0.8.4 expects bare JSON arrays — switched to 'hermes' parser which matches. For Qwen3.8 on vLLM 0.27.1, switched from 'hermes' to 'qwen3_xml' parser (new in 0.27.1). Both models now return finish_reason=tool_calls with properly parsed tool_calls array. Updated common.sh (qwen3_xml parser for all Qwen entries), setup.sh (hermes parser for vllm-ilab and vllm-bnb engines). Qwen3.8 still leaks thinking tokens in content field — separate issue requiring reasoning parser support.
+
+## 2026-08-25 14:40
+
+hosted-model-ctl: Phase 7 co-hosting validated. Deployed co-g8b-qwen38 profile — Granite 8B BF16 TP=2 @128K on GPUs 0,1 (port 9000) + Qwen3.8-27B FP8 TP=2 @40K on GPUs 2,3 (port 9001). Both models responding simultaneously, all 4 GPUs ~21.2/23 GB utilized. Key learnings: (1) CDI per-GPU selection works with --device nvidia.com/gpu=N syntax + --security-opt label=disable. (2) CUDA_VISIBLE_DEVICES env var does NOT work inside CDI containers. (3) Qwen3.8 FP8 TP=2 maxes out at ~40K context (not 64K) due to enforce-eager overhead. Updated common.sh aliases (64k→40k), deployment-profiles.md, SKILL.md. Implemented GPU pinning in setup.sh for vllm and vllm-ilab engines.
+
+## 2026-08-25 14:10
+
+hosted-model-ctl: Updated deployment-profiles.md, memory-budget.md, SKILL.md with corrected VRAM numbers from Gemma 4 deployment. Key corrections: BF16 removed (OOM), solo-gemma4-fp8 profile removed, all Gemma 4 entries now use RedHatAI FP8-block + enforce-eager. Added VRAM reality check table showing CUDA graph overhead. Co-host profiles marked NOT YET TESTED with GPU pinning requirements noted.
+
+## 2026-08-25 14:06
+
+hosted-model-ctl: Phase 5 complete. Gemma 4 31B deployed successfully on rhel-ai with critical learnings: (1) BF16 OOMs on 4x L4 even at 48K context — CUDA graphs + weights consume ~19.3 GB/GPU leaving no room for KV cache. (2) Must use pre-quantized FP8 model (RedHatAI/gemma-4-31B-it-FP8-block). (3) Must use --enforce-eager to skip CUDA graph capture (~10 GB/GPU savings). (4) Must use vLLM nightly (>v0.27.1) due to AmbiguousGlobalPerLayerAttributeError with heterogeneous Gemma 4 layers. (5) Removed solo-gemma4-fp8 profile (256K) and gemma4-31b-fp8 alias — consolidated to single gemma4-31b alias using RedHatAI FP8-block. Updated common.sh model registry. Both solo-gemma4 and solo-qwen38 profiles tested and working (4/4 tests each). Default restored to solo-qwen38.
+
+## 2026-08-25 11:53
+
+hosted-model-ctl: Phase 3+4 complete. Pulled vLLM v0.27.1 (21.6 GB) on rhel-ai. Downloaded Granite 4.1 3B GGUF Q4_K_M (2.0 GB) on rhtevan-work. Deployed solo-g3b profile on rhtevan-work (4/4 tests pass, model ready in 15s). Deployed solo-qwen38 profile on rhel-ai — Qwen3.8-27B-FP8 TP=4 @128K on vLLM v0.27.1 (4/4 tests pass, model ready in 555s including 28.8 GB weight download). Fixed PROFILE_STATE_DIR escaping in common.sh. Updated setup.sh with --profile support, g3b llamacpp config, upstream vLLM engine type. Both default profiles active and serving.
+
+## 2026-08-25 10:19
+
+hosted-model-ctl v6.0.0: Created references/deployment-profiles.md (deployment profile system with mutual exclusion, 12 profiles, defaults). Updated references/model-landscape.md (added Gemma 4 31B/26B-A4B/12B, Qwen3.8-27B, Qwen3-Coder-30B, GLM-4-32B, Nemotron entries, vLLM v0.27.1 image, gemma4 tool-call parser). Updated references/memory-budget.md (VRAM budgets for all new models at TP=2/4). Updated SKILL.md to v6.0.0 (deployment profiles section, new model registry, profile-aware specs S1b/S3b/S4b/S5c, cold start times). Updated scripts/common.sh (new model entries, DEPLOY_PROFILES registry, profile helper functions). Updated scripts/start.sh (--profile flag, mutual exclusion, multi-model startup). Updated scripts/stop.sh (--profile flag, active profile cleanup). Updated scripts/status.sh (active profile display). Updated scripts/list.sh (--profiles flag, new aliases). Updated CHANGELOG.md.
+
 ## 2026-08-24 19:29
 
 dsh-setup v1.2.1: separate Chrome profile for security/maximize/process tracking; replaced connection monitoring with wait \'$CHROME_PID\'; fixed WMClass to chrome-127.0.0.1__-Default for Wayland icon matching; updated SKILL.md, CHANGELOG.md, install-desktop.sh, launcher, teardown.sh, verify.sh

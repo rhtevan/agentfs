@@ -1,52 +1,69 @@
 #!/usr/bin/env bash
-# status.sh — Check status of a specific model or all models
-# Usage: bash status.sh [ALIAS]
-#   No alias: show all models
-#   With alias: show specific model + logs
+# status.sh — Show status of deployment profiles
+# Usage: bash status.sh [PROFILE]
+# Without arguments: shows all profiles.
+# With PROFILE: shows detailed status + recent logs.
 
 source "$(dirname "$0")/common.sh"
 
-ALIAS="${1:-}"
+PROFILE="${1:-}"
 
-if [[ -z "$ALIAS" ]]; then
-  # Show all
-  exec bash "$(dirname "$0")/list.sh"
-fi
-
-parse_model "$ALIAS"
-
-echo "=== Model Status: $ALIAS ==="
-echo "  Model:     $MODEL_ID"
-echo "  Container: $CONTAINER"
-echo "  Host:      $HOST"
-echo "  Port:      $PORT"
-echo "  Engine:    $ENGINE"
-echo "  TP:        $TP"
-echo "  Context:   $CONTEXT"
-echo
-
-if ! host_reachable "$HOST"; then
-  echo "  ⚠️  Host $HOST is unreachable"
-  echo "  Status:    unknown"
+if [[ -z "$PROFILE" ]]; then
+  # Show all profiles
+  bash "$(dirname "$0")/list.sh"
   exit 0
 fi
 
-status=$(check_container_status "$HOST" "$CONTAINER")
-echo "  Status:    $status"
+# Detailed status for a specific profile
+parse_profile "$PROFILE"
+
+echo "=== Status: $PROFILE ==="
+echo "  Description: $PROFILE_DESC"
+echo "  Speed:       $PROFILE_SPEED"
+echo "  Host:        $PROFILE_HOST"
+echo "  Container:   $CONTAINER"
+echo "  Model:       $MODEL_ID"
+echo "  Engine:      $ENGINE"
+echo "  Port:        $PORT"
+echo "  TP:          $TP"
+echo "  Context:     $CONTEXT"
 echo
 
-if [[ "$status" == *"Up"* ]]; then
-  echo "  API check:"
-  code=$(run_on_host "$HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${PORT}/v1/models 2>/dev/null" || echo "000")
-  echo "    HTTP $code on ${HOST}:${PORT}"
-  
-  if [[ "$code" == "200" ]]; then
-    echo "  Model ID:"
-    run_on_host "$HOST" "curl -s http://localhost:${PORT}/v1/models" | \
-      python3 -c "import json,sys; d=json.load(sys.stdin); print('    ' + d['data'][0]['id'])" 2>/dev/null || echo "    (parse error)"
-  fi
-  
-  echo
-  echo "  Recent logs:"
-  run_on_host "$HOST" "podman logs --tail 5 $CONTAINER 2>/dev/null" | sed 's/^/    /'
+if ! host_reachable "$PROFILE_HOST"; then
+  echo "❌ Host $PROFILE_HOST is unreachable."
+  exit 1
 fi
+
+# Container status
+status=$(check_container_status "$PROFILE_HOST" "$CONTAINER")
+if [[ "$status" == *"Up"* ]]; then
+  echo "Container: 🟢 $status"
+elif [[ "$status" == *"Exited"* ]]; then
+  echo "Container: 🔴 $status"
+else
+  echo "Container: ⚪ $status"
+fi
+
+# Active profile
+active=$(get_active_profile "$PROFILE_HOST")
+if [[ "$active" == "$PROFILE" ]]; then
+  echo "Profile:   🟢 active"
+else
+  echo "Profile:   ⚪ not active (active: ${active:-none})"
+fi
+
+# API check
+if [[ "$status" == *"Up"* ]]; then
+  code=$(run_on_host "$PROFILE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${PORT}/v1/models 2>/dev/null" || echo "000")
+  if [[ "$code" == "200" ]]; then
+    model_id=$(run_on_host "$PROFILE_HOST" "curl -s http://localhost:${PORT}/v1/models 2>/dev/null" | jq -r '.data[0].id' 2>/dev/null)
+    echo "API:       ✅ HTTP $code — serving $model_id"
+  else
+    echo "API:       ❌ HTTP $code"
+  fi
+fi
+
+# Recent logs
+echo
+echo "--- Recent Logs (last 10 lines) ---"
+run_on_host "$PROFILE_HOST" "podman logs $CONTAINER 2>&1 | tail -10" || echo "(no logs available)"

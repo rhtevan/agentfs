@@ -3,7 +3,7 @@ name: okf-bundle-index
 description: >
   fix knowledge index, check knowledge links, okf index fix
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   tags: [agentfs, okf, knowledge, index, links]
 ---
 

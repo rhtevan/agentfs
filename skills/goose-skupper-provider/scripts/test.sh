@@ -92,12 +92,16 @@ fi
 # T6: Chat completion
 echo "T6: Chat completion"
 if [[ "$HTTP_CODE" == "200" ]]; then
-  RESPONSE=$(curl -s "http://localhost:${PORT}/v1/chat/completions" \
+  # Use max_tokens=200 to allow room for reasoning models (e.g., Granite 4.2+)
+  RESPONSE=$(curl -s --max-time 120 "http://localhost:${PORT}/v1/chat/completions" \
     -H 'Content-Type: application/json' \
-    -d "{\"model\": \"${MODEL}\", \"messages\": [{\"role\": \"user\", \"content\": \"Say hello\"}], \"max_tokens\": 20}" 2>/dev/null)
+    -d "{\"model\": \"${MODEL}\", \"messages\": [{\"role\": \"user\", \"content\": \"Say hello\"}], \"max_tokens\": 200}" 2>/dev/null)
   CHAT=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin)['choices'][0]['message']['content'])" 2>/dev/null || echo "PARSE_ERROR")
+  REASONING=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin)['choices'][0]['message'].get('reasoning_content',''))" 2>/dev/null || echo "")
   if [[ "$CHAT" != "PARSE_ERROR" && -n "$CHAT" ]]; then
     pass "Chat: $(echo "$CHAT" | head -c 60)"
+  elif [[ -n "$REASONING" && "$REASONING" != "" ]]; then
+    pass "Chat (reasoning model): $(echo "$REASONING" | head -c 60)"
   else
     fail "Chat completion failed"
   fi

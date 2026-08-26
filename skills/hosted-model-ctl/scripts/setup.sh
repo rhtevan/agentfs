@@ -1,86 +1,146 @@
 #!/usr/bin/env bash
-# setup.sh — Deploy (create) a model container
-# Usage: bash setup.sh ALIAS
+# setup.sh — Deploy a deployment profile
+# Usage: bash setup.sh PROFILE
 # Idempotent: removes existing container before creating.
+# All deployments go through profiles — no individual model aliases.
 
 source "$(dirname "$0")/common.sh"
 
-ALIAS="${1:?Usage: setup.sh ALIAS}"
-parse_model "$ALIAS"
+PROFILE="${1:-}"
 
-echo "=== Setup: $ALIAS ==="
-echo "  Model:     $MODEL_ID"
-echo "  Container: $CONTAINER"
-echo "  Host:      $HOST"
-echo "  Port:      $PORT"
-echo "  Engine:    $ENGINE"
-echo "  Image:     $IMAGE"
+if [[ -z "$PROFILE" ]]; then
+  echo "Usage: setup.sh PROFILE" >&2
+  echo "" >&2
+  list_profiles >&2
+  exit 1
+fi
+
+parse_profile "$PROFILE"
+
+echo "=== Setup: $PROFILE ==="
+echo "  Description: $PROFILE_DESC"
+echo "  Host:        $PROFILE_HOST"
+echo "  Model:       $MODEL_ID"
+echo "  Container:   $CONTAINER"
+echo "  Engine:      $ENGINE"
+echo "  Image:       $IMAGE"
+echo "  TP:          $TP"
+echo "  Context:     $CONTEXT"
+echo "  Port:        $PORT"
+echo "  Speed:       $PROFILE_SPEED"
+[[ -n "$EXTRA" ]] && echo "  Extra:       $EXTRA"
+if [[ -n "$SPEC_CONFIG" ]]; then
+  spec_json=$(resolve_spec_config "$SPEC_CONFIG")
+  [[ -n "$spec_json" ]] && echo "  Spec:        $spec_json"
+fi
 echo
 
+# Check host reachable
+if ! host_reachable "$PROFILE_HOST"; then
+  echo "❌ Host $PROFILE_HOST is unreachable." >&2
+  exit 1
+fi
+
 # Stop and remove existing container
-run_on_host "$HOST" "podman stop $CONTAINER 2>/dev/null; podman rm -f $CONTAINER 2>/dev/null" || true
+run_on_host "$PROFILE_HOST" "podman stop $CONTAINER 2>/dev/null; podman rm -f $CONTAINER 2>/dev/null" || true
 
 # Create HF cache directory
-case "$HOST" in
+case "$PROFILE_HOST" in
   rhel-ai)
-    run_on_host "$HOST" "mkdir -p ~/.cache/huggingface"
+    run_on_host "$PROFILE_HOST" "mkdir -p ~/.cache/huggingface"
     ;;
   rhtevan-work)
-    run_on_host "$HOST" "mkdir -p ~/.cache/huggingface ~/.cache/huggingface/gguf"
+    run_on_host "$PROFILE_HOST" "mkdir -p ~/.cache/huggingface ~/.cache/huggingface/gguf"
     ;;
 esac
 
 # Deploy based on engine type
 case "$ENGINE" in
-  vllm)
-    run_on_host "$HOST" "podman run -d \
-      --name $CONTAINER \
-      --device nvidia.com/gpu=all \
-      --security-opt=label=disable \
-      --network host \
-      -v ~/.cache/huggingface:/root/.cache/huggingface:Z \
-      $IMAGE \
-      --model $MODEL_ID \
-      --dtype float16 \
-      --gpu-memory-utilization 0.95 \
-      --max-model-len $CONTEXT \
-      --enforce-eager \
-      --host 0.0.0.0 \
-      --port $PORT \
-      --enable-auto-tool-choice \
-      --tool-call-parser granite"
-    ;;
+  vllm|vllm-spec)
+    # Upstream vLLM
+    hf_cache=""
+    vol_suffix=""
+    case "$PROFILE_HOST" in
+      rhel-ai)
+        hf_cache="/var/home/cloud-user/.cache/huggingface"
+        ;;
+      rhtevan-work)
+        hf_cache="\$HOME/.cache/huggingface"
+        vol_suffix=":Z"
+        ;;
+      *)
+        hf_cache="\$HOME/.cache/huggingface"
+        vol_suffix=":Z"
+        ;;
+    esac
 
-  vllm-bnb)
-    run_on_host "$HOST" "podman run -d \
+    # Build speculative decoding flag for vllm-spec engine
+    spec_flag=""
+    if [[ "$ENGINE" == "vllm-spec" && -n "$SPEC_CONFIG" ]]; then
+      spec_json=$(resolve_spec_config "$SPEC_CONFIG")
+      if [[ -n "$spec_json" ]]; then
+        spec_flag="--speculative-config '${spec_json}'"
+      else
+        echo "⚠️  No spec config found for '$SPEC_CONFIG', deploying without speculation" >&2
+      fi
+    fi
+
+    run_on_host "$PROFILE_HOST" "podman run -d \
       --name $CONTAINER \
       --device nvidia.com/gpu=all \
-      --security-opt=label=disable \
-      --network host \
-      -v ~/.cache/huggingface:/root/.cache/huggingface:Z \
+      --security-opt label=disable \
+      --net host \
+      --shm-size 10G \
+      --pids-limit -1 \
+      -v ${hf_cache}:/root/.cache/huggingface${vol_suffix} \
       $IMAGE \
       --model $MODEL_ID \
-      --quantization bitsandbytes \
-      --load-format bitsandbytes \
-      --gpu-memory-utilization 0.95 \
+      --tensor-parallel-size $TP \
       --max-model-len $CONTEXT \
-      --enforce-eager \
+      --gpu-memory-utilization 0.95 \
+      --disable-custom-all-reduce \
       --host 0.0.0.0 \
       --port $PORT \
-      --enable-auto-tool-choice \
-      --tool-call-parser granite"
+      $EXTRA \
+      $spec_flag"
     ;;
 
   llamacpp)
-    # Check GGUF file exists
-    gguf_file="granite-4.1-8b-Q4_K_M.gguf"
+    # Determine GGUF filename from model ID
+    case "$MODEL_ID" in
+      *granite*3b*)
+        # Version-agnostic: detect available GGUF on the host
+        # Prefer 4.1 over 4.2 (4.2 thinking not supported by Goose 1.47)
+        gguf_file=""
+        gpu_layers=99
+        for candidate in granite-4.1-3b-Q4_K_M.gguf granite-4.2-3b-Q4_K_M.gguf; do
+          if run_on_host "$PROFILE_HOST" "test -f ~/.cache/huggingface/gguf/$candidate" 2>/dev/null; then
+            gguf_file="$candidate"
+            break
+          fi
+        done
+        if [[ -z "$gguf_file" ]]; then
+          echo "❌ No granite 3B GGUF found on $PROFILE_HOST" >&2
+          exit 2
+        fi
+        echo "  GGUF: $gguf_file"
+        ;;
+      *)
+        echo "❌ Unknown llamacpp model: $MODEL_ID" >&2
+        exit 2
+        ;;
+    esac
+
     gguf_path="~/.cache/huggingface/gguf/$gguf_file"
-    run_on_host "$HOST" "test -f $gguf_path" || {
-      echo "Downloading $gguf_file (~5.35 GB)..."
-      run_on_host "$HOST" "curl -L -o $gguf_path \
-        'https://huggingface.co/ibm-granite/granite-4.1-8b-GGUF/resolve/main/$gguf_file'"
+
+    # Download GGUF if needed
+    run_on_host "$PROFILE_HOST" "test -f $gguf_path" || {
+      echo "Downloading $gguf_file..."
+      run_on_host "$PROFILE_HOST" "curl -L -o $gguf_path \
+        'https://huggingface.co/${gguf_repo}/resolve/main/$gguf_file'"
     }
-    run_on_host "$HOST" "podman run -d \
+
+    run_on_host "$PROFILE_HOST" "podman run -d \
       --name $CONTAINER \
       --device nvidia.com/gpu=all \
       --security-opt=label=disable \
@@ -92,36 +152,8 @@ case "$ENGINE" in
       --port $PORT \
       --ctx-size $CONTEXT \
       --threads 14 \
-      --n-gpu-layers 18"
-    ;;
-
-  vllm-ilab)
-    hf_cache=""
-    case "$HOST" in
-      rhel-ai) hf_cache="/var/home/cloud-user/.cache/huggingface" ;;
-      *)       hf_cache="$HOME/.cache/huggingface" ;;
-    esac
-    run_on_host "$HOST" "podman run -d \
-      --name $CONTAINER \
-      --device nvidia.com/gpu=all \
-      --security-opt label=disable \
-      --net host \
-      --shm-size 10G \
-      --pids-limit -1 \
-      -v ${hf_cache}:/opt/app-root/src/.cache/huggingface \
-      --entrypoint python3 \
-      $IMAGE \
-      -m vllm.entrypoints.openai.api_server \
-      --host 0.0.0.0 --port $PORT \
-      --model $MODEL_ID \
-      --tensor-parallel-size $TP \
-      --max-model-len $CONTEXT \
-      --gpu-memory-utilization 0.95 \
-      --trust-remote-code \
-      --disable-custom-all-reduce \
-      --dtype bfloat16 \
-      --enable-auto-tool-choice \
-      --tool-call-parser granite"
+      --n-gpu-layers $gpu_layers \
+      $EXTRA"
     ;;
 
   *)
@@ -130,16 +162,19 @@ case "$ENGINE" in
     ;;
 esac
 
-echo "✅ Container $CONTAINER created on $HOST"
+echo "✅ Container $CONTAINER created on $PROFILE_HOST"
+
+# Set active profile
+set_active_profile "$PROFILE_HOST" "$PROFILE"
 
 # Determine wait time
-case "$ALIAS" in
-  g350m|g1b)   WAIT=180 ;;
-  g8b)         WAIT=30 ;;
-  g8b-128k)    WAIT=480 ;;
-  g30b-96k)    WAIT=1200 ;;
-  *)           WAIT=120 ;;
+case "$PROFILE" in
+  g350m-2k)          WAIT=180 ;;
+  g3b-16k)           WAIT=60 ;;
+  g8b-spec-128k)     WAIT=600 ;;
+  g8b-fp8-spec-128k) WAIT=600 ;;
+  *)                 WAIT=300 ;;
 esac
 
 echo "First-run download may take longer. Waiting up to ${WAIT}s..."
-wait_for_model "$HOST" "$PORT" "$WAIT"
+wait_for_model "$PROFILE_HOST" "$PORT" "$WAIT"

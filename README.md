@@ -216,6 +216,7 @@ Current bundles:
 - **Headroom Compression Analysis** — Proxy compression analysis for OpenAI-compatible endpoints
 - **LLM Inference on Constrained GPUs** — LLM inference strategies for constrained GPU environments (vLLM, llama-cpp, quantization)
 - **Skupper vLLM Deployment** — Lessons learned from deploying Granite models on multi-GPU cloud instances via Skupper V2 VAN
+- **Goose Desktop Operations** — GOOSE_TOOLSHIM incident postmortem, custom provider JSON schema, Desktop hang diagnostics
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 

@@ -71,6 +71,50 @@ regen_skills_index() {
   fi
 }
 
+# ── Knowledge index audit ──────────────────────────────────────────
+audit_knowledge_index() {
+  local knowledge_root="$1"
+  local scope_label="$2"
+
+  if [[ ! -d "$knowledge_root" ]]; then
+    return
+  fi
+
+  # Count bundles (directories with index.md)
+  local bundle_count=0
+  for d in "$knowledge_root"/*/; do
+    [[ -f "${d}index.md" ]] && bundle_count=$((bundle_count + 1))
+  done
+
+  if [[ $bundle_count -eq 0 ]]; then
+    return
+  fi
+
+  # Check if audit-index.sh exists
+  local audit_script
+  audit_script="${HOME}/.agents/skills/okf-bundle-index/scripts/audit-index.sh"
+  if [[ ! -f "$audit_script" ]]; then
+    info "[$scope_label/knowledge] Skipping audit (okf-bundle-index skill not installed)"
+    return
+  fi
+
+  echo "[$scope_label] Auditing knowledge index ($bundle_count bundles)..."
+
+  local audit_output
+  audit_output="$(bash "$audit_script" "$knowledge_root" 2>&1)"
+
+  local broken missing
+  broken="$(echo "$audit_output" | grep -c '^[^(]' | grep -A999 'BROKEN LINKS' | grep -v 'BROKEN LINKS\|(none)' || true)"
+  missing="$(echo "$audit_output" | grep '^CONCEPT\|^SUB-BUNDLE' || true)"
+
+  if [[ -n "$missing" ]]; then
+    warn "[$scope_label/knowledge] Missing index entries found — run: load_skill(name: \"okf-bundle-index\")"
+    echo "$missing" | head -5 | sed 's/^/    /'
+  else
+    info "[$scope_label/knowledge] All bundles indexed ($bundle_count bundles)"
+  fi
+}
+
 # ── Log.md comment-line validation ─────────────────────────────────
 check_log_anchor() {
   local log_file="$1"
@@ -97,6 +141,7 @@ if $CHECK_USER; then
   if [[ -d "$USER_ROOT" ]]; then
     echo "[USER] Checking ~/.agents/"
     regen_skills_index "$USER_ROOT/skills" "USER"
+    audit_knowledge_index "$USER_ROOT/knowledge" "USER"
     check_log_anchor "$USER_ROOT/log.md" "USER"
     check_log_anchor "$USER_ROOT/knowledge/log.md" "USER/knowledge"
     echo

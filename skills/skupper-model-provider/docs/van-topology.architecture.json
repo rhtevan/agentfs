@@ -18,10 +18,10 @@
     { "id": "ctrl-local", "type": "backend", "label": "Controller", "sublabel": "system-controller", "pos": [490, 160], "size": [130, 48] },
     { "id": "router-rw", "type": "backend", "label": "Skupper Router", "sublabel": "hub-rhtevan-work", "pos": [760, 160], "size": [150, 60] },
     { "id": "ctrl-rw", "type": "backend", "label": "Controller", "sublabel": "rhtevan-work", "pos": [760, 40], "size": [130, 48] },
-    { "id": "model-rw", "type": "cloud", "label": "GPU Models", "sublabel": "g350m / g1b / g8b", "pos": [1000, 160], "size": [150, 60], "tag": "hosted-model-ctl" },
+    { "id": "model-rw", "type": "cloud", "label": "GPU Models", "sublabel": "g350m-2k / g3b-16k", "pos": [1000, 160], "size": [150, 60], "tag": "hosted-model-ctl" },
     { "id": "router-ra", "type": "backend", "label": "Skupper Router", "sublabel": "hub-rhel-ai", "pos": [760, 400], "size": [150, 60] },
     { "id": "ctrl-ra", "type": "backend", "label": "Controller", "sublabel": "rhel-ai", "pos": [760, 530], "size": [130, 48] },
-    { "id": "model-ra", "type": "cloud", "label": "GPU Models", "sublabel": "g30b-96k / g8b-128k", "pos": [1000, 400], "size": [150, 60], "tag": "hosted-model-ctl" },
+    { "id": "model-ra", "type": "cloud", "label": "GPU Models", "sublabel": "g8b-spec-128k / g8b-fp8-spec-128k", "pos": [1000, 400], "size": [160, 60], "tag": "hosted-model-ctl" },
     { "id": "crc-router", "type": "backend", "label": "Skupper Router", "sublabel": "CRC (kubernetes)", "pos": [490, 510], "size": [150, 60] },
     { "id": "crc-listener", "type": "backend", "label": "Listener :9000", "sublabel": "CRC service endpoint", "pos": [260, 510], "size": [150, 56] }
   ],
@@ -48,7 +48,7 @@
   ],
   "cards": [
     { "dot": "cyan", "title": "Consumer Sites", "items": ["Localhost: podman-based, dual listeners (:9000, :10000)", "CRC: kubernetes-based, Skupper operator v2.2.1", "Outbound interior links to hub routers"] },
-    { "dot": "emerald", "title": "Provider Sites", "items": ["rhtevan-work: g350m, g1b, g8b (LAN, port 55671)", "rhel-ai: g30b-96k, g8b-128k (AWS, port 8000)", "Model containers managed by hosted-model-ctl"] },
+    { "dot": "emerald", "title": "Provider Sites", "items": ["rhtevan-work: g350m-2k, g3b-16k (LAN, port 55671)", "rhel-ai: g8b-spec-128k, g8b-fp8-spec-128k (AWS, port 8000)", "Model containers managed by hosted-model-ctl"] },
     { "dot": "rose", "title": "Security & Resilience", "items": ["AMQPS with cert-based manual links (no token)", "Auto-restart via systemd on crash (10s recovery)", "Partial availability: skip unreachable, serve available"] }
   ]
 }

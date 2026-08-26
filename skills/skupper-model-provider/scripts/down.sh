@@ -25,9 +25,9 @@ elif [[ "$TARGET" == "crc" ]]; then
   SCOPED=true
   CRC_TARGET=true
 else
-  # Resolve model alias to host if needed
-  if alias_to_host "$TARGET" &>/dev/null; then
-    HOSTS=($(alias_to_host "$TARGET"))
+  # Resolve profile name or host name
+  if resolve_host "$TARGET" &>/dev/null; then
+    HOSTS=($(resolve_host "$TARGET"))
   else
     HOSTS=("$TARGET")
   fi

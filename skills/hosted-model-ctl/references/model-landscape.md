@@ -2,7 +2,8 @@
 
 > Curated open-source models for self-hosted inference.
 > Minimum context: 64K (128K preferred). Runtime: vLLM/llm-d preferred.
-> Last updated: 2026-08-19
+> See also: [deployment-profiles.md](./deployment-profiles.md) for curated deployment combos.
+> Last updated: 2026-08-25 22:44
 
 ## VRAM Tier Definitions
 
@@ -31,7 +32,17 @@
 | Qwen3 4B | 4B | 128K | ~8 GB | ~4 GB | ~2.5 GB | ~5 GB | ✅ hermes | Qwen/Qwen3-4B |
 | Qwen3 8B | 8B | 128K | ~16 GB | ~8 GB | ~5 GB | ~8 GB | ✅ hermes | Qwen/Qwen3-8B |
 | Qwen3 32B | 32B | 128K | ~64 GB | ~32 GB | ~18 GB | ~16 GB | ✅ hermes | Qwen/Qwen3-32B |
-| Qwen3.8 27B | 27B | 128K | ~54 GB | ~27 GB | ~15 GB | ~14 GB | ✅ hermes | Qwen/Qwen3.8-27B |
+| **Qwen3.8 27B** | 27B | 128K | ~54 GB | ~27 GB | ~15 GB | ~14 GB | ✅ hermes | Qwen/Qwen3.8-27B-FP8 |
+| Qwen3-Coder 30B-A3B | 30.5B (3.3B active) | 256K | ~61 GB | ~30 GB | ~17 GB | ~12 GB | ✅ hermes | Qwen/Qwen3-Coder-30B-A3B-Instruct |
+
+> **Qwen3.8-27B notes:** Vision-language model (text+image+video). IFBench 79.5
+> (vs Opus 4.6 at 62.5), SWE-bench Pro 61.7. Arch: `Qwen2ForCausalLM` — supported
+> Arch: `Qwen2ForCausalLM` — supported by vLLM nightly. Use `--tool-call-parser qwen3_xml`
+> and `--reasoning-parser qwen3`. FP8 variant available directly from HF (`Qwen3.8-27B-FP8`).
+>
+> **Qwen3-Coder-30B-A3B notes:** MoE (128 experts, 8 active). Purpose-built for
+> agentic coding — CLINE/IDE integration, 256K native context. Non-thinking mode
+> only. MoE routing needs vLLM MoE support validation.
 
 ### Meta Llama
 
@@ -46,6 +57,20 @@
 |-------|:------:|:----------:|:-------:|:------:|:-----:|:-------:|:------------:|----------|
 | Gemma 3 12B | 12B | 128K | ~24 GB | ~12 GB | ~7 GB | ~8 GB | ⚠️ limited | google/gemma-3-12b-it |
 | Gemma 3 27B | 27B | 128K | ~54 GB | ~27 GB | ~15 GB | ~14 GB | ⚠️ limited | google/gemma-3-27b-it |
+| **Gemma 4 31B** | 30.7B | 256K | ~62 GB | ~31 GB | ~17 GB | ~16 GB | ✅ gemma4 | google/gemma-4-31B-it |
+| Gemma 4 26B-A4B | 25.2B (3.8B active) | 256K | ~50 GB | ~25 GB | ~14 GB | ~12 GB | ✅ gemma4 | google/gemma-4-26B-A4B-it |
+| Gemma 4 12B | 12B | 256K | ~24 GB | ~12 GB | ~7 GB | ~8 GB | ✅ gemma4 | google/gemma-4-12B-it |
+
+> **Gemma 4 31B notes:** Dense model. MMLU-Pro 85.2, GPQA 84.3, LiveCodeBench 80.0,
+> Tau2 76.9 (tool calling), Codeforces 2150, AIME 2026 89.2. Native function calling,
+> thinking mode, 256K context. Arch: `Gemma4ForConditionalGeneration` — requires
+> Requires **vLLM nightly** (v0.27.1+ lacks support; nightly has fix #51757). Apache 2.0 license.
+>
+> **Gemma 4 26B-A4B notes:** MoE (128 experts, 8 active). Runs at ~4B model speed
+> with 26B knowledge. GPQA 82.3, Tau2 68.2. Same vLLM requirement as 31B.
+>
+> **Gemma 4 12B notes:** Unified encoder-free architecture (no separate vision/audio
+> encoder). Supports text, image, audio natively. 256K context.
 
 ### Mistral
 
@@ -58,6 +83,26 @@
 | Model | Params | Native Ctx | BF16 Wt | FP8 Wt | Q4 Wt | KV@128K | Tool Calling | HF Repo |
 |-------|:------:|:----------:|:-------:|:------:|:-----:|:-------:|:------------:|----------|
 | Phi-4 Mini 14B | 14B | 128K | ~28 GB | ~14 GB | ~8 GB | ~8 GB | ⚠️ limited | microsoft/Phi-4-mini-instruct |
+
+### Tsinghua GLM
+
+| Model | Params | Native Ctx | BF16 Wt | FP8 Wt | Q4 Wt | KV@128K | Tool Calling | HF Repo |
+|-------|:------:|:----------:|:-------:|:------:|:-----:|:-------:|:------------:|----------|
+| GLM-4-32B | 32B | 128K | ~64 GB | ~32 GB | ~18 GB | ~14 GB | ✅ glm4 | THUDM/GLM-4-32B-0414 |
+
+> **GLM-4-32B notes:** Dense 32B from Tsinghua. MIT license. Good at tool calling.
+> Arch: `ChatGLMModel` — supported by vLLM 0.8.4+.
+
+### NVIDIA Nemotron
+
+| Model | Params | Native Ctx | Weight Size | Active Params | Tool Calling | HF Repo |
+|-------|:------:|:----------:|:-----------:|:-------------:|:------------:|----------|
+| Nemotron-3-Nano 30B-A3B | 30B | 128K | ~60 GB (BF16) | 3.5B | ✅ yes | nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 |
+| Nemotron-3-Super 120B-A12B | 120B | 1M | ~240 GB (BF16) | 12B | ✅ yes | nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16 |
+
+> **Nemotron notes:** Hybrid Mamba-2 + MoE + Attention architecture. Nano fits
+> ~60 GB BF16 (tight on 4× L4). Super requires 8× H100-80GB minimum.
+> NVIDIA Nemotron Open Model License.
 
 ## Tier Recommendations
 
@@ -92,17 +137,20 @@ CPU fallback path: Granite 8B Q4 CPU-only → 64K context @ ~2-4 tok/s (needs ~1
 
 ### Large Tier (90-96 GB, TP=4) — 30-32B at full context
 
-| Rank | Model | Runtime | Quant | TP | Context | Est. VRAM | Tok/s |
-|:----:|-------|:-------:|:-----:|:--:|:-------:|:---------:|:-----:|
-| 1 | Qwen3 32B | vLLM | FP8 | 4 | 128K | ~48 GB | ~30-40 |
-| 2 | Granite 4.1 8B | vLLM | BF16 | 2 | 128K | ~24 GB | ~50-70 |
-| 3 | Granite 4.1 30B | vLLM | FP8 | 4 | 128K | ~46 GB | ~20-30 |
+| Rank | Model | Runtime | Quant | TP | Context | Est. VRAM | Tok/s | vLLM |
+|:----:|-------|:-------:|:-----:|:--:|:-------:|:---------:|:-----:|:----:|
+| 1 | **Gemma 4 31B** | vLLM | BF16 | 4 | 128K | ~78 GB | ~20-30 | nightly |
+| 2 | **Qwen3.8 27B** | vLLM | FP8 | 4 | 128K | ~41 GB | ~30-40 | 0.8.4+ |
+| 3 | **Gemma 4 31B** | vLLM | FP8 | 4 | **256K** | ~47 GB | ~25-35 | nightly |
+| 4 | Qwen3 32B | vLLM | FP8 | 4 | 128K | ~48 GB | ~30-40 | 0.8.4+ |
+| 5 | Granite 4.1 30B | vLLM | FP8 | 4 | 128K | ~46 GB | ~20-30 | 0.8.4+ |
+| 6 | Granite 4.1 8B | vLLM | BF16 | 2 | 128K | ~24 GB | ~50-70 | 0.8.4+ |
 
-Co-hosting combos (TP=2 + TP=2):
-- Granite 8B BF16 + Qwen3.8 27B FP8 → enterprise + reasoning
-- Granite 8B BF16 + Mistral Small 24B FP8 → general + coding
-- Granite 8B BF16 + Gemma 3 27B FP8 → enterprise + multilingual
-- Qwen3 8B BF16 + Qwen3.8 27B FP8 → light + heavy reasoning
+**Speculative decoding** is the recommended strategy for Large Tier on GDDR6 GPUs
+(e.g., 4× L4). Rather than deploying a single large model at 11-13 tok/s, use a
+smaller target (8B) with a same-family draft model (3B) to achieve 58-79 tok/s.
+See [deployment-profiles.md](./deployment-profiles.md) for curated profile definitions
+and [benchmark-report.md](./benchmark-report.md) for measured results.
 
 ### XLarge Tier (160+ GB) — 70B+ models
 
@@ -116,13 +164,18 @@ Co-hosting combos (TP=2 + TP=2):
 
 | Flag | When to use |
 |------|------------|
-| `--enforce-eager` | Required with bitsandbytes quantization (CUDAGraph incompatible) |
+| `--enforce-eager` | Large models on tight VRAM (skips CUDA graphs ~10 GB/GPU overhead). Also required with bitsandbytes quantization. |
 | `--disable-custom-all-reduce` | Required for PCIe interconnect (no NVLink) |
 | `--enable-auto-tool-choice` | Enable tool/function calling |
-| `--tool-call-parser granite` | IBM Granite models |
-| `--tool-call-parser hermes` | Qwen3 models |
+| `--tool-call-parser hermes` | IBM Granite 4.1 models (hermes format, not granite parser) |
+| `--tool-call-parser hermes` | Qwen3/Qwen3.8 models |
+| `--tool-call-parser gemma4` | Gemma 4 models (vLLM nightly) |
 | `--tool-call-parser llama3` | Llama 3.x models |
 | `--tool-call-parser mistral` | Mistral models |
+| `--tool-call-parser glm4` | GLM-4 models |
+| `--reasoning-parser qwen3` | Qwen3.8 thinking/reasoning token separation |
+| `--reasoning-parser gemma4` | Gemma 4 reasoning token separation |
+| `--speculative-config '{...}'` | Enable speculative decoding (draft_model, ngram, etc.) |
 | `--tensor-parallel-size N` | Distribute across N GPUs |
 | `--max-model-len N` | Cap context window (prevent OOM) |
 | `--gpu-memory-utilization 0.95` | Use more VRAM (default 0.9) |

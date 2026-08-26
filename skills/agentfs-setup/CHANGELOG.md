@@ -3,6 +3,9 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-26 13:40 | v4.18.0 — Added Guardrail #0 (Signal-First Dispatch) — ⛔ GATE requiring models to scan skill description signals before generic interpretation. Addresses routing failures on smaller models. Updated Quick Reference table and guardrail body text. |
+| 2026-08-26 12:36 | v4.17.8 — post-edit.sh: added knowledge index audit (calls okf-bundle-index audit-index.sh). Guardrail #5 Gate 3: MUST use rebuild-index.sh for knowledge indexes. |
+| 2026-08-26 12:22 | v4.17.7 — Guardrail #5 Delegation: log.md entries MUST use merge-log-entry.sh (no direct write/edit except initial file creation). Added knowledge root log to scope table. |
 | 2026-08-21 00:04 | v4.17.6 — seed-agents-md.sh + AGENTS.md: add Guardrail #5 scope note clarifying that README.md at ~/.agents/ is AgentFS-managed and not exempt from post-edit.sh and log.md requirements |
 | 2026-08-20 23:27 | v4.17.5 — author-soul.sh: fix is_stub() — replace grep-based line filter with awk multi-line comment stripper (matches sync-agents-md.sh logic); content inside <!-- --> example blocks no longer falsely marks file as non-stub |
 | 2026-08-20 23:24 | v4.17.4 — sync-agents-md.sh + SKILL.md: replace raw bash hints with SOUL_ACTION_REQUIRED machine signal; agent now guides user conversationally (apply default / customise / skip) instead of printing bare shell commands. Updated SKILL.md with agent post-sync action spec. |

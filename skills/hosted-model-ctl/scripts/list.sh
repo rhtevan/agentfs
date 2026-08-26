@@ -1,39 +1,46 @@
 #!/usr/bin/env bash
-# list.sh — List all hosted model containers and their status
+# list.sh — List all deployment profiles and their status
 # Usage: bash list.sh
 
 source "$(dirname "$0")/common.sh"
 
-echo "=== Hosted Model Status ==="
+echo "=== Hosted Model Deployment Profiles ==="
 echo
 
+# Show active profiles
+for host in rhtevan-work rhel-ai; do
+  active=$(get_active_profile "$host")
+  if [[ -n "$active" ]]; then
+    parse_profile "$active" 2>/dev/null || continue
+    echo "  $host: 🟢 $active ($PROFILE_DESC — $PROFILE_SPEED)"
+  else
+    default=$(get_default_profile "$host")
+    echo "  $host: ⚪ no active profile (default: $default)"
+  fi
+done
+echo
+
+# List all profiles with container status
 for host in rhtevan-work rhel-ai; do
   echo "--- ${host} ---"
-  case "$host" in
-    rhtevan-work)
-      aliases=(g350m g1b g8b)
-      ;;
-    rhel-ai)
-      aliases=(g30b-96k g8b-128k)
-      ;;
-  esac
 
-  # Check host reachability once
   if host_reachable "$host"; then
     host_status="online"
   else
     host_status="unreachable"
-    echo "  ⚠️  Host $host is unreachable — showing last known config"
+    echo "  ⚠️  Host $host is unreachable"
   fi
 
-  printf "  %-12s %-35s %-8s %s\n" "ALIAS" "MODEL" "PORT" "STATUS"
-  printf "  %-12s %-35s %-8s %s\n" "-----" "-----" "----" "------"
+  printf "  %-22s %-42s %-6s %-15s %s\n" "PROFILE" "MODEL" "PORT" "SPEED" "STATUS"
+  printf "  %-22s %-42s %-6s %-15s %s\n" "-------" "-----" "----" "-----" "------"
 
-  for alias in "${aliases[@]}"; do
-    parse_model "$alias"
+  for profile in "${ALL_PROFILES[@]}"; do
+    parse_profile "$profile" 2>/dev/null || continue
+    [[ "$PROFILE_HOST" != "$host" ]] && continue
+
     if [[ "$host_status" == "unreachable" ]]; then
       icon="⚪"
-      status="unknown (host unreachable)"
+      status="unknown"
     else
       status=$(check_container_status "$host" "$CONTAINER")
       if [[ "$status" == *"Up"* ]]; then
@@ -46,7 +53,11 @@ for host in rhtevan-work rhel-ai; do
         icon="⚪"
       fi
     fi
-    printf "  %-12s %-35s %-8s %s %s\n" "$alias" "$MODEL_ID" "$PORT" "$icon" "$status"
+
+    default_marker=""
+    [[ "$profile" == "$DEFAULT_PROFILE_RHTEVAN" || "$profile" == "$DEFAULT_PROFILE_RHELAI" ]] && default_marker=" ✅"
+
+    printf "  %-22s %-42s %-6s %-15s %s %s%s\n" "$profile" "$MODEL_ID" "$PORT" "$PROFILE_SPEED" "$icon" "$status" "$default_marker"
   done
   echo
 done

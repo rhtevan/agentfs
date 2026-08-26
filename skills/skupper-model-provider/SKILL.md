@@ -8,7 +8,7 @@ argument-hint: "setup skupper model | teardown skupper model | start skupper mod
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.2.0"
+  version: "8.3.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -49,15 +49,19 @@ All site-specific values (IPs, hostnames, ports, SANs) are read from
 `topology.env`. Run `setup.sh --check` to see the full topology
 diagram with actual values and validate the configuration.
 
-## Model Alias Routing
+## Host-Based Routing
 
-| Alias | Host | Local Port | Routing Key |
-|:-----:|------|:----------:|-------------|
-| `g350m` | rhtevan-work | 10000 | `model-api-rhtevan-work` |
-| `g1b` | rhtevan-work | 10000 | `model-api-rhtevan-work` |
-| `g8b` | rhtevan-work | 10000 | `model-api-rhtevan-work` |
-| `g30b-96k` | rhel-ai | 9000 | `model-api-rhel-ai` |
-| `g8b-128k` | rhel-ai | 9000 | `model-api-rhel-ai` |
+Skupper routes by host:port. The active model is determined by
+`hosted-model-ctl` (profile-based mutual exclusion), not by Skupper.
+
+| Host | Local Port | Routing Key | Default Profile |
+|------|:----------:|-------------|:---------------:|
+| rhtevan-work | 10000 | `model-api-rhtevan-work` | `g3b-16k` |
+| rhel-ai | 9000 | `model-api-rhel-ai` | `g8b-fp8-spec-128k` |
+
+The `test-model.sh` script and `up.sh`/`down.sh` scoped operations
+accept either a host name (`rhel-ai`) or a profile name
+(`g8b-fp8-spec-128k`) — profile names are resolved to their host.
 
 ## Site Configuration
 
@@ -88,7 +92,7 @@ All values in the table above are defined in `topology.env`.
 | `up.sh [HOST]` | Start VAN (controllers + routers) | Daily use |
 | `down.sh [HOST]` | Stop VAN (routers + controllers) | End of day |
 | `status.sh` | Full health check | Troubleshooting |
-| `test-model.sh ALIAS` | E2E connectivity test | Verification |
+| `test-model.sh HOST_OR_PROFILE` | E2E connectivity test | Verification |
 
 ## Agent Orchestration
 
@@ -111,20 +115,20 @@ triggered for **Provider** sites that are up and reachable.
 
 | Signal pattern | Skupper action | hosted-model-ctl delegation |
 |----------------|----------------|-----------------------------|
-| `setup skupper model [provider]` | `setup.sh` (infra) | Trigger `hosted-model-ctl` → `setup.sh DEFAULT_MODEL` per host |
+| `setup skupper model [provider]` | `setup.sh` (infra) | Trigger `hosted-model-ctl` → `setup.sh` (default profile per host) |
 | `teardown skupper model [provider]` | `teardown.sh` (remove infra) | Trigger `hosted-model-ctl` → `stop.sh all` (stop, do NOT remove) |
-| `start skupper model [provider]` | `up.sh` (start VAN) | Trigger `hosted-model-ctl` → `start.sh DEFAULT_MODEL` per host |
+| `start skupper model [provider]` | `up.sh` (start VAN) | Trigger `hosted-model-ctl` → `start.sh` (default profile per host) |
 | `stop skupper model [provider]` | `down.sh` (stop VAN) | Trigger `hosted-model-ctl` → `stop.sh all` |
-| `start skupper model with g8b-128k` | `up.sh rhel-ai` (scoped) | Trigger `hosted-model-ctl` → `start.sh g8b-128k` |
+| `start skupper model with g8b-fp8-spec-128k` | `up.sh rhel-ai` (scoped) | Trigger `hosted-model-ctl` → `start.sh g8b-fp8-spec-128k` |
 | `check skupper model [provider]` | `status.sh` (VAN status) | Trigger `hosted-model-ctl` → `status.sh` (model status) |
 | `stop skupper model on rhtevan-work` | `down.sh rhtevan-work` (scoped) | Trigger `hosted-model-ctl` → stop models on rhtevan-work only |
 
 ### Scoping Rules
 
 - **Without `on HOST`** → action applies to ALL hosts (local + all remotes)
-- **Without `with MODEL`** → use default models from `hosted-model-ctl`
-  (`DEFAULT_MODEL_RHTEVAN` and `DEFAULT_MODEL_RHELAI` in its `common.sh`)
-- **With explicit target** → scope to that specific host/model
+- **Without `with PROFILE`** → use default profiles from `hosted-model-ctl`
+  (`DEFAULT_PROFILE_RHTEVAN` and `DEFAULT_PROFILE_RHELAI` in its `common.sh`)
+- **With explicit target** → scope to that specific host/profile
 
 ### Error Handling
 
@@ -257,7 +261,7 @@ Run `setup.sh` to rebuild.
 ### Test
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/test-model.sh g350m
+bash ~/.agents/skills/skupper-model-provider/scripts/test-model.sh rhtevan-work
 ```
 
 6 tests: listener port, API health, model ID, chat completion,
@@ -274,7 +278,7 @@ remote host reachable, remote container running.
 | S3b | Stop scoped VAN (one host, others active) | `down.sh HOST` → HOST down, its listener stopped, other routes **preserved** |
 | S3c | Stop scoped VAN (last host) | `down.sh HOST` (no other active) → HOST + local stopped, no listeners |
 | S4 | Full status with all components | `status.sh` → comprehensive report |
-| S5 | E2E connectivity test | `test-model.sh ALIAS` → 6/6 pass (requires model via `hosted-model-ctl`) |
+| S5 | E2E connectivity test | `test-model.sh HOST_OR_PROFILE` → 6/6 pass (requires model via `hosted-model-ctl`) |
 | S6 | Teardown infrastructure | `teardown.sh` → all Skupper containers stopped |
 | S7a | Auto-restart on crash (normal hosts) | After VAN up → kill router on rhtevan-work → auto-restart within 10s |
 | S7b | Auto-restart on crash (tmpfs-workaround hosts) | After VAN up → kill router on rhel-ai → auto-restart within 10s |
@@ -297,7 +301,7 @@ remote host reachable, remote container running.
 | T3d | S3c | Only rhtevan-work up | `down.sh rhtevan-work` | rhtevan-work + local stopped, no listeners |
 | T3e | S3c | Only rhel-ai up | `down.sh rhel-ai` | rhel-ai + local stopped, no listeners |
 | T4 | S4 | Any | `status.sh` | All components reported with correct live state |
-| T5 | S5 | VAN + model up | `test-model.sh g350m` | 6/6 pass (model started via `hosted-model-ctl`) |
+| T5 | S5 | VAN + model up | `test-model.sh rhtevan-work` | 6/6 pass (model started via `hosted-model-ctl`) |
 | T6 | S6 | Any | `teardown.sh` | All Skupper containers stopped on all hosts |
 | T7a | S7a | VAN up (rhtevan-work running) | Kill rhtevan-work router, wait 12s | Router auto-restarted, service active |
 | T7b | S7b | VAN up (rhel-ai running) | Kill rhel-ai router, wait 12s | Router auto-restarted, service active |

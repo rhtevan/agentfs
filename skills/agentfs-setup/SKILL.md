@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "4.17.6"
+  version: "4.18.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 

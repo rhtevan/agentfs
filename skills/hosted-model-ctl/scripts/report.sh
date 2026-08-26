@@ -283,7 +283,7 @@ for host in "${HOSTS[@]}"; do
       echo ""
       echo "| Rank | Model | Runtime | Quant | TP | Context | Est. VRAM | Tok/s (est.) | Deployment Tweaks |"
       echo "|:----:|-------|:-------:|:-----:|:--:|:-------:|:---------:|:------------:|-------------------|"
-      echo "| 🥇 | **Granite 4.1 8B** | **vLLM** | FP8 | 1 | **64K** | ~12 GB | ~40–50 | \`--enable-auto-tool-choice --tool-call-parser granite\` |"
+      echo "| 🥇 | **Granite 4.1 8B** | **vLLM** | FP8 | 1 | **64K** | ~12 GB | ~40–50 | \`--enable-auto-tool-choice --tool-call-parser hermes\` |"
       echo "| 🥈 | **Qwen3 8B** | **vLLM** | FP8 | 1 | **64K** | ~12 GB | ~40–50 | \`--tool-call-parser hermes --enable-auto-tool-choice\`; thinking mode |"
       echo "| 🥉 | **Granite 4.1 8B** | **vLLM** | BF16 | 1 | **32K** | ~20 GB | ~50–60 | Full precision; shorter context trade-off |"
       ;;
@@ -293,7 +293,7 @@ for host in "${HOSTS[@]}"; do
       echo ""
       echo "| Rank | Model | Runtime | Quant | TP | Context | Est. VRAM | Tok/s (est.) | Deployment Tweaks |"
       echo "|:----:|-------|:-------:|:-----:|:--:|:-------:|:---------:|:------------:|-------------------|"
-      echo "| 🥇 | **Granite 4.1 8B** | **vLLM** | BF16 | 2 | **128K** | ~24 GB | ~50–70 | Proven 128K config; full precision; \`--enable-auto-tool-choice --tool-call-parser granite\` |"
+      echo "| 🥇 | **Granite 4.1 8B** | **vLLM** | BF16 | 2 | **128K** | ~24 GB | ~50–70 | Proven 128K config; full precision; \`--enable-auto-tool-choice --tool-call-parser hermes\` |"
       echo "| 🥈 | **Qwen3.8 27B** | **vLLM** | FP8 | 2 | **128K** | ~41 GB | ~25–35 | Latest Qwen; \`--tool-call-parser hermes --enable-auto-tool-choice\` |"
       echo "| 🥉 | **Mistral Small 24B** | **vLLM** | FP8 | 2 | **128K** | ~36 GB | ~30–40 | Strong coding; \`--tool-call-parser mistral --enable-auto-tool-choice\` |"
       ;;
@@ -304,7 +304,7 @@ for host in "${HOSTS[@]}"; do
       echo "| Rank | Model | Runtime | Quant | TP | Context | Est. VRAM (wt+KV) | Tok/s (est.) | Deployment Tweaks |"
       echo "|:----:|-------|:-------:|:-----:|:--:|:-------:|:------------------:|:------------:|-------------------|"
       echo "| 🥇 | **Qwen3 32B** | **vLLM** | FP8 | 4 | **128K** | ~48 GB (32+16) | ~30–40 | Best open-source reasoning; \`--tool-call-parser hermes --enable-auto-tool-choice\`; thinking mode |"
-      echo "| 🥈 | **Granite 4.1 8B** | **vLLM** | BF16 | 2 | **128K** | ~24 GB (16+8) | ~50–70 | Proven 128K; fastest; leaves 2 GPUs free; \`--enable-auto-tool-choice --tool-call-parser granite\` |"
+      echo "| 🥈 | **Granite 4.1 8B** | **vLLM** | BF16 | 2 | **128K** | ~24 GB (16+8) | ~50–70 | Proven 128K; fastest; leaves 2 GPUs free; \`--enable-auto-tool-choice --tool-call-parser hermes\` |"
       echo "| 🥉 | **Granite 4.1 30B** | **vLLM** | FP8 | 4 | **128K** | ~46 GB (30+16) | ~20–30 | FP8 unlocks 128K (BF16 caps at 96K); \`--disable-custom-all-reduce\` for PCIe |"
       echo ""
       echo "> **Context vs. Speed vs. Quality trade-off (all vLLM):**"
@@ -317,14 +317,13 @@ for host in "${HOSTS[@]}"; do
       echo "> | Granite 30B BF16 TP=4 | 96K | ⚡ Fast | Best (no quant) | 4 | ❌ |"
       echo "> | Qwen3 32B BF16 TP=4 | 64K | ⚡ Fast | Best (no quant) | 4 | ❌ |"
       echo ""
-      echo "> **Co-hosting combos (TP=2 + TP=2, both 128K on vLLM):**"
+      echo "> **Speculative decoding (recommended over co-hosting on GDDR6 GPUs):**"
       echo ">"
-      echo "> | GPU 0–1 | GPU 2–3 | Use Case |"
-      echo "> |---------|---------|----------|"
-      echo "> | Granite 8B BF16 | Qwen3.8 27B FP8 | Enterprise tool-calling + latest reasoning |"
-      echo "> | Granite 8B BF16 | Mistral Small 24B FP8 | General purpose + strong coding |"
-      echo "> | Granite 8B BF16 | Gemma 3 27B FP8 | Enterprise + multilingual |"
-      echo "> | Qwen3 8B BF16 | Qwen3.8 27B FP8 | Light + heavy reasoning pair |"
+      echo "> Use a smaller target model (8B) with a same-family draft model (3B)"
+      echo "> to achieve 2-6× speedup via speculative decoding. On 4× L4 GPUs:"
+      echo "> - Granite 8B FP8 + 3B FP8 draft → **58-79 tok/s** (vs 13 tok/s for 31B models)"
+      echo "> - Granite 8B BF16 + 3B BF16 draft → **19-25 tok/s** (safe fallback)"
+      echo "> See deployment-profiles.md and benchmark-report.md for details."
       ;;
 
     XLarge)
@@ -334,7 +333,7 @@ for host in "${HOSTS[@]}"; do
       echo "|:----:|-------|:-------:|:-----:|:--:|:-------:|:---------:|:------------:|-------------------|"
       echo "| 🥇 | **Llama 3.3 70B** | **vLLM** | FP8 | 4 | **128K** | ~90 GB | ~20–30 | \`--tool-call-parser llama3 --enable-auto-tool-choice\` |"
       echo "| 🥈 | **Qwen3 32B** | **vLLM** | BF16 | 4 | **128K** | ~80 GB | ~35–45 | Full precision; \`--tool-call-parser hermes --enable-auto-tool-choice\` |"
-      echo "| 🥉 | **Granite 4.1 30B** | **vLLM** | BF16 | 4 | **128K** | ~76 GB | ~25–35 | Full precision 128K; \`--enable-auto-tool-choice --tool-call-parser granite\` |"
+      echo "| 🥉 | **Granite 4.1 30B** | **vLLM** | BF16 | 4 | **128K** | ~76 GB | ~25–35 | Full precision 128K; \`--enable-auto-tool-choice --tool-call-parser hermes\` |"
       ;;
   esac
 

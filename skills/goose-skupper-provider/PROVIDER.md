@@ -5,19 +5,51 @@ as a custom provider named **Skupper**. The endpoint is served by a
 remote GPU host through a Skupper V2 Virtual Application Network
 (see `skupper-model-provider` skill).
 
-**Port routing:** The `base_url` port depends on which model is targeted:
-- `http://localhost:10000` → rhtevan-work models (g350m, g1b, g8b)
-- `http://localhost:9000` → rhel-ai models (g30b-96k, g8b-128k)
+**Port routing:** The `base_url` port depends on which host is targeted:
+- `http://localhost:9000` → rhel-ai models (default: `g8b-fp8-spec-128k`)
+- `http://localhost:10000` → rhtevan-work models (default: `g3b-16k`)
 
-Default: `http://localhost:10000` (g350m).
+Default: `http://localhost:9000` (rhel-ai).
+
+## Poison-JSON Safeguard
+
+> ⚠️ **CRITICAL: Goose Desktop loads ALL JSON files in
+> `~/.config/goose/custom_providers/`. One malformed file breaks
+> ALL providers — not just the broken one. This was discovered in
+> a production incident (see knowledge bundle: `agentfs-process-lessons`).**
+>
+> **NEVER write `custom_skupper.json` manually or via bash heredoc
+> interpolation.** Always use `scripts/setup.sh`, which:
+> 1. Writes JSON via Python `json.dumps` (guarantees valid JSON)
+> 2. Round-trip validates all 22 required fields before writing
+> 3. Post-write validates from disk independently
+> 4. Restores backup on any validation failure
 
 ## Prerequisites
 
 - Goose installed (`goose` CLI or Goose Desktop)
 - Skupper Model Provider running (`skupper model up`) — the local
-  endpoint (`http://localhost:10000/v1/...` or `http://localhost:9000/v1/...`
-  depending on model) must be reachable
+  endpoint (`http://localhost:9000/v1/...` or `http://localhost:10000/v1/...`
+  depending on host) must be reachable
 - Use `skupper model status` to verify before proceeding
+
+## API-Driven Model Discovery
+
+The `setup.sh` script **discovers** the active model from the live
+API instead of using a static mapping. This means:
+
+- You don't need to know the model ID or context limit
+- The configuration always matches what's actually running
+- Switching profiles via `hosted-model-ctl` → re-running `setup.sh`
+  picks up the new model automatically
+
+| Host | Port | What `setup.sh` Discovers |
+|------|:----:|---------------------------|
+| rhel-ai | 9000 | Model ID + context from `/v1/models` (e.g., `ibm-granite/granite-4.1-8b-fp8`, 131072) |
+| rhtevan-work | 10000 | Model ID + context from `/v1/models` (e.g., `/models/granite-4.1-3b-Q4_K_M.gguf`, 16384) |
+
+vLLM returns `max_model_len`; llama.cpp returns `meta.n_ctx`. The
+script handles both formats.
 
 ## Reference Configuration
 
@@ -25,23 +57,24 @@ Default: `http://localhost:10000` (g350m).
 
 **File:** `~/.config/goose/custom_providers/custom_skupper.json`
 
-> ⚠️ **ALWAYS use this exact schema.** Do NOT improvise or write from
-> memory. The field names are Goose-specific (`api_key_env`,
-> `requires_auth`, `timeout_seconds`, `display_name`, etc.) — they
-> are NOT standard OpenAI fields. Omitting or renaming fields will
-> break Goose Desktop provider discovery.
+> ⚠️ **ALWAYS use `setup.sh` to generate this file.** The template
+> below is for reference only — it shows all 22 required fields.
+> The field names are Goose-specific (`api_key_env`, `requires_auth`,
+> `timeout_seconds`, `display_name`, etc.) — they are NOT standard
+> OpenAI fields. Omitting or renaming fields will break Goose Desktop
+> provider discovery for ALL providers.
 
 ```json
 {
   "name": "custom_skupper",
   "engine": "openai",
   "display_name": "Skupper",
-  "description": "Skupper VAN to remote GPU model (IBM Granite via vLLM)",
+  "description": "Skupper VAN to remote GPU model (IBM Granite)",
   "api_key_env": "",
   "base_url": "http://localhost:<PORT>",
   "models": [
     {
-      "name": "<MODEL_NAME>",
+      "name": "<MODEL_ID>",
       "context_limit": "<CONTEXT_LIMIT>",
       "input_token_cost": null,
       "output_token_cost": null,
@@ -52,7 +85,7 @@ Default: `http://localhost:10000` (g350m).
   ],
   "headers": null,
   "timeout_seconds": 300,
-  "supports_streaming": true,
+  "supports_streaming": false,
   "requires_auth": false,
   "catalog_provider_id": null,
   "base_path": null,
@@ -66,13 +99,13 @@ Default: `http://localhost:10000` (g350m).
 }
 ```
 
-**Template substitutions** — resolve from the Model-to-Port Routing table:
+**Template substitutions** — discovered automatically by `setup.sh`:
 
-| Placeholder | Example (g350m) | Example (g8b-128k) |
-|-------------|-----------------|---------------------|
-| `<PORT>` | 10000 | 9000 |
-| `<MODEL_NAME>` | ibm-granite/granite-4.0-350m | ibm-granite/granite-4.1-8b |
-| `<CONTEXT_LIMIT>` | 2048 | 131072 |
+| Placeholder | Example (rhel-ai) | Example (rhtevan-work) |
+|-------------|-------------------|------------------------|
+| `<PORT>` | 9000 | 10000 |
+| `<MODEL_ID>` | `ibm-granite/granite-4.1-8b-fp8` | `/models/granite-4.1-3b-Q4_K_M.gguf` |
+| `<CONTEXT_LIMIT>` | 131072 | 16384 |
 
 ### config.yaml Provider Entry
 
@@ -80,7 +113,7 @@ Default: `http://localhost:10000` (g350m).
 providers:
   custom_skupper:
     enabled: true
-    model: <MODEL_NAME>    # e.g., ibm-granite/granite-4.1-8b
+    model: <MODEL_ID>    # e.g., ibm-granite/granite-4.1-8b-fp8
     configured: true
 ```
 
@@ -91,52 +124,54 @@ providers:
 | `name` | `custom_skupper` | Internal identifier; must match config.yaml |
 | `engine` | `openai` | vLLM/llama.cpp expose an OpenAI-compatible API |
 | `display_name` | `Skupper` | Friendly name shown in provider picker |
-| `base_url` | `http://localhost:10000` or `http://localhost:9000` | Skupper VAN listener endpoint (port depends on model alias) |
+| `base_url` | `http://localhost:9000` or `http://localhost:10000` | Skupper VAN listener endpoint (port depends on host) |
 | `requires_auth` | `false` | No API key needed for local endpoint |
 | `api_key_env` | `""` | No API key environment variable needed |
-| `timeout_seconds` | `300` | 5-minute timeout (small models respond fast) |
-| `supports_streaming` | `true` | vLLM and llama.cpp support streaming |
+| `timeout_seconds` | `300` | 5-minute timeout for inference |
+| `supports_streaming` | `false` | Disabled: goose v1.47.0 streaming parser drops leading chars from vLLM hermes tool-call arguments (see knowledge bundle: goose-desktop-operations) |
 | `preserves_thinking` | `false` | Granite models don't produce thinking blocks |
-| `context_limit` | varies | 2048 for g350m/g1b, 16384 for g8b, 98304 for g30b-96k, 131072 for g8b-128k |
-
-### Model Reference
-
-The model listed in the JSON depends on which model is currently
-running on the remote host via `skupper-model-provider`:
-
-| Alias | Model ID | Context Limit | Engine | Port |
-|-------|----------|:-------------:|--------|:----:|
-| g350m | `ibm-granite/granite-4.0-350m` | 2048 | vLLM | 10000 |
-| g1b | `ibm-granite/granite-4.0-1b` | 2048 | vLLM | 10000 |
-| g8b | `ibm-granite/granite-4.1-8b` | 16384 | llama.cpp | 10000 |
-| g30b-96k | `ibm-granite/granite-4.1-30b` | 98304 | vLLM | 9000 |
-| g8b-128k | `ibm-granite/granite-4.1-8b` | 131072 | vLLM | 9000 |
-
-To update the provider when switching models, run `skupper model status`
-to get the current model ID, then update the `models` array,
-`base_url` port, and `config.yaml` model entry accordingly.
+| `context_limit` | varies | Discovered from API: `max_model_len` (vLLM) or `n_ctx` (llama.cpp) |
 
 ---
 
 ## Setup
 
-### Step 1 — Verify Skupper Model Provider Is Running
+### Automated (recommended)
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/status.sh model-provider <REMOTE_SSH_HOST>
+# Default: rhel-ai (port 9000)
+bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhel-ai
+
+# Or specify host or profile name
+bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhtevan-work
+bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh g8b-fp8-spec-128k
+```
+
+The script discovers the model from the live API, writes validated
+JSON, updates config.yaml, and runs a chat test.
+
+### Manual (reference only)
+
+> ⚠️ **Use `setup.sh` instead.** This section exists for understanding
+> only. Manual JSON editing risks the poison-JSON problem.
+
+#### Step 1 — Verify Skupper Model Provider Is Running
+
+```bash
+bash ~/.agents/skills/skupper-model-provider/scripts/status.sh
 ```
 
 Or quick check:
 
 ```bash
-# Use the port matching the target model (10000 for rhtevan-work, 9000 for rhel-ai)
-PORT=10000  # or 9000 for rhel-ai models
+# Use the port matching the target host (9000 for rhel-ai, 10000 for rhtevan-work)
+PORT=9000
 curl -s http://localhost:${PORT}/v1/models | python3 -m json.tool
 ```
 
 Should return HTTP 200 with the model list.
 
-### Step 2 — Discover the Active Model
+#### Step 2 — Discover the Active Model
 
 ```bash
 curl -s http://localhost:${PORT}/v1/models | python3 -c "
@@ -147,104 +182,34 @@ for m in data['data']:
 "
 ```
 
-Record the model ID and context limit for the JSON config.
+Record the model ID and context limit.
 
-### Step 3 — Create the Custom Provider JSON
-
-```bash
-mkdir -p ~/.config/goose/custom_providers
-```
-
-Write the JSON file from the [Reference Configuration](#custom-provider-json)
-section, substituting the model ID and context limit from Step 2.
-
-### Step 4 — Update config.yaml
-
-Add the provider entry to `~/.config/goose/config.yaml` under `providers:`.
-Set `active_provider: custom_skupper` if this should be the default.
-
-### Step 5 — Verify
+#### Step 3 — Run setup.sh
 
 ```bash
-grep -A3 'custom_skupper' ~/.config/goose/config.yaml
+bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhel-ai
 ```
 
-Expected:
-
-```
-  custom_skupper:
-    enabled: true
-    model: ibm-granite/granite-4.0-1b
-    configured: true
-```
-
-### Step 6 — Test from CLI
+#### Step 4 — Verify
 
 ```bash
-goose run -t "Say hello in one sentence"
+bash ~/.agents/skills/goose-skupper-provider/scripts/test.sh
 ```
-
-### Step 7 — Test from Desktop (Optional)
-
-1. Launch Goose Desktop
-2. Open Settings → Models
-3. Confirm **Skupper** appears as a configured provider
-4. Select it and choose the model
-5. Send a test message
 
 ---
 
 ## Teardown
 
-Remove the Skupper provider configuration from Goose so it no longer
-points to the VAN model endpoint.
-
-### Step 1 — Check Current Configuration
-
-Inspect both configuration locations:
+Remove the Skupper provider configuration from Goose.
 
 ```bash
-# Custom provider JSON
-ls -la ~/.config/goose/custom_providers/custom_skupper.json
-
-# config.yaml provider entry
-grep -A3 'custom_skupper' ~/.config/goose/config.yaml
+bash ~/.agents/skills/goose-skupper-provider/scripts/teardown.sh
 ```
 
-Identify all Skupper-related configuration that needs to be removed.
+Backups existing files, removes JSON and config.yaml entry, verifies.
 
-### Step 2 — Remove Custom Provider JSON
-
-```bash
-rm -f ~/.config/goose/custom_providers/custom_skupper.json
-```
-
-### Step 3 — Remove config.yaml Provider Entry
-
-Remove the `custom_skupper:` block from the `providers:` section in
-`~/.config/goose/config.yaml`.
-
-If `active_provider` is set to `custom_skupper`, also remove or change
-that setting.
-
-**Ask the user for confirmation before modifying config.yaml.**
-
-### Step 4 — Verify Removal
-
-```bash
-# Confirm JSON is gone
-ls ~/.config/goose/custom_providers/custom_skupper.json 2>&1
-
-# Confirm config.yaml no longer references skupper
-grep -c 'custom_skupper' ~/.config/goose/config.yaml
-```
-
-Both checks should show the configuration is removed.
-
-### Step 5 — Confirm Goose Defaults
-
-If the removed provider was the active/default provider, inform the user
-that they need to configure a new provider or switch to an existing one.
+If `custom_skupper` was the active provider, you'll need to configure
+a new one.
 
 ---
 
@@ -253,9 +218,11 @@ that they need to configure a new provider or switch to an existing one.
 If the Skupper custom provider is lost:
 
 1. **Ensure Skupper VAN is running** (`skupper model status`)
-2. **Copy the JSON file** from this skill's reference into
-   `~/.config/goose/custom_providers/custom_skupper.json`
-3. **Add the provider entry** to `~/.config/goose/config.yaml`
+2. **Run `setup.sh`** — it discovers the model and writes validated JSON:
+   ```bash
+   bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhel-ai
+   ```
+3. **Verify** with `test.sh`
 4. **Restart Goose** — the Skupper provider will be available
 
 ---
@@ -267,26 +234,21 @@ If the Skupper custom provider is lost:
 - [ ] `config.yaml` has `custom_skupper` in `providers:` with `enabled: true`
 - [ ] `goose configure` shows **Skupper** in the provider list
 - [ ] A test chat returns a valid LLM response
-- [ ] `curl http://localhost:<PORT>/v1/models` returns the expected model (10000 or 9000)
+- [ ] `curl http://localhost:<PORT>/v1/models` returns the expected model
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Skupper not in provider list | Missing JSON file | Copy `custom_skupper.json` to `~/.config/goose/custom_providers/` |
+| Skupper not in provider list | Missing JSON file | Run `setup.sh rhel-ai` |
+| ALL providers disappeared | Malformed JSON in `custom_providers/` | Check all `.json` files for syntax errors; restore from `.bak` |
 | "Connection refused" | Skupper VAN not running | Run `skupper model up` |
-| Provider shows but won't connect | Model container not started | Check `skupper model status`, restart if needed |
+| Provider shows but won't connect | Model container not started | Check `hosted-model-ctl status`, start default profile |
 | Timeout on requests | Model loading slowly | Increase `timeout_seconds`; wait for vLLM warmup |
-| Wrong model listed | Model was switched | Update JSON `models` array, `base_url` port, and config.yaml `model` field; or run `recreate skupper provider` |
-| Context too short | Using g8b but JSON says 2048 | Update `context_limit` to match model (see Model Reference table) |
-| Wrong port | Switched between rhtevan-work and rhel-ai models | Update `base_url` to correct port (10000 or 9000); or run `recreate skupper provider for <alias>` |
+| Wrong model listed | Model profile was switched | Re-run `setup.sh` — it discovers the current model from API |
+| Context too short | JSON has old context value | Re-run `setup.sh` — it reads `max_model_len`/`n_ctx` from API |
+| Wrong port | Switched between hosts | Re-run `setup.sh rhtevan-work` or `setup.sh rhel-ai` |
 
 ## Changelog
 
-| Updated | Change |
-|---------|--------|
-| 2026-08-08 | v3.1 — Added schema warning to JSON template; templated PORT/MODEL_NAME/CONTEXT_LIMIT fields; added substitution table; incident: agent bypassed skill and wrote invalid JSON with non-Goose fields (auth, default_params) |
-| 2026-08-08 | v3.0 — Port update: rhtevan-work on port 10000 (was 8000); routing key model-api-rhtevan-work |
-| 2026-08-07 | v2.0 — Multi-port support: base_url port resolved from model alias (10000 for rhtevan-work, 9000 for rhel-ai); added g30b-96k and g8b-128k to model reference |
-| 2026-08-04 | v1.1 — Added Teardown section; restructured into Setup/Teardown capabilities |
-| 2026-08-04 | v1.0 — Initial provider config: custom_skupper.json, config.yaml entry, model reference, recovery, troubleshooting |
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

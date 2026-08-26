@@ -4,33 +4,120 @@
 
 set -euo pipefail
 
-# ── Model Registry ────────────────────────────────────────────
-# Format: ALIAS|MODEL_ID|ENGINE|CONTAINER_NAME|IMAGE|HOST|PORT|TP|CONTEXT|EXTRA_FLAGS
+# ── Deployment Profiles ───────────────────────────────────────
+# Profiles are the ONLY deployment unit. No individual model aliases.
+# One profile active per host at a time (mutual exclusion).
+# Naming: <model>-<context> (e.g., g8b-fp8-spec-128k)
+#
+# Format: HOST|CONTAINER|IMAGE|ENGINE|MODEL_ID|TP|CONTEXT|PORT|EXTRA|SPEC_CONFIG|DESCRIPTION|SPEED
+#
+# Engines:
+#   llamacpp   — llama.cpp GGUF server
+#   vllm       — Upstream vLLM nightly (standard inference)
+#   vllm-spec  — Upstream vLLM nightly with speculative decoding
 
-declare -A MODEL_REGISTRY=(
-  [g350m]="ibm-granite/granite-4.0-350m|vllm|model-g350m|docker.io/vllm/vllm-openai:latest|rhtevan-work|10000|1|2048|"
-  [g1b]="ibm-granite/granite-4.0-1b|vllm-bnb|model-g1b|docker.io/vllm/vllm-openai:latest|rhtevan-work|10000|1|2048|"
-  [g8b]="ibm-granite/granite-4.1-8b|llamacpp|model-g8b|ghcr.io/ggml-org/llama.cpp:server-cuda-b9994|rhtevan-work|10000|1|16384|"
-  [g8b-128k]="ibm-granite/granite-4.1-8b|vllm-ilab|model-granite-4.1-8b|registry.redhat.io/rhelai1/instructlab-nvidia-rhel9:1.5.0|rhel-ai|9000|2|131072|"
-  [g30b-96k]="ibm-granite/granite-4.1-30b|vllm-ilab|model-granite-4.1-30b|registry.redhat.io/rhelai1/instructlab-nvidia-rhel9:1.5.0|rhel-ai|9000|4|98304|"
+declare -A DEPLOY_PROFILES=(
+  # ── rhtevan-work (1× RTX A500, 4 GB GDDR6, 128 GB/s) ──
+  [g350m-2k]="rhtevan-work|model-g350m|docker.io/vllm/vllm-openai:latest|vllm|ibm-granite/granite-4.0-350m|1|2048|10000|--enforce-eager||Granite 4.0 350M FP16 @2K|44 tok/s (no quality)"
+  [g3b-16k]="rhtevan-work|model-g3b|ghcr.io/ggml-org/llama.cpp:server-cuda-b9994|llamacpp|ibm-granite/granite-3b|1|16384|10000|--parallel 1||Granite 3B Q4_K_M @16K|37 tok/s"
+
+  # ── rhel-ai (4× NVIDIA L4, 88 GB GDDR6, 1200 GB/s) ──
+  [g8b-spec-128k]="rhel-ai|model-granite-8b-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.1-8b|4|131072|9000|--enforce-eager --dtype bfloat16 --enable-auto-tool-choice --tool-call-parser hermes|{SPEC_G8B_BF16}|Granite 8B BF16 + 3B BF16 draft TP=4 @128K|19-25 tok/s"
+  [g8b-fp8-spec-128k]="rhel-ai|model-granite-8b-fp8-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.1-8b-fp8|4|131072|9000|--enable-auto-tool-choice --tool-call-parser hermes|{SPEC_G8B_FP8}|Granite 8B FP8 + 3B FP8 draft TP=4 @128K + CUDA graphs|58-79 tok/s"
 )
 
-# Default models per host
-DEFAULT_MODEL_RHTEVAN="g350m"
-DEFAULT_MODEL_RHELAI="g8b-128k"
+# ── Speculative Decoding Configs ──────────────────────────────
+# JSON configs for draft model speculation.
+# Referenced by {PLACEHOLDER} in profile SPEC_CONFIG field.
+
+declare -A SPEC_CONFIGS=(
+  ["{SPEC_G8B_BF16}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.1-3b", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
+  ["{SPEC_G8B_FP8}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.1-3b-fp8", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
+)
+
+# Default profiles per host
+DEFAULT_PROFILE_RHTEVAN="g3b-16k"
+DEFAULT_PROFILE_RHELAI="g8b-fp8-spec-128k"
+
+# All profiles ordered for display
+ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k)
+
+# Profile state directory
+PROFILE_STATE_DIR="${HOME}/.hosted-model-ctl"
 
 # ── Helper Functions ──────────────────────────────────────────
 
-parse_model() {
-  local alias="$1"
-  local entry="${MODEL_REGISTRY[$alias]:-}"
+parse_profile() {
+  local profile="$1"
+  local entry="${DEPLOY_PROFILES[$profile]:-}"
   if [[ -z "$entry" ]]; then
-    echo "ERROR: Unknown model alias '$alias'" >&2
-    echo "Available: ${!MODEL_REGISTRY[*]}" >&2
+    echo "ERROR: Unknown profile '$profile'" >&2
+    echo "Available: ${ALL_PROFILES[*]}" >&2
     return 1
   fi
-  IFS='|' read -r MODEL_ID ENGINE CONTAINER IMAGE HOST PORT TP CONTEXT EXTRA <<< "$entry"
-  export MODEL_ID ENGINE CONTAINER IMAGE HOST PORT TP CONTEXT EXTRA
+  IFS='|' read -r PROFILE_HOST CONTAINER IMAGE ENGINE MODEL_ID TP CONTEXT PORT EXTRA SPEC_CONFIG PROFILE_DESC PROFILE_SPEED <<< "$entry"
+  export PROFILE_HOST CONTAINER IMAGE ENGINE MODEL_ID TP CONTEXT PORT EXTRA SPEC_CONFIG PROFILE_DESC PROFILE_SPEED
+}
+
+# Resolve speculative config placeholder
+resolve_spec_config() {
+  local placeholder="$1"
+  if [[ -n "$placeholder" && -n "${SPEC_CONFIGS[$placeholder]:-}" ]]; then
+    echo "${SPEC_CONFIGS[$placeholder]}"
+  else
+    echo ""
+  fi
+}
+
+get_active_profile() {
+  local host="$1"
+  local state_file="${PROFILE_STATE_DIR}/active-profile-${host}"
+  [[ "$host" == "localhost" ]] && state_file="${PROFILE_STATE_DIR}/active-profile-rhtevan-work"
+  if [[ -f "$state_file" ]]; then
+    cat "$state_file"
+  else
+    echo ""
+  fi
+}
+
+set_active_profile() {
+  local host="$1"
+  local profile="$2"
+  mkdir -p "${PROFILE_STATE_DIR}"
+  local state_file="${PROFILE_STATE_DIR}/active-profile-${host}"
+  [[ "$host" == "localhost" ]] && state_file="${PROFILE_STATE_DIR}/active-profile-rhtevan-work"
+  echo "$profile" > "$state_file"
+}
+
+clear_active_profile() {
+  local host="$1"
+  local state_file="${PROFILE_STATE_DIR}/active-profile-${host}"
+  [[ "$host" == "localhost" ]] && state_file="${PROFILE_STATE_DIR}/active-profile-rhtevan-work"
+  rm -f "$state_file"
+}
+
+get_default_profile() {
+  local host="$1"
+  case "$host" in
+    rhtevan-work) echo "$DEFAULT_PROFILE_RHTEVAN" ;;
+    rhel-ai)      echo "$DEFAULT_PROFILE_RHELAI" ;;
+    *)            echo "" ;;
+  esac
+}
+
+list_profiles() {
+  echo "Deployment Profiles:"
+  printf "  %-22s %-12s %-65s %-15s %s\n" "PROFILE" "HOST" "DESCRIPTION" "SPEED" "STATUS"
+  printf "  %-22s %-12s %-65s %-15s %s\n" "-------" "----" "-----------" "-----" "------"
+  for profile in "${ALL_PROFILES[@]}"; do
+    parse_profile "$profile" 2>/dev/null || continue
+    local status=""
+    [[ "$profile" == "$DEFAULT_PROFILE_RHTEVAN" || "$profile" == "$DEFAULT_PROFILE_RHELAI" ]] && status="✅ default"
+    local active
+    active=$(get_active_profile "$PROFILE_HOST")
+    [[ "$active" == "$profile" ]] && status="🟢 active"
+    printf "  %-22s %-12s %-65s %-15s %s\n" "$profile" "$PROFILE_HOST" "$PROFILE_DESC" "$PROFILE_SPEED" "$status"
+  done
 }
 
 run_on_host() {
@@ -43,23 +130,12 @@ run_on_host() {
   fi
 }
 
-# Check if a remote host is reachable via SSH
 host_reachable() {
   local host="$1"
   if [[ "$host" == "localhost" ]]; then
     return 0
   fi
   ssh -o ConnectTimeout=5 -o BatchMode=yes "$host" 'echo ok' &>/dev/null
-}
-
-list_aliases() {
-  echo "Available models:"
-  printf "  %-12s %-35s %-12s %s\n" "ALIAS" "MODEL" "HOST" "PORT"
-  printf "  %-12s %-35s %-12s %s\n" "-----" "-----" "----" "----"
-  for alias in g350m g1b g8b g8b-128k g30b-96k; do
-    parse_model "$alias" 2>/dev/null || continue
-    printf "  %-12s %-35s %-12s %s\n" "$alias" "$MODEL_ID" "$HOST" "$PORT"
-  done
 }
 
 check_container_status() {

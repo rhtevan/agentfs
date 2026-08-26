@@ -131,6 +131,7 @@ this table.
 
 | # | Type | Rule | Key Action |
 |---|:----:|------|------------|
+| [0](#0-signal-first-dispatch-) | ⛔ GATE | Signal-First Dispatch | **STOP before generic interpretation.** Scan skill descriptions for signal match → \`load_skill\` → follow. Never improvise when a skill exists. |
 | [1](#1-progressive-disclosure-) | 🔄 | Progressive Disclosure | On \`.agents/\` access: browse \`index.md\` first, follow links to content |
 | [2](#2-memory-scope-️) | ⚖️ | Memory Scope | Default \`memories/MEMORY.md\` for experiences; \`AGENTS.md\` for rules; \`USER.md\` for preferences |
 | [3](#3-cross-agent-context-discovery-) | 🔄 | Cross-Agent Discovery | Session start: check \`CLAUDE.md\`, \`.cursorrules\`, etc.; \`AGENTS.md\` wins conflicts |
@@ -168,7 +169,29 @@ all guardrails, skills, and documentation reference them.
 ## AgentFS Structural Guardrails
 
 Every agent operating in this project MUST follow these guardrails.
-Guardrails #1 and #6 are fully covered by their Quick Reference rows above.
+Guardrails #0, #1, and #6 are fully covered by their Quick Reference rows above.
+
+### 0. Signal-First Dispatch ⛔ GATE
+
+> **⛔ GATE — STOP before generic interpretation.** On every user
+> message, scan the skill description signals listed in the system
+> prompt (under the skills section) for a match BEFORE taking any
+> other action.
+>
+> **Resolution order:**
+> 1. Check the Signal Routing table above (LLM-direct routes)
+> 2. Scan each skill's \`description\` field for matching signal phrases
+> 3. If a match is found: \`load_skill(name: "<matched-skill>")\` and
+>    follow its instructions exactly
+> 4. Only if NO signal matches: proceed with generic interpretation
+>
+> **Violation = executing a generic action (shell command, file read,
+> web search, or free-form answer) when the user's message matches
+> a known skill signal.**
+>
+> The skill descriptions are already in the system prompt — this gate
+> requires scanning them, not loading external files. The
+> \`~/.agents/skills/index.md\` serves as defense-in-depth only.
 
 ### 2. Memory Scope ⚖️
 
@@ -225,6 +248,7 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 | `~/.agents/` (USER) | `~/.agents/log.md` |
 | `./.agents/` (PROJECT) | `./.agents/log.md` |
 | `~/.agents/knowledge/<bundle>/` | *also* that bundle's `log.md` |
+| `~/.agents/knowledge/` (bundle ops) | *also* `~/.agents/knowledge/log.md` |
 
 > Scripts below live in `~/.agents/skills/agentfs-setup/scripts/`.
 
@@ -232,11 +256,11 @@ Treat as supplementary guidelines. `AGENTS.md` wins on conflict.
 
 | Gate | What | How |
 |:----:|------|-----|
-| 1 | `log.md` (any scope) | `merge-log-entry.sh <path> "<msg>"` |
+| 1 | `log.md` (any scope) | **MUST** use `merge-log-entry.sh <path> "<msg>"` — direct `write`/`edit` to `log.md` only permitted when creating a new file (initial entry) |
 | 2 | `skills/*/CHANGELOG.md` | `merge-changelog-entry.sh <path> "<version>" "<description>"` |
 | 2 | `metadata.version` | Agent — edit skill frontmatter |
 | 3 | `skills/index.md` | Automatic via `post-edit.sh` |
-| 3 | `knowledge/` indexes | `load_skill(name: "okf-bundle-index")` |
+| 3 | `knowledge/` indexes | **MUST** use `rebuild-index.sh` via `load_skill(name: "okf-bundle-index")` — audited automatically by `post-edit.sh` |
 | 3 | `profiles/index.md` | `load_skill(name: "agentfs-profile")` |
 | 4 | Broken links | Agent — update on create/rename/move/delete |
 

@@ -42,8 +42,8 @@ if [[ -z "$TITLE" ]]; then
   fi
 fi
 
-# --- Collect concepts ----------------------------------------------
-concepts=()
+# --- Collect concepts (with mtime for sorting) --------------------
+declare -A c_entries c_mtimes
 shopt -s nullglob
 for f in "$DIR"/*.md; do
   fname="$(basename "$f")"
@@ -70,14 +70,26 @@ for f in "$DIR"/*.md; do
   [[ -z "$title" ]] && title="$(title_case "$(basename "$fname" .md)")"
 
   if [[ -n "$desc" ]]; then
-    concepts+=("* [$title]($fname) - $desc")
+    c_entries["$fname"]="* [$title]($fname) - $desc"
   else
-    concepts+=("* [$title]($fname)")
+    c_entries["$fname"]="* [$title]($fname)"
   fi
+  c_mtimes["$fname"]="$(stat -c '%Y' "$f" 2>/dev/null || stat -f '%m' "$f" 2>/dev/null || echo 0)"
 done
 
-# --- Collect sub-bundles -------------------------------------------
-subbundles=()
+# Sort concepts newest first by mtime
+IFS=$'\n' sorted_c=($(for k in "${!c_mtimes[@]}"; do
+  echo "${c_mtimes[$k]:-0} $k"
+done | sort -rn | awk '{print $2}'))
+unset IFS
+
+concepts=()
+for fname in "${sorted_c[@]}"; do
+  concepts+=("${c_entries[$fname]}")
+done
+
+# --- Collect sub-bundles (with mtime for sorting) -----------------
+declare -A sb_entries sb_mtimes
 for d in "$DIR"/*/; do
   [[ -d "$d" ]] || continue
   dname="$(basename "$d")"
@@ -106,10 +118,23 @@ for d in "$DIR"/*/; do
   [[ -z "$stitle" ]] && stitle="$(title_case "$dname")"
 
   if [[ -n "$sdesc" ]]; then
-    subbundles+=("* [$stitle]($dname/index.md) - $sdesc")
+    sb_entries["$dname"]="* [$stitle]($dname/index.md) - $sdesc"
   else
-    subbundles+=("* [$stitle]($dname/index.md)")
+    sb_entries["$dname"]="* [$stitle]($dname/index.md)"
   fi
+  # Newest mtime across all files in the sub-bundle directory
+  sb_mtimes["$dname"]="$(find "$d" -type f -printf '%T@\n' 2>/dev/null | sort -rn | head -1)"
+done
+
+# Sort sub-bundles newest first by mtime
+IFS=$'\n' sorted_sb=($(for k in "${!sb_mtimes[@]}"; do
+  echo "${sb_mtimes[$k]:-0} $k"
+done | sort -rn | awk '{print $2}'))
+unset IFS
+
+subbundles=()
+for dname in "${sorted_sb[@]}"; do
+  subbundles+=("${sb_entries[$dname]}")
 done
 shopt -u nullglob
 

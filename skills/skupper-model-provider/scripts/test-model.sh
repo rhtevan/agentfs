@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # test-model.sh — Test model connectivity through Skupper VAN
-# Usage: bash test-model.sh MODEL_ALIAS
+# Usage: bash test-model.sh HOST_OR_PROFILE [--from-crc]
+# Accepts: host name (rhel-ai, rhtevan-work) or profile name (g8b-fp8-spec-128k)
 # Tests the local Skupper listener endpoint (not the remote model directly)
 
 source "$(dirname "$0")/common.sh"
 
-MODEL_ALIAS="${1:?Usage: test-model.sh MODEL_ALIAS [--from-crc]}"
+TARGET="${1:?Usage: test-model.sh HOST_OR_PROFILE [--from-crc]}"
 FROM_CRC=false
 [[ "${2:-}" == "--from-crc" ]] && FROM_CRC=true
 
-REMOTE_HOST=$(alias_to_host "$MODEL_ALIAS") || exit 1
-LOCAL_PORT=$(alias_to_local_port "$MODEL_ALIAS")
-ROUTING_KEY=$(alias_to_routing_key "$MODEL_ALIAS")
+REMOTE_HOST=$(resolve_host "$TARGET") || { echo "❌ Unknown target: $TARGET"; exit 1; }
+LOCAL_PORT=$(host_to_local_port "$REMOTE_HOST")
+ROUTING_KEY=$(host_to_routing_key "$REMOTE_HOST")
 
 PASSED=0
 FAILED=0
@@ -19,34 +20,37 @@ FAILED=0
 pass() { echo "  ✅ $1"; PASSED=$((PASSED + 1)); }
 fail() { echo "  ❌ $1"; FAILED=$((FAILED + 1)); }
 
-echo "=== Skupper Model Test: $MODEL_ALIAS ==="
+echo "=== Skupper Model Test: $TARGET ==="
+echo "  Remote host:    $REMOTE_HOST"
 echo "  Routing key:    $ROUTING_KEY"
 echo "  Local endpoint: localhost:$LOCAL_PORT"
-echo "  Remote host:    $REMOTE_HOST"
 echo
 
 # T1: Local listener port open
 echo "T1: Local listener"
-LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${LOCAL_PORT}" || echo "0")
+LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${LOCAL_PORT} " || true)
+LISTENING=${LISTENING:-0}
 if [[ "$LISTENING" -gt 0 ]]; then
   pass "Port $LOCAL_PORT listening"
 else
   fail "Port $LOCAL_PORT not listening"
   echo "     Skupper router may not be running or link not established."
-  echo "     Run: bash up.sh $MODEL_ALIAS"
+  echo "     Run: bash up.sh $REMOTE_HOST"
 fi
 
-# T2: Local API responds
+# T2: Local API responds (through VAN)
 echo "T2: API health"
-HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${LOCAL_PORT}/v1/models" 2>/dev/null || echo "000")
+HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${LOCAL_PORT}/v1/models" 2>/dev/null) || true
+HTTP_CODE=${HTTP_CODE:-000}
 if [[ "$HTTP_CODE" == "200" ]]; then
   pass "HTTP 200 on localhost:$LOCAL_PORT"
 else
   fail "HTTP $HTTP_CODE on localhost:$LOCAL_PORT (expected 200)"
 fi
 
-# T3: Model ID
+# T3: Model ID (discovered from live API)
 echo "T3: Model ID"
+MODEL_ID=""
 if [[ "$HTTP_CODE" == "200" ]]; then
   MODEL_ID=$(curl -s "http://localhost:${LOCAL_PORT}/v1/models" | \
     python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "PARSE_ERROR")
@@ -61,7 +65,7 @@ fi
 
 # T4: Chat completion through VAN
 echo "T4: Chat completion (through Skupper VAN)"
-if [[ "$HTTP_CODE" == "200" ]]; then
+if [[ "$HTTP_CODE" == "200" && -n "$MODEL_ID" && "$MODEL_ID" != "PARSE_ERROR" ]]; then
   RESPONSE=$(curl -s "http://localhost:${LOCAL_PORT}/v1/chat/completions" \
     -H 'Content-Type: application/json' \
     -d "{\"model\": \"${MODEL_ID}\", \"messages\": [{\"role\": \"user\", \"content\": \"Say hello\"}], \"max_tokens\": 20}" 2>/dev/null)
@@ -86,15 +90,21 @@ else
   fail "$REMOTE_HOST unreachable"
 fi
 
-# T6: Remote model container running
-echo "T6: Remote model container"
+# T6: Remote model serving (direct API check, bypasses VAN)
+echo "T6: Remote model API (direct)"
 if host_reachable "$REMOTE_HOST"; then
-  CONTAINER=$(alias_to_container "$MODEL_ALIAS")
-  CONTAINER_STATUS=$(run_on_host "$REMOTE_HOST" "podman ps --filter name=${CONTAINER} --format '{{.Status}}'" || echo "")
-  if [[ "$CONTAINER_STATUS" == *"Up"* ]]; then
-    pass "$CONTAINER running on $REMOTE_HOST"
+  IFS='|' read -r _ _ _ model_port _ <<< "${SITE_PROFILES[$REMOTE_HOST]}"
+  REMOTE_HTTP=$(run_on_host "$REMOTE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${model_port}/v1/models 2>/dev/null" || echo "000")
+  if [[ "$REMOTE_HTTP" == "200" ]]; then
+    REMOTE_MODEL=$(run_on_host "$REMOTE_HOST" "curl -s http://localhost:${model_port}/v1/models" | \
+      python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "PARSE_ERROR")
+    if [[ "$REMOTE_MODEL" != "PARSE_ERROR" && -n "$REMOTE_MODEL" ]]; then
+      pass "Remote model: $REMOTE_MODEL (on $REMOTE_HOST:${model_port})"
+    else
+      pass "Remote API responding (model ID parse failed)"
+    fi
   else
-    fail "$CONTAINER not running: $CONTAINER_STATUS"
+    fail "Remote API HTTP $REMOTE_HTTP on $REMOTE_HOST:${model_port} (expected 200)"
   fi
 else
   fail "Skipped (host unreachable)"

@@ -5,12 +5,12 @@ description: >
   stop hosted model, hosted model status, test hosted model,
   teardown hosted model, precheck hosted model,
   model hosting report, hosting machine report
-argument-hint: "hosted model list | hosted model report | hosted model start g350m | hosted model status g8b-128k"
+argument-hint: "hosted model list | hosted model report | setup g8b-fp8-spec-128k | hosted model status"
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "5.4.1"
-  tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, 128k-context, hosted, self-hosted]
+  version: "7.4.0"
+  tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
 disable-model-invocation: false
 writes-files: false
@@ -18,82 +18,73 @@ writes-files: false
 
 # Hosted Model Control
 
-Deploy, manage, and test self-hosted IBM Granite model containers
-on NVIDIA GPUs via Podman. All operations are implemented as
-deterministic scripts.
+Deploy, manage, and test self-hosted LLM model containers
+on NVIDIA GPUs via Podman. All deployments use **profiles** —
+curated, VRAM-validated configurations. No individual model aliases.
 
-## Host Profiles
+## Hardware
 
-| Profile | SSH Host | GPUs | Total VRAM | Model Port |
-|---------|----------|------|:----------:|:----------:|
-| **rhtevan-work** | `rhtevan-work` | 1× RTX A500 | 4 GB | 10000 |
-| **rhel-ai** | `rhel-ai` | 4× NVIDIA L4 | 92 GB | 9000 |
+| Host | SSH | GPUs | VRAM | Bandwidth | Port |
+|------|-----|------|:----:|:---------:|:----:|
+| **rhtevan-work** | `rhtevan-work` | 1× RTX A500 | 4 GB | 128 GB/s | 10000 |
+| **rhel-ai** | `rhel-ai` | 4× NVIDIA L4 | 88 GB | 1,200 GB/s | 9000 |
 
-## Model Registry
+## Deployment Profiles
+
+One profile active per host at a time (mutual exclusion).
+All profiles on the same host share a port — deploying a new profile
+automatically stops the current one.
+
+Full details in [references/deployment-profiles.md](./references/deployment-profiles.md).
 
 ### rhtevan-work (port 10000)
 
-| Alias | Model | Engine | Context |
-|:-----:|-------|:------:|:-------:|
-| `g350m` | granite-4.0-350m | vLLM FP16 | 2K |
-| `g1b` | granite-4.0-1b | vLLM INT4 | 2K |
-| `g8b` | granite-4.1-8b | llama.cpp Q4_K_M | 16K |
+| Profile | Model | Engine | Context | Speed | Default |
+|---------|-------|:------:|:-------:|:-----:|:-------:|
+| **`g3b-16k`** | Granite 3B Q4_K_M | llama.cpp | 16K | 37 tok/s | ✅ |
+| `g350m-2k` | Granite 4.0 350M FP16 | vLLM | 2K | 44 tok/s | |
 
 ### rhel-ai (port 9000)
 
-| Alias | Model | Engine | TP | Context |
-|:-----:|-------|:------:|:--:|:-------:|
-| `g30b-96k` | granite-4.1-30b | vLLM BF16 | 4 | 96K |
-| `g8b-128k` | granite-4.1-8b | vLLM BF16 | 2 | 128K |
+| Profile | Model | Engine | TP | Context | Speed | Default |
+|---------|-------|:------:|:--:|:-------:|:-----:|:-------:|
+| **`g8b-fp8-spec-128k`** | Granite 8B FP8 + 3B FP8 draft | vLLM spec | 4 | 128K | **58-79 tok/s** | ✅ |
+| `g8b-spec-128k` | Granite 8B BF16 + 3B BF16 draft | vLLM spec | 4 | 128K | 19-25 tok/s | |
 
-Defaults: `g350m` (rhtevan-work), `g8b-128k` (rhel-ai).
+### Speculative Decoding
 
-Full container details (images, flags, VRAM budgets) in
-[references/memory-budget.md](./references/memory-budget.md).
+The `g8b-spec-*` profiles use draft model speculation:
+a Granite 3B model generates candidate tokens, then the 8B target
+verifies them in a single forward pass — converting wasted GPU compute
+into useful token verification (2-6× speedup).
 
-## Container Details
-
-| Setting | rhtevan-work (vLLM) | rhtevan-work (llama.cpp) | rhel-ai (InstructLab) |
-|---------|--------------------|--------------------------|-----------------------|
-| **Image** | `docker.io/vllm/vllm-openai:latest` | `ghcr.io/ggml-org/llama.cpp:server-cuda-b9994` | `registry.redhat.io/rhelai1/instructlab-nvidia-rhel9:1.5.0` |
-| **Network** | `--network host` | `--network host` | `--net host` |
-| **GPU** | `--device nvidia.com/gpu=all` | `--device nvidia.com/gpu=all` | `--device nvidia.com/gpu=all` |
-| **Port** | 10000 | 10000 | 9000 |
-| **Extra** | `--enforce-eager` | `--n-gpu-layers 18` | `--disable-custom-all-reduce --shm-size 10G` |
-
-### rhel-ai Specifics
-
-- **Home directory:** `/var/home/cloud-user`
-- **HF cache mount:** `-v /var/home/cloud-user/.cache/huggingface:/opt/app-root/src/.cache/huggingface`
-- **Entrypoint override:** `--entrypoint python3 <IMAGE> -m vllm.entrypoints.openai.api_server`
-- **No `:Z`** on volume mounts (SELinux not enforcing)
+- **g8b-fp8-spec-128k**: FP8 weights + CUDA graphs (**recommended**, ~70 tok/s)
+- **g8b-spec-128k**: BF16 weights + `--enforce-eager` (safe fallback, ~20 tok/s)
 
 ## Specification
 
 | ID | Capability | Verifiable By |
 |:--:|-----------|---------------|
-| S1 | List all model containers with status on both hosts | `scripts/list.sh` → table output |
-| S2 | Pre-check host readiness (SSH, GPU, podman, CDI, images, disk) | `scripts/pre-check.sh HOST` → pass/fail report |
-| S3 | Deploy model container by alias (idempotent) | `scripts/setup.sh ALIAS` → container created, API HTTP 200 |
-| S4 | Start existing model container by alias (stops conflicting models on same port) | `scripts/start.sh ALIAS` → API HTTP 200 |
-| S5a | Stop single model container by alias (others unaffected) | `scripts/stop.sh ALIAS` → target stopped, other models on other hosts **preserved** |
-| S5b | Stop all model containers across both hosts | `scripts/stop.sh all` → all containers exited |
-| S6 | Show status of specific model or all models | `scripts/status.sh [ALIAS]` → status report |
-| S7 | Test running model (health, model ID, chat completion) | `scripts/test.sh ALIAS` → 4 tests pass |
-| S8 | Generate platform report (basic specs, accelerator, model recommendations) | `scripts/report.sh [HOST\|all]` → 3-section markdown report |
+| S1 | List all profiles with container status | `scripts/list.sh` → table output |
+| S2 | Pre-check host readiness | `scripts/pre-check.sh HOST` → pass/fail report |
+| S3 | Deploy profile (idempotent) | `scripts/setup.sh PROFILE` → container created, API HTTP 200 |
+| S4 | Start existing profile (mutual exclusion) | `scripts/start.sh PROFILE` → running |
+| S5a | Stop profile | `scripts/stop.sh PROFILE` → stopped, state cleared |
+| S5b | Stop all containers across both hosts | `scripts/stop.sh all` → all exited |
+| S6 | Show status (includes active profile) | `scripts/status.sh [PROFILE]` → status report |
+| S7 | Test running model | `scripts/test.sh PROFILE` → 4 tests pass |
+| S8 | Generate platform report | `scripts/report.sh [HOST]` → markdown report |
 
 ## Operations
 
-All operations are implemented as scripts in `scripts/`.
-The agent runs scripts directly — no inline commands to interpret.
+All operations are deterministic scripts in `scripts/`.
+Every command takes a **profile name**, not a model alias.
 
 ### 1. List
 
 ```bash
 bash ~/.agents/skills/hosted-model-ctl/scripts/list.sh
 ```
-
-Shows all model containers across both hosts with status icons.
 
 ### 2. Pre-Check
 
@@ -102,13 +93,11 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/pre-check.sh rhtevan-work
 bash ~/.agents/skills/hosted-model-ctl/scripts/pre-check.sh rhel-ai
 ```
 
-Verifies SSH, GPU, podman, CDI, container images, HF cache, disk space.
-
 ### 3. Setup (Deploy)
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh g350m
-bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh g8b-128k
+bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh g3b-16k
+bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh g8b-fp8-spec-128k
 ```
 
 Idempotent: removes existing container, creates new one, waits for
@@ -117,136 +106,77 @@ API readiness. First run downloads model weights (may take 5-20 min).
 ### 4. Start
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh g350m
+bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh g3b-16k
+bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh g8b-fp8-spec-128k
 ```
-
-Starts an existing container. Automatically stops any other model
-sharing the same port on the same host.
 
 ### 5. Stop
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g350m
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g3b-16k
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g8b-fp8-spec-128k
 bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh all
 ```
 
 ### 6. Status
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/status.sh          # all models
-bash ~/.agents/skills/hosted-model-ctl/scripts/status.sh g8b-128k  # specific model + logs
+bash ~/.agents/skills/hosted-model-ctl/scripts/status.sh
+bash ~/.agents/skills/hosted-model-ctl/scripts/status.sh g8b-fp8-spec-128k
 ```
 
 ### 7. Test
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/test.sh g350m
+bash ~/.agents/skills/hosted-model-ctl/scripts/test.sh g8b-fp8-spec-128k
 ```
-
-Runs 4 tests: container running, API health, model ID, chat completion.
 
 ### 8. Report
 
-> **Agent instruction — MANDATORY RENDERING:** Run the script below,
-> then **copy-paste the entire stdout into your response message verbatim.**
-> Tool call outputs are NOT visible to the user in many UIs — the report
-> ONLY exists if you echo it in your reply. Do NOT summarize, reformat,
-> abbreviate, or add commentary. The script output IS the complete report.
-> **Failure to echo = the user sees nothing.**
+> **Agent instruction — MANDATORY RENDERING:** Run the script, then
+> copy-paste entire stdout into your response verbatim.
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh           # all hosts
-bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhtevan-work  # single host
-bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhel-ai       # single host
+bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh
+bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhel-ai
 ```
 
-The script generates a deterministic 3-section markdown report:
-1. **Section 1 — Basic Specs** — OS, CPU, RAM, disk, podman
-2. **Section 2 — Accelerator Specs** — GPU model, VRAM, PCIe, compute capability, topology, per-GPU detail
-3. **Section 3 — Model Recommendations** — top 3 models per host based on VRAM tier,
-   runtime preference (vLLM/llm-d first, llama.cpp when VRAM insufficient),
-   quantization, tensor parallelism, context/speed trade-offs, co-hosting combos.
-   Minimum 64K context target (128K preferred).
-
-Model recommendations are driven by
-[references/model-landscape.md](./references/model-landscape.md).
-
-Default: `report.sh` with no arguments reports on **all** registered hosts.
-
-### 9. Teardown (Remove)
+### 9. Teardown
 
 ```bash
-bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g350m --remove    # stop + remove specific
-bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh all --remove      # stop + remove all
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g3b-16k --remove
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh all --remove
 ```
-
-With `--remove`, stops and deletes the container(s). Use `setup.sh ALIAS`
-to redeploy afterwards. Without `--remove`, containers are stopped but
-preserved. Does NOT delete downloaded model weights from the HF cache.
-
-## Tests
-
-| Test | Spec | Command | Expected Result |
-|:----:|:----:|---------|----------------|
-| T1 | S1 | `scripts/list.sh` | Table with 5 models, status icons |
-| T2 | S2 | `scripts/pre-check.sh rhtevan-work` | All checks pass |
-| T3 | S3 | `scripts/setup.sh g350m` | Container created, HTTP 200 |
-| T4 | S4 | `scripts/start.sh g350m` | HTTP 200, model ready |
-| T5a | S5a | `scripts/stop.sh g350m` (g8b-128k running on rhel-ai) | g350m stopped, g8b-128k on rhel-ai **unaffected** |
-| T5b | S5b | `scripts/stop.sh all` | All containers exited on both hosts |
-| T6 | S6 | `scripts/status.sh g350m` | Status report with model details |
-| T7 | S7 | `scripts/test.sh g350m` | 4/4 tests pass |
-| T8 | S4 | `scripts/start.sh g8b-128k` | HTTP 200 on rhel-ai:9000 |
-| T9 | S7 | `scripts/test.sh g8b-128k` | 4/4 tests pass |
 
 ## Gotchas
 
-### Scoping Safety
+### Speculative Decoding
 
-- **`stop.sh ALIAS` is correctly scoped** — stops only the targeted container on its host. No shared infrastructure risk (unlike Skupper's local router which serves all routes). Each model container is independent.
-- **`stop.sh all` iterates all aliases** — stops containers on both hosts. Unreachable hosts are skipped with a warning, not treated as errors.
+- vLLM requires `draft_tensor_parallel_size` == target `tensor_parallel_size`
+- CUDA graphs add ~10 GB/GPU — works with FP8 (small weights), fails with large models
+- FP8 halves weight reads → ~2× faster decode
+- `--enforce-eager` disables CUDA graphs (safe but slower)
 
-### Fedora / rhtevan-work
+### Memory Bandwidth = Token Speed
 
-- **`nvidia-smi`** — available via `xorg-x11-drv-nvidia-cuda` package
-- **SELinux volume mounts** — use `:Z` suffix on `-v` flags
-- **Short-name resolution** — always use full image paths
-- **`pasta` network** — use `--network host` to avoid port issues
+```
+tok/s ≈ Total GPU Bandwidth (GB/s) ÷ Model Weights (GB) × efficiency
+```
 
-### rhel-ai / InstructLab
-
-- **HF cache path** — container uses `/opt/app-root/src/.cache/huggingface`
-- **128K OOM on 30B** — max achievable is 98,304 tokens (~96K)
-- **128K OOM on 8B tp=1** — needs `--tensor-parallel-size 2`
-- **Custom allreduce** — `--disable-custom-all-reduce` for PCIe GPUs
-- **Entrypoint** — override with `--entrypoint python3 ... -m vllm.entrypoints.openai.api_server`
-- **No `:Z`** — omit SELinux relabeling on mounts
-
-### vLLM General
-
-- **bitsandbytes + `--dtype float16`** — omit `--dtype`, let vLLM auto-detect
-- **CUDAGraph + bitsandbytes** — use `--enforce-eager`
-- **Tool calling** — add `--enable-auto-tool-choice --tool-call-parser granite`
-
-### llama.cpp
-
-- **GPU layers** — 18 for 16K ctx, 25 for 4K ctx on 4 GB VRAM
-- **GGUF download** — must be pre-downloaded
-- **Image** — use `ghcr.io/ggml-org/llama.cpp:server-cuda-b9994`
+Both hosts use GDDR6 (not HBM). Memory bandwidth is the bottleneck.
+Speculative decoding is the primary software lever to overcome this.
 
 ### Cold Start Times
 
-| Model | Weights | Start Time |
-|-------|:-------:|:----------:|
-| g350m | ~700 MB | ~30s |
-| g1b | ~1.6 GB | ~2-3 min |
-| g8b | ~5.3 GB | ~15s |
-| g8b-128k | ~16 GB | ~3 min |
-| g30b-96k | ~55 GB | ~17-20 min |
+| Profile | Weights | Start Time |
+|---------|:-------:|:----------:|
+| g350m-2k | ~0.7 GB | ~30s |
+| g3b-16k | ~2 GB | ~15s |
+| g8b-spec-128k | ~16 GB + ~6 GB draft | ~2-3 min |
+| g8b-fp8-spec-128k | ~8 GB + ~3 GB draft | ~5 min (CUDA graph compilation) |
 
-For detailed VRAM breakdowns, see
-[references/memory-budget.md](./references/memory-budget.md).
-
+For benchmarks, see [references/benchmark-report.md](./references/benchmark-report.md).
+For VRAM budgets, see [references/memory-budget.md](./references/memory-budget.md).
 
 ## Changelog
 

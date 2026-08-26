@@ -65,43 +65,49 @@ declare -A SSH_HOSTS=(
   [rhtevan-work]="${RHTEVAN_WORK_SSH_HOST}"
 )
 
-# ── Model Alias → Hub Routing ─────────────────────────────────
-alias_to_host() {
-  local alias="$1"
-  case "$alias" in
-    g350m|g1b|g8b)       echo "rhtevan-work" ;;
-    g30b-96k|g30b)       echo "rhel-ai" ;;
-    g8b-128k)            echo "rhel-ai" ;;
-    *) echo "unknown"; return 1 ;;
-  esac
+# ── Host-Based Routing ─────────────────────────────────────────
+# Skupper routes by host:port. Model identity comes from the live
+# API (/v1/models), not from a static alias map. Profile names from
+# hosted-model-ctl are accepted and resolved to hosts.
+
+# Profile → host map (mirrors hosted-model-ctl DEPLOY_PROFILES hosts)
+declare -A PROFILE_TO_HOST=(
+  [g350m-2k]="rhtevan-work"
+  [g3b-16k]="rhtevan-work"
+  [g8b-spec-128k]="rhel-ai"
+  [g8b-fp8-spec-128k]="rhel-ai"
+)
+
+# Resolve a target to a canonical host name.
+# Accepts: host name (rhel-ai, rhtevan-work) or profile name (g8b-fp8-spec-128k)
+resolve_host() {
+  local target="$1"
+  # Direct host name?
+  if [[ -n "${SITE_PROFILES[$target]:-}" ]]; then
+    echo "$target"
+    return 0
+  fi
+  # Profile name?
+  if [[ -n "${PROFILE_TO_HOST[$target]:-}" ]]; then
+    echo "${PROFILE_TO_HOST[$target]}"
+    return 0
+  fi
+  echo "unknown"
+  return 1
 }
 
-alias_to_local_port() {
-  local alias="$1"
-  local host
-  host=$(alias_to_host "$alias") || return 1
+# Host → local listener port
+host_to_local_port() {
+  local host="$1"
   IFS='|' read -r _ _ _ model_port _ <<< "${SITE_PROFILES[$host]}"
   echo "$model_port"
 }
 
-alias_to_routing_key() {
-  local alias="$1"
-  local host
-  host=$(alias_to_host "$alias") || return 1
+# Host → routing key
+host_to_routing_key() {
+  local host="$1"
   IFS='|' read -r _ _ routing_key _ _ <<< "${SITE_PROFILES[$host]}"
   echo "$routing_key"
-}
-
-alias_to_container() {
-  local alias="$1"
-  case "$alias" in
-    g350m)    echo "model-g350m" ;;
-    g1b)      echo "model-g1b" ;;
-    g8b)      echo "model-g8b" ;;
-    g30b-96k|g30b) echo "model-granite-4.1-30b" ;;
-    g8b-128k) echo "model-granite-4.1-8b" ;;
-    *) echo "unknown"; return 1 ;;
-  esac
 }
 
 # ── Helper Functions ──────────────────────────────────────────

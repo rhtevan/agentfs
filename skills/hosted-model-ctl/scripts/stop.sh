@@ -1,33 +1,51 @@
 #!/usr/bin/env bash
-# stop.sh — Stop a running model container
-# Usage: bash stop.sh ALIAS [--remove]
-#   Or: bash stop.sh all [--remove]
+# stop.sh — Stop a deployment profile
+# Usage: bash stop.sh PROFILE [--remove]
+#    or: bash stop.sh all [--remove]
 # --remove: also delete the container after stopping
 
 source "$(dirname "$0")/common.sh"
 
-ALIAS="${1:?Usage: stop.sh ALIAS|all [--remove]}"
+PROFILE=""
 REMOVE=false
-[[ "${2:-}" == "--remove" ]] && REMOVE=true
 
-if [[ "$ALIAS" == "all" ]]; then
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --remove) REMOVE=true; shift ;;
+    *)        PROFILE="$1"; shift ;;
+  esac
+done
+
+if [[ -z "$PROFILE" ]]; then
+  echo "Usage: stop.sh PROFILE [--remove]" >&2
+  echo "   or: stop.sh all [--remove]" >&2
+  echo "" >&2
+  list_profiles >&2
+  exit 1
+fi
+
+# ── Stop all ──────────────────────────────────────────────────
+if [[ "$PROFILE" == "all" ]]; then
   echo "Stopping all model containers..."
-  for alias in g350m g1b g8b g8b-128k g30b-96k; do
-    parse_model "$alias"
-    if ! host_reachable "$HOST"; then
-      echo "  ⚠️  $HOST unreachable — skipping $CONTAINER"
+  for p in "${ALL_PROFILES[@]}"; do
+    parse_profile "$p" 2>/dev/null || continue
+    if ! host_reachable "$PROFILE_HOST"; then
+      echo "  ⚠️  $PROFILE_HOST unreachable — skipping $CONTAINER"
       continue
     fi
-    status=$(check_container_status "$HOST" "$CONTAINER")
+    status=$(check_container_status "$PROFILE_HOST" "$CONTAINER")
     if [[ "$status" == *"Up"* ]]; then
-      echo "  Stopping $CONTAINER on $HOST..."
-      run_on_host "$HOST" "podman stop $CONTAINER" 2>/dev/null
+      echo "  Stopping $CONTAINER on $PROFILE_HOST..."
+      run_on_host "$PROFILE_HOST" "podman stop $CONTAINER" 2>/dev/null || true
       echo "  ✅ $CONTAINER stopped"
     fi
     if [[ "$REMOVE" == "true" ]]; then
-      run_on_host "$HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
+      run_on_host "$PROFILE_HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
       echo "  🗑️  $CONTAINER removed"
     fi
+  done
+  for host in rhtevan-work rhel-ai; do
+    clear_active_profile "$host"
   done
   if [[ "$REMOVE" == "true" ]]; then
     echo "✅ All reachable models stopped and removed"
@@ -37,23 +55,30 @@ if [[ "$ALIAS" == "all" ]]; then
   exit 0
 fi
 
-parse_model "$ALIAS"
+# ── Stop single profile ──────────────────────────────────────
+parse_profile "$PROFILE"
 
-if ! host_reachable "$HOST"; then
-  echo "❌ Host $HOST is unreachable." >&2
+echo "Stopping profile: $PROFILE ($PROFILE_DESC)"
+echo "  Host: $PROFILE_HOST"
+echo "  Container: $CONTAINER"
+
+if ! host_reachable "$PROFILE_HOST"; then
+  echo "❌ Host $PROFILE_HOST is unreachable." >&2
   exit 1
 fi
 
-status=$(check_container_status "$HOST" "$CONTAINER")
+status=$(check_container_status "$PROFILE_HOST" "$CONTAINER")
 if [[ "$status" == *"Up"* ]]; then
-  echo "Stopping $CONTAINER on $HOST..."
-  run_on_host "$HOST" "podman stop $CONTAINER"
+  run_on_host "$PROFILE_HOST" "podman stop $CONTAINER" 2>/dev/null || true
   echo "✅ $CONTAINER stopped"
 else
-  echo "$CONTAINER is not running ($status)"
+  echo "⏭️  $CONTAINER not running ($status)"
 fi
 
 if [[ "$REMOVE" == "true" ]]; then
-  run_on_host "$HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
+  run_on_host "$PROFILE_HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
   echo "🗑️  $CONTAINER removed"
 fi
+
+clear_active_profile "$PROFILE_HOST"
+echo "✅ Profile '$PROFILE' stopped on $PROFILE_HOST"
