@@ -10,7 +10,7 @@ argument-hint: "setup skupper | teardown skupper | start skupper | start skupper
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.5.0"
+  version: "8.7.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -40,11 +40,17 @@ LOCAL: LOCAL_SITE_NAME (localhost, podman)
         Listener :RHTEVAN_WORK_MODEL_PORT ← RHTEVAN_WORK_ROUTING_KEY
 
 CRC: CRC_SITE_NAME (kubernetes, CRC_NAMESPACE)
-  └── link → hub-rhel-ai
-        host:  RHEL_AI_PUBLIC_HOST
-        port:  RHEL_AI_INTER_ROUTER_PORT (AMQPS)
-        Listener :CRC_MODEL_PORT ← CRC_ROUTING_KEY
-        Service: model-listener-rhel-ai.CRC_NAMESPACE:CRC_MODEL_PORT
+  ├── link → hub-rhel-ai
+  │     host:  RHEL_AI_PUBLIC_HOST
+  │     port:  RHEL_AI_INTER_ROUTER_PORT (AMQPS)
+  │     Listener :CRC_MODEL_PORT ← CRC_ROUTING_KEY
+  │     Service: model-listener-rhel-ai.CRC_NAMESPACE:CRC_MODEL_PORT
+  │
+  └── link → local-ezhang
+        host:  host.crc.testing (192.168.127.254)
+        port:  LOCAL_INTER_ROUTER_PORT (AMQPS)
+        Listener :CRC_RHTEVAN_MODEL_PORT ← RHTEVAN_WORK_ROUTING_KEY
+        Service: model-listener-rhtevan-work.CRC_NAMESPACE:CRC_RHTEVAN_MODEL_PORT
 ```
 
 All site-specific values (IPs, hostnames, ports, SANs) are read from
@@ -69,10 +75,10 @@ accept either a host name (`rhel-ai`) or a profile name
 
 | Site Name | Host | Platform | Mode | Link Port | Model Port |
 |-----------|------|----------|------|:---------:|:----------:|
-| **LOCAL_SITE_NAME** | localhost | podman | Interior (outbound) | — | — |
+| **LOCAL_SITE_NAME** | localhost | podman | Interior (outbound + inbound) | LOCAL_INTER_ROUTER_PORT | — |
 | **hub-rhtevan-work** | RHTEVAN_WORK_SSH_HOST | podman | Interior hub | RHTEVAN_WORK_INTER_ROUTER_PORT | RHTEVAN_WORK_MODEL_PORT |
 | **hub-rhel-ai** | RHEL_AI_SSH_HOST | podman | Interior hub | RHEL_AI_INTER_ROUTER_PORT | RHEL_AI_MODEL_PORT |
-| **CRC_SITE_NAME** | CRC cluster | kubernetes | Interior (outbound) | — | CRC_MODEL_PORT |
+| **CRC_SITE_NAME** | CRC cluster | kubernetes | Interior (outbound) | — | CRC_MODEL_PORT, CRC_RHTEVAN_MODEL_PORT |
 
 All values in the table above are defined in `topology.env`.
 

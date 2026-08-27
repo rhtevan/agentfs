@@ -207,10 +207,11 @@ if [[ "$CRC_TARGET" == "true" ]]; then
       echo "     Run: bash setup.sh to create the CRC site"
     fi
 
-    # Recreate Link if missing
+    # ── CRC Link 1: hub link (rhel-ai) ─────────────────────────
     crc_link_name="link-hub-${CRC_LINK_TARGET}"
     link_status=""
     link_status=$(crc_link_status)
+    NEED_POD_RESTART=false
     if [[ "$link_status" == "Ready" ]]; then
       echo "  ✅ Link ${crc_link_name}: Connected"
     elif [[ "$link_status" == "not found" ]]; then
@@ -232,12 +233,45 @@ spec:
       port: "${crc_hub_port}"
   tlsCredentials: ${crc_link_name}
 LINKEOF
+      NEED_POD_RESTART=true
+    else
+      echo "  ⚠️  Link ${crc_link_name}: ${link_status}"
+    fi
 
-      # Restart router pod so it mounts the TLS secret for the new link
+    # ── CRC Link 2: local link (local-ezhang → rhtevan-work) ──
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      local_link_status=""
+      local_link_status=$(crc_local_link_status)
+      if [[ "$local_link_status" == "Ready" ]]; then
+        echo "  ✅ Link link-local-ezhang: Connected"
+      elif [[ "$local_link_status" == "not found" ]]; then
+        echo "  → Recreating link link-local-ezhang..."
+        cat << LINKEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: link-local-ezhang
+  namespace: PLACEHOLDER_NS
+spec:
+  cost: 1
+  endpoints:
+    - name: inter-router
+      host: host.crc.testing
+      port: "${LOCAL_INTER_ROUTER_PORT}"
+  tlsCredentials: link-local-ezhang
+LINKEOF
+        NEED_POD_RESTART=true
+      else
+        echo "  ⚠️  Link link-local-ezhang: ${local_link_status}"
+      fi
+    fi
+
+    # Restart router pod if any links were recreated
+    if [[ "$NEED_POD_RESTART" == "true" ]]; then
       oc_crc delete pod -n "${CRC_NAMESPACE}" -l skupper.io/component=router 2>/dev/null || true
       sleep 15
 
-      # Wait for link
+      # Wait for hub link
       crc_link_attempts=0
       while [[ $crc_link_attempts -lt 20 ]]; do
         link_status=$(crc_link_status)
@@ -251,17 +285,42 @@ LINKEOF
       else
         echo "  ⚠️  Link ${crc_link_name}: ${link_status} (may need time)"
       fi
-    else
-      echo "  ⚠️  Link ${crc_link_name}: ${link_status}"
+
+      # Wait for local link
+      if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+        crc_local_link_attempts=0
+        while [[ $crc_local_link_attempts -lt 20 ]]; do
+          local_link_status=$(crc_local_link_status)
+          if [[ "$local_link_status" == "Ready" ]]; then break; fi
+          sleep 3
+          ((crc_local_link_attempts++)) || true
+        done
+        local_link_status=$(crc_local_link_status)
+        if [[ "$local_link_status" == "Ready" ]]; then
+          echo "  ✅ Link link-local-ezhang: Connected"
+        else
+          echo "  ⚠️  Link link-local-ezhang: ${local_link_status} (may need time)"
+        fi
+      fi
     fi
 
-    # Verify Listener
+    # ── Verify Listeners ──────────────────────────────────────
     list_status=""
     list_status=$(crc_listener_status)
     if [[ "$list_status" == "Ready" ]]; then
       echo "  ✅ Listener model-listener-${CRC_LINK_TARGET}: Matched"
     else
       echo "  ⚠️  Listener model-listener-${CRC_LINK_TARGET}: ${list_status}"
+    fi
+
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      rhtevan_list_status=""
+      rhtevan_list_status=$(crc_rhtevan_listener_status)
+      if [[ "$rhtevan_list_status" == "Ready" ]]; then
+        echo "  ✅ Listener model-listener-rhtevan-work: Matched"
+      else
+        echo "  ⚠️  Listener model-listener-rhtevan-work: ${rhtevan_list_status}"
+      fi
     fi
   fi
   echo

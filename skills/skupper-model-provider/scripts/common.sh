@@ -25,6 +25,11 @@ ROUTER_IMAGE="quay.io/skupper/skupper-router:3.5.1"
 ROUTER_CONTAINER="${NAMESPACE}-skupper-router"
 CONTROLLER_SUFFIX="skupper-controller"
 
+# ── Local RouterAccess (built from topology.env) ─────────────
+LOCAL_INTER_ROUTER_PORT="${LOCAL_INTER_ROUTER_PORT:-55672}"
+LOCAL_RA_NAME="${LOCAL_RA_NAME:-local-ezhang-ra}"
+LOCAL_SANS="${LOCAL_SANS:-}"
+
 # ── CRC Configuration (built from topology.env) ──────────────
 CRC_ENABLED="${CRC_ENABLED:-false}"
 CRC_SITE_NAME="${CRC_SITE_NAME:-crc-site}"
@@ -33,6 +38,9 @@ CRC_OC_CONTEXT="${CRC_OC_CONTEXT:-crc-admin}"
 CRC_LINK_TARGET="${CRC_LINK_TARGET:-rhel-ai}"
 CRC_MODEL_PORT="${CRC_MODEL_PORT:-9000}"
 CRC_ROUTING_KEY="${CRC_ROUTING_KEY:-model-api-rhel-ai}"
+CRC_LINK_LOCAL_TARGET="${CRC_LINK_LOCAL_TARGET:-}"
+CRC_RHTEVAN_MODEL_PORT="${CRC_RHTEVAN_MODEL_PORT:-10000}"
+CRC_RHTEVAN_ROUTING_KEY="${CRC_RHTEVAN_ROUTING_KEY:-model-api-rhtevan-work}"
 CRC_OBSERVER_ENABLED="${CRC_OBSERVER_ENABLED:-false}"
 
 # ── Site Names (built from topology.env) ──────────────────────
@@ -229,8 +237,20 @@ crc_link_status() {
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
+crc_local_link_status() {
+  [[ -z "${CRC_LINK_LOCAL_TARGET}" ]] && echo "not configured" && return 0
+  oc_crc get link link-local-ezhang -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
+}
+
 crc_listener_status() {
   oc_crc get listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
+}
+
+crc_rhtevan_listener_status() {
+  [[ -z "${CRC_LINK_LOCAL_TARGET}" ]] && echo "not configured" && return 0
+  oc_crc get listener model-listener-rhtevan-work -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
@@ -289,14 +309,25 @@ precheck_topology() {
   if [[ "$CRC_ENABLED" == "true" ]]; then
     local crc_target_host_d crc_target_port_d
     IFS='|' read -r crc_target_port_d _ _ _ crc_target_host_d <<< "${SITE_PROFILES[$CRC_LINK_TARGET]}"
+    local crc_local_link_section=""
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_local_link_section="
+  │
+  └── link → ${CRC_LINK_LOCAL_TARGET}
+        host:  host.crc.testing (192.168.127.254)
+        port:  ${LOCAL_INTER_ROUTER_PORT} (AMQPS)
+        Listener :${CRC_RHTEVAN_MODEL_PORT} ← ${CRC_RHTEVAN_ROUTING_KEY}
+        Service: model-listener-rhtevan-work.${CRC_NAMESPACE}:${CRC_RHTEVAN_MODEL_PORT}"
+    fi
+
     crc_section="
 
 CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
-  └── link → hub-${CRC_LINK_TARGET}
-        host:  ${crc_target_host_d}
-        port:  ${crc_target_port_d} (AMQPS)
-        Listener :${CRC_MODEL_PORT} ← ${CRC_ROUTING_KEY}
-        Service: model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT}"
+  ├── link → hub-${CRC_LINK_TARGET}
+  │     host:  ${crc_target_host_d}
+  │     port:  ${crc_target_port_d} (AMQPS)
+  │     Listener :${CRC_MODEL_PORT} ← ${CRC_ROUTING_KEY}
+  │     Service: model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT}${crc_local_link_section}"
     local site_count="4-site"
   else
     local site_count="3-site"

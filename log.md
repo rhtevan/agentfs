@@ -2,6 +2,26 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-27 11:39
+
+Updated README.md: expanded OpenShift/CRC category to include cluster lifecycle (start/stop/cleanup)
+
+## 2026-08-27 11:30
+
+Updated crc-ctl skill to v2.0.0: added crc-cleanup.sh script for VM disk cleanup (prune images, vacuum journals, clean API logs, delete completed pods), added Gotchas/Specification/Tests sections, expanded signal phrases
+
+## 2026-08-27 11:19
+
+skupper-model-provider v8.7.0: Refactored common.sh, up.sh, down.sh, status.sh for dual CRC links (link-hub-rhel-ai + link-local-ezhang). All scripts now manage both CRC links and both listeners (9000 + 10000). Precheck topology diagram updated. Verified: status.sh, setup.sh --check, bash -n on all scripts.
+
+## 2026-08-27 10:57
+
+skupper-model-provider v8.6.0: Added RouterAccess on local-ezhang (port 55672) and CRC→local link; CRC now reaches both rhel-ai and rhtevan-work models. Updated SKILL.md architecture, site config, and topology.env. Scripts (up.sh/down.sh/setup.sh) need follow-up refactor to manage second CRC link lifecycle.
+
+## 2026-08-27 10:29
+
+crc-ols v2.2.1: Fix skupper-model provider model name granite-4.1-8b → granite-4.1-8b-fp8 in SKILL.md template (matches g8b-fp8-spec-128k profile)
+
 ## 2026-08-27 09:12
 
 Updated README.md Desktop/System category to include Obsidian Snap fix

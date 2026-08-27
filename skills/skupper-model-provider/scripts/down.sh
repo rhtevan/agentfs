@@ -187,18 +187,34 @@ if [[ "$CRC_TARGET" == "true" ]]; then
   if [[ "$CRC_SKIPPED" == "true" ]]; then
     echo "  ⏭️  CRC skipped (not authenticated)"
   else
+    # ── Delete hub link ──────────────────────────────────────
     crc_link_name="link-hub-${CRC_LINK_TARGET}"
     link_status=""
     link_status=$(crc_link_status)
 
     if [[ "$link_status" == "not found" ]]; then
-      echo "  ✅ Link ${crc_link_name} already removed (CRC disconnected)"
+      echo "  ✅ Link ${crc_link_name} already removed"
     else
       oc_crc delete link "${crc_link_name}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
-      echo "  ✅ Link ${crc_link_name} deleted (CRC disconnected)"
+      echo "  ✅ Link ${crc_link_name} deleted"
     fi
 
-    # Verify Site + Listener preserved
+    # ── Delete local link ─────────────────────────────────────
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      local_link_status=""
+      local_link_status=$(crc_local_link_status)
+
+      if [[ "$local_link_status" == "not found" || "$local_link_status" == "not configured" ]]; then
+        echo "  ✅ Link link-local-ezhang already removed"
+      else
+        oc_crc delete link link-local-ezhang -n "${CRC_NAMESPACE}" 2>/dev/null || true
+        echo "  ✅ Link link-local-ezhang deleted"
+      fi
+    fi
+
+    echo "  ✅ CRC disconnected"
+
+    # Verify Site + Listeners preserved
     site_status=""
     site_status=$(crc_site_status)
     echo "  ✅ Site ${CRC_SITE_NAME}: ${site_status} (preserved)"
@@ -206,6 +222,12 @@ if [[ "$CRC_TARGET" == "true" ]]; then
     list_status=""
     list_status=$(crc_listener_status)
     echo "  ✅ Listener model-listener-${CRC_LINK_TARGET}: ${list_status} (preserved)"
+
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      rhtevan_list_status=""
+      rhtevan_list_status=$(crc_rhtevan_listener_status)
+      echo "  ✅ Listener model-listener-rhtevan-work: ${rhtevan_list_status} (preserved)"
+    fi
   fi
   echo
 fi

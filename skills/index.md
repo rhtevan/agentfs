@@ -4,8 +4,10 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations, cleanup | start crc, stop crc, crc start, crc stop, clean crc, crc cleanup, crc disk cleanup | 2026-08-27 11:30 |
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-27 11:19 |
+| [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, skupper, granite, self-hosted, provider-management | install lightspeed, configure lightspeed, openshift lightspeed, ols setup | 2026-08-27 10:29 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-08-27 09:08 |
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-26 23:21 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-08-26 22:24 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-08-26 22:24 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | agentfs, okf, knowledge, memory, distillation, graduation | harvest knowledge, harvest concepts, graduate knowledge | 2026-08-26 22:24 |
@@ -31,13 +33,11 @@
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-08-17 11:16 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-08-17 11:16 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | configure hermes headroom, hermes headroom provider | 2026-08-17 11:16 |
-| [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, skupper, granite, self-hosted, provider-management | install lightspeed, configure lightspeed, openshift lightspeed, ols setup | 2026-08-17 10:00 |
 | [fedora-desktop-wmclass-fix](./fedora-desktop-wmclass-fix/SKILL.md) | fedora, gnome, wayland, electron, desktop, wmclass | fix desktop wmclass, audit wmclass, electron duplicate icon, fix taskbar duplicate, desktop startup wmclass | 2026-08-14 09:29 |
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | generate bash completion, bash completion, tab completion | 2026-08-13 19:20 |
 | [crc-aap-demo-config](./crc-aap-demo-config/SKILL.md) | openshift, crc, aap-demo, configuration, safety, preflight | configure aap demo, setup aap demo, aap demo | 2026-08-13 19:20 |
 | [crc-cmd](./crc-cmd/SKILL.md) | openshift, crc, wrapper, shell | install crcstart, install crcstop, crc wrapper | 2026-08-13 19:20 |
 | [crc-coo-config](./crc-coo-config/SKILL.md) | openshift, crc, observability, operator, perses | install coo, configure coo, cluster observability | 2026-08-13 19:20 |
-| [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations | start crc, stop crc, crc start, crc stop | 2026-08-13 19:20 |
 | [crc-nad-dynamic-plugin-config](./crc-nad-dynamic-plugin-config/SKILL.md) | openshift, crc, networking, console-plugin, helm | install nad plugin, nad console plugin, network attachment | 2026-08-13 19:20 |
 | [crc-nmstate-config](./crc-nmstate-config/SKILL.md) | openshift, crc, networking, nmstate, operator | install nmstate, configure nmstate, nmstate operator | 2026-08-13 19:20 |
 | [crc-noo-config](./crc-noo-config/SKILL.md) | openshift, crc, networking, observability, operator, ebpf | install noo, configure noo, network observability | 2026-08-13 19:20 |

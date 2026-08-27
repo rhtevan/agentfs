@@ -187,7 +187,7 @@ Skills cover topics like:
 |----------|----------|
 | **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`) |
 | **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes/DSH provider config, Headroom proxy, MaaS providers |
-| **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster config |
+| **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster lifecycle (start/stop/cleanup), cluster config |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
 | **Model Serving** | Hosted model lifecycle (deploy, start, stop, test on NVIDIA GPUs via Podman), platform report (specs, accelerator, model recommendations by VRAM tier), Skupper model provider (remote GPU exposure via VAN) |
 | **Networking** | Skupper V2 Linux/systemd two-site VAN setup |

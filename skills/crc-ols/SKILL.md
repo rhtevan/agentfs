@@ -3,7 +3,7 @@ name: crc-ols
 description: >
   install lightspeed, configure lightspeed, openshift lightspeed, ols setup
 metadata:
-  version: "2.2.0"
+  version: "2.2.1"
   tags: [openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, skupper, granite, self-hosted, provider-management]
 ---
 
@@ -468,7 +468,7 @@ oc patch olsconfig cluster --type=json -p '[
       "url": "http://model-listener-rhel-ai.model-provider-crc:9000/v1",
       "credentialsSecretRef": {"name": "skupper-model-llmcreds"},
       "credentialKey": "apitoken",
-      "models": [{"name": "ibm-granite/granite-4.1-8b"}]
+      "models": [{"name": "ibm-granite/granite-4.1-8b-fp8"}]
     }
   }
 ]'

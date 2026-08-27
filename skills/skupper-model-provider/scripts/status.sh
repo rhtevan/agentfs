@@ -261,28 +261,58 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
     [[ "$crc_router_status" == "Running" ]] && crc_r_icon="✅" || crc_r_icon="🔴"
     echo "  Router:   ${crc_r_icon} ${crc_router_status}"
 
-    # Link
+    # Link 1: hub link
     crc_l_status=""
     crc_l_status=$(crc_link_status)
     crc_l_icon=""
     [[ "$crc_l_status" == "Ready" ]] && crc_l_icon="✅" || crc_l_icon="🔴"
     echo "  Link:     ${crc_l_icon} link-hub-${CRC_LINK_TARGET} → ${crc_l_status}"
 
-    # Listener
+    # Link 2: local link
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_ll_status=""
+      crc_ll_status=$(crc_local_link_status)
+      crc_ll_icon=""
+      [[ "$crc_ll_status" == "Ready" ]] && crc_ll_icon="✅" || crc_ll_icon="🔴"
+      echo "  Link:     ${crc_ll_icon} link-local-ezhang → ${crc_ll_status}"
+    fi
+
+    # Listener 1: hub model
     crc_li_status=""
     crc_li_status=$(crc_listener_status)
     crc_li_icon=""
     [[ "$crc_li_status" == "Ready" ]] && crc_li_icon="✅" || crc_li_icon="🔴"
     echo "  Listener: ${crc_li_icon} model-listener-${CRC_LINK_TARGET}:${CRC_MODEL_PORT} → ${crc_li_status}"
 
-    # Service
+    # Listener 2: rhtevan-work model
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_rli_status=""
+      crc_rli_status=$(crc_rhtevan_listener_status)
+      crc_rli_icon=""
+      [[ "$crc_rli_status" == "Ready" ]] && crc_rli_icon="✅" || crc_rli_icon="🔴"
+      echo "  Listener: ${crc_rli_icon} model-listener-rhtevan-work:${CRC_RHTEVAN_MODEL_PORT} → ${crc_rli_status}"
+    fi
+
+    # Service 1: hub model
     crc_svc=""
     crc_svc=$(oc_crc get svc "model-listener-${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
       -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "not found")
     if [[ "$crc_svc" != "not found" && -n "$crc_svc" ]]; then
       echo "  Service:  ✅ model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT} (${crc_svc})"
     else
-      echo "  Service:  🔴 not found"
+      echo "  Service:  🔴 model-listener-${CRC_LINK_TARGET} not found"
+    fi
+
+    # Service 2: rhtevan-work model
+    if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_rw_svc=""
+      crc_rw_svc=$(oc_crc get svc model-listener-rhtevan-work -n "${CRC_NAMESPACE}" \
+        -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "not found")
+      if [[ "$crc_rw_svc" != "not found" && -n "$crc_rw_svc" ]]; then
+        echo "  Service:  ✅ model-listener-rhtevan-work.${CRC_NAMESPACE}:${CRC_RHTEVAN_MODEL_PORT} (${crc_rw_svc})"
+      else
+        echo "  Service:  🔴 model-listener-rhtevan-work not found"
+      fi
     fi
 
     # Operator
