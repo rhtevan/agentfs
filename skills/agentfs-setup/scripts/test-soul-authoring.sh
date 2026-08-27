@@ -147,7 +147,7 @@ echo "━━━ T2: scaffold-dotagents.sh integration ━━━━━━━━�
 
 TMPDIR_PROJ=$(mktemp -d)
 git init -q "$TMPDIR_PROJ"
-NON_INTERACTIVE=true bash "$SCAFFOLD" --mode project "$TMPDIR_PROJ" > /dev/null 2>&1
+NON_INTERACTIVE=true bash "$SCAFFOLD" --scope project "$TMPDIR_PROJ" > /dev/null 2>&1
 
 # T2.1: SOUL.md written
 if assert_file_exists "$TMPDIR_PROJ/.agents/SOUL.md"; then
@@ -165,7 +165,7 @@ fi
 
 # T2.3: Re-run scaffold does NOT overwrite non-stub SOUL.md
 ORIGINAL_SOUL=$(cat "$TMPDIR_PROJ/.agents/SOUL.md")
-NON_INTERACTIVE=true bash "$SCAFFOLD" --mode project "$TMPDIR_PROJ" > /dev/null 2>&1
+NON_INTERACTIVE=true bash "$SCAFFOLD" --scope project "$TMPDIR_PROJ" > /dev/null 2>&1
 if [[ "$(cat "$TMPDIR_PROJ/.agents/SOUL.md")" == "$ORIGINAL_SOUL" ]]; then
   run_test T2.3 "Re-run scaffold does not overwrite existing SOUL.md" pass
 else
@@ -181,7 +181,7 @@ echo "━━━ T3: seed-agents-md.sh AGENTS.md template ━━━━━━━�
 TMPDIR_SEED=$(mktemp -d)
 git init -q "$TMPDIR_SEED"
 mkdir -p "$TMPDIR_SEED/.agents"
-NON_INTERACTIVE=true bash "$SCAFFOLD" --mode project "$TMPDIR_SEED" > /dev/null 2>&1
+NON_INTERACTIVE=true bash "$SCAFFOLD" --scope project "$TMPDIR_SEED" > /dev/null 2>&1
 bash "$SEED_AGENTS" "$TMPDIR_SEED" > /dev/null 2>&1
 
 # T3.1: AGENTS.md contains @.agents/SOUL.md import
@@ -225,7 +225,7 @@ if [[ ! -f "$PROFILE_SCRIPT" ]]; then
 else
   TMPDIR_PRF=$(mktemp -d)
   git init -q "$TMPDIR_PRF"
-  NON_INTERACTIVE=true bash "$SCAFFOLD" --mode project "$TMPDIR_PRF" > /dev/null 2>&1
+  NON_INTERACTIVE=true bash "$SCAFFOLD" --scope project "$TMPDIR_PRF" > /dev/null 2>&1
   bash "$SEED_AGENTS" "$TMPDIR_PRF" > /dev/null 2>&1
   NON_INTERACTIVE=true bash "$PROFILE_SCRIPT" verifier "$TMPDIR_PRF" > /dev/null 2>&1
 

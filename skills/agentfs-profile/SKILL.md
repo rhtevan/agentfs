@@ -3,18 +3,18 @@ name: agentfs-profile
 description: >
   create profile, new agent profile, add agent
 metadata:
-  version: "1.9.0"
+  version: "1.10.0"
   tags: [agentfs, profiles, multi-agent, identity]
 ---
 
 # Agent FS Profile
 
 Create and manage named agent profiles for multi-agent collaboration
-within a DotAgents PROJECT mode setup.
+within a DotAgents PROJECT scope setup.
 
 ## Overview
 
-In PROJECT mode, the **default agent** uses `.agents/SOUL.md` and
+In PROJECT scope, the **default agent** uses `.agents/SOUL.md` and
 `.agents/memories/` at the root level. When multiple agents need to
 collaborate on the same project, each additional agent gets its own
 **named profile** under `.agents/profiles/<name>/`.
@@ -37,7 +37,8 @@ Skills are project-scoped and shared across all agents:
 
 ## Prerequisites
 
-- **`agentfs-setup`** must have been run in PROJECT mode first
+- **`agentfs-setup`** must have been run in PROJECT scope first
+- **Not available in LITE scope** — LITE scope does not support agent profiles
   (`.agents/profiles/` directory must exist).
 
 ## Usage

@@ -9,6 +9,11 @@ metadata:
 
 # OKF Bundle Generation from Session Context
 
+> **Scope guard:** This skill is not available in LITE scope projects.
+> LITE scope does not support skills or knowledge bundles. If the
+> target project's AGENTS.md contains `agentfs-scope: lite`, refuse
+> with a clear message.
+
 Extract knowledge from the **current chat session** and persist it as an
 OKF v0.1 knowledge bundle under `~/.agents/knowledge/`.
 
@@ -676,7 +681,7 @@ existing ones updated:
    typed languages with strong tooling ecosystems" → good (abstraction).
 
 4. **Empty memories directory** — If `./.agents/memories/` doesn't
-   exist yet (e.g., fresh PROJECT mode setup hasn't been run), Phase
+   exist yet (e.g., fresh PROJECT scope setup hasn't been run), Phase
    1c produces no entries. This is fine — skip Phase 1d and proceed
    with session-only knowledge extraction. Don't fail or warn loudly.
 

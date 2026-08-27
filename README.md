@@ -10,14 +10,15 @@ AgentFS is a structured filesystem convention for AI agents (Goose, Hermes, Clau
 
 ## Scope Definitions
 
-AgentFS operates in two scopes. These definitions are canonical.
+AgentFS operates in three scopes. These definitions are canonical.
 
 | Scope | Root Path | Resolves To | Purpose |
 |-------|-----------|-------------|----------|
 | **USER** | `~/.agents/` | `/home/<user>/.agents/` | Machine-wide shared library: skills and knowledge visible across all projects and agents |
 | **PROJECT** | `./.agents/` | `<repo-root>/.agents/` | Per-repository agent workspace: identity, profiles, memories, and project-scoped skills |
+| **LITE** | `./.agents/` | `<remote-project>/.agents/` | Minimal per-repo workspace for small-context models: identity and memories only |
 
-> **Rule of thumb:** USER scope = `~/.agents/`. PROJECT scope = `./.agents/`.
+> **Rule of thumb:** USER scope = `~/.agents/`. PROJECT scope = `./.agents/` (CWD). LITE scope = `./.agents/` at a remote path, managed externally.
 >
 > **This repository is a USER scope AgentFS instance.**
 
@@ -80,6 +81,19 @@ The agent will scaffold `.agents/` (with skills, profiles, memories,
 SOUL.md) and create `AGENTS.md` at the repo root. Since PROJECT is the
 default scope, no additional hint is needed.
 
+### Step 3b: Set Up LITE Scope (for remote small-model projects)
+
+To set up a minimal AgentFS for a project consumed by a small-context
+model, specify the target directory explicitly:
+
+> *"Set up AgentFS at ~/projects/my-lite-project"*
+
+The explicit remote path signals LITE scope. The agent scaffolds a
+minimal `.agents/` (identity + memories only, no skills or profiles)
+and creates a LITE `AGENTS.md` (~850 tokens) with 6 simplified rules.
+LITE projects are maintained by full-capability sessions and consumed
+by developer-only sessions.
+
 ### Adding Skills
 
 Create a new directory under `skills/` with a `SKILL.md` file, then
@@ -131,15 +145,37 @@ start via `@import` in `AGENTS.md`.
     └── log.md
 ```
 
+### LITE Scope (`./.agents/` at a remote path)
+
+A **minimal per-repo workspace** for projects consumed by small-context
+models (e.g., Granite 3B at 16K context). No skills, profiles, or
+knowledge — only identity and memories.
+
+```
+<target-project>/
+├── AGENTS.md              # Lite template (~850 tokens, 6 rules)
+└── .agents/
+    ├── SOUL.md            # Default agent identity
+    ├── memories/          # Default agent's learned context (USER.md, MEMORY.md)
+    ├── index.md
+    └── log.md
+```
+
+LITE scope is always managed externally by a full-capability session.
+It cannot self-sync or self-scaffold.
+
 ### Scope Boundaries
 
 > - `knowledge/` is **USER-scoped only** — projects do NOT get a
 >   local `knowledge/` directory.
-> - `memories/` is **PROJECT-scoped only** — there is no
+> - `memories/` is **PROJECT and LITE-scoped only** — there is no
 >   `~/.agents/memories/`.
+> - `skills/` and `profiles/` are **not available in LITE scope**.
 >
-> Both scopes coexist — agents discover USER-level skills and knowledge
-> globally while maintaining project-scoped identity and memory.
+> All three scopes coexist — agents discover USER-level skills and
+> knowledge globally while maintaining project-scoped identity and memory.
+> LITE scope projects use a minimal subset optimized for constrained
+> context windows.
 
 ### Skills (`skills/`)
 
@@ -710,7 +746,7 @@ capable model to eliminate self-evaluation bias.
 - **Graceful degradation** — checks report N/A when evidence is
   insufficient (fresh projects) rather than failing
 - **Git provides audit evidence** — `agentfs-setup` initializes git
-  in PROJECT mode by default; `.agents/memories/` is tracked for
+  in PROJECT scope by default; `.agents/memories/` is tracked for
   full audit trail
 - **L3 → L2 graduation is human-driven** — patterns observed in
   semantic eval reports are manually codified as deterministic

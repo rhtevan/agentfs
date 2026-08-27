@@ -1,43 +1,94 @@
 #!/usr/bin/env bash
 # seed-agents-md.sh — Create or update the root AGENTS.md workspace file.
 #
-# Usage: bash seed-agents-md.sh [PROJECT_ROOT]
-#   PROJECT_ROOT defaults to the current working directory.
+# Usage: bash seed-agents-md.sh [--scope project|lite] [PROJECT_ROOT]
+#   --scope project  Full AGENTS.md with all guardrails (default)
+#   --scope lite     Minimal AGENTS.md for small-context models
+#   PROJECT_ROOT     Defaults to the current working directory.
 #
-# This script is for PROJECT mode only. USER mode does not create AGENTS.md.
+# Scope auto-detection:
+#   When --scope is NOT explicitly set and PROJECT_ROOT IS given, the
+#   script compares PROJECT_ROOT against CWD. If they differ → scope
+#   is auto-set to 'lite'. If they match → scope stays 'project'.
+#   Explicit --scope always wins over auto-detection.
+#
+# This script is for PROJECT and LITE scope only. USER scope does not create AGENTS.md.
 #
 # If AGENTS.md already exists it is left untouched to preserve user edits.
-# The script ensures SPECKIT markers are present so Spec-kit's agent-context
-# extension can manage the active-plan reference automatically.
+# For PROJECT scope, the script ensures SPECKIT markers are present so
+# Spec-kit's agent-context extension can manage the active-plan reference.
 
 set -euo pipefail
 
-ROOT="${1:-.}"
+# ── Parse arguments ──────────────────────────────────────────────────
+SCOPE=""
+SCOPE_EXPLICIT=false
+ROOT=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --scope)
+      SCOPE="${2,,}"  # lowercase
+      SCOPE_EXPLICIT=true
+      shift 2
+      ;;
+    *)
+      ROOT="$1"
+      shift
+      ;;
+  esac
+done
+
+# Validate explicit scope if given
+if [[ "$SCOPE_EXPLICIT" == true ]]; then
+  if [[ "$SCOPE" != "project" && "$SCOPE" != "lite" ]]; then
+    echo "[agentfs-setup] ERROR: --scope must be 'project' or 'lite' (got: $SCOPE)" >&2
+    exit 1
+  fi
+fi
+
+# ── Scope auto-detection ─────────────────────────────────────────────
+if [[ "$SCOPE_EXPLICIT" == false ]]; then
+  if [[ -n "$ROOT" ]]; then
+    RESOLVED_ROOT="$(cd "$ROOT" && pwd)"
+    RESOLVED_CWD="$(pwd)"
+    if [[ "$RESOLVED_ROOT" == "$RESOLVED_CWD" ]]; then
+      SCOPE="project"
+    else
+      SCOPE="lite"
+    fi
+  else
+    SCOPE="project"
+  fi
+fi
+
+ROOT="${ROOT:-.}"
 ROOT="$(cd "$ROOT" && pwd)"
 TARGET="$ROOT/AGENTS.md"
 
 if [[ -f "$TARGET" ]]; then
   echo "[agentfs-setup] AGENTS.md already exists — skipping."
-  # Ensure SPECKIT markers exist even in a pre-existing file
-  if ! grep -q '<!-- SPECKIT START -->' "$TARGET"; then
-    printf '\n<!-- SPECKIT START -->\n<!-- SPECKIT END -->\n' >> "$TARGET"
-    echo "  ✓ Appended SPECKIT markers to existing AGENTS.md"
-  fi
-  # Ensure Agent Profiles table exists even in a pre-existing file
-  if ! grep -q '## Agent Profiles' "$TARGET"; then
-    # Insert before SPECKIT markers if they exist, otherwise append
-    if grep -q '<!-- SPECKIT START -->' "$TARGET"; then
-      sed -i '/<!-- SPECKIT START -->/i ## Agent Profiles\n\n| Agent | Identity | Memories |\n|-------|----------|----------|\n| default | [SOUL](./.agents/SOUL.md) | [memories/](./.agents/memories/MEMORY.md) |\n' "$TARGET"
-    else
-      printf '\n## Agent Profiles\n\n| Agent | Identity | Memories |\n|-------|----------|----------|\n| default | [SOUL](./.agents/SOUL.md) | [memories/](./.agents/memories/MEMORY.md) |\n' >> "$TARGET"
+
+  if [[ "$SCOPE" == "project" ]]; then
+    # Ensure SPECKIT markers exist even in a pre-existing file
+    if ! grep -q '<!-- SPECKIT START -->' "$TARGET"; then
+      printf '\n<!-- SPECKIT START -->\n<!-- SPECKIT END -->\n' >> "$TARGET"
+      echo "  ✓ Appended SPECKIT markers to existing AGENTS.md"
     fi
-    echo "  ✓ Added Agent Profiles table to existing AGENTS.md"
-  fi
-  # Ensure Scope Definitions section exists even in a pre-existing file
-  if ! grep -q '## Scope Definitions' "$TARGET"; then
-    # Insert after Quick Orientation if it exists, otherwise after the first heading
-    if grep -q '## Quick Orientation' "$TARGET"; then
-      sed -i '/## AgentFS Structural Guardrails/i \
+    # Ensure Agent Profiles table exists even in a pre-existing file
+    if ! grep -q '## Agent Profiles' "$TARGET"; then
+      # Insert before SPECKIT markers if they exist, otherwise append
+      if grep -q '<!-- SPECKIT START -->' "$TARGET"; then
+        sed -i '/<!-- SPECKIT START -->/i ## Agent Profiles\n\n| Agent | Identity | Memories |\n|-------|----------|----------|\n| default | [SOUL](./.agents/SOUL.md) | [memories/](./.agents/memories/MEMORY.md) |\n' "$TARGET"
+      else
+        printf '\n## Agent Profiles\n\n| Agent | Identity | Memories |\n|-------|----------|----------|\n| default | [SOUL](./.agents/SOUL.md) | [memories/](./.agents/memories/MEMORY.md) |\n' >> "$TARGET"
+      fi
+      echo "  ✓ Added Agent Profiles table to existing AGENTS.md"
+    fi
+    # Ensure Scope Definitions section exists even in a pre-existing file
+    if ! grep -q '## Scope Definitions' "$TARGET"; then
+      if grep -q '## Quick Orientation' "$TARGET"; then
+        sed -i '/## AgentFS Structural Guardrails/i \
 ## Scope Definitions\
 \
 AgentFS operates in two scopes. These definitions are canonical —\
@@ -61,9 +112,11 @@ all guardrails, skills, and documentation reference them.\
 | `index.md` | ✅ | ✅ |\
 | `log.md` | ✅ | ✅ |\
 ' "$TARGET"
+      fi
+      echo "  ✓ Added Scope Definitions section to existing AGENTS.md"
     fi
-    echo "  ✓ Added Scope Definitions section to existing AGENTS.md"
   fi
+  # For lite scope, no SPECKIT/Profiles/Scope Definitions to inject
   exit 0
 fi
 
@@ -75,8 +128,76 @@ if [[ -f "$SKILL_FILE" ]]; then
   TEMPLATE_VERSION=$(grep -oP 'version:\s*["'\''"]*\K[^"'\''"]*' "$SKILL_FILE" | head -1)
 fi
 
+# ── LITE scope template ──────────────────────────────────────────────
+if [[ "$SCOPE" == "lite" ]]; then
+
 cat > "$TARGET" << 'AGENTSEOF'
-<!-- agentfs-template-version: __TEMPLATE_VERSION__ -->
+<!-- agentfs-template-version: __TEMPLATE_VERSION__ agentfs-scope: lite -->
+# AGENTS.md — Workspace Entry Point (Lite)
+
+> **Lite scope** — optimized for small-context models. Skills, knowledge
+> bundles, and agent profiles are not available. Only basic file and
+> shell tools are expected. To update this project's AgentFS structure,
+> use a full-capability session with the skills extension enabled.
+
+## Session Start
+
+This project uses **lite scope** — only basic file and shell tools
+are needed. Skills, knowledge bundles, and agent profiles are not
+available.
+
+On your first response in this session, check your available tools.
+If you have tools beyond file I/O and shell execution (e.g., skill
+loading, memory storage, extension management, scheduling), emit
+this notice:
+
+> ⚠️ **Lite scope project.** This project is configured for minimal
+> context usage. Consider disabling unused extensions (skills,
+> memory, extension manager, etc.) to conserve context window.
+
+Then proceed normally with the user's request.
+
+## Orientation
+
+| Resource | Path | What's Inside |
+|----------|------|---------------|
+| Agent identity | [.agents/SOUL.md](./.agents/SOUL.md) | Tone, style, defaults |
+| Memories | [.agents/memories/](./.agents/memories/MEMORY.md) | Project observations |
+| Activity log | [.agents/log.md](./.agents/log.md) | Change history |
+
+@.agents/SOUL.md
+
+## Rules
+
+1. **Memory routing.** "remember this" / "note that" → append to
+   `.agents/memories/MEMORY.md`. "I prefer" / "my style" → append to
+   `.agents/memories/USER.md`. "this is a rule" → propose edit to
+   this file. "forget this" → remove from MEMORY.md.
+
+2. **Log every change.** After editing any file under `.agents/`,
+   append a dated entry to `.agents/log.md` before doing anything
+   else. Format: `## YYYY-MM-DD HH:MM` heading, `- ` bullet.
+
+3. **No sycophancy.** Do not open with "Great question" or similar.
+   Lead with substance. Do not reverse a position without new
+   information. Name at least one risk when evaluating a plan.
+
+4. **Confirm before destructive ops.** Before deleting files or
+   bulk renaming under `.agents/`, list what will change and wait
+   for user confirmation.
+
+5. **Git safety.** Before committing, run `git diff --stat` and
+   show the output. Wait for user confirmation before `git commit`.
+
+6. **Idempotency.** Check before creating. Do not append duplicates.
+   Use existence checks and upsert patterns.
+AGENTSEOF
+
+# ── PROJECT scope template ────────────────────────────────────────────
+else
+
+cat > "$TARGET" << 'AGENTSEOF'
+<!-- agentfs-template-version: __TEMPLATE_VERSION__ agentfs-scope: project -->
 # AGENTS.md — Workspace Entry Point
 
 ## Quick Orientation
@@ -371,16 +492,18 @@ Generate a random session-scoped canary name (e.g., *Marble-Finch-7*) at session
 <!-- SPECKIT END -->
 AGENTSEOF
 
+fi
+
 # Replace template version placeholder with actual version from skill metadata
 sed -i "s/__TEMPLATE_VERSION__/${TEMPLATE_VERSION}/" "$TARGET"
 
-echo "[agentfs-setup] Created $TARGET"
+echo "[agentfs-setup] Created $TARGET (scope: $SCOPE)"
 
 # Append to .agents/log.md
 LOG_FILE="$ROOT/.agents/log.md"
 if [[ -f "$LOG_FILE" ]]; then
   TODAY=$(date '+%Y-%m-%d %H:%M')
-  ENTRY="- Created AGENTS.md at project root."
+  ENTRY="- Created AGENTS.md at project root (scope: $SCOPE)."
   if grep -q "^## $TODAY" "$LOG_FILE"; then
     sed -i "/^## $TODAY$/a\\$ENTRY" "$LOG_FILE"
   else

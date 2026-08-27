@@ -128,7 +128,7 @@ The skill works in any session — fresh or not.
 ## Decision 6: Git as Default in PROJECT Mode
 
 **Decision:** `agentfs-setup` initializes a git repository in the
-project directory (parent of `.agents/`) by default in PROJECT mode.
+project directory (parent of `.agents/`) by default in PROJECT scope.
 
 **Rationale:** Git provides the forensic evidence that Layer 2
 behavioral checks depend on:

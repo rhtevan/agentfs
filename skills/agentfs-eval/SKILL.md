@@ -3,7 +3,7 @@ name: agentfs-eval
 description: >
   eval agentfs, agentfs health, maturity check
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -18,7 +18,8 @@ three layers of progressively deeper verification.
 |----------|-------|
 | **Version** | 1.0 |
 | **Trigger** | Explicit only — user asks to run eval |
-| **Scope** | Evaluates a PROJECT-scoped `.agents/` directory |
+| **Scope** | Evaluates a PROJECT or LITE-scoped `.agents/` directory |
+| **LITE scope** | Skips skills/profiles L1 checks; adds LITE exclusion assertions |
 | **Dependencies** | `bash`, `find`, `grep`, `stat`, `git` (optional but recommended) |
 | **LLM required** | Layer 3 only (semantic rubrics) |
 

@@ -52,7 +52,7 @@ working directory. Each project must be registered individually.
 
 - Hermes Agent installed (`~/.hermes/` exists with `config.yaml`)
 - AgentFS initialized (`~/.agents/skills/` exists — run `agentfs-setup`
-  skill in USER mode if needed)
+  skill in USER scope if needed)
 
 ## Steps
 

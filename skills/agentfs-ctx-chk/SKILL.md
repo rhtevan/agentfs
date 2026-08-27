@@ -3,7 +3,7 @@ name: agentfs-ctx-chk
 description: >
   audit context, check context, context audit
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   tags: [agentfs, context, audit, optimization, guardrails]
 user-invocable: true
 disable-model-invocation: false
@@ -22,6 +22,7 @@ stale cross-references. Optionally apply fixes.
 | **Version** | 1.0 |
 | **Trigger** | Explicit — user asks to audit/check context |
 | **Scope** | Cross-layer: PROJECT `AGENTS.md` + USER `~/.agents/` + agent config + skills |
+| **LITE scope** | Context budget ~850 tokens (vs ~3,750 for PROJECT). Skip skill/knowledge accounting |
 | **Dependencies** | `grep`, `wc`, `cat` — no external tools |
 | **LLM required** | Yes — redundancy/ambiguity detection is semantic |
 | **Companion** | `agentfs-eval` checks structural health; this skill checks context efficiency |

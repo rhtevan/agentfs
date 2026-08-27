@@ -9,15 +9,23 @@
 #                Defaults to current working directory.
 #
 # Behaviour:
-#   1. Reads existing AGENTS.md and extracts project-owned sections:
+#   1. Reads existing AGENTS.md and detects scope (project or lite)
+#   2. Extracts project-owned sections (PROJECT scope only):
 #      - Agent Profiles table rows (excluding 'default' — owned by template)
 #      - SPECKIT block content
-#   2. Checks current template version vs installed version
-#   3. If versions match, reports 'already up to date' and exits
-#   4. Regenerates AGENTS.md from current template via seed-agents-md.sh
-#   5. Re-injects preserved project-owned rows using awk (idempotent)
-#   6. Reports what changed
-#   7. Checks SOUL.md — emits SOUL_ACTION_REQUIRED signal if missing or stub
+#   3. Checks current template version vs installed version
+#   4. If versions match, reports 'already up to date' and exits
+#   5. Regenerates AGENTS.md from current template via seed-agents-md.sh
+#      with the detected scope (preserves scope across sync)
+#   6. Re-injects preserved project-owned rows using awk (idempotent)
+#   7. Reports what changed
+#   8. Checks SOUL.md — emits SOUL_ACTION_REQUIRED signal if missing or stub
+#
+# Scope detection:
+#   Reads `agentfs-scope:` metadata from AGENTS.md line 1. Defaults to
+#   'project' when absent (backward-compatible with pre-4.19.0 files).
+#   Sync NEVER switches scope — it preserves whatever scope the project
+#   was created with. To change scope, re-seed explicitly.
 #
 # Agent signal:
 #   When output contains 'SOUL_ACTION_REQUIRED path=<path>', the agent MUST
@@ -53,6 +61,10 @@ if [[ ! -f "$AGENTS" ]]; then
   exit 0
 fi
 
+# ── Scope detection ───────────────────────────────────────────────
+AGENTFS_SCOPE=$(grep -oP 'agentfs-scope: \K\w+' "$AGENTS" 2>/dev/null || echo "project")
+echo "[sync-agents-md] Detected scope: $AGENTFS_SCOPE"
+
 # ── Version check ─────────────────────────────────────────────────
 CURRENT_VERSION=$(grep -oP 'agentfs-template-version: \K[^\s]+' "$AGENTS" 2>/dev/null || echo "unknown")
 TEMPLATE_VERSION=$(grep -oP 'version:\s*"\K[^"]+' "$SKILL_FILE" 2>/dev/null | head -1 || echo "unknown")
@@ -65,7 +77,6 @@ elif [[ "$CURRENT_VERSION" == "$TEMPLATE_VERSION" ]]; then
   echo "[sync-agents-md] Already up to date (v$TEMPLATE_VERSION). No changes needed."
   # Still check SOUL.md even when AGENTS.md is current
   SOUL_PATH="$PROJECT_DIR/.agents/SOUL.md"
-  AUTHOR_SOUL_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")"; pwd)/author-soul.sh"
   if [[ ! -f "$SOUL_PATH" ]]; then
     echo ""
     echo "[sync-agents-md] ⚠️  SOUL.md missing — no agent identity defined."
@@ -92,37 +103,38 @@ else
   echo "[sync-agents-md] Current: v$CURRENT_VERSION → Template: v$TEMPLATE_VERSION"
 fi
 
-# ── Extract project-owned sections ────────────────────────────────
-# Profile rows: exclude header, separator, and 'default' row (template owns it)
-PROFILE_ROWS=$(awk '
-  /^## Agent Profiles/ { found=1; next }
-  found && /^\|/ { print }
-  found && /^[^|]/ { exit }
-' "$AGENTS" | grep -v '^| Agent ' | grep -v '^|---' | grep -v '^| default |' || true)
+# ── Extract project-owned sections (PROJECT scope only) ───────────
+PROFILE_ROWS=""
+SPECKIT_CONTENT=""
 
-# SPECKIT block (content between markers, exclusive)
-SPECKIT_CONTENT=$(awk '/<!-- SPECKIT START -->/,/<!-- SPECKIT END -->/{print}' "$AGENTS" || true)
+if [[ "$AGENTFS_SCOPE" == "project" ]]; then
+  # Profile rows: exclude header, separator, and 'default' row (template owns it)
+  PROFILE_ROWS=$(awk '
+    /^## Agent Profiles/ { found=1; next }
+    found && /^\|/ { print }
+    found && /^[^|]/ { exit }
+  ' "$AGENTS" | grep -v '^| Agent ' | grep -v '^|---' | grep -v '^| default |' || true)
+
+  # SPECKIT block (content between markers, exclusive)
+  SPECKIT_CONTENT=$(awk '/<!-- SPECKIT START -->/,/<!-- SPECKIT END -->/{print}' "$AGENTS" || true)
+fi
 
 # ── Regenerate from template ───────────────────────────────────────
-echo "[sync-agents-md] Regenerating from template v$TEMPLATE_VERSION..."
+echo "[sync-agents-md] Regenerating from template v$TEMPLATE_VERSION (scope: $AGENTFS_SCOPE)..."
 rm -f "$AGENTS"
-bash "$SEED_SCRIPT" "$PROJECT_DIR"
+bash "$SEED_SCRIPT" --scope "$AGENTFS_SCOPE" "$PROJECT_DIR"
 
-# ── Re-inject profile rows (idempotent, awk-based) ────────────────
-if [[ -n "$PROFILE_ROWS" ]]; then
+# ── Re-inject profile rows (PROJECT scope only, idempotent) ───────
+if [[ "$AGENTFS_SCOPE" == "project" && -n "$PROFILE_ROWS" ]]; then
   echo "[sync-agents-md] Re-injecting $(echo "$PROFILE_ROWS" | grep -c '^|') profile row(s)..."
 
-  # Build a map of agent names already in the file (to dedup)
-  # Then insert missing rows after the default row using awk
   ROWS_TO_INJECT="$PROFILE_ROWS"
 
   awk -v rows="$ROWS_TO_INJECT" '
     BEGIN {
-      # Parse rows into array keyed by agent name
       n = split(rows, rowarray, "\n")
       for (i = 1; i <= n; i++) {
         if (rowarray[i] ~ /^\|/) {
-          # Extract agent name (second field)
           r = rowarray[i]
           gsub(/^\| */, "", r)
           split(r, parts, " *\\| *")
@@ -130,14 +142,12 @@ if [[ -n "$PROFILE_ROWS" ]]; then
         }
       }
     }
-    # Track agent names already written
     /^\|/ && !/^\| Agent / && !/^\|---/ {
       r = $0
       gsub(/^\| */, "", r)
       split(r, parts, " *\\| *")
       seen[parts[1]] = 1
     }
-    # After the default row, inject any pending rows not yet seen
     /^\| default \|/ {
       print
       for (agent in pending) {
@@ -152,23 +162,21 @@ if [[ -n "$PROFILE_ROWS" ]]; then
   ' "$AGENTS" > "$AGENTS.tmp" && mv "$AGENTS.tmp" "$AGENTS"
 fi
 
-# ── Re-inject SPECKIT block content ───────────────────────────────
-# The template already creates empty SPECKIT markers.
-# Only re-inject if original had non-empty content.
-SPECKIT_INNER=$(echo "$SPECKIT_CONTENT" | grep -v '<!-- SPECKIT' || true)
-if [[ -n "$(echo "$SPECKIT_INNER" | tr -d '[:space:]')" ]]; then
-  echo "[sync-agents-md] Re-injecting SPECKIT content..."
-  # Replace empty SPECKIT block with preserved content
-  awk -v content="$SPECKIT_CONTENT" '
-    /<!-- SPECKIT START -->/ { print content; skip=1; next }
-    /<!-- SPECKIT END -->/ { skip=0; next }
-    !skip { print }
-  ' "$AGENTS" > "$AGENTS.tmp" && mv "$AGENTS.tmp" "$AGENTS"
+# ── Re-inject SPECKIT block content (PROJECT scope only) ──────────
+if [[ "$AGENTFS_SCOPE" == "project" ]]; then
+  SPECKIT_INNER=$(echo "$SPECKIT_CONTENT" | grep -v '<!-- SPECKIT' || true)
+  if [[ -n "$(echo "$SPECKIT_INNER" | tr -d '[:space:]')" ]]; then
+    echo "[sync-agents-md] Re-injecting SPECKIT content..."
+    awk -v content="$SPECKIT_CONTENT" '
+      /<!-- SPECKIT START -->/ { print content; skip=1; next }
+      /<!-- SPECKIT END -->/ { skip=0; next }
+      !skip { print }
+    ' "$AGENTS" > "$AGENTS.tmp" && mv "$AGENTS.tmp" "$AGENTS"
+  fi
 fi
 
 # ── SOUL.md stub detection ────────────────────────────────────────
 SOUL_PATH="$PROJECT_DIR/.agents/SOUL.md"
-AUTHOR_SOUL_SCRIPT="$SCRIPT_DIR/author-soul.sh"
 
 if [[ ! -f "$SOUL_PATH" ]]; then
   echo ""
@@ -192,4 +200,4 @@ else
   fi
 fi
 
-echo "[sync-agents-md] ✅ Synced $AGENTS (v$CURRENT_VERSION → v$TEMPLATE_VERSION)"
+echo "[sync-agents-md] ✅ Synced $AGENTS (v$CURRENT_VERSION → v$TEMPLATE_VERSION, scope: $AGENTFS_SCOPE)"

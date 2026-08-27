@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-26 21:55
+
+agentfs-setup: Added deterministic scope auto-detection to scaffold-dotagents.sh and seed-agents-md.sh. Scripts now compare ROOT_DIR against CWD — different path = LITE, same path or no path = PROJECT. Agent no longer needs to decide --scope flag. Updated SKILL.md to reflect simplified agent workflow (just pass the target dir).
+
+## 2026-08-26 21:48
+
+agentfs-setup SKILL.md: added LITE scope usage section with inference rule table, updated Sync and Verification sections for LITE scope awareness. This was missing and caused the agent to create PROJECT scope when given an explicit remote path.
+
+## 2026-08-26 21:34
+
+Scope consolidation (v4.19.0): renamed --mode to --scope across all agentfs-setup scripts. Standardized all prose from 'USER/PROJECT mode' to 'USER/PROJECT scope'. Added LITE scope for small-context models — minimal AGENTS.md template (~850 tokens), no skills/profiles/knowledge. Updated scaffold-dotagents.sh, seed-agents-md.sh, sync-agents-md.sh, verify-setup.sh, test-soul-authoring.sh. Added LITE scope guards to agentfs-profile, agentfs-eval, agentfs-ctx-chk, skill-gen, skill-harvest, skill-index, okf-bundle-gen, okf-bundle-harvest, okf-bundle-setup. Updated SKILL.md and CHANGELOG.md for agentfs-setup, agentfs-profile, agentfs-eval, agentfs-ctx-chk. Updated design-spec.md, design-decisions.md, hermes-agentfs-setup, okf-bundle-gen, skill-merge, README.md terminology.
+
 ## 2026-08-26 18:42
 
 README.md: added Goose Desktop Operations to knowledge bundle list (README audit fix)

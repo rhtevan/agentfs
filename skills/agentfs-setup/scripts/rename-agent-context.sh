@@ -3,7 +3,7 @@
 #
 # Usage: bash rename-agent-context.sh [PROJECT_ROOT]
 #
-# This script is for PROJECT mode only.
+# This script is for PROJECT scope only.
 #
 # After `specify init --integration <agent>`, the CLI may create a file like
 # CLAUDE.md, COPILOT.md, GEMINI.md, etc. This script finds that file and

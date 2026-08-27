@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-26 21:34 | v4.19.0 — Scope consolidation: renamed --mode to --scope (user|project|lite). Added LITE scope for small-context models. LITE AGENTS.md template (~850 tokens). Scope metadata in AGENTS.md (agentfs-scope: project|lite). sync-agents-md.sh detects and preserves scope. verify-setup.sh supports --scope lite. | Added LITE scope usage section with inference rule, lifecycle model, updated Sync and Verification sections.
 | 2026-08-26 13:40 | v4.18.0 — Added Guardrail #0 (Signal-First Dispatch) — ⛔ GATE requiring models to scan skill description signals before generic interpretation. Addresses routing failures on smaller models. Updated Quick Reference table and guardrail body text. |
 | 2026-08-26 12:36 | v4.17.8 — post-edit.sh: added knowledge index audit (calls okf-bundle-index audit-index.sh). Guardrail #5 Gate 3: MUST use rebuild-index.sh for knowledge indexes. |
 | 2026-08-26 12:22 | v4.17.7 — Guardrail #5 Delegation: log.md entries MUST use merge-log-entry.sh (no direct write/edit except initial file creation). Added knowledge root log to scope table. |

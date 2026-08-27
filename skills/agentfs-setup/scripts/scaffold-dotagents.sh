@@ -1,32 +1,35 @@
 #!/usr/bin/env bash
 # scaffold-dotagents.sh — Create the .agents/ directory tree and seed files.
 #
-# Usage: bash scaffold-dotagents.sh [--mode user|project] [ROOT_DIR]
+# Usage: bash scaffold-dotagents.sh [--scope user|project|lite] [ROOT_DIR]
 #
-#   --mode project  Scaffold ./.agents/ with all layers (default)
-#                   Creates: skills/, profiles/, memories/, SOUL.md, index.md, log.md
-#                   This is the primary workflow — run once per repo.
+#   --scope project  Scaffold ./.agents/ with all layers (default)
+#   --scope lite     Scaffold ./.agents/ with minimal layers for small-context models
+#   --scope user     Scaffold ~/.agents/ with skills/ and knowledge/ only
 #
-#   --mode user     Scaffold ~/.agents/ with skills/ and knowledge/ only
-#                   Creates an empty structural skeleton for selective skill adoption.
-#                   Only needed for "minimal install" users who did NOT clone the
-#                   AgentFS repo directly into ~/.agents/ (Path B).
-#                   Users who cloned the repo to ~/.agents/ (Path A) do NOT need this.
+#   ROOT_DIR         Target directory. Defaults to . for project, ~ for user.
 #
-#   ROOT_DIR        Defaults to . for project mode, ~ for user mode
+# Scope auto-detection:
+#   When --scope is NOT explicitly set and ROOT_DIR IS given, the script
+#   compares ROOT_DIR against CWD. If they differ → scope is auto-set
+#   to 'lite'. If they match (or ROOT_DIR is absent) → scope stays 'project'.
+#   --scope user is never auto-detected — it must always be explicit.
+#   Explicit --scope always wins over auto-detection.
 #
 # The script is idempotent — it skips files that already exist.
 
 set -euo pipefail
 
 # ── Parse arguments ──────────────────────────────────────────────────
-MODE="project"
+SCOPE=""
+SCOPE_EXPLICIT=false
 ROOT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode)
-      MODE="${2,,}"  # lowercase
+    --scope)
+      SCOPE="${2,,}"  # lowercase
+      SCOPE_EXPLICIT=true
       shift 2
       ;;
     *)
@@ -36,40 +39,77 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "$MODE" != "user" && "$MODE" != "project" ]]; then
-  echo "[agentfs-setup] ERROR: --mode must be 'user' or 'project' (got: $MODE)" >&2
-  exit 1
+# Validate explicit scope if given
+if [[ "$SCOPE_EXPLICIT" == true ]]; then
+  if [[ "$SCOPE" != "user" && "$SCOPE" != "project" && "$SCOPE" != "lite" ]]; then
+    echo "[agentfs-setup] ERROR: --scope must be 'user', 'project', or 'lite' (got: $SCOPE)" >&2
+    exit 1
+  fi
 fi
 
-# Default root based on mode
+# ── Scope auto-detection ─────────────────────────────────────────────
+if [[ "$SCOPE_EXPLICIT" == false ]]; then
+  if [[ -n "$ROOT" ]]; then
+    # ROOT_DIR given — compare against CWD to decide project vs lite
+    # Create target dir first if it doesn't exist (so realpath works)
+    if [[ ! -d "$ROOT" ]]; then
+      mkdir -p "$ROOT"
+      echo "[agentfs-setup] Created target directory: $ROOT"
+    fi
+    RESOLVED_ROOT="$(cd "$ROOT" && pwd)"
+    RESOLVED_CWD="$(pwd)"
+    if [[ "$RESOLVED_ROOT" == "$RESOLVED_CWD" ]]; then
+      SCOPE="project"
+    else
+      SCOPE="lite"
+      echo "[agentfs-setup] Auto-detected LITE scope (target $RESOLVED_ROOT ≠ CWD $RESOLVED_CWD)"
+    fi
+  else
+    # No ROOT_DIR, no explicit scope → default project
+    SCOPE="project"
+  fi
+fi
+
+# Default root based on scope
 if [[ -z "$ROOT" ]]; then
-  if [[ "$MODE" == "user" ]]; then
+  if [[ "$SCOPE" == "user" ]]; then
     ROOT="$HOME"
   else
     ROOT="."
   fi
 fi
 
+# Create ROOT_DIR if it doesn't exist
+if [[ ! -d "$ROOT" ]]; then
+  echo "[agentfs-setup] Creating target directory: $ROOT"
+  mkdir -p "$ROOT"
+fi
+
 ROOT="$(cd "$ROOT" && pwd)"
 AGENTS="$ROOT/.agents"
 
-echo "[agentfs-setup] Scaffolding .agents/ under $ROOT (mode: $MODE)"
+echo "[agentfs-setup] Scaffolding .agents/ under $ROOT (scope: $SCOPE)"
 
 # ── Layer directories ────────────────────────────────────────────────
-mkdir -p "$AGENTS/skills"
+if [[ "$SCOPE" == "user" || "$SCOPE" == "project" ]]; then
+  mkdir -p "$AGENTS/skills"
+fi
 
-if [[ "$MODE" == "user" ]]; then
+if [[ "$SCOPE" == "user" ]]; then
   mkdir -p "$AGENTS/knowledge"
 fi
 
-if [[ "$MODE" == "project" ]]; then
+if [[ "$SCOPE" == "project" ]]; then
   mkdir -p "$AGENTS/profiles"
+fi
+
+if [[ "$SCOPE" == "project" || "$SCOPE" == "lite" ]]; then
   mkdir -p "$AGENTS/memories"
 fi
 
-# ── index.md (OKF entry point — NO yaml frontmatter) ────────────────
+# ── index.md (entry point — NO yaml frontmatter) ────────────────────
 if [[ ! -f "$AGENTS/index.md" ]]; then
-  if [[ "$MODE" == "user" ]]; then
+  if [[ "$SCOPE" == "user" ]]; then
 cat > "$AGENTS/index.md" << 'EOF'
 # .agents — User Directory Index
 
@@ -80,6 +120,19 @@ cat > "$AGENTS/index.md" << 'EOF'
 |-------|------|---------|
 | Capability | [skills/](./skills/index.md) | Shared agent workflows (Agent Skills format) |
 | Knowledge | [knowledge/](./knowledge/index.md) | Shared knowledge base (OKF format) |
+
+See [log.md](./log.md) for recent activity.
+EOF
+  elif [[ "$SCOPE" == "lite" ]]; then
+cat > "$AGENTS/index.md" << 'EOF'
+# .agents — Directory Index (Lite)
+
+> Progressive-disclosure entry point. Browse folders before opening files.
+
+| Layer | Path | Purpose |
+|-------|------|---------|
+| Identity | [SOUL.md](./SOUL.md) | Default agent identity (human-authored) |
+| Memories | [memories/](./memories/MEMORY.md) | Default agent's experiences and learned context |
 
 See [log.md](./log.md) for recent activity.
 EOF
@@ -109,13 +162,13 @@ cat > "$AGENTS/log.md" << EOF
 
 ## $(date '+%Y-%m-%d %H:%M')
 
-- Initialized .agents/ directory structure (mode: $MODE).
+- Initialized .agents/ directory structure (scope: $SCOPE).
 EOF
   echo "  ✓ log.md"
 fi
 
-# ── knowledge/index.md (OKF knowledge root — USER mode only) ────────
-if [[ "$MODE" == "user" && ! -f "$AGENTS/knowledge/index.md" ]]; then
+# ── knowledge/index.md (OKF knowledge root — USER scope only) ───────
+if [[ "$SCOPE" == "user" && ! -f "$AGENTS/knowledge/index.md" ]]; then
 cat > "$AGENTS/knowledge/index.md" << 'EOF'
 # Knowledge Index
 
@@ -128,8 +181,8 @@ EOF
   echo "  ✓ knowledge/index.md"
 fi
 
-# ── skills/index.md (skill directory listing — NO yaml frontmatter) ──
-if [[ ! -f "$AGENTS/skills/index.md" ]]; then
+# ── skills/index.md (skill directory listing — PROJECT and USER) ─────
+if [[ "$SCOPE" != "lite" && ! -f "$AGENTS/skills/index.md" ]]; then
 cat > "$AGENTS/skills/index.md" << 'EOF'
 # Skills Index
 
@@ -145,26 +198,8 @@ EOF
   echo "  ✓ skills/index.md"
 fi
 
-# ── PROJECT mode: seed profiles/index.md, SOUL.md and memories/ ──────
-if [[ "$MODE" == "project" ]]; then
-
-  # profiles/index.md — profile directory listing
-  if [[ ! -f "$AGENTS/profiles/index.md" ]]; then
-cat > "$AGENTS/profiles/index.md" << 'EOF'
-# Agent Profiles
-
-> 0 profiles | Named agent profiles for multi-agent collaboration.
-> Each profile defines a distinct ROLE with its own identity (SOUL.md)
-> and memories. Sorted by reverse chronological order (newest first).
-
-| Profile | Identity | Memories | Updated |
-|---------|----------|----------|---------|
-
-<!-- Rows are added automatically by the agentfs-profile skill.
-     Sorted newest-first by the Updated timestamp. -->
-EOF
-    echo "  ✓ profiles/index.md"
-  fi
+# ── PROJECT/LITE scope: seed SOUL.md and memories/ ────────────────────
+if [[ "$SCOPE" == "project" || "$SCOPE" == "lite" ]]; then
 
   # SOUL.md — default agent identity (interactive authoring via author-soul.sh)
   SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -229,8 +264,31 @@ EOF
 
 fi
 
-# ── PROJECT mode: initialize git if not already a repo ────────────────
-if [[ "$MODE" == "project" ]]; then
+# ── PROJECT scope only: seed profiles/index.md ────────────────────────
+if [[ "$SCOPE" == "project" ]]; then
+
+  # profiles/index.md — profile directory listing
+  if [[ ! -f "$AGENTS/profiles/index.md" ]]; then
+cat > "$AGENTS/profiles/index.md" << 'EOF'
+# Agent Profiles
+
+> 0 profiles | Named agent profiles for multi-agent collaboration.
+> Each profile defines a distinct ROLE with its own identity (SOUL.md)
+> and memories. Sorted by reverse chronological order (newest first).
+
+| Profile | Identity | Memories | Updated |
+|---------|----------|----------|---------|
+
+<!-- Rows are added automatically by the agentfs-profile skill.
+     Sorted newest-first by the Updated timestamp. -->
+EOF
+    echo "  ✓ profiles/index.md"
+  fi
+
+fi
+
+# ── PROJECT scope: initialize git if not already a repo ───────────────
+if [[ "$SCOPE" == "project" ]]; then
   SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
   if [[ -f "$SCRIPT_DIR/init-git.sh" ]]; then
     bash "$SCRIPT_DIR/init-git.sh" "$ROOT"
@@ -239,4 +297,4 @@ if [[ "$MODE" == "project" ]]; then
   fi
 fi
 
-echo "[agentfs-setup] .agents/ scaffold complete (mode: $MODE)."
+echo "[agentfs-setup] .agents/ scaffold complete (scope: $SCOPE)."

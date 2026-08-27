@@ -25,14 +25,14 @@ requirements for AgentFS-compatible LLM backends.
 
 ## Context Window Compatibility
 
-| Context Window | AgentFS Compatible? | Notes |
-|:--------------:|:-------------------:|-------|
-| 2K | ❌ No | `AGENTS.md` alone exceeds 2K |
-| 4K | ❌ No | Context files fill it, zero room for interaction |
-| 8K | ⚠️ Barely | Minimal skills index, short memories, tight |
-| **16K** | ✅ **Minimum practical** | Room for context + moderate conversation |
-| 32K | ✅ Comfortable | Full AgentFS + multi-turn + tool calling |
-| 128K+ | ✅ Ideal | Full AgentFS + RAG + complex agent workflows |
+| Context Window | PROJECT Scope | LITE Scope | Notes |
+|:--------------:|:-------------------:|:---:|-------|
+| 2K | ❌ No | ❌ No | Even LITE AGENTS.md (~850 tokens) leaves no room |
+| 4K | ❌ No | ⚠️ Barely | LITE fits but tight for conversation |
+| 8K | ⚠️ Barely | ✅ Comfortable | LITE leaves ~7K for interaction |
+| **16K** | ✅ **Minimum practical** | ✅ Ideal for LITE | LITE uses ~5% of context vs ~23% for PROJECT |
+| 32K | ✅ Comfortable | ✅ | Full AgentFS + multi-turn + tool calling |
+| 128K+ | ✅ Ideal | ✅ | Full AgentFS + RAG + complex agent workflows |
 
 ## Implications for Model Selection
 

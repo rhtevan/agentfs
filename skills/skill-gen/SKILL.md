@@ -15,6 +15,11 @@ disable-model-invocation: false
 
 # Skill Gen
 
+> **Scope guard:** This skill is not available in LITE scope projects.
+> LITE scope does not support skills or knowledge bundles. If the
+> target project's AGENTS.md contains `agentfs-scope: lite`, refuse
+> with a clear message.
+
 Create new skills, modify and improve existing ones with built-in AgentFS
 conventions. Operates in three modes: **simple** (quick scaffold),
 **advanced** (full eval/iterate/optimize loop using upstream Anthropic

@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-26 21:34 | v1.10.0 — Added LITE scope guard: create-profile.sh refuses in LITE scope projects. Standardized terminology: mode → scope. |
 | 2026-08-20 00:00 | v1.9.0 — Refactor create-profile.sh to delegate SOUL authoring to author-soul.sh; add recipe.yaml placeholder generation with SOUL content + identity override header; add output/ directory; add gen-profile-recipe.sh for on-demand task recipe generation |
 | 2026-07-08 13:38 | v1.8 — Updated MEMORY.md template to "Project Experiences" with scope/NL-signal guidance; removed `.agents/knowledge/` references (knowledge is USER-scoped) |
 | 2026-07-01 00:07 | v1.7 — `create-profile.sh` now updates profile count in `profiles/index.md` summary line |

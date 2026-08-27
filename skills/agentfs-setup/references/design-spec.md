@@ -8,7 +8,7 @@ agent-facing "LLM-wiki."
 
 Two modes serve different scopes:
 
-| Mode | Root | Scope | Spec-kit |
+| Scope | Root | Description | Spec-kit |
 |------|------|-------|----------|
 | **USER** | `~` | Shared skills & knowledge visible across projects and agents | Not involved |
 | **PROJECT** | `.` (repo root) | Per-project agent context with multi-agent collaboration | Optional, independent |
@@ -43,7 +43,7 @@ all guardrails, skills, and documentation reference them.
 ## Installation Paths
 
 USER scope (`~/.agents/`) must be set up before PROJECT scope can work,
-since PROJECT mode skills and scripts are typically invoked from the
+since PROJECT scope skills and scripts are typically invoked from the
 USER-scoped skill library.
 
 ### Path A: Full Install (recommended)
@@ -70,7 +70,7 @@ cherry-pick skills selectively:
    `~/repos/agentfs/skills/` to the agent's skill search paths
    — see the relevant agent setup skill for details).
 3. Ask the agent to run the `agentfs-setup` skill with USER scope:
-   > *"Set up AgentFS in USER mode"*
+   > *"Set up AgentFS in USER scope"*
 
    The agent loads the skill, recognises the USER scope hint, and
    scaffolds an empty `~/.agents/` with `skills/`, `knowledge/`,
@@ -93,7 +93,7 @@ In any git repository, ask the agent to run the `agentfs-setup` skill:
 
 > *"Set up AgentFS for this project"*
 
-Since PROJECT is the default mode, no additional scope hint is needed.
+Since PROJECT is the default scope, no additional scope hint is needed.
 The agent scaffolds `.agents/` and creates `AGENTS.md` at the repo root.
 
 ## Prompt Stacking Order
@@ -115,7 +115,7 @@ named agents use `.agents/profiles/<name>/`).
 Items 2, 3 are shared across all agents in the project.
 Item 4 (knowledge) is USER-scoped (`~/.agents/knowledge/`) — shared across all projects and agents.
 
-## USER Mode — File Structure
+## USER Scope — File Structure
 
 ```text
 ~/
@@ -139,13 +139,13 @@ Item 4 (knowledge) is USER-scoped (`~/.agents/knowledge/`) — shared across all
 all projects and is visible to any agent. No agent identity, no memories,
 no profiles — purely a capability and knowledge store.
 
-**Excluded from USER mode:**
+**Excluded from USER scope:**
 - `SOUL.md` — Agent identity is project-scoped or agent-specific
 - `profiles/` — Multi-agent collaboration is project-scoped
 - `memories/` — Learned context is agent-scoped within a project
 - `AGENTS.md` — Workspace entry point is per-repo
 
-## PROJECT Mode — File Structure
+## PROJECT Scope — File Structure
 
 ```text
 ./ (Repository Root)
@@ -192,7 +192,7 @@ no profiles — purely a capability and knowledge store.
 
 ## Multi-Agent Collaboration
 
-PROJECT mode supports multiple agents working together on the same project.
+PROJECT scope supports multiple agents working together on the same project.
 
 ### Shared layers (all agents see these)
 - **`skills/`** — Project-scoped agent workflows
@@ -386,7 +386,7 @@ Created and managed by the `agentfs-profile` skill.
 ### 5. Capability Layer — .agents/skills/
 Agent Skills format. Each skill = folder with SKILL.md + optional bundled
 resources. Progressive disclosure via metadata → body → resources.
-Shared across all agents. Present in both USER and PROJECT modes.
+Shared across all agents. Present in both USER and PROJECT scopes.
 
 #### SKILL.md Frontmatter Schema
 
@@ -432,7 +432,7 @@ for the full canonical schema.
 ### 6. Semantic Context Layer — ~/.agents/knowledge/ (USER only)
 Open Knowledge Format. File path = concept identity. Every file requires
 YAML frontmatter with `type` field. Markdown links form a knowledge graph.
-Shared across all agents and projects. Present in USER mode only —
+Shared across all agents and projects. Present in USER scope only —
 projects do NOT get a local `knowledge/` directory.
 
 ### 7. Memories Layer — .agents/memories/ (PROJECT only)
@@ -451,7 +451,7 @@ This directory lives at the **repo root** (not inside `.agents/`) and is
 fully managed by the `specify` CLI. DotAgents does not create, move, or
 override this directory.
 
-## Spec-kit Coexistence (PROJECT mode)
+## Spec-kit Coexistence (PROJECT Scope)
 
 Spec-kit is an independent tool that manages its own directories:
 - `.specify/` — engine room (templates, scripts, config, constitution)
@@ -522,7 +522,7 @@ with a fundamentally different paradigm:
 - Checks gracefully degrade to N/A when evidence is insufficient
   (e.g., fresh projects with no behavioral history)
 - Git provides tamper-resistant forensic evidence for Layer 2
-  (initialized by default in PROJECT mode)
+  (initialized by default in PROJECT scope)
 
 ### Maturity Levels
 
@@ -538,7 +538,7 @@ with a fundamentally different paradigm:
 ### Git as Audit Infrastructure
 
 `agentfs-setup` initializes git in the project directory (parent of
-`.agents/`) by default in PROJECT mode. The `.gitignore` tracks
+`.agents/`) by default in PROJECT scope. The `.gitignore` tracks
 everything under `.agents/` including `memories/` — privacy is the
 user's decision at push time, not gitignore time. Git provides:
 
@@ -569,6 +569,67 @@ to 10 with #8 Anti-Daydreaming):
   operations in `.agents/.checkpoint`
 - **Anti-Sycophancy** — agent must flag conflicts with existing
   guardrails, not silently comply; overrides logged with `[OVERRIDE]`
+
+## Scopes: USER, PROJECT, and LITE
+
+AgentFS operates in three scopes. USER and PROJECT are the original
+two; LITE was added in v4.19.0 for small-context models.
+
+| Scope | Root | Target Use | AGENTS.md |
+|-------|------|------------|-----------|
+| **USER** | `~/.agents/` | Machine-wide shared library | None |
+| **PROJECT** | `./.agents/` (CWD) | Full per-repo workspace | Full (~3,750 tokens) |
+| **LITE** | `./.agents/` (remote path) | Minimal per-repo workspace | Lite (~850 tokens) |
+
+### LITE Scope
+
+LITE is a constrained form of PROJECT scope, designed for projects
+consumed by small-context models (e.g., Granite 3B at 16K context).
+
+**What's different from PROJECT:**
+- No `skills/`, `profiles/`, `skills/index.md`, `profiles/index.md`
+- AGENTS.md uses a minimal template with 6 terse rules (no script deps)
+- No SPECKIT markers, no Agent Profiles table, no Scope Definitions
+- Includes a Session Start section that detects unnecessary extensions
+- Cannot self-manage — always managed externally by a full-capability session
+
+**Inference rule:** When the agent invokes setup/sync with an explicit
+target directory that does NOT resolve to CWD, the scope is LITE.
+No explicit path or path resolving to CWD = PROJECT.
+
+**Metadata:** `<!-- agentfs-template-version: X.Y agentfs-scope: lite -->`
+
+Detection pattern:
+```bash
+AGENTFS_SCOPE=$(grep -oP 'agentfs-scope: \K\w+' "$TARGET/AGENTS.md" 2>/dev/null || echo "project")
+```
+
+### LITE Scope — File Structure
+
+```text
+<target-project>/
+├── AGENTS.md
+└── .agents/
+    ├── index.md
+    ├── log.md
+    ├── SOUL.md
+    └── memories/
+        ├── USER.md
+        └── MEMORY.md
+```
+
+### Lifecycle Model
+
+LITE projects are **provisioned and maintained** by normal-capability
+sessions (with skills extension), then **consumed** by lite sessions
+(developer-only). A lite session cannot sync or scaffold — it can
+only read AGENTS.md, follow the rules, and write to memories/log.
+
+### Mode Switching
+
+Sync preserves scope — it never auto-switches. To convert a project
+from LITE to PROJECT scope, explicitly re-seed with `--scope project`
+and re-scaffold with `--scope project`.
 
 ## Changelog
 

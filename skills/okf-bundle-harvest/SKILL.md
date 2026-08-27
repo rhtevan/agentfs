@@ -14,6 +14,11 @@ disable-model-invocation: false
 
 # OKF Bundle Harvest — Memory-to-Knowledge Distillation
 
+> **Scope guard:** This skill is not available in LITE scope projects.
+> LITE scope does not support skills or knowledge bundles. If the
+> target project's AGENTS.md contains `agentfs-scope: lite`, refuse
+> with a clear message.
+
 Harvest generalizable concepts from project-scoped `MEMORY.md` files and
 distill them into OKF-compliant knowledge bundles under `~/.agents/knowledge/`.
 

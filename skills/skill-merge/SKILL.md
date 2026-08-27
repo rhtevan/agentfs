@@ -32,7 +32,7 @@ they become available across all projects and agents.
 
 - `./.agents/skills/` must exist and contain at least one skill
   (subdirectory with a `SKILL.md` file).
-- `~/.agents/skills/` must exist (run `agentfs-setup` in USER mode
+- `~/.agents/skills/` must exist (run `agentfs-setup` in USER scope
   if not).
 
 ## Steps
@@ -67,7 +67,7 @@ they become available across all projects and agents.
 
 4. **Refresh USER skills index**
    After all copies are complete, regenerate `~/.agents/skills/index.md`
-   using the `skill-index` skill (USER mode — the default).
+   using the `skill-index` skill (USER scope — the default).
    This is mandatory per the **Index Currency** guardrail (AGENTS.md §6):
    `skills/index.md` MUST stay current whenever skills are added, renamed,
    moved, or deleted in either scope.

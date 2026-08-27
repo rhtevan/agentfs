@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "4.18.0"
+  version: "4.19.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -17,8 +17,8 @@ AI coding agents.
 
 | Property         | Value                                                             |
 | ---------------- | ----------------------------------------------------------------- |
-| **Default mode** | `project`                                                         |
-| **Modes**        | `project` (per-repo context) · `user` (shared library)            |
+| **Default scope** | `project`                                                         |
+| **Scopes**       | `project` (per-repo context) · `lite` (minimal per-repo) · `user` (shared library) |
 | **Scripts**      | `scaffold-dotagents.sh` · `seed-agents-md.sh` · `sync-agents-md.sh` · `verify-setup.sh` |
 | **Design spec**  | [references/design-spec.md](./references/design-spec.md)          |
 
@@ -46,7 +46,7 @@ AgentFS operates in two scopes. These definitions are canonical.
 
 ## Prerequisites: USER Scope Setup
 
-Before running PROJECT mode, `~/.agents/` must exist. There are two
+Before running PROJECT scope, `~/.agents/` must exist. There are two
 paths to set it up:
 
 ### Path A: Full Install (recommended)
@@ -73,7 +73,7 @@ cherry-pick skills selectively:
    `~/repos/agentfs/skills/` to the agent's skill search paths
    — see the relevant agent setup skill for details).
 3. Ask the agent to run this skill with USER scope:
-   > *"Set up AgentFS in USER mode"*
+   > *"Set up AgentFS in USER scope"*
 
    The agent loads this skill, recognises the USER scope hint, and
    scaffolds an empty `~/.agents/` with `skills/`, `knowledge/`,
@@ -92,18 +92,18 @@ Each agent needs its own setup to discover AgentFS context files:
 
 ## Usage
 
-### PROJECT mode (default — run once per repo)
+### PROJECT scope (default — run once per repo)
 
 Ask the agent to run this skill in the target repo:
 
 > *"Set up AgentFS for this project"*
 
-Since PROJECT is the default mode, no additional scope hint is needed.
+Since PROJECT is the default scope, no additional scope hint is needed.
 The agent runs the following scripts:
 
 ```bash
 # 1. Scaffold .agents/ directory
-bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh --mode project
+bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh --scope project
 
 # 2. Create AGENTS.md at repo root
 bash ~/.agents/skills/agentfs-setup/scripts/seed-agents-md.sh
@@ -118,16 +118,16 @@ Creates:
 - `AGENTS.md` — workspace entry point with scope definitions, progressive
   loading (SOUL.md, knowledge index), and ten structural guardrails
 
-### USER mode (minimal install only)
+### USER scope (minimal install only)
 
 Ask the agent to run this skill with a USER scope hint:
 
-> *"Set up AgentFS in USER mode"*
+> *"Set up AgentFS in USER scope"*
 
 The agent runs:
 
 ```bash
-bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh --mode user
+bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh --scope user
 ```
 
 Creates an empty structural skeleton:
@@ -137,6 +137,48 @@ Creates an empty structural skeleton:
 
 > **Note:** If you used Path A (full clone), this step is unnecessary —
 > the clone already contains the complete structure.
+
+### LITE scope (minimal project for small-context models)
+
+LITE scope creates a minimal AgentFS for projects consumed by
+small-context models (e.g., Granite 3B at 16K context). No skills,
+profiles, or knowledge — only identity and memories.
+
+**Scope auto-detection:** The scripts detect LITE scope automatically.
+When a target directory is passed and it resolves to a different path
+than CWD, the scripts infer LITE scope. The agent does NOT need to
+decide — just pass the path. Examples:
+
+| User says | What the agent runs |
+|---|---|
+| *"Set up AgentFS"* | `scaffold-dotagents.sh` (no path → PROJECT) |
+| *"Set up AgentFS at ~/projects/foo"* | `scaffold-dotagents.sh ~/projects/foo` (auto-LITE) |
+| *"Sync AgentFS at ~/projects/foo"* | `sync-agents-md.sh ~/projects/foo` (auto-LITE via metadata) |
+
+The agent runs:
+
+```bash
+# Just pass the target directory — scope is auto-detected
+bash ~/.agents/skills/agentfs-setup/scripts/scaffold-dotagents.sh <TARGET_DIR>
+bash ~/.agents/skills/agentfs-setup/scripts/seed-agents-md.sh <TARGET_DIR>
+```
+
+The scripts compare `<TARGET_DIR>` against CWD. Different path → LITE.
+Same path (or no path) → PROJECT.
+
+Creates (LITE):
+- `.agents/memories/` — default agent's experiences and user model
+- `.agents/SOUL.md` — default agent identity
+- `.agents/index.md`, `log.md`
+- `AGENTS.md` — lite workspace entry point with 6 simplified rules
+  (~850 tokens, no script dependencies)
+
+**Not created:** `skills/`, `profiles/`, SPECKIT markers, Agent Profiles
+table, Signal Routing, full guardrails.
+
+**Lifecycle:** LITE projects are provisioned and maintained by
+full-capability sessions (with skills extension), then consumed by
+developer-only sessions. A lite session cannot sync or scaffold.
 
 ### Sync mode (update existing project AGENTS.md)
 
@@ -152,15 +194,22 @@ bash ~/.agents/skills/agentfs-setup/scripts/sync-agents-md.sh [PROJECT_DIR]
 ```
 
 `sync-agents-md.sh` handles the full workflow:
-1. Reads current template version from `<!-- agentfs-template-version: X.Y -->`
-2. Compares against installed template version in `SKILL.md`
-3. If versions match — reports "already up to date" and exits
-4. Extracts project-owned sections:
+1. Detects scope from `agentfs-scope:` metadata in existing AGENTS.md
+   (defaults to `project` for pre-4.19.0 files without the stamp)
+2. Reads current template version from `<!-- agentfs-template-version: X.Y -->`
+3. Compares against installed template version in `SKILL.md`
+4. If versions match — reports "already up to date" and exits
+5. Extracts project-owned sections (PROJECT scope only):
    - Agent Profiles rows (excluding `default` — owned by template)
    - SPECKIT block content
-5. Regenerates AGENTS.md from current template via `seed-agents-md.sh`
-6. Re-injects preserved rows using awk (idempotent, no duplicates)
-7. Reports what changed
+6. Regenerates AGENTS.md from current template via `seed-agents-md.sh`
+   with the detected scope (scope is preserved — never auto-switched)
+7. Re-injects preserved rows using awk (idempotent, no duplicates)
+8. Reports what changed
+
+Sync works for both PROJECT and LITE scope projects. For LITE, there
+are no profile rows or SPECKIT blocks to preserve — only the template
+version and scope metadata are updated.
 
 **Agent post-sync actions (REQUIRED):**
 
@@ -187,12 +236,17 @@ raw bash command to the user. Instead, the agent MUST:
 The agent can verify the setup by running:
 
 ```bash
-bash ~/.agents/skills/agentfs-setup/scripts/verify-setup.sh [--mode user|project] [--fix]
+bash ~/.agents/skills/agentfs-setup/scripts/verify-setup.sh [--scope user|project|lite] [--fix] [ROOT_DIR]
 ```
 
-Checks all expected files/directories exist (including the Scope
-Definitions section in AGENTS.md for PROJECT mode). With `--fix`,
-creates missing ones.
+Checks all expected files/directories exist. Scope-specific:
+- **PROJECT**: verifies skills/, profiles/, Scope Definitions, SPECKIT markers
+- **LITE**: verifies memories/ present, skills/ and profiles/ absent,
+  `agentfs-scope: lite` in AGENTS.md metadata
+- **USER**: verifies skills/, knowledge/, excludes PROJECT-only files
+
+With `--fix`, creates missing directories and seed files without
+overwriting existing content.
 
 ## Structural Guardrails (in AGENTS.md)
 

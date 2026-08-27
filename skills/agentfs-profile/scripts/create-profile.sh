@@ -30,14 +30,23 @@ PROFILE_DIR="$AGENTS/profiles/$PROFILE_NAME"
 # Validate .agents/ exists
 if [[ ! -d "$AGENTS" ]]; then
   echo "[agentfs-profile] ERROR: $AGENTS does not exist." >&2
-  echo "  Run agentfs-setup in PROJECT mode first." >&2
+  echo "  Run agentfs-setup in PROJECT scope first." >&2
   exit 1
 fi
 
-# Validate profiles/ exists (PROJECT mode check)
+# Detect scope — refuse in LITE scope
+AGENTFS_SCOPE=$(grep -oP 'agentfs-scope: \K\w+' "$ROOT/AGENTS.md" 2>/dev/null || echo "project")
+if [[ "$AGENTFS_SCOPE" == "lite" ]]; then
+  echo "[agentfs-profile] ERROR: Agent profiles are not supported in LITE scope." >&2
+  echo "  LITE scope provides minimal context for small models." >&2
+  echo "  To use profiles, re-seed this project with PROJECT scope." >&2
+  exit 1
+fi
+
+# Validate profiles/ exists (PROJECT scope check)
 if [[ ! -d "$AGENTS/profiles" ]]; then
   echo "[agentfs-profile] ERROR: $AGENTS/profiles/ does not exist." >&2
-  echo "  This project was not set up in PROJECT mode." >&2
+  echo "  This project was not set up in PROJECT scope." >&2
   exit 1
 fi
 

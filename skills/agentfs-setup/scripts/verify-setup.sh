@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 # verify-setup.sh — Validate (and optionally fix) the .agents/ structure.
 #
-# Usage: bash verify-setup.sh [--mode user|project] [--with-git] [--with-spec] [--fix] [ROOT_DIR]
+# Usage: bash verify-setup.sh [--scope user|project|lite] [--with-git] [--with-spec] [--fix] [ROOT_DIR]
 #
-#   --mode user   Verify USER mode structure (default root: ~)
-#   --mode project  Verify PROJECT mode structure (default root: .)
-#   --with-git      Also verify git was initialized by the skill
-#   --with-spec     Also verify Spec-kit was initialized by the skill
-#   --fix           Automatically repair missing directories and files
-#                   without overwriting any existing content
-#   ROOT_DIR        Override the root directory
+#   --scope user      Verify USER scope structure (default root: ~)
+#   --scope project   Verify PROJECT scope structure (default root: .)
+#   --scope lite      Verify LITE scope structure (minimal project)
+#   --with-git        Also verify git was initialized by the skill
+#   --with-spec       Also verify Spec-kit was initialized by the skill
+#   --fix             Automatically repair missing directories and files
+#                     without overwriting any existing content
+#   ROOT_DIR          Override the root directory
 #
 # The --with-git and --with-spec flags should only be passed when those
 # features were explicitly requested during setup. Without them, the
 # script does NOT check for git or Spec-kit even if they exist on disk.
 #
-# --fix mode only creates missing directories and seed files. It NEVER
+# --fix only creates missing directories and seed files. It NEVER
 # overwrites existing files — their content is preserved as-is.
 #
 # Exits 0 if all checks pass (or were fixed), 1 if any remain unfixed.
@@ -23,7 +24,7 @@
 set -euo pipefail
 
 # ── Parse arguments ──────────────────────────────────────────────────
-MODE="project"
+SCOPE="project"
 ROOT=""
 WITH_GIT=false
 WITH_SPEC=false
@@ -31,8 +32,8 @@ FIX=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode)
-      MODE="${2,,}"  # lowercase
+    --scope)
+      SCOPE="${2,,}"  # lowercase
       shift 2
       ;;
     --with-git)
@@ -54,13 +55,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "$MODE" != "user" && "$MODE" != "project" ]]; then
-  echo "[agentfs-setup] ERROR: --mode must be 'user' or 'project' (got: $MODE)" >&2
+if [[ "$SCOPE" != "user" && "$SCOPE" != "project" && "$SCOPE" != "lite" ]]; then
+  echo "[agentfs-setup] ERROR: --scope must be 'user', 'project', or 'lite' (got: $SCOPE)" >&2
   exit 1
 fi
 
 if [[ -z "$ROOT" ]]; then
-  if [[ "$MODE" == "user" ]]; then
+  if [[ "$SCOPE" == "user" ]]; then
     ROOT="$HOME"
   else
     ROOT="."
@@ -139,6 +140,22 @@ See [log.md](log.md) for recent activity.
 EOF
 }
 
+seed_index_lite() {
+  [[ -f "$AGENTS/index.md" ]] && return
+  cat > "$AGENTS/index.md" << 'EOF'
+# .agents — Directory Index (Lite)
+
+> Progressive-disclosure entry point. Browse folders before opening files.
+
+| Layer | Path | Purpose |
+|-------|------|---------|
+| Identity | [SOUL.md](SOUL.md) | Default agent identity (human-authored) |
+| Memories | [memories/](memories/MEMORY.md) | Default agent's experiences and learned context |
+
+See [log.md](log.md) for recent activity.
+EOF
+}
+
 seed_log() {
   [[ -f "$AGENTS/log.md" ]] && return
   cat > "$AGENTS/log.md" << EOF
@@ -148,7 +165,7 @@ seed_log() {
 
 ## $(date '+%Y-%m-%d %H:%M')
 
-- Repaired .agents/ directory structure (mode: $MODE, via --fix).
+- Repaired .agents/ directory structure (scope: $SCOPE, via --fix).
 EOF
 }
 
@@ -252,10 +269,10 @@ EOF
 
 # ── Header ───────────────────────────────────────────────────────────
 echo "═══════════════════════════════════════════════════════════"
-echo "  DotAgents Setup Verification (mode: $MODE)"
+echo "  DotAgents Setup Verification (scope: $SCOPE)"
 echo "  Root: $ROOT"
 local_flags=""
-if [[ "$MODE" == "project" ]]; then
+if [[ "$SCOPE" == "project" ]]; then
   [[ "$WITH_GIT" == true ]] && local_flags+=" +git"
   [[ "$WITH_SPEC" == true ]] && local_flags+=" +spec"
 fi
@@ -264,16 +281,20 @@ fi
 echo "═══════════════════════════════════════════════════════════"
 echo ""
 
-# ── Common checks (both modes) ──────────────────────────────────────
+# ── Common checks (all scopes) ──────────────────────────────────────
 echo "── .agents/ Core Structure ──────────────────────────────"
 check ".agents/ directory exists" \
   "[[ -d '$AGENTS' ]]" \
   "mkdir -p '$AGENTS'"
 
-if [[ "$MODE" == "user" ]]; then
+if [[ "$SCOPE" == "user" ]]; then
   check ".agents/index.md exists" \
     "[[ -f '$AGENTS/index.md' ]]" \
     "seed_index_user"
+elif [[ "$SCOPE" == "lite" ]]; then
+  check ".agents/index.md exists" \
+    "[[ -f '$AGENTS/index.md' ]]" \
+    "seed_index_lite"
 else
   check ".agents/index.md exists" \
     "[[ -f '$AGENTS/index.md' ]]" \
@@ -284,16 +305,18 @@ check ".agents/log.md exists" \
   "[[ -f '$AGENTS/log.md' ]]" \
   "seed_log"
 
-check ".agents/skills/ directory exists" \
-  "[[ -d '$AGENTS/skills' ]]" \
-  "mkdir -p '$AGENTS/skills'"
+if [[ "$SCOPE" == "user" || "$SCOPE" == "project" ]]; then
+  check ".agents/skills/ directory exists" \
+    "[[ -d '$AGENTS/skills' ]]" \
+    "mkdir -p '$AGENTS/skills'"
 
-check ".agents/skills/index.md exists" \
-  "[[ -f '$AGENTS/skills/index.md' ]]" \
-  "seed_skills_index"
+  check ".agents/skills/index.md exists" \
+    "[[ -f '$AGENTS/skills/index.md' ]]" \
+    "seed_skills_index"
+fi
 
-if [[ "$MODE" == "user" ]]; then
-  # ── USER mode: knowledge is USER-scoped ────────────────────────
+if [[ "$SCOPE" == "user" ]]; then
+  # ── USER scope: knowledge is USER-scoped ────────────────────────
   check ".agents/knowledge/ directory exists" \
     "[[ -d '$AGENTS/knowledge' ]]" \
     "mkdir -p '$AGENTS/knowledge'"
@@ -303,17 +326,64 @@ if [[ "$MODE" == "user" ]]; then
     "seed_knowledge_index"
   echo ""
 
-  # ── USER mode: verify excluded dirs are absent ─────────────────
-  echo "── USER Mode Exclusions ─────────────────────────────"
+  # ── USER scope: verify excluded dirs are absent ─────────────────
+  echo "── USER Scope Exclusions ────────────────────────────"
   check "No .agents/profiles/ (project-scoped)" "[[ ! -d '$AGENTS/profiles' ]]"
   check "No .agents/memories/ (project-scoped)" "[[ ! -d '$AGENTS/memories' ]]"
   check "No .agents/SOUL.md (project-scoped)" "[[ ! -f '$AGENTS/SOUL.md' ]]"
   check "No AGENTS.md at root (project-scoped)" "[[ ! -f '$ROOT/AGENTS.md' ]]"
   echo ""
 
+elif [[ "$SCOPE" == "lite" ]]; then
+  # ── LITE scope checks ──────────────────────────────────────────────
+  echo "── LITE Scope Structure ───────────────────────────────"
+  check "AGENTS.md exists" \
+    "[[ -f '$ROOT/AGENTS.md' ]]"
+
+  check "AGENTS.md has agentfs-scope: lite" \
+    "grep -q 'agentfs-scope: lite' '$ROOT/AGENTS.md'"
+
+  check ".agents/SOUL.md exists" \
+    "[[ -f '$AGENTS/SOUL.md' ]]" \
+    "seed_soul"
+
+  check ".agents/SOUL.md is non-stub (contains identity content)" \
+    "grep -qv '^[[:space:]]*$\|^[[:space:]]*<!--\|^[[:space:]]*-->\|^#' '$AGENTS/SOUL.md' 2>/dev/null" \
+    "echo '  ⚠ SOUL.md exists but appears to be a stub — run author-soul.sh to add identity content'"
+
+  check ".agents/memories/ directory exists" \
+    "[[ -d '$AGENTS/memories' ]]" \
+    "mkdir -p '$AGENTS/memories'"
+
+  check ".agents/memories/USER.md exists" \
+    "[[ -f '$AGENTS/memories/USER.md' ]]" \
+    "seed_user_md '$AGENTS/memories'"
+
+  check ".agents/memories/MEMORY.md exists" \
+    "[[ -f '$AGENTS/memories/MEMORY.md' ]]" \
+    "seed_memory_md '$AGENTS/memories'"
+  echo ""
+
+  # ── LITE scope: verify excluded dirs are absent ─────────────────
+  echo "── LITE Scope Exclusions ──────────────────────────────"
+  check "No .agents/skills/ (not used in LITE scope)" "[[ ! -d '$AGENTS/skills' ]]"
+  check "No .agents/profiles/ (not used in LITE scope)" "[[ ! -d '$AGENTS/profiles' ]]"
+  check "No .agents/knowledge/ (USER-scoped only)" "[[ ! -d '$AGENTS/knowledge' ]]"
+  echo ""
+
+  # ── Link integrity checks ─────────────────────────────────────────
+  echo "── Link Integrity ─────────────────────────────────────"
+  if [[ -f "$AGENTS/index.md" ]]; then
+    while IFS= read -r link_target; do
+      resolved="$AGENTS/$link_target"
+      check "index.md → $link_target" "[[ -e '$resolved' ]]"
+    done < <(grep -oP '\]\(\K[^)]+' "$AGENTS/index.md" | grep -v '^http')
+  fi
+  echo ""
+
 else
-  # ── PROJECT mode checks ──────────────────────────────────────────
-  echo "── PROJECT Mode Structure ─────────────────────────────"
+  # ── PROJECT scope checks ──────────────────────────────────────────
+  echo "── PROJECT Scope Structure ────────────────────────────"
   check "AGENTS.md exists" \
     "[[ -f '$ROOT/AGENTS.md' ]]"
     # AGENTS.md is complex — do not auto-seed in fix mode; agent should
@@ -373,7 +443,7 @@ else
   fi
   echo ""
 
-  # knowledge/ is USER-scoped only — should NOT exist in PROJECT mode
+  # knowledge/ is USER-scoped only — should NOT exist in PROJECT scope
   check "No .agents/knowledge/ (USER-scoped only)" "[[ ! -d '$AGENTS/knowledge' ]]"
   echo ""
 
