@@ -1,9 +1,10 @@
 # Skills Index
 
-> 54 skills | Sorted by reverse chronological order (newest first).
+> 55 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-08-27 09:08 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-26 23:21 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-08-26 22:24 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-08-26 22:24 |

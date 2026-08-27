@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-27 09:12
+
+Updated README.md Desktop/System category to include Obsidian Snap fix
+
+## 2026-08-27 09:08
+
+Created skill fedora-obsidian-fix v1.0.0 — captures Obsidian Snap portal fix for Fedora Wayland (wrapper + .desktop override with --ozone-platform=x11)
+
 ## 2026-08-26 23:21
 
 skills/skupper-model-provider v8.5.0 — Simplified signal routing: dropped redundant 'model' from all signals. Short forms (`start skupper`, `stop skupper on crc`) now primary. Signal table uses PROVIDER/CONSUMER placeholders.

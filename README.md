@@ -191,7 +191,7 @@ Skills cover topics like:
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
 | **Model Serving** | Hosted model lifecycle (deploy, start, stop, test on NVIDIA GPUs via Podman), platform report (specs, accelerator, model recommendations by VRAM tier), Skupper model provider (remote GPU exposure via VAN) |
 | **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
-| **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes |
+| **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes, Obsidian Snap fix |
 
 See [`skills/index.md`](skills/index.md) for the full catalog.
 
