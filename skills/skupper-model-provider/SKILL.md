@@ -1,14 +1,16 @@
 ---
 name: skupper-model-provider
 description: >
-  setup skupper model, teardown skupper model, start skupper model,
-  stop skupper model, skupper model status, test skupper model,
-  precheck skupper model, skupper model topology
-argument-hint: "setup skupper model | teardown skupper model | start skupper model | shutdown skupper model | skupper model status | skupper model precheck"
+  setup skupper, teardown skupper, start skupper, stop skupper,
+  skupper status, test skupper, precheck skupper, skupper topology,
+  start skupper on crc, stop skupper on crc,
+  start skupper on rhel-ai, stop skupper on rhtevan-work,
+  start skupper with g8b-fp8-spec-128k
+argument-hint: "setup skupper | teardown skupper | start skupper | start skupper on crc | stop skupper on crc | stop skupper | skupper status | skupper precheck"
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.3.0"
+  version: "8.5.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -89,8 +91,8 @@ All values in the table above are defined in `topology.env`.
 | `setup.sh` | One-time infrastructure | First time, or after teardown |
 | `setup.sh --check` | Precheck only (topology + validation) | Before setup, or to inspect topology |
 | `teardown.sh` | Remove infrastructure | Decommissioning |
-| `up.sh [HOST]` | Start VAN (controllers + routers) | Daily use |
-| `down.sh [HOST]` | Stop VAN (routers + controllers) | End of day |
+| `up.sh [HOST]` | Start VAN (controllers + routers) | Daily use (`HOST` = `rhel-ai`, `rhtevan-work`, `crc`, or `all`) |
+| `down.sh [HOST]` | Stop VAN (routers + controllers) | End of day (`HOST` = `rhel-ai`, `rhtevan-work`, `crc`, or `all`) |
 | `status.sh` | Full health check | Troubleshooting |
 | `test-model.sh HOST_OR_PROFILE` | E2E connectivity test | Verification |
 
@@ -113,22 +115,35 @@ triggered for **Provider** sites that are up and reachable.
 
 ### Signal Routing Rules
 
+"Model" is implied — the skill name already establishes context.
+Both short (`start skupper`) and long (`start skupper model`) forms
+are accepted.
+
 | Signal pattern | Skupper action | hosted-model-ctl delegation |
 |----------------|----------------|-----------------------------|
-| `setup skupper model [provider]` | `setup.sh` (infra) | Trigger `hosted-model-ctl` → `setup.sh` (default profile per host) |
-| `teardown skupper model [provider]` | `teardown.sh` (remove infra) | Trigger `hosted-model-ctl` → `stop.sh all` (stop, do NOT remove) |
-| `start skupper model [provider]` | `up.sh` (start VAN) | Trigger `hosted-model-ctl` → `start.sh` (default profile per host) |
-| `stop skupper model [provider]` | `down.sh` (stop VAN) | Trigger `hosted-model-ctl` → `stop.sh all` |
-| `start skupper model with g8b-fp8-spec-128k` | `up.sh rhel-ai` (scoped) | Trigger `hosted-model-ctl` → `start.sh g8b-fp8-spec-128k` |
-| `check skupper model [provider]` | `status.sh` (VAN status) | Trigger `hosted-model-ctl` → `status.sh` (model status) |
-| `stop skupper model on rhtevan-work` | `down.sh rhtevan-work` (scoped) | Trigger `hosted-model-ctl` → stop models on rhtevan-work only |
+| `setup skupper` | `setup.sh` (infra) | Trigger → `setup.sh` (default profile per host) |
+| `teardown skupper` | `teardown.sh` (remove infra) | Trigger → `stop.sh all` (stop, do NOT remove) |
+| `start skupper` | `up.sh` (start VAN) | Trigger → `start.sh` (default profile per host) |
+| `stop skupper` | `down.sh` (stop VAN) | Trigger → `stop.sh all` |
+| `start skupper with PROFILE` | `up.sh HOST` (scoped) | Trigger → `start.sh PROFILE` |
+| `check skupper` / `skupper status` | `status.sh` (VAN status) | Trigger → `status.sh` (model status) |
+| `stop skupper on PROVIDER` | `down.sh HOST` (scoped) | Trigger → stop models on HOST only |
+| `start skupper on CONSUMER` | `up.sh HOST` (scoped) | None (consumer — VAN only) |
+| `stop skupper on CONSUMER` | `down.sh HOST` (scoped) | None (consumer — VAN only) |
+
+The `on HOST` modifier works for **any** site name — provider or
+consumer. When the target is a consumer site (`crc`, `localhost`),
+only VAN infrastructure is affected; `hosted-model-ctl` is never
+triggered.
 
 ### Scoping Rules
 
-- **Without `on HOST`** → action applies to ALL hosts (local + all remotes)
+- **Without `on HOST`** → action applies to ALL sites (providers + consumers)
 - **Without `with PROFILE`** → use default profiles from `hosted-model-ctl`
   (`DEFAULT_PROFILE_RHTEVAN` and `DEFAULT_PROFILE_RHELAI` in its `common.sh`)
-- **With explicit target** → scope to that specific host/profile
+- **With `on PROVIDER_HOST`** → scope VAN + model to that provider
+- **With `on CONSUMER_HOST`** (`crc`, `localhost`) → scope VAN only, no model delegation
+- **With `with PROFILE`** → resolve profile to its host, scope accordingly
 
 ### Error Handling
 
@@ -208,11 +223,12 @@ to deploy default models on each host.
 ### Start VAN
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh           # all hosts
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh rhel-ai   # specific host
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh           # all sites
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh rhel-ai   # specific provider host
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh crc       # CRC consumer site only
 ```
 
-4-phase process:
+4-phase process (+ Phase 5 for CRC when targeted):
 1. Prerequisites (SSH, setup check)
 2. Start controllers (systemd)
 3. Start routers (systemd — same path for all hosts)
@@ -223,12 +239,14 @@ Agent then semantically triggers `hosted-model-ctl` to start model containers.
 ### Stop VAN
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh           # all hosts
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh rhel-ai   # specific host
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh           # all sites
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh rhel-ai   # specific provider host
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh crc       # CRC consumer site only
 ```
 
-Agent first semantically triggers `hosted-model-ctl` to stop model
-containers, then runs `down.sh` to stop routers and controllers.
+For provider hosts, the agent first semantically triggers
+`hosted-model-ctl` to stop model containers, then runs `down.sh`.
+For consumer hosts (`crc`), only VAN infrastructure is affected.
 
 ### Status
 
@@ -286,6 +304,8 @@ remote host reachable, remote container running.
 | S9a | Partial start — provider unreachable | `up.sh` with one provider down → other provider + consumers up, models on available provider only |
 | S9b | Partial start — consumer unreachable | `up.sh` with CRC down → all providers up with models, localhost up, CRC skipped |
 | S9c | Partial stop — provider unreachable | `down.sh` with one provider down → stop reachable hosts, report skipped |
+| S10a | Start scoped consumer site (CRC) | `up.sh crc` → CRC link recreated, localhost infra started (if needed), no model delegation |
+| S10b | Stop scoped consumer site (CRC) | `down.sh crc` → CRC link deleted, localhost kept if providers still active, no model delegation |
 
 ## Tests
 
@@ -309,6 +329,9 @@ remote host reachable, remote container running.
 | T9a | S9a | rhel-ai unreachable, all down | `up.sh` | rhtevan-work + localhost up, models on rhtevan-work only, rhel-ai skipped |
 | T9b | S9b | CRC not authenticated, all down | `up.sh` | All providers up + models, localhost up, CRC skipped |
 | T9c | S9c | rhtevan-work unreachable, all up | `down.sh` | rhel-ai + localhost stopped, rhtevan-work skipped |
+| T10a | S10a | CRC authenticated, providers may be up or down | `up.sh crc` | CRC link recreated, localhost started, no model containers touched |
+| T10b | S10b | CRC authenticated, providers still active | `down.sh crc` | CRC link deleted, localhost kept running, no model containers touched |
+| T10c | S10b | CRC authenticated, no providers active | `down.sh crc` | CRC link deleted, localhost stopped (last consumer) |
 
 ## Known Issues & Workarounds
 

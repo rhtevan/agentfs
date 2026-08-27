@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-26 23:21
+
+skills/skupper-model-provider v8.5.0 — Simplified signal routing: dropped redundant 'model' from all signals. Short forms (`start skupper`, `stop skupper on crc`) now primary. Signal table uses PROVIDER/CONSUMER placeholders.
+
+## 2026-08-26 23:11
+
+skills/skupper-model-provider v8.4.0 — Added consumer site signal routing (`start/stop skupper model on crc`). Scoping rules now distinguish provider vs consumer sites. Added S10a/S10b specs, T10a/T10b/T10c tests. No script changes.
+
 ## 2026-08-26 21:55
 
 agentfs-setup: Added deterministic scope auto-detection to scaffold-dotagents.sh and seed-agents-md.sh. Scripts now compare ROOT_DIR against CWD — different path = LITE, same path or no path = PROJECT. Agent no longer needs to decide --scope flag. Updated SKILL.md to reflect simplified agent workflow (just pass the target dir).
