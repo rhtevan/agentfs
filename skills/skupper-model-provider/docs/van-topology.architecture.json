@@ -4,51 +4,59 @@
   "meta": {
     "title": "Skupper Model Provider — VAN Topology",
     "quality_profile": "showcase",
+    "viewBox": [1380, 720],
     "views": [
-      { "id": "request-path", "label": "Model request path", "focus": ["client", "listener-rw", "router-local", "router-rw", "model-rw"], "note": "Follow a model inference request from localhost through the VAN to a remote GPU host." },
-      { "id": "dual-hub", "label": "Dual hub mesh", "focus": ["router-local", "router-ra", "router-rw", "ctrl-local", "ctrl-rw", "ctrl-ra"], "note": "The interior AMQPS mesh connecting localhost to both GPU hubs." },
-      { "id": "crc-consumer", "label": "CRC consumer path", "focus": ["crc-router", "crc-listener", "router-ra", "model-ra"], "note": "OpenShift CRC consuming models through Skupper operator." }
+      { "id": "request-path-rw", "label": "Model request: localhost → rhtevan-work", "focus": ["client", "listener-rw", "router-local", "router-rw", "model-rw"], "note": "Follow a model inference request from localhost through the VAN to rhtevan-work GPU host." },
+      { "id": "request-path-ra", "label": "Model request: localhost → rhel-ai", "focus": ["client", "listener-ra", "router-local", "router-ra", "model-ra"], "note": "Follow a model inference request from localhost through the VAN to rhel-ai GPU host." },
+      { "id": "crc-direct", "label": "CRC → rhel-ai (direct)", "focus": ["crc-listener-ra", "crc-router", "router-ra", "model-ra"], "note": "CRC consuming rhel-ai model through direct AMQPS link." },
+      { "id": "crc-2hop", "label": "CRC → rhtevan-work (2-hop)", "focus": ["crc-listener-rw", "crc-router", "router-local", "router-rw", "model-rw"], "note": "CRC consuming rhtevan-work model via 2-hop path through localhost RouterAccess." },
+      { "id": "full-mesh", "label": "Full VAN mesh", "focus": ["router-local", "router-ra", "router-rw", "crc-router", "ra-local"], "note": "All interior AMQPS links connecting the 4-site mesh." }
     ]
   },
   "components": [
-    { "id": "client", "type": "external", "label": "Local Client", "sublabel": "curl / Goose / LiteLLM", "pos": [40, 280], "size": [140, 60] },
-    { "id": "listener-rw", "type": "backend", "label": "Listener :10000", "sublabel": "rhtevan-work routing key", "pos": [260, 200], "size": [150, 56] },
-    { "id": "listener-ra", "type": "backend", "label": "Listener :9000", "sublabel": "rhel-ai routing key", "pos": [260, 360], "size": [150, 56] },
-    { "id": "router-local", "type": "backend", "label": "Skupper Router", "sublabel": "localhost (podman)", "pos": [490, 280], "size": [150, 60] },
-    { "id": "ctrl-local", "type": "backend", "label": "Controller", "sublabel": "system-controller", "pos": [490, 160], "size": [130, 48] },
-    { "id": "router-rw", "type": "backend", "label": "Skupper Router", "sublabel": "hub-rhtevan-work", "pos": [760, 160], "size": [150, 60] },
-    { "id": "ctrl-rw", "type": "backend", "label": "Controller", "sublabel": "rhtevan-work", "pos": [760, 40], "size": [130, 48] },
-    { "id": "model-rw", "type": "cloud", "label": "GPU Models", "sublabel": "g350m-2k / g3b-16k", "pos": [1000, 160], "size": [150, 60], "tag": "hosted-model-ctl" },
-    { "id": "router-ra", "type": "backend", "label": "Skupper Router", "sublabel": "hub-rhel-ai", "pos": [760, 400], "size": [150, 60] },
-    { "id": "ctrl-ra", "type": "backend", "label": "Controller", "sublabel": "rhel-ai", "pos": [760, 530], "size": [130, 48] },
-    { "id": "model-ra", "type": "cloud", "label": "GPU Models", "sublabel": "g8b-spec-128k / g8b-fp8-spec-128k", "pos": [1000, 400], "size": [160, 60], "tag": "hosted-model-ctl" },
-    { "id": "crc-router", "type": "backend", "label": "Skupper Router", "sublabel": "CRC (kubernetes)", "pos": [490, 510], "size": [150, 60] },
-    { "id": "crc-listener", "type": "backend", "label": "Listener :9000", "sublabel": "CRC service endpoint", "pos": [260, 510], "size": [150, 56] }
+    { "id": "client", "type": "external", "label": "Local Client", "sublabel": "curl / Goose / LiteLLM", "pos": [40, 200], "size": [140, 56] },
+    { "id": "listener-rw", "type": "backend", "label": "Listener :10000", "sublabel": "model-api-rhtevan-work", "pos": [280, 130], "size": [155, 52] },
+    { "id": "listener-ra", "type": "backend", "label": "Listener :9000", "sublabel": "model-api-rhel-ai", "pos": [280, 270], "size": [155, 52] },
+    { "id": "router-local", "type": "backend", "label": "Skupper Router", "sublabel": "local-ezhang (podman)", "pos": [510, 200], "size": [150, 56] },
+    { "id": "ra-local", "type": "security", "label": "RouterAccess :55672", "sublabel": "inbound from CRC", "pos": [510, 380], "size": [150, 48] },
+    { "id": "ctrl-local", "type": "backend", "label": "Controller", "sublabel": "system-controller", "pos": [280, 40], "size": [130, 44] },
+    { "id": "router-rw", "type": "backend", "label": "Skupper Router", "sublabel": "hub-rhtevan-work", "pos": [810, 160], "size": [150, 56] },
+    { "id": "ctrl-rw", "type": "backend", "label": "Controller", "sublabel": "rhtevan-work", "pos": [810, 50], "size": [130, 44] },
+    { "id": "model-rw", "type": "cloud", "label": "Granite 3B", "sublabel": "g3b-16k (llama.cpp)", "pos": [1040, 160], "size": [140, 56] },
+    { "id": "router-ra", "type": "backend", "label": "Skupper Router", "sublabel": "hub-rhel-ai", "pos": [810, 330], "size": [150, 56] },
+    { "id": "ctrl-ra", "type": "backend", "label": "Controller", "sublabel": "rhel-ai", "pos": [810, 460], "size": [130, 44] },
+    { "id": "model-ra", "type": "cloud", "label": "Granite 8B FP8", "sublabel": "g8b-fp8-spec-128k (vLLM)", "pos": [1040, 330], "size": [155, 56] },
+    { "id": "crc-router", "type": "backend", "label": "Skupper Router", "sublabel": "crc-ezhang (k8s)", "pos": [280, 520], "size": [150, 56] },
+    { "id": "crc-listener-ra", "type": "backend", "label": "Listener :9000", "sublabel": "model-listener-rhel-ai", "pos": [40, 480], "size": [150, 48] },
+    { "id": "crc-listener-rw", "type": "backend", "label": "Listener :10000", "sublabel": "model-listener-rhtevan-work", "pos": [40, 570], "size": [155, 48] }
   ],
   "boundaries": [
-    { "kind": "region", "label": "localhost (podman)", "wraps": ["listener-rw", "listener-ra", "router-local", "ctrl-local"] },
+    { "kind": "region", "label": "localhost (podman)", "wraps": ["listener-rw", "listener-ra", "router-local", "ctrl-local", "ra-local"] },
     { "kind": "region", "label": "rhtevan-work (LAN, podman)", "wraps": ["router-rw", "ctrl-rw", "model-rw"] },
-    { "kind": "region", "label": "rhel-ai (AWS, podman + tmpfs)", "wraps": ["router-ra", "ctrl-ra", "model-ra"] },
-    { "kind": "region", "label": "OpenShift CRC (kubernetes)", "wraps": ["crc-router", "crc-listener"] }
+    { "kind": "region", "label": "rhel-ai (AWS, podman)", "wraps": ["router-ra", "ctrl-ra", "model-ra"] },
+    { "kind": "region", "label": "OpenShift CRC (kubernetes)", "wraps": ["crc-router", "crc-listener-ra", "crc-listener-rw"] }
   ],
   "connections": [
-    { "id": "client-to-rw", "from": "client", "to": "listener-rw", "label": "HTTP :10000", "variant": "emphasis" },
-    { "id": "client-to-ra", "from": "client", "to": "listener-ra", "label": "HTTP :9000", "variant": "emphasis" },
-    { "id": "listen-rw-to-router", "from": "listener-rw", "to": "router-local", "label": "routing key" },
+    { "id": "client-to-rw", "from": "client", "to": "listener-rw", "label": "HTTP :10000", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "client-to-ra", "from": "client", "to": "listener-ra", "label": "HTTP :9000", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "listen-rw-to-router", "from": "listener-rw", "to": "router-local", "label": "routing key", "labelAt": [410, 120] },
     { "id": "listen-ra-to-router", "from": "listener-ra", "to": "router-local", "label": "routing key" },
     { "id": "link-rw", "from": "router-local", "to": "router-rw", "label": "AMQPS :55671", "variant": "security" },
     { "id": "link-ra", "from": "router-local", "to": "router-ra", "label": "AMQPS :8000", "variant": "security" },
     { "id": "connector-rw", "from": "router-rw", "to": "model-rw", "label": "connector" },
     { "id": "connector-ra", "from": "router-ra", "to": "model-ra", "label": "connector" },
-    { "id": "ctrl-local-mgmt", "from": "ctrl-local", "to": "router-local", "label": "manage", "variant": "dashed", "fromSide": "bottom", "toSide": "top" },
+    { "id": "ctrl-local-mgmt", "from": "ctrl-local", "to": "router-local", "label": "manage", "variant": "dashed", "labelDx": 20 },
     { "id": "ctrl-rw-mgmt", "from": "ctrl-rw", "to": "router-rw", "label": "manage", "variant": "dashed", "fromSide": "bottom", "toSide": "top" },
     { "id": "ctrl-ra-mgmt", "from": "ctrl-ra", "to": "router-ra", "label": "manage", "variant": "dashed", "fromSide": "top", "toSide": "bottom" },
-    { "id": "crc-link", "from": "crc-router", "to": "router-ra", "label": "AMQPS", "variant": "security" },
-    { "id": "crc-listen", "from": "crc-listener", "to": "crc-router", "label": "routing key" }
+    { "id": "crc-link-ra", "from": "crc-router", "to": "router-ra", "label": "AMQPS :8000", "variant": "security" },
+    { "id": "crc-link-local", "from": "crc-router", "to": "ra-local", "label": "AMQPS :55672", "variant": "security" },
+    { "id": "crc-listen-ra", "from": "crc-listener-ra", "to": "crc-router", "label": "route", "labelDy": -20 },
+    { "id": "crc-listen-rw", "from": "crc-listener-rw", "to": "crc-router", "label": "route", "labelDy": 20 },
+    { "id": "ra-to-router", "from": "ra-local", "to": "router-local", "label": "accept", "variant": "dashed", "fromSide": "top", "toSide": "bottom" }
   ],
   "cards": [
-    { "dot": "cyan", "title": "Consumer Sites", "items": ["Localhost: podman-based, dual listeners (:9000, :10000)", "CRC: kubernetes-based, Skupper operator v2.2.1", "Outbound interior links to hub routers"] },
-    { "dot": "emerald", "title": "Provider Sites", "items": ["rhtevan-work: g350m-2k, g3b-16k (LAN, port 55671)", "rhel-ai: g8b-spec-128k, g8b-fp8-spec-128k (AWS, port 8000)", "Model containers managed by hosted-model-ctl"] },
-    { "dot": "rose", "title": "Security & Resilience", "items": ["AMQPS with cert-based manual links (no token)", "Auto-restart via systemd on crash (10s recovery)", "Partial availability: skip unreachable, serve available"] }
+    { "dot": "cyan", "title": "Consumer Sites", "items": ["Localhost: dual listeners (:9000, :10000) + RouterAccess :55672", "CRC: 2 links (rhel-ai direct, local-ezhang 2-hop), 2 listeners", "Outbound interior links to hub routers"] },
+    { "dot": "emerald", "title": "Provider Sites", "items": ["rhtevan-work: Granite 3B Q4_K_M (LAN, port 55671)", "rhel-ai: Granite 8B FP8 + spec decoding (AWS, port 8000)", "Model containers managed by hosted-model-ctl"] },
+    { "dot": "rose", "title": "Resilience", "items": ["CRC reaches rhtevan-work via 2-hop if rhel-ai is down", "Auto-restart via systemd on crash", "Partial availability: skip unreachable, serve available"] }
   ]
 }

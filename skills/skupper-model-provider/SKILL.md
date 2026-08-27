@@ -10,7 +10,7 @@ argument-hint: "setup skupper | teardown skupper | start skupper | start skupper
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.7.0"
+  version: "8.8.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -133,7 +133,8 @@ are accepted.
 | `stop skupper` | `down.sh` (stop VAN) | Trigger → `stop.sh all` |
 | `start skupper with PROFILE` | `up.sh HOST` (scoped) | Trigger → `start.sh PROFILE` |
 | `check skupper` / `skupper status` | `status.sh` (VAN status) | Trigger → `status.sh` (model status) |
-| `stop skupper on PROVIDER` | `down.sh HOST` (scoped) | Trigger → stop models on HOST only |
+| `stop skupper on PROVIDER` | `down.sh HOST` (scoped) | Trigger → `stop.sh PROFILE` (resolve HOST → active or default profile first; `hosted-model-ctl` takes profile names, not host names) |
+| `start skupper on PROVIDER` | `up.sh HOST` (scoped) | Trigger → `start.sh PROFILE` (resolve HOST → active or default profile first; `hosted-model-ctl` takes profile names, not host names) |
 | `start skupper on CONSUMER` | `up.sh HOST` (scoped) | None (consumer — VAN only) |
 | `stop skupper on CONSUMER` | `down.sh HOST` (scoped) | None (consumer — VAN only) |
 
@@ -147,7 +148,11 @@ triggered.
 - **Without `on HOST`** → action applies to ALL sites (providers + consumers)
 - **Without `with PROFILE`** → use default profiles from `hosted-model-ctl`
   (`DEFAULT_PROFILE_RHTEVAN` and `DEFAULT_PROFILE_RHELAI` in its `common.sh`)
-- **With `on PROVIDER_HOST`** → scope VAN + model to that provider
+- **With `on PROVIDER_HOST`** → scope VAN + model to that provider.
+  `hosted-model-ctl` scripts take **profile names, not host names** —
+  multiple profiles can share the same host (mutual exclusion on port).
+  Resolution order: active profile (`get_active_profile`) → default
+  profile (`get_default_profile`) → error.
 - **With `on CONSUMER_HOST`** (`crc`, `localhost`) → scope VAN only, no model delegation
 - **With `with PROFILE`** → resolve profile to its host, scope accordingly
 
@@ -270,7 +275,14 @@ Links include a TCP probe to the remote inter-router port. Listeners
 check whether the local port is actually bound.
 
 Agent then semantically triggers `hosted-model-ctl` for model
-container status and presents combined results.
+container status and presents a **combined status report** with
+these sections (all as Markdown tables):
+
+1. **VAN Infrastructure** — all sites with state and detail
+2. **CRC Links** — each link with target and status (if CRC enabled)
+3. **Localhost Listeners** — each listener with port, status, routing key
+4. **CRC Listeners** — each listener with port, status, service endpoint (if CRC enabled)
+5. **Model Containers** — each host with active profile, model, speed, status
 
 ### Teardown
 
@@ -362,6 +374,9 @@ remote host reachable, remote container running.
 | CRC router pod restart after link recreation | kube-adaptor doesn't dynamically mount new TLS secrets into an existing router pod | `up.sh crc` deletes the router pod after recreating the Link; Deployment recreates it with the secret mounted |
 | CRC TCP precheck fails during fresh setup | Hub routers aren't up yet when CRC precheck runs (setup creates them in Phase 1-2) | Downgraded to warning — CRC link will connect once hubs are up |
 | `((var++))` exits with code 1 in bash | `((0++))` evaluates to 0 (falsy), triggering `set -e` exit | Added `|| true` to all `((var++))` in CRC code paths |
+| OLS duplicate volume mount with shared secret | Two OLS providers referencing the same `credentialsSecretRef` cause Kubernetes `Duplicate value` error on volume name and mount path | Each provider MUST use a separate secret, even if contents are identical (e.g., `skupper-model-llmcreds` vs `skupper-model-rhtevan-llmcreds`) |
+| llama.cpp incompatible with OLS tool-use | OLS sends `response_format: { type: "json_schema" }` for structured output; llama-server's grammar parser fails with "failed to parse grammar" (400) | Set `introspectionEnabled: false` in OLSConfig to disable MCP tools — basic Q&A works, tool-use does not. vLLM handles structured output correctly. |
+| OLS provider naming for Skupper models | Single `skupper-model` name is ambiguous when multiple model hosts exist | Use `skupper-model-rhel` / `skupper-model-rhtevan` convention — provider name encodes the target host |
 
 ## Prerequisites
 

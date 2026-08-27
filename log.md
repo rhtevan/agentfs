@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-27 12:59
+
+skupper-model-provider v8.8.0: Fixed delegation instructions — hosted-model-ctl takes profile names (not host names) due to multiple profiles per host with mutual exclusion. Added start/stop on PROVIDER signal rows with profile resolution order. Added 3 known issues: OLS duplicate volume mount with shared secrets, llama.cpp grammar incompatibility with OLS tool-use, provider naming convention.
+
+## 2026-08-27 12:14
+
+skupper-model-provider v8.7.1: Documented combined status report format in SKILL.md — 5-section layout covering VAN infra, CRC links, localhost listeners, CRC listeners, and model containers
+
 ## 2026-08-27 11:39
 
 Updated README.md: expanded OpenShift/CRC category to include cluster lifecycle (start/stop/cleanup)

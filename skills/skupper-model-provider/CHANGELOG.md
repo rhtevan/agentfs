@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-27 12:59 | v8.8.0 — Fix delegation instructions: hosted-model-ctl takes profile names not host names; added explicit start/stop on PROVIDER rows with resolution order; added 3 known issues (OLS duplicate volume mount, llama.cpp grammar incompatibility, provider naming convention) |
+| 2026-08-27 12:14 | v8.7.1 — Document combined status report format: 5-section layout (VAN infra, CRC links, localhost listeners, CRC listeners, model containers) |
 | 2026-08-27 11:19 | v8.7.0 — Refactor scripts for dual CRC links: common.sh (new helpers + topology vars), up.sh (recreate both links + both listeners), down.sh (delete both links), status.sh (report both links/listeners/services), precheck (show full CRC topology) |
 | 2026-08-27 10:57 | v8.6.0 — Add local-ezhang RouterAccess (port 55672) and CRC→local link for rhtevan-work model access; CRC now has 2 links (hub-rhel-ai + local-ezhang) and 2 listeners (9000 + 10000) |
 | 2026-08-26 23:21 | vv8.5.0 — Simplified signal routing — dropped redundant 'model' from all signals. 'start skupper', 'stop skupper on crc', 'start skupper with g8b-fp8-spec-128k' now work. Long forms still accepted. Signal table generalized: PROVIDER/CONSUMER placeholders instead of hardcoded host names. Description field updated with short-form signals including host and profile examples. |
