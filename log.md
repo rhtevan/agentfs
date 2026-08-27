@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-27 19:33
+
+crc-ols v3.2.0: Added Skupper provider liveness check in list.sh — detects model name mismatches and unreachable backends by probing /v1/models via the CRC router pod. Cross-skill validation between crc-ols and hosted-model-ctl without tight coupling.
+
+## 2026-08-27 19:22
+
+crc-ols v3.1.0: Added model validation in switch-provider.sh — prevents silent runtime 404 when defaultModel doesn't exist under defaultProvider. Added 'switch ols model' signal. Added gotcha for CRD-level model name mismatch.
+
+## 2026-08-27 19:12
+
+crc-ols v3.0.0: Signal refactor per skill-gen principles. 5 unambiguous signals (install/list/add/switch/remove ols), zero cross-skill collisions. Moved list/switch/remove operations from prose to deterministic scripts. Added Gotchas (6 known issues), Specification (6 items), Tests (4 cases). Renamed switch-default to switch-provider to reflect provider+model pair semantics.
+
 ## 2026-08-27 12:59
 
 skupper-model-provider v8.8.0: Fixed delegation instructions — hosted-model-ctl takes profile names (not host names) due to multiple profiles per host with mutual exclusion. Added start/stop on PROVIDER signal rows with profile resolution order. Added 3 known issues: OLS duplicate volume mount with shared secrets, llama.cpp grammar incompatibility with OLS tool-use, provider naming convention.

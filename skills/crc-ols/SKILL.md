@@ -1,10 +1,15 @@
 ---
 name: crc-ols
 description: >
-  install lightspeed, configure lightspeed, openshift lightspeed, ols setup
+  install ols, list ols providers, add ols provider,
+  switch ols provider, switch ols model, remove ols provider
+argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER"
 metadata:
-  version: "2.2.1"
-  tags: [openshift, crc, lightspeed, ols, vertex-ai, anthropic, llm, maas, openai, skupper, granite, self-hosted, provider-management]
+  author: agentfs
+  version: "3.2.0"
+  tags: [openshift, crc, lightspeed, ols, llm, provider-management]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # OpenShift Lightspeed on CRC — Multi-Provider Management
@@ -13,26 +18,19 @@ Install OpenShift Lightspeed on an OpenShift Local (CRC) cluster, configure one 
 
 ## Usage
 
-This skill supports multiple operations via arguments:
+| Operation | Script | Description |
+|-----------|--------|-------------|
+| `install` (or no args) | Prose (agent-orchestrated) | Install OLS operator, apply CRC fix, configure first provider, create OLSConfig |
+| `list` | `scripts/list.sh` | Show all providers, models, active default, and status |
+| `add-provider` | Prose (agent-orchestrated) | Add a provider: create secret, patch OLSConfig, verify rollout |
+| `switch-provider` | `scripts/switch-provider.sh PROVIDER MODEL` | Switch active provider+model, wait for reconciliation, verify |
+| `remove-provider` | `scripts/remove-provider.sh PROVIDER [--delete-secret]` | Remove a provider (cannot remove the active one — switch first) |
 
-| Argument               | Description                                                                                                                                          | Keywords / Signals                                                                                                  |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `install` (or no args) | Install the Lightspeed Operator on CRC, apply the `metrics-client-ca` fix, configure the first LLM provider, create OLSConfig, and verify deployment | *install lightspeed*, *set up OLS*, *deploy lightspeed on CRC*, *first time setup*                                  |
-| `add-provider`         | Add an additional LLM provider: create credentials secret (file-based), patch OLSConfig providers array, verify pod rollout and status               | *add provider*, *new LLM*, *add maas*, *add openai*, *another model*, *configure additional provider*               |
-| `list`                 | Display all configured providers, their types, URLs, models, and which provider/model is the active default                                          | *list providers*, *show models*, *what's configured*, *current OLS config*, *which model*, *show lightspeed config* |
-| `switch-default`       | Change the default provider and model, wait for pod rollout, verify the switch                                                                       | *switch model*, *change provider*, *use qwen*, *switch to claude*, *change default*, *swap model*                   |
-| `remove-provider`      | Remove a provider from OLSConfig (cannot remove the current default — switch first), optionally delete the credentials secret                        | *remove provider*, *delete provider*, *drop maas*, *uninstall provider*, *clean up provider*                        |
-
-### Cross-Cutting Capabilities
-
-These capabilities are embedded across multiple operations:
-
-| Capability | Description | Keywords / Signals |
-|-----------|-------------|--------------------|
-| Credential security | File-based secret creation (`echo -n` + `--from-file`) to avoid key leakage in shell history, process listings, or AI chat sessions | *create secret*, *API key*, *credentials*, *secure*, *401 error* |
-| CRC tunings | `maxIterations: 20` (avoids Anthropic `tool_choice="none"` bug), `introspectionEnabled` toggle for MCP server | *tuning*, *maxIterations*, *tool_choice error*, *LLM backend error*, *disable MCP*, *introspection* |
-| Provider type reference | Supported types: `openai`, `google_vertex_anthropic`, `azure_openai`, `watsonx`, `bam` — with credential format and required fields for each | *what providers*, *supported types*, *provider reference*, *how to configure azure*, *watsonx setup* |
-| 401 troubleshooting | Diagnosis and fix for the most common auth failure: whitespace/newline in API keys stored via `--from-literal` | *401*, *unauthorized*, *auth error*, *invalid token*, *key not found* |
+**Provider-Model relationship:** Each provider has one or more models.
+OLS requires both `defaultProvider` and `defaultModel` to be set
+together. Switching means selecting a provider AND one of its models
+— you cannot switch to a model without specifying which provider
+serves it.
 
 ---
 
@@ -319,105 +317,55 @@ oc get olsconfig cluster -o jsonpath='{.status.overallStatus}'
 
 ## Operation: `list`
 
-Show the current provider and model configuration.
-
 ```bash
-echo "=== Default ==="
-echo "Provider: $(oc get olsconfig cluster -o jsonpath='{.spec.ols.defaultProvider}')"
-echo "Model:    $(oc get olsconfig cluster -o jsonpath='{.spec.ols.defaultModel}')"
-echo ""
-echo "=== All Providers ==="
-oc get olsconfig cluster -o jsonpath='{range .spec.llm.providers[*]}{"Provider: "}{.name}{"\n"}{"  Type: "}{.type}{"\n"}{"  URL:  "}{.url}{"\n"}{"  Models: "}{range .models[*]}{.name}{", "}{end}{"\n\n"}{end}'
-echo "=== Status ==="
-oc get olsconfig cluster -o jsonpath='{.status.overallStatus}'
-echo ""
+bash ~/.agents/skills/crc-ols/scripts/list.sh --context crc-admin
 ```
+
+Shows all configured providers with type, URL, secret, models, the
+active default provider+model, and overall OLS status.
+
+For Skupper-backed providers (URLs containing `model-listener`), the
+script also probes the live `/v1/models` endpoint via the CRC router
+pod and compares against the configured model names. Possible results:
+
+| Status | Meaning |
+|:------:|---------|
+| ✅ Live | Configured model matches what the backend serves |
+| ❌ MISMATCH | Configured model not found — wrong profile or model name |
+| ⚠️ UNREACHABLE | Backend not responding — VAN down or model stopped |
 
 ---
 
-## Operation: `switch-default`
+## Operation: `switch-provider`
 
-Change the default provider and model. The target provider and model must already be configured in the OLSConfig.
-
-### Step 1: List available providers and models
-
-Run the `list` operation above to see what's available.
-
-### Step 2: Patch the default provider and model
+Switch the active provider and its model. Both PROVIDER and MODEL
+are required — models belong to providers.
 
 ```bash
-oc patch olsconfig cluster --type=merge -p '{
-  "spec": {
-    "ols": {
-      "defaultProvider": "PROVIDER_NAME",
-      "defaultModel": "MODEL_NAME"
-    }
-  }
-}'
+bash ~/.agents/skills/crc-ols/scripts/switch-provider.sh PROVIDER MODEL --context crc-admin
 ```
 
-### Step 3: Verify the switch
+The script validates the provider exists, patches `defaultProvider`
+and `defaultModel`, waits for OLS to reconcile to `Ready`, and
+reports the result.
 
-```bash
-# Confirm new defaults
-echo "Provider: $(oc get olsconfig cluster -o jsonpath='{.spec.ols.defaultProvider}')"
-echo "Model:    $(oc get olsconfig cluster -o jsonpath='{.spec.ols.defaultModel}')"
-
-# Wait for pods to restart
-oc get pods -n openshift-lightspeed -w
-
-# Check status
-oc get olsconfig cluster -o jsonpath='{.status.overallStatus}'
-```
-
-### Step 4: Test the new model
-
-Open the OpenShift web console Lightspeed chat and send a test query to confirm the new model responds.
+To see available providers and their models first, run `list`.
 
 ---
 
 ## Operation: `remove-provider`
 
-Remove a provider from the OLSConfig. **Cannot remove the current default provider** — switch to a different default first.
-
-### Step 1: Identify the provider index
-
-```bash
-oc get olsconfig cluster -o jsonpath='{range .spec.llm.providers[*]}{.name}{"\n"}{end}' | cat -n
-```
-
-Note the line number (1-based). The JSON patch index is **0-based** (subtract 1).
-
-### Step 2: Verify it's not the default
+Remove a provider from OLSConfig. Cannot remove the active default —
+switch to another provider first.
 
 ```bash
-DEFAULT=$(oc get olsconfig cluster -o jsonpath='{.spec.ols.defaultProvider}')
-echo "Default provider: $DEFAULT"
+bash ~/.agents/skills/crc-ols/scripts/remove-provider.sh PROVIDER --context crc-admin
+# With secret cleanup:
+bash ~/.agents/skills/crc-ols/scripts/remove-provider.sh PROVIDER --delete-secret --context crc-admin
 ```
 
-If the provider to remove IS the default, run `switch-default` first.
-
-### Step 3: Remove the provider using JSON patch
-
-```bash
-# Replace INDEX with the 0-based index from Step 1
-oc patch olsconfig cluster --type=json -p '[
-  {"op": "remove", "path": "/spec/llm/providers/INDEX"}
-]'
-```
-
-### Step 4: Optionally delete the credentials secret
-
-```bash
-oc delete secret SECRET_NAME -n openshift-lightspeed
-```
-
-### Step 5: Verify
-
-```bash
-oc get olsconfig cluster -o jsonpath='{range .spec.llm.providers[*]}{.name}{"\n"}{end}'
-oc get olsconfig cluster -o jsonpath='{.status.overallStatus}'
-```
+The script finds the provider's index, verifies it's not the default,
+removes it via JSON patch, and optionally deletes the credentials secret.
 
 ---
 
@@ -448,11 +396,16 @@ Models served by `hosted-model-ctl` on remote GPU hosts can be exposed to the CR
 2. Traffic is routed over the Skupper link to the remote host's model container
 3. OLS connects to this in-cluster service as an `openai` type provider
 
+**Naming convention:** Use `skupper-model-<host>` (e.g., `skupper-model-rhel`,
+`skupper-model-rhtevan`). Each provider needs its own credentials secret —
+two providers sharing the same `credentialsSecretRef` causes a Kubernetes
+duplicate volume mount error.
+
 **Setup pattern:**
 ```bash
-# 1. Create a dummy credentials secret (self-hosted vLLM has no auth)
+# 1. Create a dummy credentials secret (self-hosted models have no auth)
 echo -n 'no-key-required' > /tmp/llm-key.txt
-oc create secret generic skupper-model-llmcreds \
+oc create secret generic skupper-model-rhel-llmcreds \
   --from-file=apitoken=/tmp/llm-key.txt \
   -n openshift-lightspeed
 rm /tmp/llm-key.txt
@@ -463,10 +416,10 @@ oc patch olsconfig cluster --type=json -p '[
     "op": "add",
     "path": "/spec/llm/providers/-",
     "value": {
-      "name": "skupper-model",
+      "name": "skupper-model-rhel",
       "type": "openai",
       "url": "http://model-listener-rhel-ai.model-provider-crc:9000/v1",
-      "credentialsSecretRef": {"name": "skupper-model-llmcreds"},
+      "credentialsSecretRef": {"name": "skupper-model-rhel-llmcreds"},
       "credentialKey": "apitoken",
       "models": [{"name": "ibm-granite/granite-4.1-8b-fp8"}]
     }
@@ -474,13 +427,8 @@ oc patch olsconfig cluster --type=json -p '[
 ]'
 ```
 
-**Dependencies:** Requires `skupper-model-provider` VAN to be running (`start skupper model`) and a model started via `hosted-model-ctl` on the target host.
-
-**Available models:** Check dynamically with:
-```bash
-oc exec deployment/skupper-router -n model-provider-crc -- \
-  curl -s http://model-listener-rhel-ai.model-provider-crc:9000/v1/models
-```
+**Dependencies:** Requires `skupper-model-provider` VAN to be running
+(`start skupper`) and a model started via `hosted-model-ctl` on the target host.
 
 ---
 
@@ -551,6 +499,41 @@ After completing any operation, verify through the OpenShift web console:
 | Secret key name | — | `gcp-service-account.json` | Must match `credentialKey` in OLSConfig |
 | ConfigMap key (CRC fix) | — | `client-ca.crt` | Must be this exact key name, not `ca-bundle.crt` |
 
+
+## Gotchas
+
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| `metrics-client-ca` ConfigMap not found | CRC disables monitoring stack | Create manually from kube-apiserver CA; key MUST be `client-ca.crt` (not `ca-bundle.crt`) |
+| 401 Unauthorized after secret creation | Whitespace/newline in API key via `--from-literal` | Use `echo -n` + `--from-file=` approach |
+| Duplicate volume mount error | Two providers sharing the same `credentialsSecretRef` | Each provider MUST use a separate secret |
+| `tool_choice="none"` error (Vertex AI) | OLS final-round code sends `tool_choice="none"` incompatible with Anthropic SDK | Set `maxIterations: 20` to avoid the final-round code path |
+| "failed to parse grammar" (llama.cpp) | OLS sends `response_format: json_schema` which llama-server cannot parse | Set `introspectionEnabled: false` — basic Q&A works, tool-use does not |
+| `clusterInteraction.enabled` silently ignored | Field does NOT exist in the CRD | Use `introspectionEnabled` instead |
+| `defaultModel` mismatch goes undetected | OLSConfig CRD does not validate model exists under the provider — mismatch causes runtime 404 | `switch-provider.sh` validates model exists under provider before patching |
+
+## Specification
+
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | Install OLS operator on CRC with metrics-client-ca fix | Operator CSV `Succeeded`, OLSConfig `Ready` |
+| S2 | List all providers, models, active default, and status | `scripts/list.sh` outputs structured report |
+| S3 | Add a new provider with separate credentials secret | Provider appears in `list` output, status `Ready` |
+| S4 | Switch active provider+model pair | `scripts/switch-provider.sh` → new default, status `Ready` |
+| S5 | Remove a non-default provider | `scripts/remove-provider.sh` → provider gone, status `Ready` |
+| S6 | Block removal of the active default provider | `scripts/remove-provider.sh` → exit 1 with clear error |
+| S7 | Detect Skupper provider model mismatch | `scripts/list.sh` → ❌ MISMATCH when configured model differs from live backend |
+
+## Tests
+
+| Test | Spec | Command | Expected |
+|:----:|:----:|---------|----------|
+| T1 | S2 | `bash scripts/list.sh --context crc-admin` | Default + all providers + status `Ready` |
+| T2 | S4 | `bash scripts/switch-provider.sh skupper-model-rhel ibm-granite/granite-4.1-8b-fp8 --context crc-admin` | `✅ Switch complete`, status `Ready` |
+| T3 | S6 | `bash scripts/remove-provider.sh skupper-model-rhel --context crc-admin` (while it's the default) | Exit 1, `❌ Cannot remove...` |
+| T4 | S5 | `bash scripts/remove-provider.sh skupper-model-rhtevan --context crc-admin` (after switching away) | `✅ Provider removed` |
+| T5 | S7 | `bash scripts/list.sh --context crc-admin` (with VAN running + models started) | Skupper providers show `✅ Live` |
+| T6 | S7 | `bash scripts/list.sh --context crc-admin` (with VAN stopped) | Skupper providers show `⚠️ UNREACHABLE` |
 
 ## Changelog
 
