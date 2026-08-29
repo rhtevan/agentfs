@@ -4,7 +4,7 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-29 12:42 |
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-29 13:14 |
 | [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-28 20:43 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-08-27 19:33 |
 | [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations, cleanup | start crc, stop crc, crc start, crc stop, clean crc, crc cleanup, crc disk cleanup | 2026-08-27 11:30 |

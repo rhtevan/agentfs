@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-29 13:14 | v8.10.0 — Added animated VAN topology GIF to docs/ and image link in SKILL.md Architecture section |
 | 2026-08-29 12:42 | v8.9.0 — Redesigned VAN Topology diagram: removed RouterAccess and Controller components, added LAN/AWS/HOST network zone bands, renamed CRC to OpenShift Local, added flow animations, improved layout alignment |
 | 2026-08-27 12:59 | v8.8.0 — Fix delegation instructions: hosted-model-ctl takes profile names not host names; added explicit start/stop on PROVIDER rows with resolution order; added 3 known issues (OLS duplicate volume mount, llama.cpp grammar incompatibility, provider naming convention) |
 | 2026-08-27 12:14 | v8.7.1 — Document combined status report format: 5-section layout (VAN infra, CRC links, localhost listeners, CRC listeners, model containers) |

@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-29 13:14
+
+Added van-topology.gif to skupper-model-provider/docs/ and added image link to SKILL.md Architecture section
+
 ## 2026-08-29 12:41
 
 Updated skupper-model-provider diagrams: VAN Topology page redesigned — removed RouterAccess component, removed Controllers for consistency, added 3 network zone bands (LAN/AWS/HOST), renamed CRC site to OpenShift Local, added flow animations, cleaned layout alignment. Operational Lifecycle and Startup Sequence pages unchanged.

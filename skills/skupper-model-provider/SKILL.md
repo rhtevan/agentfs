@@ -10,7 +10,7 @@ argument-hint: "setup skupper | teardown skupper | start skupper | start skupper
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.9.0"
+  version: "8.10.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -26,6 +26,8 @@ from daily start/stop operations.
 ## Architecture
 
 **Interactive diagrams:** [VAN Topology](docs/van-topology.architecture.html) · [Operational Lifecycle](docs/operations.lifecycle.html)
+
+![VAN Topology](docs/van-topology.gif)
 
 ```
 LOCAL: LOCAL_SITE_NAME (localhost, podman)
