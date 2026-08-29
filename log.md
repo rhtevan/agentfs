@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-29 12:41
+
+Updated skupper-model-provider diagrams: VAN Topology page redesigned — removed RouterAccess component, removed Controllers for consistency, added 3 network zone bands (LAN/AWS/HOST), renamed CRC site to OpenShift Local, added flow animations, cleaned layout alignment. Operational Lifecycle and Startup Sequence pages unchanged.
+
 ## 2026-08-28 20:43
 
 goose-nextai-drawio v1.1.2: removed undocumented cwd/bundled null fields from SKILL.md, manage.sh, and both stdio entries in config.yaml (nextaidrawio + linuxmcpserver)
