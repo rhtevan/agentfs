@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-28 20:43
+
+goose-nextai-drawio v1.1.2: removed undocumented cwd/bundled null fields from SKILL.md, manage.sh, and both stdio entries in config.yaml (nextaidrawio + linuxmcpserver)
+
+## 2026-08-28 20:41
+
+goose-nextai-drawio v1.1.1: fixed extension name 'Next AI Draw.io' → 'Next AI Drawio' — period in name broke Goose Desktop toggle. Updated manage.sh, SKILL.md, config.yaml.
+
+## 2026-08-28 15:15
+
+goose-nextai-drawio v1.1.0 — added Specification (S1-S10) and Tests (T1-T9) per Principle 4 compliance
+
+## 2026-08-28 15:03
+
+Created skill goose-nextai-drawio v1.0.0 — setup/teardown/upgrade/status for next-ai-draw-io MCP server as Goose stdio extension
+
 ## 2026-08-27 19:33
 
 crc-ols v3.2.0: Added Skupper provider liveness check in list.sh — detects model name mismatches and unreachable backends by probing /v1/models via the CRC router pod. Cross-skill validation between crc-ols and hosted-model-ctl without tight coupling.
