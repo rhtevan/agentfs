@@ -3,7 +3,7 @@ name: agentfs-git-push
 description: >
   git push safety, pre-push scan, hey git workflow, hey git, git
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [agentfs, git, safety, pre-push, guardrail]
 ---
 
@@ -16,6 +16,21 @@ inline in AGENTS.md Guardrail #10 (v4.x).
 ## Workflow
 
 Execute these steps in exact order. Do NOT skip or combine steps.
+
+### Step 0 — Resolve Target
+
+Determine which git repo to operate on:
+
+1. If the user specifies a repo explicitly ("push this project",
+   "push context-eng", "push ~/.agents"), use that.
+2. If invoked with bare "hey git" or "git push" **without** an
+   explicit target, the default is **`~/.agents/`** (USER scope
+   AgentFS repo).
+3. If the CWD is a different git repo with uncommitted changes,
+   confirm with the user before assuming CWD.
+
+All subsequent steps (`git add`, `pre-push-scan.sh`, `git commit`,
+`git push`) run inside the resolved target directory.
 
 ### Step 1 — Stage
 

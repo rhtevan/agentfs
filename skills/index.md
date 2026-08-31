@@ -4,8 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-08-31 17:29 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-08-31 16:50 |
-| [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-08-31 16:48 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status | 2026-08-31 16:48 |
 | [agentflow-fuseki](./agentflow-fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | setup fuseki, start fuseki, stop fuseki, fuseki status | 2026-08-31 15:41 |
 | [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-31 15:41 |

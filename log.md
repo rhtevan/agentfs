@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-31 17:29
+
+- agentfs-git-push v1.1.0: Add Step 0 (Resolve Target) — default to ~/.agents/ for bare 'hey git'
+
 ## 2026-08-31 16:50
 
 - v5.1.0: Rule #1 KGM-aware dispatch, LITE template fix, test-agents-md-fidelity.sh rewrite, KGM section in README.md, CHANGELOG format fixes (agentfs-setup, goose-kgm, agentfs-git-push)
