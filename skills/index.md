@@ -4,9 +4,11 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [agentflow-fuseki](./agentflow-fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | setup fuseki, start fuseki, stop fuseki, fuseki status | 2026-08-31 14:36 |
+| [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-08-31 14:36 |
+| [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-31 14:36 |
 | [dsh-setup](./dsh-setup/SKILL.md) | dsh, deepseek-harness, agent-harness, setup, launcher | setup dsh, install dsh, update dsh, teardown dsh, dsh status | 2026-08-31 10:03 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-29 13:14 |
-| [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-28 20:43 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-08-27 19:33 |
 | [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations, cleanup | start crc, stop crc, crc start, crc stop, clean crc, crc cleanup, crc disk cleanup | 2026-08-27 11:30 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-08-27 09:08 |
@@ -29,8 +31,6 @@
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-08-24 14:24 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-08-20 23:43 |
 | [fedora-nm-boot-slow](./fedora-nm-boot-slow/SKILL.md) | fedora, network, boot, networkmanager, performance | slow boot network, nm-wait-online slow, network boot delay, diagnose boot network, fix nm-wait-online | 2026-08-20 10:30 |
-| [archify](./archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-08-18 22:39 |
-| [fuseki](./fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | setup fuseki, start fuseki, stop fuseki, fuseki status | 2026-08-17 11:16 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-08-17 11:16 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-08-17 11:16 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | configure hermes headroom, hermes headroom provider | 2026-08-17 11:16 |

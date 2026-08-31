@@ -9,7 +9,7 @@ metadata:
   author: agentfs
   version: "1.1.2"
   tags: [goose, mcp, drawio, diagram, extension]
-  related_skills: [archify]
+  related_skills: [agentfs-archify]
 user-invocable: true
 disable-model-invocation: false
 writes-files: true
@@ -27,7 +27,7 @@ browser preview from inside a Goose session.
 
 **Trade-off awareness:** This extension adds ~1,600 tokens of tool
 definitions to every Goose turn (10 tools). For agent-native diagram
-generation without the per-turn context tax, consider the `archify`
+generation without the per-turn context tax, consider the `agentfs-archify`
 skill instead — it produces self-contained HTML diagrams from a
 typed JSON spec with zero idle token cost.
 

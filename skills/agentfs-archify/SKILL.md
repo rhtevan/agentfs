@@ -1,5 +1,5 @@
 ---
-name: archify
+name: agentfs-archify
 description: >
   create architecture diagram, create workflow diagram,
   create sequence diagram, create data flow diagram,

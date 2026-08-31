@@ -1,5 +1,5 @@
 ---
-name: fuseki
+name: agentflow-fuseki
 description: >
   setup fuseki, start fuseki, stop fuseki, fuseki status
 argument-hint: "fuseki {setup|start|stop|status}"

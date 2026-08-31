@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-31 14:37
+
+Renamed skill 'archify' → 'agentfs-archify' (AgentFS collection prefix). Renamed skill 'fuseki' → 'agentflow-fuseki' (AgentFLOW collection prefix). Updated name: fields, cross-references in goose-nextai-drawio/SKILL.md, .agents/memories/USER.md. Signal phrases unchanged. Index rebuilt (56 skills).
+
 ## 2026-08-31 10:03
 
 dsh-setup v1.3.1 — added version check to status.sh; compares installed vs npm registry latest, shows upgrade recommendation
