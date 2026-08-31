@@ -1,12 +1,15 @@
 # Skills Index
 
-> 56 skills | Sorted by reverse chronological order (newest first).
+> 58 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentflow-fuseki](./agentflow-fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | setup fuseki, start fuseki, stop fuseki, fuseki status | 2026-08-31 14:36 |
-| [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-08-31 14:36 |
-| [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-31 14:36 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-08-31 16:50 |
+| [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-08-31 16:48 |
+| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status | 2026-08-31 16:48 |
+| [agentflow-fuseki](./agentflow-fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | setup fuseki, start fuseki, stop fuseki, fuseki status | 2026-08-31 15:41 |
+| [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-31 15:41 |
+| [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-08-31 14:39 |
 | [dsh-setup](./dsh-setup/SKILL.md) | dsh, deepseek-harness, agent-harness, setup, launcher | setup dsh, install dsh, update dsh, teardown dsh, dsh status | 2026-08-31 10:03 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-29 13:14 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-08-27 19:33 |
@@ -20,7 +23,6 @@
 | [skill-harvest](./skill-harvest/SKILL.md) | agentfs, skills, memory, procedural, graduation, harvest | harvest skills, harvest procedures, graduate skills | 2026-08-26 22:24 |
 | [skill-index](./skill-index/SKILL.md) | agentfs, skills, index, discovery | refresh skill index, index skills, regenerate skill index | 2026-08-26 22:24 |
 | [skill-merge](./skill-merge/SKILL.md) | agentfs, skills, merge, project, user | merge skills, copy skills to user, promote skills | 2026-08-26 22:24 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-08-26 21:54 |
 | [agentfs-ctx-chk](./agentfs-ctx-chk/SKILL.md) | agentfs, context, audit, optimization, guardrails | audit context, check context, context audit | 2026-08-26 21:34 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, maturity check | 2026-08-26 21:34 |
 | [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-08-26 21:34 |

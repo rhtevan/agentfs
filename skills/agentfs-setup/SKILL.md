@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "4.19.0"
+  version: "5.1.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -116,7 +116,7 @@ Creates:
 - `.agents/SOUL.md` — default agent identity
 - `.agents/index.md`, `log.md`
 - `AGENTS.md` — workspace entry point with scope definitions, progressive
-  loading (SOUL.md, knowledge index), and ten structural guardrails
+  loading (SOUL.md, knowledge index), and twelve structural rules
 
 ### USER scope (minimal install only)
 
@@ -250,24 +250,21 @@ overwriting existing content.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
-(reordered by usage frequency):
+The `seed-agents-md.sh` script creates `AGENTS.md` with twelve rules
+as Trigger/Action pairs:
 
-1. **Progressive Disclosure** — browse `index.md` before opening files
-2. **Memory Scope & Signal Routing** — memories are PROJECT-only;
-   decision table mapping NL signals to memory actions; graduation
-   path to OKF; agent-specific overrides take priority
+1. **Signal-First Dispatch** — scan skill descriptions before generic interpretation
+2. **Progressive Disclosure** — browse `index.md` before opening files
 3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
 4. **Skill Placement** — default to USER, PROJECT only when explicit
-5. **Filesystem Integrity** — link integrity, log currency, content
-   file currency, and index currency in a single guardrail
-6. **Idempotency** — every skill and workflow must be idempotent
-7. **Anti-Sycophancy** — refuse conflicting requests, log overrides
-8. **Anti-Daydreaming** — ephemeral session canary name; spot-check
-   for context drift; never persisted to AgentFS files
-9. **Checkpoints & Resumability** — checkpoint before destructive ops
-10. **Git Push Safety** — mandatory 5-step preflight before any
-    `git push`: stop → scan → present report → wait for approval → push
+5. **Filesystem Integrity** — log, changelog, index, link checks
+6. **Git Push Safety** — `load_skill(name: "agentfs-git-push")`
+7. **Checkpoints** — checkpoint before destructive ops
+8. **Context Enrichment** — consult knowledge index before acting on policy/domain
+9. **Memory Scope** — PROJECT-only; experiences not rules; graduation to OKF
+10. **Communication Style** — no sycophancy, lead with substance, name risks
+11. **Conflict Resolution** — don't reverse without new info, quote rules, log overrides
+12. **Anti-Daydreaming** — ephemeral session canary name; never persisted
 
 ## Layer Reference
 
@@ -287,9 +284,19 @@ The `seed-agents-md.sh` script creates `AGENTS.md` with ten guardrails
 - `scripts/sync-agents-md.sh` → `load_skill(name: "agentfs-setup/scripts/sync-agents-md.sh")`
 - `scripts/verify-setup.sh` → `load_skill(name: "agentfs-setup/scripts/verify-setup.sh")`
 - `references/design-spec.md` → `load_skill(name: "agentfs-setup/references/design-spec.md")`
+- `references/filesystem-integrity.md` → `load_skill(name: "agentfs-setup/references/filesystem-integrity.md")`
+
+## KGM Integration (optional)
+
+When the `goose-kgm` skill is installed and KGM is enabled in Goose
+config, `post-edit.sh` automatically reindexes the KGM JSONL from
+OKF knowledge bundles. This keeps the KGM search index in sync with
+knowledge content changes. See `load_skill(name: "goose-kgm")` for
+lifecycle management.
 
 ## Companion Skills
 
+- **`goose-kgm`** — KG Memory extension lifecycle (setup/teardown/enable/disable/reindex)
 - **`agentfs-profile`** — Create named agent profiles under `.agents/profiles/`
 - **`goose-agentfs-setup`** — Configure Goose's `CONTEXT_FILE_NAMES` for
   cross-agent context file discovery

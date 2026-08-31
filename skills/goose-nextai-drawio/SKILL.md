@@ -7,7 +7,7 @@ argument-hint: "setup | teardown | upgrade | status"
 compatibility: "Node.js >= 18, npx, Goose with developer extension"
 metadata:
   author: agentfs
-  version: "1.1.2"
+  version: "1.1.3"
   tags: [goose, mcp, drawio, diagram, extension]
   related_skills: [agentfs-archify]
 user-invocable: true

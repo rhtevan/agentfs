@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-08-31 16:50 | v5.1.0 — Rule #1 KGM-aware dispatch (search_nodes → read Source files, agent-agnostic wording), LITE template: removed Idempotency rule and aligned git safety to v5 pattern, rewrote test-agents-md-fidelity.sh for v5 structure (78 checks), added KGM to README.md Semantic Memory section, CHANGELOG format fixes across 3 skills |
+| 2026-08-31 15:58 | v5.0.0 — AGENTS.md template rewrite: 12-rule flat Trigger/Action table (69% token reduction, 1227 tokens), externalized Git Push Safety to agentfs-git-push skill, added context enrichment rule, split Anti-Sycophancy into communication + conflict resolution, removed Idempotency and Quick Reference table, conditional KGM reindex in post-edit.sh |
 | 2026-08-26 21:34 | v4.19.0 — Scope consolidation: renamed --mode to --scope (user|project|lite). Added LITE scope for small-context models. LITE AGENTS.md template (~850 tokens). Scope metadata in AGENTS.md (agentfs-scope: project|lite). sync-agents-md.sh detects and preserves scope. verify-setup.sh supports --scope lite. | Added LITE scope usage section with inference rule, lifecycle model, updated Sync and Verification sections.
 | 2026-08-26 13:40 | v4.18.0 — Added Guardrail #0 (Signal-First Dispatch) — ⛔ GATE requiring models to scan skill description signals before generic interpretation. Addresses routing failures on smaller models. Updated Quick Reference table and guardrail body text. |
 | 2026-08-26 12:36 | v4.17.8 — post-edit.sh: added knowledge index audit (calls okf-bundle-index audit-index.sh). Guardrail #5 Gate 3: MUST use rebuild-index.sh for knowledge indexes. |

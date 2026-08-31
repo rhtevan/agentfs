@@ -142,6 +142,11 @@ if $CHECK_USER; then
     echo "[USER] Checking ~/.agents/"
     regen_skills_index "$USER_ROOT/skills" "USER"
     audit_knowledge_index "$USER_ROOT/knowledge" "USER"
+    # Conditional KGM reindex (only when KGM extension is enabled)
+    KGM_REINDEX="$USER_ROOT/skills/goose-kgm/scripts/reindex-kgm.sh"
+    if [[ -f "$KGM_REINDEX" ]]; then
+      bash "$KGM_REINDEX" --check-enabled 2>/dev/null || true
+    fi
     check_log_anchor "$USER_ROOT/log.md" "USER"
     check_log_anchor "$USER_ROOT/knowledge/log.md" "USER/knowledge"
     echo

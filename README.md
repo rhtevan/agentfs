@@ -256,30 +256,29 @@ Current bundles:
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
-## Structural Guardrails
+## Structural Rules
 
-AgentFS enforces structural guardrails to maintain consistency.
-Each guardrail is classified by its enforcement mechanism:
+AgentFS enforces 12 structural rules via Trigger/Action pairs in a
+flat table within AGENTS.md. Each rule fires on a specific trigger
+and prescribes a concrete action.
 
-| Type | Marker | Mechanism |
-|------|--------|-----------|
-| **Gate** | ⛔ | Hard stop — STOP before proceeding. Must pass. No exceptions without [OVERRIDE]. |
-| **Rule** | ⚖️ | Constrained choice at decision point — Default X; exception when Y |
-| **Habit** | 🔄 | Ongoing behavioral norm — maintain throughout session |
+| # | Trigger | Action |
+|---|---------|--------|
+| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table. If `search_nodes` available, query topic keywords and read files at `Source:` paths. |
+| 2 | Accessing `.agents/` content | Browse `index.md` first, follow links to content. |
+| 3 | Session start | Check for `CLAUDE.md`, `.cursorrules`, etc. Treat as supplementary. `AGENTS.md` wins on conflict. |
+| 4 | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
+| 5 | Any write/edit under `.agents/` or `~/.agents/` | `merge-log-entry.sh` → `merge-changelog-entry.sh` + version bump → `post-edit.sh` → links resolve. |
+| 6 | `git add` or "hey git" | `load_skill(name: "agentfs-git-push")` — follow completely. |
+| 7 | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 8 | Action involves policy, domain concepts, or unfamiliar procedures | Consult knowledge index for relevant context before acting. |
+| 9 | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. |
+| 10 | Always | No validation phrases. Lead with substance. Name risks proactively. |
+| 11 | Always | Don't reverse position without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
+| 12 | Always | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
 
-1. 🔄 **Progressive Disclosure** — Browse `index.md` hubs before diving into individual files
-2. ⚖️ **Memory Scope** — `memories/` is PROJECT-only; experiences not rules; graduation path to OKF knowledge
-3. 🔄 **Cross-Agent Context Discovery** — Read `CLAUDE.md`, `.cursorrules`, etc. as supplementary guidelines
-4. ⚖️ **Skill Placement** — Default to USER scope; PROJECT only when explicitly requested
-5. ⛔ **Filesystem Integrity** — STOP before declaring done. `merge-log-entry.sh` → `merge-changelog-entry.sh` + version bump → `post-edit.sh` → links → all pass → THEN summarize
-6. 🔄 **Idempotency** — Same inputs → same filesystem state
-7. ⚖️ **Anti-Sycophancy** — Quote conflicting guardrail, ask before overriding
-8. 🔄 **Anti-Daydreaming** — Ephemeral session canary name; spot-check for context drift; never persisted to AgentFS files
-9. ⛔ **Checkpoints & Resumability** — STOP before destructive op. Record affected files → execute → clear checkpoint
-10. ⛔ **Git Push Safety** — STOP before commit. Stage → Scan → README audit (if agentfs files staged) → Report → **WAIT in same turn** → Commit → Push
-
-The canonical source for guardrails is the `agentfs-setup` skill template (`seed-agents-md.sh`).
-See [AGENTS.md](./AGENTS.md) in any project for the full rendered guardrails.
+The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
+See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.
 
 ## Memory Architecture
 
@@ -370,7 +369,7 @@ is the "RAM" of the agent — everything the model can attend to right now.
   — inlined by Goose's `load_hint_files()` pipeline, no agent navigation required
 - **Read on first use** (agent-initiated): `USER.md` — referenced from
   AGENTS.md but loaded by the agent when it needs user preferences
-- **On-demand** (progressive disclosure, Guardrail #1): skills, knowledge
+- **On-demand** (progressive disclosure, Rule #2): skills, knowledge
   bundles — loaded only when relevant to the current task
 - **NOT loaded at session start**: `MEMORY.md` — not auto-loaded into
   context, but readable on-demand when the user explicitly requests
@@ -423,6 +422,14 @@ personal intellectual property — never committed to any project repository.
   or distilled from session context
 - **Managed by:** `okf-bundle-gen`, `okf-bundle-harvest`, `okf-bundle-setup`,
   `okf-bundle-index` skills
+- **Optional accelerator:** When the `goose-kgm` skill is set up and
+  enabled, a KG Memory (KGM) MCP extension provides `search_nodes`
+  for fast substring lookup over bundle/concept metadata. KGM is a
+  cached index — it collapses the multi-hop OKF index walk into a
+  single tool call but does NOT replace reading the actual concept
+  documents. The JSONL file (`~/.agents/knowledge/.kgm-index.jsonl`)
+  is a derived, gitignored artifact rebuilt from OKF indexes by
+  `reindex-kgm.sh`. See `goose-kgm` skill for lifecycle management.
 
 #### Procedural Memory — Skills
 
@@ -457,7 +464,7 @@ contains only **LLM-direct routes** (no skill involved) and
 - "I prefer" → `USER.md` (LLM direct)
 - "learn this document" → OKF bundle (`okf-bundle-gen`/`okf-bundle-harvest` — ambiguous triage)
 - "harvest" → `skill-harvest` (procedural) or `okf-bundle-harvest` (semantic — ambiguous triage)
-- "hey git" → stage, commit, trigger Git Push Safety (LLM direct + Guardrail #10)
+- "hey git" → `load_skill(name: "agentfs-git-push")` (LLM direct + Rule #6)
 
 **Skill-routed signals** (e.g., "create a skill" → `skill-gen`) do NOT
 live in the AGENTS.md table. They live in each SKILL.md's
@@ -493,14 +500,14 @@ their parent extension is active, so checking tool availability is
 equivalent to checking extension state — no config file inspection
 needed.
 
-### Guardrail Layering
+### Rule Layering
 
-Guardrails themselves exist at three levels:
+Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 10 structural guardrails; projects are aligned to this template |
-| **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template guardrails, plus any project-specific additions |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 12 structural rules; projects are aligned to this template |
+| **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 
 When the AgentFS template is updated, existing projects are brought into
@@ -512,7 +519,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 3.7 -->
+<!-- agentfs-template-version: 5.0.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:
@@ -527,13 +534,13 @@ Project-owned sections:
 - **SPECKIT block** — managed by spec-kit's agent-context extension
 
 Template-owned sections are **read-only at project scope**. To change
-a guardrail or add a signal, update the seed template and sync.
+a rule or add a signal, update the seed template and sync.
 
 ### README Sync Rule
 
-When AgentFS design, guardrails, skills schema, or template structure
+When AgentFS design, rules, skills schema, or template structure
 changes, `~/.agents/README.md` MUST be updated in the same session.
-This is enforced by Guardrail #5 (Post-Edit Completeness, step 4).
+This is enforced by Rule #5 (Filesystem Integrity).
 
 
 ## Skill Design Principles
@@ -651,8 +658,8 @@ Example pattern in a SKILL.md:
    Run: `bash scripts/finalize.sh --id "$ID"`
 ```
 
-This pattern preserves all structural guardrails — scripts stay
-idempotent (Guardrail #6), the process is documented (SKILL.md
+This pattern preserves all structural rules — scripts stay
+idempotent by design, the process is documented (SKILL.md
 *is* the documentation), each script is independently testable,
 and the same scripts can be reused by other skills or automated
 jobs with pre-known inputs.
@@ -679,10 +686,10 @@ deeper verification layers.
 
 ### The Problem
 
-Guardrails in `AGENTS.md` are **prescriptive** — they tell the agent
+Rules in `AGENTS.md` are **prescriptive** — they tell the agent
 what to do. But nothing verifies the agent actually followed them.
 This is equivalent to having coding standards without a linter. The
-guardrails rely entirely on the agent's willingness and ability to
+rules rely entirely on the agent's willingness and ability to
 follow instructions — which is exactly what AI model flaws undermine.
 
 ### Guiding Principles
@@ -703,7 +710,7 @@ Two sets of non-negotiable principles drive the evaluation design:
 |------|------------------|
 | Hallucination | Agent invents files, references, or observations that don't exist |
 | Stochasticity | Same skill produces inconsistent workspace structures across runs |
-| Sycophancy | Agent silently complies with requests that violate guardrails |
+| Sycophancy | Agent silently complies with requests that violate rules |
 
 ### Three-Layer Verification
 

@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
-# test-agents-md-fidelity.sh — Validate optimized AGENTS.md structure and content.
+# test-agents-md-fidelity.sh — Validate AGENTS.md structure and content (v5.0.0+).
 #
 # Usage: bash test-agents-md-fidelity.sh [path-to-agents-md]
 #   Defaults to ./AGENTS.md in current directory.
+#
+# Validates:
+#   - v5 section structure (flat Rules table, no guardrail sections)
+#   - All 12 rules present in flat table
+#   - Signal routing completeness (6 rows)
+#   - Script existence and references
+#   - Behavioral keywords and fidelity
+#   - Scope definitions
+#   - Project-owned sections (Agent Profiles, SPECKIT)
 
 set -euo pipefail
 
@@ -28,10 +37,21 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local label="$1"
+  local pattern="$2"
+  if grep -qE "$pattern" "$TARGET"; then
+    echo "  ❌ $label — pattern should NOT be present: $pattern"
+    FAILED=$((FAILED + 1))
+  else
+    echo "  ✅ $label"
+    PASSED=$((PASSED + 1))
+  fi
+}
+
 assert_script_exists() {
   local label="$1"
   local script="$2"
-  # Expand ~ to $HOME
   local expanded="${script/#\~/$HOME}"
   if [[ -f "$expanded" ]]; then
     echo "  ✅ $label"
@@ -42,114 +62,150 @@ assert_script_exists() {
   fi
 }
 
+assert_rule_present() {
+  local rule_num="$1"
+  local keyword="$2"
+  if grep -qE "^\| ${rule_num} \|.*${keyword}" "$TARGET"; then
+    echo "  ✅ Rule #${rule_num} (${keyword})"
+    PASSED=$((PASSED + 1))
+  else
+    echo "  ❌ Rule #${rule_num} — expected keyword: $keyword"
+    FAILED=$((FAILED + 1))
+  fi
+}
+
 SCRIPTS_DIR="$HOME/.agents/skills/agentfs-setup/scripts"
 
-# ── Section structure ──────────────────────────────────────────────
-echo "=== Section Structure ==="
-assert_contains "Template version marker" 'agentfs-template-version'
+# ── v5 Section Structure ──────────────────────────────────────────
+echo "=== Section Structure (v5) ==="
+assert_contains "Template version marker" 'agentfs-template-version:.*5\.'
 assert_contains "Quick Orientation heading" '^## Quick Orientation'
 assert_contains "Signal Routing heading" '^## Signal Routing'
-assert_contains "Routing Rules heading" '^### Routing Rules'
-assert_contains "Guardrail Quick Ref heading" '^## Guardrail Quick Reference'
 assert_contains "Scope Definitions heading" '^## Scope Definitions'
 assert_contains "What Lives Where heading" '^### What Lives Where'
-assert_contains "Structural Guardrails heading" '^## AgentFS Structural Guardrails'
+assert_contains "Rules heading" '^## Rules'
 assert_contains "Agent Profiles heading" '^## Agent Profiles'
 assert_contains "SPECKIT START marker" '<!-- SPECKIT START -->'
 assert_contains "SPECKIT END marker" '<!-- SPECKIT END -->'
+assert_contains "PROJECT-OWNED marker" 'PROJECT-OWNED'
 
-# ── All 10 guardrails referenced in Quick Ref ──────────────────────
-echo "=== Guardrail Quick Ref (all 10) ==="
-for i in $(seq 1 10); do
-  assert_contains "Guardrail #$i in Quick Ref" "| .*$i.*|.*|"
-done
+# ── v4 Sections REMOVED ───────────────────────────────────────────
+echo "=== v4 Sections Removed ==="
+assert_not_contains "No Routing Rules subsection" '^### Routing Rules'
+assert_not_contains "No Guardrail Quick Reference" '^## Guardrail Quick Reference'
+assert_not_contains "No Structural Guardrails heading" '^## AgentFS Structural Guardrails'
+assert_not_contains "No numbered guardrail sections" '^### [0-9]+\.'
 
-# ── Guardrail detail sections present ──────────────────────────────
-echo "=== Guardrail Detail Sections ==="
-# #1 and #6 removed (table-only) — verify NOT present as detail
-assert_contains "#2 Memory Scope detail" '^### 2\. Memory Scope'
-assert_contains "#3 Cross-Agent Discovery detail" '^### 3\. Cross-Agent Context Discovery'
-assert_contains "#4 Skill Placement detail" '^### 4\. Skill Placement'
-assert_contains "#5 Filesystem Integrity detail" '^### 5\. Filesystem Integrity'
-assert_contains "#7 Anti-Sycophancy detail" '^### 7\. Anti-Sycophancy'
-assert_contains "#8 Anti-Daydreaming detail" '^### 8\. Anti-Daydreaming'
-assert_contains "#9 Checkpoints detail" '^### 9\. Checkpoints'
-assert_contains "#10 Git Push Safety detail" '^### 10\. Git Push Safety'
+# ── All 12 Rules in Flat Table ─────────────────────────────────────
+echo "=== Rules Table (12 rules) ==="
+assert_rule_present "1" "User message received"
+assert_rule_present "2" "\.agents/"
+assert_rule_present "3" "Session start"
+assert_rule_present "4" "Creating a skill"
+assert_rule_present "5" "write/edit"
+assert_rule_present "6" "hey git"
+assert_rule_present "7" "destructive op"
+assert_rule_present "8" "policy|domain|unfamiliar"
+assert_rule_present "9" "memories"
+assert_rule_present "10" "validation phrases"
+assert_rule_present "11" "reverse|new information"
+assert_rule_present "12" "canary"
 
-# ── Script references ──────────────────────────────────────────────
-echo "=== Script References ==="
-assert_script_exists "post-edit.sh exists" "$SCRIPTS_DIR/post-edit.sh"
-assert_script_exists "pre-push-scan.sh exists" "$SCRIPTS_DIR/pre-push-scan.sh"
-assert_script_exists "checkpoint.sh exists" "$SCRIPTS_DIR/checkpoint.sh"
-assert_script_exists "merge-log-entry.sh exists" "$SCRIPTS_DIR/merge-log-entry.sh"
-assert_script_exists "merge-changelog-entry.sh exists" "$SCRIPTS_DIR/merge-changelog-entry.sh"
-assert_script_exists "sync-agents-md.sh exists" "$SCRIPTS_DIR/sync-agents-md.sh"
-assert_script_exists "author-soul.sh exists" "$SCRIPTS_DIR/author-soul.sh"
-assert_script_exists "regen-skill-index.py exists" "$SCRIPTS_DIR/regen-skill-index.py"
+# Rule count validation
+RULE_COUNT=$(grep -cE '^\| [0-9]+ \|' "$TARGET")
+echo ""
+if [[ "$RULE_COUNT" -eq 12 ]]; then
+  echo "  ✅ Rule count: $RULE_COUNT"
+  PASSED=$((PASSED + 1))
+else
+  echo "  ❌ Rule count: expected 12, got $RULE_COUNT"
+  FAILED=$((FAILED + 1))
+fi
 
-assert_contains "References post-edit.sh" 'post-edit\.sh'
-assert_contains "References pre-push-scan.sh" 'pre-push-scan\.sh'
-assert_contains "References checkpoint.sh" 'checkpoint\.sh'
-assert_contains "References merge-log-entry.sh" 'merge-log-entry\.sh'
-assert_contains "References merge-changelog-entry.sh" 'merge-changelog-entry\.sh'
-# sync-agents-md.sh is referenced in SKILL.md, not required in AGENTS.md
-
-# ── Critical behavioral keywords ──────────────────────────────────
-echo "=== Critical Keywords ==="
-assert_contains "Keyword: STOP" 'STOP'
-assert_contains "Keyword: WAIT" 'WAIT'
-assert_contains "Keyword: load_skill" 'load_skill'
-assert_contains "Keyword: fail loud" 'fail loud'
-assert_contains "Keyword: canary" '[Cc]anary'
-assert_contains "Keyword: OVERRIDE" 'OVERRIDE'
-assert_contains "Keyword: CONTEXT DRIFT" 'CONTEXT DRIFT'
-assert_contains "Keyword: idempotent" '[Ii]dempoten'
-assert_contains "Keyword: incremental edits" 'incremental edits'
-assert_contains "Keyword: never improvise" '[Nn]ever improvise'
-
-# ── Fidelity: key behavioral requirements ──────────────────────────
-echo "=== Behavioral Fidelity ==="
-# Memory scope
-assert_contains "MEMORY.md = experiences not rules" 'experiences'
-assert_contains "Graduation to OKF" '[Gg]raduat'
-assert_contains "No memories at USER scope" 'No.*memories.*USER|PROJECT-scoped only'
-# Cross-agent
-assert_contains "CLAUDE.md reference" 'CLAUDE\.md'
-assert_contains "cursorrules reference" 'cursorrules'
-assert_contains "AGENTS.md wins conflicts" 'wins.*conflict|precedence'
-# Skill placement
-assert_contains "Default to USER" 'Default to USER'
-assert_contains "Project signal words" 'project skill.*for this project.*local skill'
-# Anti-sycophancy
-assert_contains "Quote conflicting guardrail" '[Qq]uote.*guardrail|[Qq]uote.*conflict'
-assert_contains "No rules in MEMORY.md" 'rule-like.*always.*never.*must'
-# Anti-daydreaming
-assert_contains "Session-scoped canary" 'session-scoped canary|session-scoped'
-assert_contains "1-in-5 cadence" '1-in-5'
-assert_contains "Never persist canary" 'Never persist'
-# Checkpoint
-assert_contains "checkpoint create subcommand" 'checkpoint\.sh create'
-assert_contains "checkpoint clear subcommand" 'checkpoint\.sh clear'
-assert_contains "checkpoint check subcommand" 'checkpoint\.sh check'
-# Git push
-assert_contains "pre-push-scan invocation" 'pre-push-scan\.sh'
-assert_contains "Explicit approval required" 'explicit approval|WAIT.*approval|WAIT for user|WAIT in same turn'
-
-# ── Signal routing table completeness ──────────────────────────────
+# ── Signal Routing (6 rows) ───────────────────────────────────────
 echo "=== Signal Routing Table ==="
 assert_contains "Signal: remember this" 'remember this'
 assert_contains "Signal: always do X" 'always do X'
 assert_contains "Signal: I prefer" 'I prefer'
-assert_contains "Signal: learn this document" 'learn this document'
 assert_contains "Signal: forget this" 'forget this'
 assert_contains "Signal: what do you remember" 'what do you remember'
-assert_contains "Signal: harvest" 'harvest.*reflect.*scan memories'
 assert_contains "Signal: hey git" 'hey git'
 
-# ── Scope definitions completeness ─────────────────────────────────
+# v4 signals removed (covered by skill signal routing)
+assert_not_contains "No 'learn this document' signal" 'learn this document'
+assert_not_contains "No 'harvest' signal row" 'harvest.*reflect.*scan memories'
+
+# Signal row count (data rows only, exclude header + separator)
+SIGNAL_ROWS=$(awk '/## Signal Routing/,/## Scope/' "$TARGET" \
+  | grep -E '^\|' | grep -vE 'Signal|---' | wc -l)
+echo ""
+if [[ "$SIGNAL_ROWS" -eq 6 ]]; then
+  echo "  ✅ Signal routing rows: $SIGNAL_ROWS"
+  PASSED=$((PASSED + 1))
+else
+  echo "  ❌ Signal routing rows: expected 6, got $SIGNAL_ROWS"
+  FAILED=$((FAILED + 1))
+fi
+
+# ── Script Existence ──────────────────────────────────────────────
+echo "=== Script Existence ==="
+assert_script_exists "post-edit.sh" "$SCRIPTS_DIR/post-edit.sh"
+assert_script_exists "pre-push-scan.sh" "$SCRIPTS_DIR/pre-push-scan.sh"
+assert_script_exists "checkpoint.sh" "$SCRIPTS_DIR/checkpoint.sh"
+assert_script_exists "merge-log-entry.sh" "$SCRIPTS_DIR/merge-log-entry.sh"
+assert_script_exists "merge-changelog-entry.sh" "$SCRIPTS_DIR/merge-changelog-entry.sh"
+assert_script_exists "sync-agents-md.sh" "$SCRIPTS_DIR/sync-agents-md.sh"
+assert_script_exists "seed-agents-md.sh" "$SCRIPTS_DIR/seed-agents-md.sh"
+assert_script_exists "regen-skill-index.py" "$SCRIPTS_DIR/regen-skill-index.py"
+
+# ── Script References in AGENTS.md ────────────────────────────────
+echo "=== Script References ==="
+assert_contains "References merge-log-entry.sh" 'merge-log-entry\.sh'
+assert_contains "References merge-changelog-entry.sh" 'merge-changelog-entry\.sh'
+assert_contains "References post-edit.sh" 'post-edit\.sh'
+assert_contains "References checkpoint.sh" 'checkpoint\.sh'
+
+# ── Key Behavioral Keywords ───────────────────────────────────────
+echo "=== Behavioral Keywords ==="
+assert_contains "Keyword: load_skill" 'load_skill'
+assert_contains "Keyword: canary" '[Cc]anary'
+assert_contains "Keyword: OVERRIDE" 'OVERRIDE'
+assert_contains "Keyword: agentfs-git-push" 'agentfs-git-push'
+assert_contains "Keyword: knowledge index" 'knowledge.*index'
+assert_contains "Keyword: filesystem-integrity" 'filesystem-integrity'
+
+# ── Behavioral Fidelity ───────────────────────────────────────────
+echo "=== Behavioral Fidelity ==="
+# Memory scope (Rule #9)
+assert_contains "Graduation to OKF" '[Gg]raduat'
+assert_contains "PROJECT scope for memories" 'PROJECT scope only'
+assert_contains "Preferences to USER.md" 'Preferences.*USER\.md'
+# Cross-agent discovery (Rule #3)
+assert_contains "CLAUDE.md reference" 'CLAUDE\.md'
+assert_contains "cursorrules reference" 'cursorrules'
+assert_contains "AGENTS.md wins conflicts" 'wins.*conflict'
+# Skill placement (Rule #4)
+assert_contains "Default to USER" 'Default to USER'
+assert_contains "Project signal words" 'project skill.*for this project.*local skill'
+# Anti-sycophancy split (Rules #10 + #11)
+assert_contains "No validation phrases" 'validation phrases'
+assert_contains "Lead with substance" 'Lead with substance'
+assert_contains "Name risks" '[Nn]ame.*risk'
+assert_contains "Quote conflicting rule" '[Qq]uote.*(it|rule)'
+# Anti-daydreaming (Rule #12)
+assert_contains "1-in-5 cadence" '1-in-5'
+assert_contains "Never persist canary" 'Never persist'
+assert_contains "Ephemeral canary" 'ephemeral'
+# Filesystem integrity (Rule #5)
+assert_contains "checkpoint create" 'checkpoint\.sh create'
+assert_contains "checkpoint clear" 'checkpoint\.sh clear'
+# Git push delegation (Rule #6)
+assert_contains "Git push delegates to skill" 'load_skill.*agentfs-git-push'
+
+# ── Scope Definitions ─────────────────────────────────────────────
 echo "=== Scope Definitions ==="
 assert_contains "USER scope path" '~/.agents/'
-assert_contains "PROJECT scope path" './.agents/'
+assert_contains "PROJECT scope path" '\./\.agents/'
 assert_contains "skills in both scopes" 'skills.*shared.*project-specific'
 assert_contains "knowledge USER only" 'knowledge.*shared.*never'
 assert_contains "memories PROJECT only" 'memories.*never.*per-agent'

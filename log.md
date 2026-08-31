@@ -2,6 +2,43 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-31 16:50
+
+- v5.1.0: Rule #1 KGM-aware dispatch, LITE template fix, test-agents-md-fidelity.sh rewrite, KGM section in README.md, CHANGELOG format fixes (agentfs-setup, goose-kgm, agentfs-git-push)
+
+## 2026-08-31 15:59
+
+A11: Archived v5 strategy/action-plan/migration-map to agentfs-setup/references/, bumped agentfs-setup to 5.0.0, goose-kgm to 1.0.1. AgentFS v5 rollout complete (agentfs-v5 A11)
+
+## 2026-08-31 15:58
+
+A10: Updated README.md and agentfs-setup SKILL.md — v5 flat rule table (12 rules), removed Gate/Rule/Habit taxonomy, updated all guardrail references to 'rule' (agentfs-v5 A10)
+
+## 2026-08-31 15:55
+A9: Wired conditional KGM reindex into post-edit.sh, added KGM integration section to agentfs-setup SKILL.md (agentfs-v5 A9)
+
+A8: Created KGM entity schema reference doc — KnowledgeBundle + KnowledgeConcept entity types, contains relation, observation conventions (agentfs-v5 A8)
+
+## 2026-08-31 15:51
+
+A5: Rewrote seed-agents-md.sh PROJECT template — v5 flat table (12 rules, 6 signal rows, no Quick Reference, no inline guardrail prose), 69% token reduction (agentfs-v5 A5)
+
+## 2026-08-31 15:48
+
+Created goose-kgm skill v1.0.0 — KGM lifecycle management with setup/teardown/enable/disable/status/reindex, OKF-primary design (agentfs-v5 A4)
+
+## 2026-08-31 15:43
+
+A3: Created v5-migration-map.md — full content coverage audit, 12 rules mapped, zero true content loss (agentfs-v5 A3)
+
+## 2026-08-31 15:42
+
+A2: Added references/filesystem-integrity.md to agentfs-setup — delegation table, scope logging rules, checkpoint protocol (agentfs-v5 A2)
+
+## 2026-08-31 15:41
+
+Created agentfs-git-push skill v1.0.0 — absorbs Git Push Safety workflow from AGENTS.md Guardrail #10 (S5 externalization, agentfs-v5 A1)
+
 ## 2026-08-31 14:37
 
 Renamed skill 'archify' → 'agentfs-archify' (AgentFS collection prefix). Renamed skill 'fuseki' → 'agentflow-fuseki' (AgentFLOW collection prefix). Updated name: fields, cross-references in goose-nextai-drawio/SKILL.md, .agents/memories/USER.md. Signal phrases unchanged. Index rebuilt (56 skills).

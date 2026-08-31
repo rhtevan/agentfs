@@ -8,3 +8,4 @@ skills/*/.rollback/
 
 # Topology env files (contain site-specific IPs, hostnames, usernames)
 skills/*/topology.env
+.kgm-index.jsonl
