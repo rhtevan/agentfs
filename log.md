@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-31 10:03
+
+dsh-setup v1.3.1 — added version check to status.sh; compares installed vs npm registry latest, shows upgrade recommendation
+
+## 2026-08-31 09:59
+
+dsh-setup v1.3.0 — replaced 'dsh launcher'/'dsh desktop' signals with 'dsh status'; added scripts/status.sh for backend state + desktop path query
+
 ## 2026-08-29 13:14
 
 Added van-topology.gif to skupper-model-provider/docs/ and added image link to SKILL.md Architecture section

@@ -2,12 +2,12 @@
 name: dsh-setup
 description: >
   setup dsh, install dsh, update dsh, teardown dsh,
-  dsh launcher, dsh desktop
+  dsh status
 platforms: ['linux']
 writes-files: true
 metadata:
   author: agentfs
-  version: "1.2.1"
+  version: "1.3.1"
   tags: [dsh, deepseek-harness, agent-harness, setup, launcher]
   related_skills: [dsh-litellm-provider]
 user-invocable: true
@@ -110,6 +110,17 @@ Removes:
 
 Does NOT remove pnpm (shared tool, may be used by other projects).
 
+### Status
+
+```bash
+bash ~/.agents/skills/dsh-setup/scripts/status.sh
+```
+
+Shows DSH backend status (systemd service state, port 3080),
+desktop launcher path, and installed version. Compares against
+the npm registry latest — recommends `update dsh` when behind.
+Read-only — makes no changes.
+
 ## Gotchas
 
 - **npm is broken for DSH.** 62 direct dependencies with deep
@@ -151,6 +162,7 @@ Does NOT remove pnpm (shared tool, may be used by other projects).
 | S6 | Launcher stops service when Chrome exits | Close Chrome window, service stops immediately |
 | S7 | Separate Chrome profile for security isolation | `~/.local/share/dsh-chrome-profile/` exists |
 | S8 | Window opens maximized | Visual check on launch |
+| S9 | Status shows backend state, desktop path, and version with update recommendation | `status.sh` exits 0, prints backend + desktop + version info |
 
 ## Tests
 
@@ -160,6 +172,7 @@ Does NOT remove pnpm (shared tool, may be used by other projects).
 | T2 | S2 | `ls ~/.local/bin/dsh-launcher ~/.local/share/applications/dsh.desktop` | Both files exist |
 | T3 | S3 | `bash scripts/update.sh && bash scripts/verify.sh` | Update succeeds, verify passes |
 | T4 | S4 | `bash scripts/teardown.sh --no-data && bash scripts/verify.sh` | Teardown succeeds, verify reports missing |
+| T5 | S9 | `bash scripts/status.sh` | Prints backend state and desktop path, exits 0 |
 
 ## Changelog
 
