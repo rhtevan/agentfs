@@ -264,7 +264,7 @@ and prescribes a concrete action.
 
 | # | Trigger | Action |
 |---|---------|--------|
-| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table. If `search_nodes` available, query topic keywords and read files at `Source:` paths. |
+| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table. If `search_nodes` available, query topic keywords, select most relevant results (max 3). MUST read `Source:` files before answering. |
 | 2 | Accessing `.agents/` content | Browse `index.md` first, follow links to content. |
 | 3 | Session start | Check for `CLAUDE.md`, `.cursorrules`, etc. Treat as supplementary. `AGENTS.md` wins on conflict. |
 | 4 | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
@@ -519,7 +519,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 5.0.0 -->
+<!-- agentfs-template-version: 5.3.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

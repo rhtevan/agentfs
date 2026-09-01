@@ -246,7 +246,7 @@ cat > "$TARGET" << 'AGENTSEOF'
 
 | # | Trigger | Action |
 |---|---------|--------|
-| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table for LLM-direct routes. If a `search_nodes` tool is available (from any knowledge graph extension), query with task topic keywords — review returned summaries, then read the files at `Source:` paths for relevant results. Only if no match: generic interpretation. |
+| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table for LLM-direct routes. If a `search_nodes` tool is available (from any knowledge graph extension), query with task topic keywords. Use returned summaries to select the most relevant results (max 3). MUST read the `Source:` files for selected results before answering — summaries alone are insufficient. Only if no match: generic interpretation. |
 | 2 | Accessing `.agents/` content | Browse `index.md` first, follow links to content. |
 | 3 | Session start | Check for `CLAUDE.md`, `.cursorrules`, `.cursor/rules/`, `.windsurfrules`, `.github/copilot-instructions.md`. Treat as supplementary. `AGENTS.md` wins on conflict. |
 | 4 | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |

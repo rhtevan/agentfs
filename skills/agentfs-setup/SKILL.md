@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "5.1.0"
+  version: "5.3.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -230,6 +230,23 @@ raw bash command to the user. Instead, the agent MUST:
      use the write tool to produce the file)
    - Skip: acknowledge and move on
 4. **Confirm** the result to the user once SOUL.md is written.
+
+**Agent post-sync Rule re-read (REQUIRED):**
+
+After sync completes (whether the template was upgraded or already
+up-to-date), the agent MUST re-evaluate its operating rules against
+the current AGENTS.md. Specifically:
+
+1. If `search_nodes` (or equivalent KGM tools) are available in the
+   session **and** the knowledge graph is empty, the agent MUST load
+   entities from `~/.agents/knowledge/.kgm-index.jsonl` into the live
+   graph. This applies even when KGM is `enabled: false` in
+   `config.yaml` — session-level availability takes precedence over
+   static config.
+2. This addresses a bootstrap ordering problem: when syncing from an
+   older template version, the rules that mandate KGM loading (e.g.,
+   Rule #1's `search_nodes` clause) only exist *after* the sync
+   completes, so the agent must re-read to pick them up.
 
 ### Verification
 

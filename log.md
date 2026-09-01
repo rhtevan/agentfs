@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-08-31 20:51
+
+README.md: fixed D5 (Rule #1 KGM triage wording) and D6 (template version 5.0.0 → 5.3.0)
+
+## 2026-08-31 20:45
+
+agentfs-setup v5.3.0: Rule #1 KGM triage — MUST read Source files (max 3) before answering
+
+## 2026-08-31 20:32
+
+agentfs-setup v5.2.0: added post-sync Rule re-read requirement (KGM bootstrap fix)
+
 ## 2026-08-31 17:29
 
 - agentfs-git-push v1.1.0: Add Step 0 (Resolve Target) — default to ~/.agents/ for bare 'hey git'
