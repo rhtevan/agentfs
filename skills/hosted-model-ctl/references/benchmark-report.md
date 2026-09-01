@@ -1,7 +1,8 @@
 # Model Benchmark Report
 
 > Comprehensive benchmark results across all tested models, hosts, and configurations.
-> Generated: 2026-08-25 22:44
+> Generated: 2026-08-25 22:44 (Granite 4.1 results)
+> Updated: 2026-09-01 18:45 (Granite 4.2 upgrade notes added)
 
 ---
 
@@ -232,7 +233,8 @@ only on sustained long generation (67 vs 60 tok/s). See Section 12.
 | **Granite 3B** | **rhtevan-work** | **1× A500** | **Q4_K_M** | **1** | **16K** | **—** | **37** | **✅ Pass all** |
 | Granite 8B | rhtevan-work | 1× A500 | Q4_K_M | 1 | 4K | — | 6.5 | ✅ Pass all |
 | Granite 8B + 3B draft | rhel-ai | 4× L4 | BF16 | 4 | 128K | draft_model | 19-25 | ✅ Pass all |
-| **Granite 8B FP8 + 3B FP8 draft** | **rhel-ai** | **4× L4** | **FP8** | **4** | **128K** | **draft_model + CUDA graphs** | **58-79** | **✅ Pass all** |
+| **Granite 4.1 8B FP8 + 3B FP8 draft** | **rhel-ai** | **4× L4** | **FP8** | **4** | **128K** | **draft_model + CUDA graphs** | **58-79** | **✅ Pass all** |
+| **Granite 4.2 8B FP8 + 3B FP8 draft** | **rhel-ai** | **4× L4** | **FP8** | **4** | **128K** | **draft_model + CUDA graphs** | **~50 (47 content)** | **✅ Pass all** |
 | Gemma 4 31B | rhel-ai | 4× L4 | FP8-block | 4 | 128K | — | 13.4 | ✅ Pass all |
 | Gemma 4 31B | rhel-ai | 4× L4 | FP8-block | 4 | 128K | ngram | 13.5 | ✅ Pass all |
 | Qwen3.8-27B | rhel-ai | 4× L4 | FP8 | 4 | 128K | — | 11.8 | ✅ Pass all |
@@ -441,3 +443,72 @@ is significantly faster wall-clock than cloud Opus:
 | Long document generation | Opus 4.6 | Slightly faster sustained throughput |
 | Cost-sensitive batch operations | **Granite 8B** | ~75× cheaper per session |
 | Benchmarking / quality baseline | Opus 4.6 | Reference-grade output quality |
+
+---
+
+## 13. Granite 4.2 Upgrade Results (2026-09-01)
+
+Granite 4.1 8B FP8 upgraded to Granite 4.2 8B FP8 on `g8b-fp8-spec-128k` profile.
+Parser changes: `--tool-call-parser hermes` to `qwen3_coder`, added `--reasoning-parser nemotron_v3`.
+Draft model: `granite-4.2-3b-fp8` (also upgraded from 4.1).
+
+### 13.1 Quality Results (7 Tests, max_tokens=8192)
+
+| Test | 4.1 Result | 4.2 Result | Winner |
+|------|:---:|:---:|:---:|
+| 1. Instruction Follow | Pass | Pass (5 items, concise) | Tie |
+| 2. Reasoning | Pass (8 GB) | Pass (8 GB, richer analysis) | 4.2 |
+| 3. Tool Calling | Pass (hermes) | Pass (qwen3_coder, reasoning separated) | Tie |
+| 4. Code Gen | Pass (1000 tok) | Pass at 8192 only (budget exhaustion at 1000/4096) | 4.1 (no budget issue) |
+| 5. Multi-step | Pass (Node B) | Pass (Node B, superior analysis with capacity + load detail) | 4.2 |
+| 6. Conciseness | Pass (25 tok) | Pass (28 tok) | Tie |
+| 7. Speed (long gen) | 58-79 tok/s | 49.6 tok/s total, 47.2 content | 4.1 (faster) |
+
+### 13.2 Speed Comparison
+
+| Workload | 4.1 tok/s | 4.2 total tok/s | 4.2 content tok/s | Reasoning % |
+|----------|:---:|:---:|:---:|:---:|
+| Short text (say hello) | ~58 | ~64 | ~7 | 89% |
+| Tool call | ~62 | ~77 | ~22 | 71% |
+| Medium (1000 tok) | ~60 | ~44 | ~21 | 52% |
+| Long generation (8192 tok) | ~58 | ~50 | ~47 | 5% |
+
+Key finding: reasoning overhead is **inversely proportional to output length**.
+Short responses spend 70-90% on invisible thinking. Long generation only 5%.
+
+### 13.3 Thinking Budget Exhaustion
+
+Granite 4.2 reproduces the same problem observed with Qwen3.8 (Section 5):
+complex tasks exhaust the max_tokens budget on reasoning before producing content.
+
+| Test | max_tokens=1000 | max_tokens=4096 | max_tokens=8192 |
+|------|:---:|:---:|:---:|
+| Code Gen | NULL (1000 reasoning) | NULL (4096 reasoning) | Pass (3227 reasoning + 806 content) |
+
+Workarounds:
+- Set max_tokens >= 8192 for reasoning-heavy tasks
+- Disable thinking: `chat_template_kwargs: {enable_thinking: false}`
+- Low-effort mode: `chat_template_kwargs: {enable_thinking: true, low_effort: true}`
+
+### 13.4 rhtevan-work Decision: Stay on 4.1
+
+Granite 4.2 3B Q4_K_M was evaluated for rhtevan-work (1× RTX A500, 4 GB) but rejected:
+
+| Factor | 4.1 | 4.2 | Verdict |
+|--------|:---:|:---:|---------|
+| GGUF size | 2.10 GB | 2.24 GB | +145 MB |
+| VRAM headroom | 0.26 GiB | 0.14 GiB | OOM risk |
+| Reasoning parser | N/A (no reasoning) | N/A (llama.cpp has none) | Tags leak into content |
+| 3B reasoning quality | N/A | Marginal | Not worth latency cost |
+
+Decision: rhtevan-work `g3b-16k` stays on Granite 4.1 3B Q4_K_M. The 4.2 upgrade
+is rhel-ai only (vLLM with proper parser support and sufficient VRAM).
+
+### 13.5 Compatibility
+
+| Client | Status | Notes |
+|--------|:---:|-------|
+| vLLM API (curl) | Pass | qwen3_coder tool parser + nemotron_v3 reasoning parser |
+| Goose 1.48 (Skupper provider) | Pass | Thinking blocks displayed, tool calls work |
+| OpenShift LightSpeed (CRC) | Pass | OLSConfig model name updated |
+| Skupper VAN | Pass | Model-agnostic, no changes needed |

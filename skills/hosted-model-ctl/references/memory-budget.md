@@ -3,7 +3,7 @@ type: Reference
 title: "GPU Memory Budgets"
 description: "VRAM usage breakdowns for all deployment profiles"
 tags: [gpu, vram, memory, tuning, speculative-decoding]
-timestamp: 2026-08-25T22:36:00-04:00
+timestamp: 2026-09-01T18:45:00-04:00
 ---
 
 # GPU Memory Budgets
@@ -50,8 +50,8 @@ Granite 4.0 350M FP16 via vLLM, 2K context.
 
 ### Profile: `g8b-fp8-spec-128k` ✅ Default
 
-Granite 4.1 8B FP8 + Granite 4.1 3B FP8 draft, TP=4, CUDA graphs enabled.
-**Measured: 58-79 tok/s, 93.8% VRAM utilization, 97-100% GPU compute.**
+Granite 4.2 8B FP8 + Granite 4.2 3B FP8 draft, TP=4, CUDA graphs enabled.
+**Measured: ~50 tok/s total (~47 content), 93.8% VRAM utilization, 97-100% GPU compute.**
 
 | Component | Usage (per GPU) |
 |-----------|:---:|
@@ -71,7 +71,7 @@ Granite 4.1 8B FP8 + Granite 4.1 3B FP8 draft, TP=4, CUDA graphs enabled.
 
 ### Profile: `g8b-spec-128k`
 
-Granite 4.1 8B BF16 + Granite 4.1 3B BF16 draft, TP=4, `--enforce-eager`.
+Granite 4.2 8B BF16 + Granite 4.2 3B BF16 draft, TP=4, `--enforce-eager`.
 **Measured: 19-25 tok/s.**
 
 | Component | Usage (per GPU) |

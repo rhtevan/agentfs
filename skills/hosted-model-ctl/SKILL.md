@@ -9,7 +9,7 @@ argument-hint: "hosted model list | hosted model report | setup g8b-fp8-spec-128
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "7.4.0"
+  version: "7.5.3"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
 disable-model-invocation: false
@@ -48,8 +48,8 @@ Full details in [references/deployment-profiles.md](./references/deployment-prof
 
 | Profile | Model | Engine | TP | Context | Speed | Default |
 |---------|-------|:------:|:--:|:-------:|:-----:|:-------:|
-| **`g8b-fp8-spec-128k`** | Granite 8B FP8 + 3B FP8 draft | vLLM spec | 4 | 128K | **58-79 tok/s** | ✅ |
-| `g8b-spec-128k` | Granite 8B BF16 + 3B BF16 draft | vLLM spec | 4 | 128K | 19-25 tok/s | |
+| **`g8b-fp8-spec-128k`** | Granite 4.2 8B FP8 + 3B FP8 draft | vLLM spec | 4 | 128K | **~50 tok/s** | ✅ |
+| `g8b-spec-128k` | Granite 4.2 8B BF16 + 3B BF16 draft | vLLM spec | 4 | 128K | 19-25 tok/s | |
 
 ### Speculative Decoding
 
@@ -156,6 +156,17 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh all --remove
 - CUDA graphs add ~10 GB/GPU — works with FP8 (small weights), fails with large models
 - FP8 halves weight reads → ~2× faster decode
 - `--enforce-eager` disables CUDA graphs (safe but slower)
+
+### Granite 4.2 Reasoning Overhead
+
+- 4.2 models emit chain-of-thought reasoning by default (nemotron_v3 parser)
+- Short responses: 70-80% of tokens are invisible reasoning
+- Long generation: only 5% reasoning overhead
+- Code generation requires max_tokens >= 8192 to avoid budget exhaustion
+- Tool-call parser changed from `hermes` to `qwen3_coder`
+- To disable thinking: set `chat_template_kwargs.enable_thinking: false`
+- **rhtevan-work stays on 4.1:** llama.cpp has no reasoning parser (tags leak),
+  4.2 GGUF is 145 MB larger (OOM risk on 4 GB), 3B reasoning quality is marginal
 
 ### Memory Bandwidth = Token Speed
 

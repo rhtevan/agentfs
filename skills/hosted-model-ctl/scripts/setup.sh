@@ -110,7 +110,10 @@ case "$ENGINE" in
     case "$MODEL_ID" in
       *granite*3b*)
         # Version-agnostic: detect available GGUF on the host
-        # Prefer 4.1 over 4.2 (4.2 thinking not supported by Goose 1.47)
+        # Prefer 4.1 over 4.2 for llama.cpp: 4.2 reasoning tokens leak
+        # into content (llama.cpp has no reasoning parser), 4.2 GGUF is
+        # 145 MB larger (0.14 GiB headroom on 4 GB GPU), and 3B reasoning
+        # quality is marginal. Decision: 2026-09-01.
         gguf_file=""
         gpu_layers=99
         for candidate in granite-4.1-3b-Q4_K_M.gguf granite-4.2-3b-Q4_K_M.gguf; do

@@ -2,6 +2,26 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-01 18:58
+
+hosted-model-ctl v7.5.3: Decision — rhtevan-work g3b-16k stays on Granite 4.1. Rationale: llama.cpp has no reasoning parser (4.2 tags leak), 4.2 GGUF +145 MB (headroom drops to 0.14 GiB on 4 GB GPU), 3B reasoning quality marginal. Reverted GGUF preference to 4.1-first. Granite 4.2 upgrade is rhel-ai (vLLM) only.
+
+## 2026-09-01 18:48
+
+hosted-model-ctl v7.5.2: Added Granite 4.2 model rows to model-landscape.md. Added Section 13 (4.2 benchmark results) to benchmark-report.md. Updated timestamps. Fixed 4.1 tool-call parser label from granite to hermes.
+
+## 2026-09-01 18:36
+
+hosted-model-ctl v7.5.1: Granite 4.2 upgrade wrap-up. Updated all reference docs (deployment-profiles, memory-budget, model-landscape). Added reasoning overhead gotcha. Benchmark results: 7/7 pass (requires max_tokens>=8192 for code gen). Speed: ~50 tok/s total, ~47 content on long gen, 70-80% reasoning overhead on short responses. Quality improved on multi-step reasoning. Flipped GGUF preference to 4.2.
+
+## 2026-09-01 18:07
+
+crc-ols v3.3.0: Updated skupper-model-rhel OLS provider model from granite-4.1-8b-fp8 to granite-4.2-8b-fp8 (Granite 4.2 upgrade dependency).
+
+## 2026-09-01 17:39
+
+hosted-model-ctl v7.5.0: Upgraded rhel-ai profiles (g8b-fp8-spec-128k, g8b-spec-128k) from Granite 4.1 to 4.2. Parser changes: hermes→qwen3_coder (tool), added nemotron_v3 (reasoning). Draft models upgraded to 4.2-3b-fp8. All 4 tests pass. Speed: ~44 tok/s total, ~21 tok/s content-visible (50% reasoning overhead vs 4.1 baseline of 58-79 tok/s).
+
 ## 2026-08-31 20:51
 
 README.md: fixed D5 (Rule #1 KGM triage wording) and D6 (template version 5.0.0 → 5.3.0)

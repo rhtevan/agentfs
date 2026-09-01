@@ -4,6 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | hosted model list, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, model hosting report, hosting machine report | 2026-09-01 18:58 |
+| [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-09-01 18:07 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-08-31 20:45 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-08-31 17:29 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status | 2026-08-31 16:48 |
@@ -12,7 +14,6 @@
 | [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-08-31 14:39 |
 | [dsh-setup](./dsh-setup/SKILL.md) | dsh, deepseek-harness, agent-harness, setup, launcher | setup dsh, install dsh, update dsh, teardown dsh, dsh status | 2026-08-31 10:03 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on crc, stop skupper on crc, start skupper on rhel-ai, stop skupper on rhtevan-work, start skupper with g8b-fp8-spec-128k | 2026-08-29 13:14 |
-| [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-08-27 19:33 |
 | [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations, cleanup | start crc, stop crc, crc start, crc stop, clean crc, crc cleanup, crc disk cleanup | 2026-08-27 11:30 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-08-27 09:08 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-08-26 22:24 |
@@ -26,7 +27,6 @@
 | [agentfs-ctx-chk](./agentfs-ctx-chk/SKILL.md) | agentfs, context, audit, optimization, guardrails | audit context, check context, context audit | 2026-08-26 21:34 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, maturity check | 2026-08-26 21:34 |
 | [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-08-26 21:34 |
-| [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | hosted model list, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, model hosting report, hosting machine report | 2026-08-26 17:34 |
 | [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | setup goose skupper provider, teardown skupper provider, recreate skupper provider, test skupper provider, check skupper provider | 2026-08-26 17:07 |
 | [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-08-26 12:36 |
 | [dsh-litellm-provider](./dsh-litellm-provider/SKILL.md) | dsh, deepseek-harness, litellm, custom-provider, configuration | configure dsh litellm, dsh litellm provider, dsh custom provider | 2026-08-24 16:59 |

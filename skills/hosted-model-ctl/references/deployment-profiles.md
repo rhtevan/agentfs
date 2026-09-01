@@ -37,6 +37,11 @@
 **Why default:** Best speed-to-quality ratio on this hardware. 5.7× faster
 than Granite 8B on the same GPU. 16K context is the VRAM ceiling.
 
+**Why NOT Granite 4.2:** Deliberately kept on 4.1. Three reasons:
+1. llama.cpp has no `--reasoning-parser` — 4.2 thinking tags leak into content
+2. 4.2 GGUF is 145 MB larger → headroom drops to 0.14 GiB (OOM risk)
+3. 3B model reasoning quality is marginal — not worth the latency cost
+
 ### `g350m-2k`
 
 | Setting | Value |
@@ -64,8 +69,8 @@ testing where output quality doesn't matter.
 
 | Setting | Value |
 |---------|-------|
-| **Target model** | `ibm-granite/granite-4.1-8b-fp8` (FP8, ~8 GB) |
-| **Draft model** | `ibm-granite/granite-4.1-3b-fp8` (FP8, ~3 GB) |
+| **Target model** | `ibm-granite/granite-4.2-8b-fp8` (FP8, ~8 GB) |
+| **Draft model** | `ibm-granite/granite-4.2-3b-fp8` (FP8, ~3 GB) |
 | **Runtime** | vLLM nightly (`docker.io/vllm/vllm-openai:nightly`) |
 | **Container** | `model-granite-8b-fp8-spec` |
 | **Port** | 9000 |
@@ -73,11 +78,12 @@ testing where output quality doesn't matter.
 | **Context** | 131,072 (128K) |
 | **Speculative decoding** | `draft_model`, 5 speculative tokens |
 | **CUDA graphs** | Enabled (no `--enforce-eager`) |
-| **Speed** | **58-79 tok/s** (task dependent) |
+| **Speed** | **~50 tok/s total, ~47 tok/s content** (long gen); short responses have higher reasoning overhead |
 | **Quality** | ✅ Passes all 7 benchmark tests |
 | **VRAM** | ~21.6 GB / 21.95 GB per GPU (93.8%) |
 | **GPU compute** | 97-100% during inference |
-| **Tool calling** | ✅ hermes parser |
+| **Tool calling** | ✅ qwen3_coder parser |
+| **Reasoning parser** | nemotron_v3 (built-in chain-of-thought) |
 | **Cold start** | ~5 min (includes CUDA graph compilation) |
 
 **Why default:** Three optimizations stack multiplicatively:
@@ -85,14 +91,17 @@ testing where output quality doesn't matter.
 2. CUDA graphs — eliminates Python/framework overhead
 3. Speculative decoding — multiple tokens verified per weight read
 
-Achieves 58-79% of Opus 4.6 cloud speed while fully self-hosted.
+Granite 4.2 adds built-in reasoning. Quality is superior on complex
+tasks (multi-step reasoning, code gen). Trade-off: short responses
+have 70-80% reasoning overhead; long generation only 5%.
+Requires max_tokens >= 8192 for code generation to avoid budget exhaustion.
 
 ### `g8b-spec-128k`
 
 | Setting | Value |
 |---------|-------|
-| **Target model** | `ibm-granite/granite-4.1-8b` (BF16, ~16 GB) |
-| **Draft model** | `ibm-granite/granite-4.1-3b` (BF16, ~6 GB) |
+| **Target model** | `ibm-granite/granite-4.2-8b` (BF16, ~16 GB) |
+| **Draft model** | `ibm-granite/granite-4.2-3b` (BF16, ~6 GB) |
 | **Runtime** | vLLM nightly |
 | **Container** | `model-granite-8b-spec` |
 | **Port** | 9000 |
@@ -102,7 +111,8 @@ Achieves 58-79% of Opus 4.6 cloud speed while fully self-hosted.
 | **CUDA graphs** | Disabled (`--enforce-eager`) |
 | **Speed** | **19-25 tok/s** |
 | **Quality** | ✅ Passes all 7 benchmark tests |
-| **Tool calling** | ✅ hermes parser |
+| **Tool calling** | ✅ qwen3_coder parser |
+| **Reasoning parser** | nemotron_v3 |
 | **Cold start** | ~2-3 min |
 
 **When to use:** If FP8 quantization causes quality issues for a specific
@@ -133,7 +143,7 @@ rhtevan-work profiles share port 10000 with the same exclusion rule.
 | g350m-2k | rhtevan-work | 44 | 44% (no quality) |
 | **g3b-16k** | rhtevan-work | **37** | 37% |
 | g8b-spec-128k | rhel-ai | 19-25 | 20-25% |
-| **g8b-fp8-spec-128k** | rhel-ai | **58-79** | 58-79% |
+| **g8b-fp8-spec-128k** | rhel-ai | **~50 total (~47 content)** | ~47% |
 
 | Opus 4.6 | Cloud | ~100 | 100% |
 

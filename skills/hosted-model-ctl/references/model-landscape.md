@@ -3,7 +3,7 @@
 > Curated open-source models for self-hosted inference.
 > Minimum context: 64K (128K preferred). Runtime: vLLM/llm-d preferred.
 > See also: [deployment-profiles.md](./deployment-profiles.md) for curated deployment combos.
-> Last updated: 2026-08-25 22:44
+> Last updated: 2026-09-01 18:45
 
 ## VRAM Tier Definitions
 
@@ -19,11 +19,26 @@
 
 ### IBM Granite
 
-| Model | Params | Native Ctx | BF16 Wt | FP8 Wt | Q4 Wt | KV@128K | Tool Calling | HF Repo |
-|-------|:------:|:----------:|:-------:|:------:|:-----:|:-------:|:------------:|----------|
-| Granite 4.1 3B | 3B | 128K | ~6 GB | ~3 GB | ~2 GB | ~4 GB | ✅ granite | ibm-granite/granite-4.1-3b |
-| Granite 4.1 8B | 8B | 128K | ~16 GB | ~8 GB | ~5 GB | ~8 GB | ✅ granite | ibm-granite/granite-4.1-8b |
-| Granite 4.1 30B | 30B | 128K | ~60 GB | ~30 GB | ~17 GB | ~16 GB | ✅ granite | ibm-granite/granite-4.1-30b |
+| Model           | Params |   Native Ctx    | BF16 Wt | FP8 Wt | Q4 Wt  | KV@128K | Tool Calling  | HF Repo                     |
+| --------------- | :----: | :-------------: | :-----: | :----: | :----: | :-----: | :-----------: | --------------------------- |
+| Granite 4.1 3B  |   3B   |      128K       |  ~6 GB  | ~3 GB  | ~2 GB  |  ~4 GB  |   ✅ hermes    | ibm-granite/granite-4.1-3b  |
+| Granite 4.1 8B  |   8B   |      128K       | ~16 GB  | ~8 GB  | ~5 GB  |  ~8 GB  |   ✅ hermes    | ibm-granite/granite-4.1-8b  |
+| Granite 4.1 30B |  30B   |      128K       | ~60 GB  | ~30 GB | ~17 GB | ~16 GB  |   ✅ hermes    | ibm-granite/granite-4.1-30b |
+| Granite 4.2 3B  |   3B   | 128K (512K ext) |  ~6 GB  | ~3 GB  | ~2 GB  |  ~4 GB  | ✅ qwen3_coder | ibm-granite/granite-4.2-3b  |
+| Granite 4.2 8B  |   8B   | 128K (512K ext) | ~16 GB  | ~8 GB  | ~5 GB  |  ~8 GB  | ✅ qwen3_coder | ibm-granite/granite-4.2-8b  |
+| Granite 4.2 30B |  30B   | 128K (512K ext) | ~60 GB  | ~30 GB | ~17 GB | ~16 GB  | ✅ qwen3_coder | ibm-granite/granite-4.2-30b |
+
+> **Granite 4.2 notes:** Built-in reasoning via `<think>...</think>` chain-of-thought (default on).
+> Same GraniteForCausalLM architecture as 4.1 (same weights size, same KV cache).
+> Requires `--tool-call-parser qwen3_coder` (not hermes) and `--reasoning-parser nemotron_v3`.
+> FP8 variants available (`granite-4.2-{3b,8b,30b}-fp8`). GGUF variants available.
+> Thinking budget: code gen tasks need max_tokens >= 8192; short tasks have 70-80% reasoning overhead.
+> Temperature must be 1.0 with top_p=0.95 per IBM recommendation.
+> Thinking can be disabled via `chat_template_kwargs: {enable_thinking: false}`.
+>
+> **4.2 + llama.cpp caveat:** llama.cpp has no reasoning parser — thinking tags appear inline
+> in response content. Not recommended for constrained GPU (4 GB) deployments where the
+> 3B model is used. Stick with 4.1 3B for llama.cpp on low-VRAM hardware.
 
 ### Qwen
 
@@ -167,12 +182,14 @@ and [benchmark-report.md](./benchmark-report.md) for measured results.
 | `--enforce-eager` | Large models on tight VRAM (skips CUDA graphs ~10 GB/GPU overhead). Also required with bitsandbytes quantization. |
 | `--disable-custom-all-reduce` | Required for PCIe interconnect (no NVLink) |
 | `--enable-auto-tool-choice` | Enable tool/function calling |
+| `--tool-call-parser qwen3_coder` | IBM Granite 4.2 models |
 | `--tool-call-parser hermes` | IBM Granite 4.1 models (hermes format, not granite parser) |
 | `--tool-call-parser hermes` | Qwen3/Qwen3.8 models |
 | `--tool-call-parser gemma4` | Gemma 4 models (vLLM nightly) |
 | `--tool-call-parser llama3` | Llama 3.x models |
 | `--tool-call-parser mistral` | Mistral models |
 | `--tool-call-parser glm4` | GLM-4 models |
+| `--reasoning-parser nemotron_v3` | IBM Granite 4.2 thinking/reasoning token separation |
 | `--reasoning-parser qwen3` | Qwen3.8 thinking/reasoning token separation |
 | `--reasoning-parser gemma4` | Gemma 4 reasoning token separation |
 | `--speculative-config '{...}'` | Enable speculative decoding (draft_model, ngram, etc.) |

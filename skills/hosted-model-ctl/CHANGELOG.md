@@ -3,6 +3,10 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-01 18:58 | v7.5.3 — Documented decision to keep rhtevan-work g3b-16k on Granite 4.1: llama.cpp lacks reasoning parser (tags leak), 4.2 GGUF is 145 MB larger (0.14 GiB headroom on 4 GB GPU), 3B reasoning quality marginal. Reverted setup.sh GGUF preference back to 4.1-first. Updated SKILL.md, deployment-profiles.md, model-landscape.md, benchmark-report.md with rationale. |
+| 2026-09-01 18:48 | v7.5.2 — Added Granite 4.2 model rows (3B, 8B, 30B) to model-landscape.md with notes on reasoning, parsers, FP8/GGUF variants, thinking budget, and temperature requirements. Added Section 13 to benchmark-report.md with 4.2 quality, speed, budget exhaustion, and compatibility results. Updated 4.1 tool-call parser from granite to hermes in model table. Updated timestamps across all reference docs. |
+| 2026-09-01 18:36 | v7.5.1 — Updated SKILL.md, deployment-profiles.md, memory-budget.md, model-landscape.md for Granite 4.2. Added reasoning overhead gotcha. Documented qwen3_coder and nemotron_v3 parsers. Updated speed figures. Flipped GGUF preference to 4.2 over 4.1 in setup.sh. Benchmark: 7/7 pass at max_tokens=8192, code gen budget exhaustion at lower values. |
+| 2026-09-01 17:39 | v7.5.0 — Upgrade rhel-ai profiles from Granite 4.1 to 4.2: model IDs (target + draft), tool-call parser hermes to qwen3_coder, added reasoning parser nemotron_v3. Updated profile descriptions. Validated: 4/4 tests pass, tool calling with reasoning separation works, ~44 tok/s total (21 tok/s content due to 50% reasoning token overhead). |
 | 2026-08-26 17:31 | v7.4.0 — Rollback g3b-16k to version-agnostic: MODEL_ID changed from granite-4.2-3b to granite-3b, setup.sh auto-detects GGUF (prefers 4.1 over 4.2 — 4.2 thinking not supported by Goose 1.47). Rolled back container to granite-4.1-3b. |
 | 2026-08-26 17:06 | v7.3.1 — Fix test.sh chat completion for reasoning models: increase max_tokens to 200, check reasoning_content as fallback |
 | 2026-08-26 17:03 | v7.3.0 — Upgrade g3b-16k profile from Granite 4.1 to 4.2 (model ID, GGUF repo, GGUF filename, docs) |

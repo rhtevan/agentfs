@@ -6,7 +6,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER"
 metadata:
   author: agentfs
-  version: "3.2.0"
+  version: "3.3.0"
   tags: [openshift, crc, lightspeed, ols, llm, provider-management]
 user-invocable: true
 disable-model-invocation: false
@@ -421,7 +421,7 @@ oc patch olsconfig cluster --type=json -p '[
       "url": "http://model-listener-rhel-ai.model-provider-crc:9000/v1",
       "credentialsSecretRef": {"name": "skupper-model-rhel-llmcreds"},
       "credentialKey": "apitoken",
-      "models": [{"name": "ibm-granite/granite-4.1-8b-fp8"}]
+      "models": [{"name": "ibm-granite/granite-4.2-8b-fp8"}]
     }
   }
 ]'
@@ -529,7 +529,7 @@ After completing any operation, verify through the OpenShift web console:
 | Test | Spec | Command | Expected |
 |:----:|:----:|---------|----------|
 | T1 | S2 | `bash scripts/list.sh --context crc-admin` | Default + all providers + status `Ready` |
-| T2 | S4 | `bash scripts/switch-provider.sh skupper-model-rhel ibm-granite/granite-4.1-8b-fp8 --context crc-admin` | `✅ Switch complete`, status `Ready` |
+| T2 | S4 | `bash scripts/switch-provider.sh skupper-model-rhel ibm-granite/granite-4.2-8b-fp8 --context crc-admin` | `✅ Switch complete`, status `Ready` |
 | T3 | S6 | `bash scripts/remove-provider.sh skupper-model-rhel --context crc-admin` (while it's the default) | Exit 1, `❌ Cannot remove...` |
 | T4 | S5 | `bash scripts/remove-provider.sh skupper-model-rhtevan --context crc-admin` (after switching away) | `✅ Provider removed` |
 | T5 | S7 | `bash scripts/list.sh --context crc-admin` (with VAN running + models started) | Skupper providers show `✅ Live` |

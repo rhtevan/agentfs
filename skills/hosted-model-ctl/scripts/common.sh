@@ -22,8 +22,8 @@ declare -A DEPLOY_PROFILES=(
   [g3b-16k]="rhtevan-work|model-g3b|ghcr.io/ggml-org/llama.cpp:server-cuda-b9994|llamacpp|ibm-granite/granite-3b|1|16384|10000|--parallel 1||Granite 3B Q4_K_M @16K|37 tok/s"
 
   # ── rhel-ai (4× NVIDIA L4, 88 GB GDDR6, 1200 GB/s) ──
-  [g8b-spec-128k]="rhel-ai|model-granite-8b-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.1-8b|4|131072|9000|--enforce-eager --dtype bfloat16 --enable-auto-tool-choice --tool-call-parser hermes|{SPEC_G8B_BF16}|Granite 8B BF16 + 3B BF16 draft TP=4 @128K|19-25 tok/s"
-  [g8b-fp8-spec-128k]="rhel-ai|model-granite-8b-fp8-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.1-8b-fp8|4|131072|9000|--enable-auto-tool-choice --tool-call-parser hermes|{SPEC_G8B_FP8}|Granite 8B FP8 + 3B FP8 draft TP=4 @128K + CUDA graphs|58-79 tok/s"
+  [g8b-spec-128k]="rhel-ai|model-granite-8b-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.2-8b|4|131072|9000|--enforce-eager --dtype bfloat16 --enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3|{SPEC_G8B_BF16}|Granite 4.2 8B BF16 + 3B BF16 draft TP=4 @128K|19-25 tok/s"
+  [g8b-fp8-spec-128k]="rhel-ai|model-granite-8b-fp8-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.2-8b-fp8|4|131072|9000|--enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3|{SPEC_G8B_FP8}|Granite 4.2 8B FP8 + 3B FP8 draft TP=4 @128K + CUDA graphs|58-79 tok/s"
 )
 
 # ── Speculative Decoding Configs ──────────────────────────────
@@ -31,8 +31,8 @@ declare -A DEPLOY_PROFILES=(
 # Referenced by {PLACEHOLDER} in profile SPEC_CONFIG field.
 
 declare -A SPEC_CONFIGS=(
-  ["{SPEC_G8B_BF16}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.1-3b", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
-  ["{SPEC_G8B_FP8}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.1-3b-fp8", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
+  ["{SPEC_G8B_BF16}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.2-3b", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
+  ["{SPEC_G8B_FP8}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.2-3b-fp8", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
 )
 
 # Default profiles per host
