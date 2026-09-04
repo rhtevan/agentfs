@@ -203,24 +203,13 @@ cat > "$TARGET" << 'AGENTSEOF'
 | Resource | Path | What's Inside |
 |----------|------|---------------|
 | Agent identity | [.agents/SOUL.md](./.agents/SOUL.md) | Tone, style, communication defaults |
-| Skills index | `~/.agents/skills/index.md` | Signal-based skill routing lookup (read on session start) |
-| Knowledge index | `~/.agents/knowledge/index.md` | Cross-project knowledge bundles (USER scope) |
+| Skills index | `~/.agents/skills/index.md` | Skill discovery by tags, descriptions, and signal phrases |
+| Knowledge index | `~/.agents/knowledge/index.md` | Knowledge discovery by bundle names and concept summaries |
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
 
 <!-- Agent identity — inlined by Goose at session start via @import -->
 @.agents/SOUL.md
-
-## Signal Routing
-
-| Signal | Route |
-|--------|-------|
-| "remember this", "note that", "keep in mind" | `.agents/memories/MEMORY.md` |
-| "always do X", "never do Y", "this is a rule" | Propose as `AGENTS.md` guardrail (human approval) |
-| "I prefer", "I like", "my style is" | `.agents/memories/USER.md` |
-| "forget this", "remove that note" | Edit `MEMORY.md`, remove entry |
-| "what do you remember", "check your notes" | Read `.agents/memories/MEMORY.md` |
-| "hey git", "git" | `load_skill(name: "agentfs-git-push")` — follow completely |
 
 ## Scope Definitions
 
@@ -242,22 +231,55 @@ cat > "$TARGET" << 'AGENTSEOF'
 | `index.md` | ✅ | ✅ |
 | `log.md` | ✅ | ✅ |
 
+## Discovery Tiers
+
+Context discovery uses a three-tier fallback chain. Execute tiers
+in order; stop at the first match. Index files are **active lookup
+tools**, not passive documentation — they are the always-available
+fallback when frontmatter matching is too narrow and KGM is not
+enabled.
+
+| Tier | Mechanism | Source | When |
+|------|-----------|--------|------|
+| 1 | **Frontmatter match** | Skill descriptions in system prompt | Always available — matched against user message |
+| 2 | **Index scan** | `~/.agents/skills/index.md` (tags, descriptions) and `~/.agents/knowledge/index.md` (bundle names, concept summaries) | When Tier 1 finds no match — read the index files, scan for relevant tags/descriptions/concepts |
+| 3 | **KGM search** | `search_nodes` tool (knowledge graph extension) | When extension is enabled — query with task topic keywords; read `Source:` files for top results (max 3); summaries alone are insufficient |
+
+- **Tier 2 skill match** → `load_skill` → follow instructions
+- **Tier 2 knowledge match** → read the linked concept file(s) before answering
+- **No match at any tier** → generic interpretation
+
 ## Rules
 
-| # | Trigger | Action |
-|---|---------|--------|
-| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table for LLM-direct routes. If a `search_nodes` tool is available (from any knowledge graph extension), query with task topic keywords. Use returned summaries to select the most relevant results (max 3). MUST read the `Source:` files for selected results before answering — summaries alone are insufficient. Only if no match: generic interpretation. |
-| 2 | Accessing `.agents/` content | Browse `index.md` first, follow links to content. |
-| 3 | Session start | Check for `CLAUDE.md`, `.cursorrules`, `.cursor/rules/`, `.windsurfrules`, `.github/copilot-instructions.md`. Treat as supplementary. `AGENTS.md` wins on conflict. |
-| 4 | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
-| 5 | Any write/edit under `.agents/` or `~/.agents/` | ✅ `merge-log-entry.sh` for each touched scope ✅ `merge-changelog-entry.sh` + version bump for modified skills ✅ `post-edit.sh` runs clean ✅ All markdown links resolve. Details: `load_skill(name: "agentfs-setup/references/filesystem-integrity.md")` |
-| 6 | `git add` or "hey git" | `load_skill(name: "agentfs-git-push")` — follow completely. |
-| 7 | Before destructive op (delete, bulk rename, multi-file edit under `.agents/`) | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
-| 8 | Action involves policy, domain concepts, or unfamiliar procedures | Consult knowledge index (`~/.agents/knowledge/index.md`) for relevant context before acting. |
-| 9 | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. |
-| 10 | Always | No validation phrases ("Great question", "Absolutely"). Lead with substance. Name at least one risk when evaluating a plan or design. |
-| 11 | Always | Don't reverse position without new information or logical argument. When reversing, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for confirmation. Log overrides with `[OVERRIDE]`. |
-| 12 | Always | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 turns: emit + self-check. Never persist to files. |
+**All rules below are mandatory.** They are not guidelines,
+suggestions, or best-effort. Violating a rule requires explicit
+user approval logged with `[OVERRIDE]` per Rule 15. Guardrail
+scripts live at `~/.agents/skills/agentfs-setup/scripts/`.
+
+| # | Type | Stimulus | Action |
+|---|------|----------|--------|
+| | | **Session start** | |
+| 1 | Event | Session start | Check for `CLAUDE.md`, `.cursorrules`, `.cursor/rules/`, `.windsurfrules`, `.github/copilot-instructions.md`. Treat as supplementary. `AGENTS.md` wins on conflict. |
+| | | **Per-message dispatch** | |
+| 2 | Signal | "remember this", "note that", "keep in mind" | → `.agents/memories/MEMORY.md` |
+| 3 | Signal | "always do X", "never do Y", "this is a rule" | → Propose as `AGENTS.md` guardrail (human approval) |
+| 4 | Signal | "I prefer", "I like", "my style is" | → `.agents/memories/USER.md` |
+| 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
+| 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
+| 7 | Signal | "hey git", `git add` | → `load_skill(name: "agentfs-git-push")` — follow completely |
+| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2 → 3). Scan this table for stimulus match. Execute matched action. No match at any tier: generic interpretation. |
+| | | **Before reading `.agents/`** | |
+| 9 | Event | First read of any `.agents/` file in a session | Browse that scope's `index.md` first, follow links to content. |
+| | | **Before writing `.agents/`** | |
+| 10 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 11 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
+| 12 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. (Rule 13 also fires — this rule is routing, Rule 13 is mechanical.) |
+| | | **After writing `.agents/`** | |
+| 13 | Event | Any write/edit under `.agents/` or `~/.agents/` completed | Run ALL: ① `~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh <path-to-log.md> "<msg>"` for each touched scope (e.g., `~/.agents/log.md` or `./.agents/log.md`) ② `~/.agents/skills/agentfs-setup/scripts/merge-changelog-entry.sh <path-to-CHANGELOG.md> "<version>" "<desc>"` + version bump for modified skills ③ `~/.agents/skills/agentfs-setup/scripts/post-edit.sh` runs clean ④ All markdown links resolve. Details: `load_skill(name: "agentfs-setup/references/filesystem-integrity.md")` |
+| | | **Always** | |
+| 14 | Always | Every response | No validation phrases ("Great question", "Absolutely"). Lead with substance. Name ≥1 risk when evaluating a plan or design. |
+| 15 | Always | Every response | No position reversal without new information or logical argument. When reversing, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for confirmation. Log overrides with `[OVERRIDE]`. |
+| 16 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 turns: emit + self-check. Never persist to files. |
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->

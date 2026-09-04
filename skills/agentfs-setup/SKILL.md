@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "5.3.0"
+  version: "5.5.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -293,6 +293,32 @@ as Trigger/Action pairs:
 | Knowledge | `~/.agents/knowledge/` | — |
 | Memories | — | `.agents/memories/` |
 | Workspace | — | `AGENTS.md` |
+
+## Script Input/Output Conventions
+
+### `merge-log-entry.sh`
+
+Writes an entry verbatim under a timestamped heading in `log.md`.
+The entry text MUST be bullet-prefixed using `- `. For multi-item
+entries under one heading, pass multiple bullet lines separated by
+`\n`:
+
+```bash
+# Single entry
+bash merge-log-entry.sh ~/.agents/log.md "- Updated README.md skill categories"
+
+# Multi-line entry
+bash merge-log-entry.sh ~/.agents/log.md "- Added SoC principle to skill-gen\n- Fixed merge-log-entry.sh comment"
+```
+
+### `merge-changelog-entry.sh`
+
+Writes a version entry to a skill's `CHANGELOG.md`. Pass the version
+without the `v` prefix — the script adds it:
+
+```bash
+bash merge-changelog-entry.sh ~/.agents/skills/my-skill/CHANGELOG.md "1.1.0" "Added new feature"
+```
 
 ## Supporting Files
 

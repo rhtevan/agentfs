@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-04 15:01 | v3.3.0 — Added Script Comment Separation of Concerns principle and cross-skill execution priority order to SKILL.md Step 5. Added Script Comment Rules section to skill-schema.md (v2.2.0). |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-08-20 10:30 | v3.2.0 — Added explicit ⛔ GATE to Post-Creation Checklist requiring user permission before skipping Principle 4 (Spec/Tests) or Principle 5 (Security) |
 | 2026-08-13 19:22 | v3.1.0 — Externalized changelogs: SKILL.md template now scaffolds `CHANGELOG.md` as separate file with reference link in SKILL.md; updated Post-Creation Checklist, Skill Check P3, and edit-existing guidance; updated `references/skill-schema.md` to v2.1.0 with new Changelog Rules |

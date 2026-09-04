@@ -1,6 +1,6 @@
 ---
 title: SKILL.md Frontmatter Schema
-version: "2.1.0"
+version: "2.2.0"
 status: canonical
 ---
 
@@ -164,6 +164,33 @@ why it exists, and when to use it.
 
 5. **Every skill MUST have** a `CHANGELOG.md` with at least one
    entry (the initial `v1.0.0` entry).
+
+## Script Comment Rules
+
+Scripts under `scripts/` contain two types of content: executable
+code and non-executable comments. The boundary between what comments
+may describe and what belongs in SKILL.md prose is governed by the
+**Separation of Concerns** principle:
+
+| Belongs in… | Content |
+|-------------|---------|
+| **SKILL.md** | Input format conventions, expected usage patterns, output format expectations, cross-script orchestration |
+| **Script comments** | Internal implementation notes — algorithms, edge cases, non-obvious logic, inline explanations of *why* a code block works the way it does |
+
+**Rule:** Script comments MUST NOT prescribe how the script is used,
+what format its inputs should take, or what format its outputs
+produce. Those are SKILL.md concerns. A script comment that says
+"ENTRY_TEXT should be bullet-prefixed lines" is a violation — that
+convention belongs in the owning SKILL.md's prose instructions.
+
+**Header comments** (the block at the top of the script) are
+acceptable for:
+- One-line description of what the script does
+- `Usage:` line showing the CLI invocation syntax
+- Any `set` flags or environment variable requirements
+
+Header comments MUST NOT include examples of expected input content
+or output format — those belong in SKILL.md.
 
 ## Anti-Patterns
 

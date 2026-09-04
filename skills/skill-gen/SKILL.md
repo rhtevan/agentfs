@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.2.0"
+  version: "3.3.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -276,6 +276,40 @@ Generate executable scripts under `scripts/`:
 set -euo pipefail
 # ... implementation ...
 ```
+
+#### Script Comment Separation of Concerns
+
+Comments in scripts under `scripts/` serve exactly one purpose:
+explain **how the code works internally** — algorithms, edge cases,
+non-obvious implementation logic.
+
+Comments MUST NOT:
+- Prescribe input format conventions (belongs in the owning SKILL.md)
+- Describe expected usage patterns (belongs in the owning SKILL.md)
+- Define output format expectations (belongs in the owning SKILL.md)
+
+The owning SKILL.md is the single source of truth for how a script
+is called, what inputs it expects, and what outputs it produces.
+Script comments complement the SKILL prose with implementation
+detail — they never substitute for it or contradict it.
+
+**Why this matters:** Scripts are frequently called by skills other
+than their owner (cross-skill execution). When the calling skill
+provides no input format guidance, the agent falls back to reading
+script comments. If those comments prescribe conventions that belong
+in SKILL.md prose, the agent may follow stale or inconsistent
+guidance — because the comment was never updated when the SKILL
+prose changed, or because the owning skill never formally adopted
+the convention the comment describes.
+
+**Cross-skill execution priority order:** When executing a script
+owned by a different skill, the agent resolves input conventions in
+this order:
+1. **Calling skill's prose** — if it specifies the format, use it
+2. **Existing output patterns** — check the target file/resource
+   for established conventions
+3. **Owning skill's prose** — load the owning SKILL.md if needed
+4. **Script comments** — last resort, implementation hints only
 
 ### Step 6 — AgentFS Post-Creation Checklist
 

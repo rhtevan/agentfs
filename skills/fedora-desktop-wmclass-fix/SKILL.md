@@ -7,7 +7,7 @@ argument-hint: "[--fix] [--app <name>]"
 compatibility: "Fedora/GNOME on Wayland with Electron apps"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [fedora, gnome, wayland, electron, desktop, wmclass]
 user-invocable: true
 disable-model-invocation: false
@@ -116,6 +116,23 @@ The audit script (`scripts/wmclass-audit.sh`):
    database.
 
 ## Gotchas
+
+- **Competing `.desktop` files with the same `StartupWMClass`
+  cause duplicate icons.** This is a common blind spot. Snap and
+  Flatpak apps often install their own `.desktop` file alongside
+  a user override. If both have the same `StartupWMClass`, GNOME
+  matches running windows to both — the pinned favorite gets one
+  match, and the second file spawns a duplicate icon. Always check
+  for multiple `.desktop` files for the same app across all
+  `XDG_DATA_DIRS` locations and shadow extras with `Hidden=true`
+  user overrides. The audit script should be extended to detect this.
+
+- **`--ozone-platform=x11` changes Electron WM_CLASS behavior.**
+  When an Electron app is forced to X11 mode (e.g., by a wrapper
+  script), it may create utility/splash windows with WM_CLASS set
+  to the binary name (e.g., `Obsidian`) instead of the app-id
+  (e.g., `md.obsidian.Obsidian`). Pass `--class=<app-id>` in the
+  wrapper to force consistent WM_CLASS on all windows.
 
 - **Reinstalls reset the fix.** When an Electron app is reinstalled
   or updated via RPM/deb, the system `.desktop` file is overwritten.

@@ -2,37 +2,59 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-04 16:55
+
+- Log format cleanup: normalized all entries in ~/.agents/log.md (138 plain-text → bullet, 9 star-bullet → dash-bullet) and ~/.agents/knowledge/log.md (20 star-bullet → dash-bullet, 1 plain-text → bullet)
+
+## 2026-09-04 15:01
+
+- skill-gen v3.3.0: Added Script Comment SoC principle and cross-skill execution priority order. skill-schema v2.2.0: Added Script Comment Rules section.
+- agentfs-setup v5.5.0: Added Script I/O Conventions section (bullet-prefixed log entries). Fixed merge-log-entry.sh comment (SoC). Added cross-skill execution rule to filesystem-integrity.md.
+
+## 2026-09-04 14:13
+
+- Updated README.md: expanded skill categories (added Diagramming, Shell Tooling, Spec Authoring, Data Services), updated structural rules from 12 to 16 with v5.4.0 Type/Stimulus/Action format, bumped template version ref 5.3.0 → 5.4.0
+
+## 2026-09-04 14:01
+
+- agentfs-setup v5.4.0: reordered dispatch group (signals before fallback); removed ~/.agents/scripts/ symlinks, paths point directly to skill scripts
+
+## 2026-09-04 13:13
+- AgentFS template v5.4.0: redesigned Rules system — merged Signal Routing + Rules into single typed table; added Discovery Tiers section; added enforcement preamble; phase-grouped rules; inlined script paths; created ~/.agents/scripts/ symlinks
+
+- Updated fedora-obsidian-fix v1.1.0 and fedora-desktop-wmclass-fix v1.1.0 — fixed duplicate GNOME Dash icon caused by competing .desktop files and inconsistent Electron WM_CLASS under X11 mode
+
 ## 2026-09-01 18:58
 
-hosted-model-ctl v7.5.3: Decision — rhtevan-work g3b-16k stays on Granite 4.1. Rationale: llama.cpp has no reasoning parser (4.2 tags leak), 4.2 GGUF +145 MB (headroom drops to 0.14 GiB on 4 GB GPU), 3B reasoning quality marginal. Reverted GGUF preference to 4.1-first. Granite 4.2 upgrade is rhel-ai (vLLM) only.
+- hosted-model-ctl v7.5.3: Decision — rhtevan-work g3b-16k stays on Granite 4.1. Rationale: llama.cpp has no reasoning parser (4.2 tags leak), 4.2 GGUF +145 MB (headroom drops to 0.14 GiB on 4 GB GPU), 3B reasoning quality marginal. Reverted GGUF preference to 4.1-first. Granite 4.2 upgrade is rhel-ai (vLLM) only.
 
 ## 2026-09-01 18:48
 
-hosted-model-ctl v7.5.2: Added Granite 4.2 model rows to model-landscape.md. Added Section 13 (4.2 benchmark results) to benchmark-report.md. Updated timestamps. Fixed 4.1 tool-call parser label from granite to hermes.
+- hosted-model-ctl v7.5.2: Added Granite 4.2 model rows to model-landscape.md. Added Section 13 (4.2 benchmark results) to benchmark-report.md. Updated timestamps. Fixed 4.1 tool-call parser label from granite to hermes.
 
 ## 2026-09-01 18:36
 
-hosted-model-ctl v7.5.1: Granite 4.2 upgrade wrap-up. Updated all reference docs (deployment-profiles, memory-budget, model-landscape). Added reasoning overhead gotcha. Benchmark results: 7/7 pass (requires max_tokens>=8192 for code gen). Speed: ~50 tok/s total, ~47 content on long gen, 70-80% reasoning overhead on short responses. Quality improved on multi-step reasoning. Flipped GGUF preference to 4.2.
+- hosted-model-ctl v7.5.1: Granite 4.2 upgrade wrap-up. Updated all reference docs (deployment-profiles, memory-budget, model-landscape). Added reasoning overhead gotcha. Benchmark results: 7/7 pass (requires max_tokens>=8192 for code gen). Speed: ~50 tok/s total, ~47 content on long gen, 70-80% reasoning overhead on short responses. Quality improved on multi-step reasoning. Flipped GGUF preference to 4.2.
 
 ## 2026-09-01 18:07
 
-crc-ols v3.3.0: Updated skupper-model-rhel OLS provider model from granite-4.1-8b-fp8 to granite-4.2-8b-fp8 (Granite 4.2 upgrade dependency).
+- crc-ols v3.3.0: Updated skupper-model-rhel OLS provider model from granite-4.1-8b-fp8 to granite-4.2-8b-fp8 (Granite 4.2 upgrade dependency).
 
 ## 2026-09-01 17:39
 
-hosted-model-ctl v7.5.0: Upgraded rhel-ai profiles (g8b-fp8-spec-128k, g8b-spec-128k) from Granite 4.1 to 4.2. Parser changes: hermes→qwen3_coder (tool), added nemotron_v3 (reasoning). Draft models upgraded to 4.2-3b-fp8. All 4 tests pass. Speed: ~44 tok/s total, ~21 tok/s content-visible (50% reasoning overhead vs 4.1 baseline of 58-79 tok/s).
+- hosted-model-ctl v7.5.0: Upgraded rhel-ai profiles (g8b-fp8-spec-128k, g8b-spec-128k) from Granite 4.1 to 4.2. Parser changes: hermes→qwen3_coder (tool), added nemotron_v3 (reasoning). Draft models upgraded to 4.2-3b-fp8. All 4 tests pass. Speed: ~44 tok/s total, ~21 tok/s content-visible (50% reasoning overhead vs 4.1 baseline of 58-79 tok/s).
 
 ## 2026-08-31 20:51
 
-README.md: fixed D5 (Rule #1 KGM triage wording) and D6 (template version 5.0.0 → 5.3.0)
+- README.md: fixed D5 (Rule #1 KGM triage wording) and D6 (template version 5.0.0 → 5.3.0)
 
 ## 2026-08-31 20:45
 
-agentfs-setup v5.3.0: Rule #1 KGM triage — MUST read Source files (max 3) before answering
+- agentfs-setup v5.3.0: Rule #1 KGM triage — MUST read Source files (max 3) before answering
 
 ## 2026-08-31 20:32
 
-agentfs-setup v5.2.0: added post-sync Rule re-read requirement (KGM bootstrap fix)
+- agentfs-setup v5.2.0: added post-sync Rule re-read requirement (KGM bootstrap fix)
 
 ## 2026-08-31 17:29
 
@@ -44,380 +66,380 @@ agentfs-setup v5.2.0: added post-sync Rule re-read requirement (KGM bootstrap fi
 
 ## 2026-08-31 15:59
 
-A11: Archived v5 strategy/action-plan/migration-map to agentfs-setup/references/, bumped agentfs-setup to 5.0.0, goose-kgm to 1.0.1. AgentFS v5 rollout complete (agentfs-v5 A11)
+- A11: Archived v5 strategy/action-plan/migration-map to agentfs-setup/references/, bumped agentfs-setup to 5.0.0, goose-kgm to 1.0.1. AgentFS v5 rollout complete (agentfs-v5 A11)
 
 ## 2026-08-31 15:58
 
-A10: Updated README.md and agentfs-setup SKILL.md — v5 flat rule table (12 rules), removed Gate/Rule/Habit taxonomy, updated all guardrail references to 'rule' (agentfs-v5 A10)
+- A10: Updated README.md and agentfs-setup SKILL.md — v5 flat rule table (12 rules), removed Gate/Rule/Habit taxonomy, updated all guardrail references to 'rule' (agentfs-v5 A10)
 
 ## 2026-08-31 15:55
-A9: Wired conditional KGM reindex into post-edit.sh, added KGM integration section to agentfs-setup SKILL.md (agentfs-v5 A9)
+- A9: Wired conditional KGM reindex into post-edit.sh, added KGM integration section to agentfs-setup SKILL.md (agentfs-v5 A9)
 
-A8: Created KGM entity schema reference doc — KnowledgeBundle + KnowledgeConcept entity types, contains relation, observation conventions (agentfs-v5 A8)
+- A8: Created KGM entity schema reference doc — KnowledgeBundle + KnowledgeConcept entity types, contains relation, observation conventions (agentfs-v5 A8)
 
 ## 2026-08-31 15:51
 
-A5: Rewrote seed-agents-md.sh PROJECT template — v5 flat table (12 rules, 6 signal rows, no Quick Reference, no inline guardrail prose), 69% token reduction (agentfs-v5 A5)
+- A5: Rewrote seed-agents-md.sh PROJECT template — v5 flat table (12 rules, 6 signal rows, no Quick Reference, no inline guardrail prose), 69% token reduction (agentfs-v5 A5)
 
 ## 2026-08-31 15:48
 
-Created goose-kgm skill v1.0.0 — KGM lifecycle management with setup/teardown/enable/disable/status/reindex, OKF-primary design (agentfs-v5 A4)
+- Created goose-kgm skill v1.0.0 — KGM lifecycle management with setup/teardown/enable/disable/status/reindex, OKF-primary design (agentfs-v5 A4)
 
 ## 2026-08-31 15:43
 
-A3: Created v5-migration-map.md — full content coverage audit, 12 rules mapped, zero true content loss (agentfs-v5 A3)
+- A3: Created v5-migration-map.md — full content coverage audit, 12 rules mapped, zero true content loss (agentfs-v5 A3)
 
 ## 2026-08-31 15:42
 
-A2: Added references/filesystem-integrity.md to agentfs-setup — delegation table, scope logging rules, checkpoint protocol (agentfs-v5 A2)
+- A2: Added references/filesystem-integrity.md to agentfs-setup — delegation table, scope logging rules, checkpoint protocol (agentfs-v5 A2)
 
 ## 2026-08-31 15:41
 
-Created agentfs-git-push skill v1.0.0 — absorbs Git Push Safety workflow from AGENTS.md Guardrail #10 (S5 externalization, agentfs-v5 A1)
+- Created agentfs-git-push skill v1.0.0 — absorbs Git Push Safety workflow from AGENTS.md Guardrail #10 (S5 externalization, agentfs-v5 A1)
 
 ## 2026-08-31 14:37
 
-Renamed skill 'archify' → 'agentfs-archify' (AgentFS collection prefix). Renamed skill 'fuseki' → 'agentflow-fuseki' (AgentFLOW collection prefix). Updated name: fields, cross-references in goose-nextai-drawio/SKILL.md, .agents/memories/USER.md. Signal phrases unchanged. Index rebuilt (56 skills).
+- Renamed skill 'archify' → 'agentfs-archify' (AgentFS collection prefix). Renamed skill 'fuseki' → 'agentflow-fuseki' (AgentFLOW collection prefix). Updated name: fields, cross-references in goose-nextai-drawio/SKILL.md, .agents/memories/USER.md. Signal phrases unchanged. Index rebuilt (56 skills).
 
 ## 2026-08-31 10:03
 
-dsh-setup v1.3.1 — added version check to status.sh; compares installed vs npm registry latest, shows upgrade recommendation
+- dsh-setup v1.3.1 — added version check to status.sh; compares installed vs npm registry latest, shows upgrade recommendation
 
 ## 2026-08-31 09:59
 
-dsh-setup v1.3.0 — replaced 'dsh launcher'/'dsh desktop' signals with 'dsh status'; added scripts/status.sh for backend state + desktop path query
+- dsh-setup v1.3.0 — replaced 'dsh launcher'/'dsh desktop' signals with 'dsh status'; added scripts/status.sh for backend state + desktop path query
 
 ## 2026-08-29 13:14
 
-Added van-topology.gif to skupper-model-provider/docs/ and added image link to SKILL.md Architecture section
+- Added van-topology.gif to skupper-model-provider/docs/ and added image link to SKILL.md Architecture section
 
 ## 2026-08-29 12:41
 
-Updated skupper-model-provider diagrams: VAN Topology page redesigned — removed RouterAccess component, removed Controllers for consistency, added 3 network zone bands (LAN/AWS/HOST), renamed CRC site to OpenShift Local, added flow animations, cleaned layout alignment. Operational Lifecycle and Startup Sequence pages unchanged.
+- Updated skupper-model-provider diagrams: VAN Topology page redesigned — removed RouterAccess component, removed Controllers for consistency, added 3 network zone bands (LAN/AWS/HOST), renamed CRC site to OpenShift Local, added flow animations, cleaned layout alignment. Operational Lifecycle and Startup Sequence pages unchanged.
 
 ## 2026-08-28 20:43
 
-goose-nextai-drawio v1.1.2: removed undocumented cwd/bundled null fields from SKILL.md, manage.sh, and both stdio entries in config.yaml (nextaidrawio + linuxmcpserver)
+- goose-nextai-drawio v1.1.2: removed undocumented cwd/bundled null fields from SKILL.md, manage.sh, and both stdio entries in config.yaml (nextaidrawio + linuxmcpserver)
 
 ## 2026-08-28 20:41
 
-goose-nextai-drawio v1.1.1: fixed extension name 'Next AI Draw.io' → 'Next AI Drawio' — period in name broke Goose Desktop toggle. Updated manage.sh, SKILL.md, config.yaml.
+- goose-nextai-drawio v1.1.1: fixed extension name 'Next AI Draw.io' → 'Next AI Drawio' — period in name broke Goose Desktop toggle. Updated manage.sh, SKILL.md, config.yaml.
 
 ## 2026-08-28 15:15
 
-goose-nextai-drawio v1.1.0 — added Specification (S1-S10) and Tests (T1-T9) per Principle 4 compliance
+- goose-nextai-drawio v1.1.0 — added Specification (S1-S10) and Tests (T1-T9) per Principle 4 compliance
 
 ## 2026-08-28 15:03
 
-Created skill goose-nextai-drawio v1.0.0 — setup/teardown/upgrade/status for next-ai-draw-io MCP server as Goose stdio extension
+- Created skill goose-nextai-drawio v1.0.0 — setup/teardown/upgrade/status for next-ai-draw-io MCP server as Goose stdio extension
 
 ## 2026-08-27 19:33
 
-crc-ols v3.2.0: Added Skupper provider liveness check in list.sh — detects model name mismatches and unreachable backends by probing /v1/models via the CRC router pod. Cross-skill validation between crc-ols and hosted-model-ctl without tight coupling.
+- crc-ols v3.2.0: Added Skupper provider liveness check in list.sh — detects model name mismatches and unreachable backends by probing /v1/models via the CRC router pod. Cross-skill validation between crc-ols and hosted-model-ctl without tight coupling.
 
 ## 2026-08-27 19:22
 
-crc-ols v3.1.0: Added model validation in switch-provider.sh — prevents silent runtime 404 when defaultModel doesn't exist under defaultProvider. Added 'switch ols model' signal. Added gotcha for CRD-level model name mismatch.
+- crc-ols v3.1.0: Added model validation in switch-provider.sh — prevents silent runtime 404 when defaultModel doesn't exist under defaultProvider. Added 'switch ols model' signal. Added gotcha for CRD-level model name mismatch.
 
 ## 2026-08-27 19:12
 
-crc-ols v3.0.0: Signal refactor per skill-gen principles. 5 unambiguous signals (install/list/add/switch/remove ols), zero cross-skill collisions. Moved list/switch/remove operations from prose to deterministic scripts. Added Gotchas (6 known issues), Specification (6 items), Tests (4 cases). Renamed switch-default to switch-provider to reflect provider+model pair semantics.
+- crc-ols v3.0.0: Signal refactor per skill-gen principles. 5 unambiguous signals (install/list/add/switch/remove ols), zero cross-skill collisions. Moved list/switch/remove operations from prose to deterministic scripts. Added Gotchas (6 known issues), Specification (6 items), Tests (4 cases). Renamed switch-default to switch-provider to reflect provider+model pair semantics.
 
 ## 2026-08-27 12:59
 
-skupper-model-provider v8.8.0: Fixed delegation instructions — hosted-model-ctl takes profile names (not host names) due to multiple profiles per host with mutual exclusion. Added start/stop on PROVIDER signal rows with profile resolution order. Added 3 known issues: OLS duplicate volume mount with shared secrets, llama.cpp grammar incompatibility with OLS tool-use, provider naming convention.
+- skupper-model-provider v8.8.0: Fixed delegation instructions — hosted-model-ctl takes profile names (not host names) due to multiple profiles per host with mutual exclusion. Added start/stop on PROVIDER signal rows with profile resolution order. Added 3 known issues: OLS duplicate volume mount with shared secrets, llama.cpp grammar incompatibility with OLS tool-use, provider naming convention.
 
 ## 2026-08-27 12:14
 
-skupper-model-provider v8.7.1: Documented combined status report format in SKILL.md — 5-section layout covering VAN infra, CRC links, localhost listeners, CRC listeners, and model containers
+- skupper-model-provider v8.7.1: Documented combined status report format in SKILL.md — 5-section layout covering VAN infra, CRC links, localhost listeners, CRC listeners, and model containers
 
 ## 2026-08-27 11:39
 
-Updated README.md: expanded OpenShift/CRC category to include cluster lifecycle (start/stop/cleanup)
+- Updated README.md: expanded OpenShift/CRC category to include cluster lifecycle (start/stop/cleanup)
 
 ## 2026-08-27 11:30
 
-Updated crc-ctl skill to v2.0.0: added crc-cleanup.sh script for VM disk cleanup (prune images, vacuum journals, clean API logs, delete completed pods), added Gotchas/Specification/Tests sections, expanded signal phrases
+- Updated crc-ctl skill to v2.0.0: added crc-cleanup.sh script for VM disk cleanup (prune images, vacuum journals, clean API logs, delete completed pods), added Gotchas/Specification/Tests sections, expanded signal phrases
 
 ## 2026-08-27 11:19
 
-skupper-model-provider v8.7.0: Refactored common.sh, up.sh, down.sh, status.sh for dual CRC links (link-hub-rhel-ai + link-local-ezhang). All scripts now manage both CRC links and both listeners (9000 + 10000). Precheck topology diagram updated. Verified: status.sh, setup.sh --check, bash -n on all scripts.
+- skupper-model-provider v8.7.0: Refactored common.sh, up.sh, down.sh, status.sh for dual CRC links (link-hub-rhel-ai + link-local-ezhang). All scripts now manage both CRC links and both listeners (9000 + 10000). Precheck topology diagram updated. Verified: status.sh, setup.sh --check, bash -n on all scripts.
 
 ## 2026-08-27 10:57
 
-skupper-model-provider v8.6.0: Added RouterAccess on local-ezhang (port 55672) and CRC→local link; CRC now reaches both rhel-ai and rhtevan-work models. Updated SKILL.md architecture, site config, and topology.env. Scripts (up.sh/down.sh/setup.sh) need follow-up refactor to manage second CRC link lifecycle.
+- skupper-model-provider v8.6.0: Added RouterAccess on local-ezhang (port 55672) and CRC→local link; CRC now reaches both rhel-ai and rhtevan-work models. Updated SKILL.md architecture, site config, and topology.env. Scripts (up.sh/down.sh/setup.sh) need follow-up refactor to manage second CRC link lifecycle.
 
 ## 2026-08-27 10:29
 
-crc-ols v2.2.1: Fix skupper-model provider model name granite-4.1-8b → granite-4.1-8b-fp8 in SKILL.md template (matches g8b-fp8-spec-128k profile)
+- crc-ols v2.2.1: Fix skupper-model provider model name granite-4.1-8b → granite-4.1-8b-fp8 in SKILL.md template (matches g8b-fp8-spec-128k profile)
 
 ## 2026-08-27 09:12
 
-Updated README.md Desktop/System category to include Obsidian Snap fix
+- Updated README.md Desktop/System category to include Obsidian Snap fix
 
 ## 2026-08-27 09:08
 
-Created skill fedora-obsidian-fix v1.0.0 — captures Obsidian Snap portal fix for Fedora Wayland (wrapper + .desktop override with --ozone-platform=x11)
+- Created skill fedora-obsidian-fix v1.0.0 — captures Obsidian Snap portal fix for Fedora Wayland (wrapper + .desktop override with --ozone-platform=x11)
 
 ## 2026-08-26 23:21
 
-skills/skupper-model-provider v8.5.0 — Simplified signal routing: dropped redundant 'model' from all signals. Short forms (`start skupper`, `stop skupper on crc`) now primary. Signal table uses PROVIDER/CONSUMER placeholders.
+- skills/skupper-model-provider v8.5.0 — Simplified signal routing: dropped redundant 'model' from all signals. Short forms (`start skupper`, `stop skupper on crc`) now primary. Signal table uses PROVIDER/CONSUMER placeholders.
 
 ## 2026-08-26 23:11
 
-skills/skupper-model-provider v8.4.0 — Added consumer site signal routing (`start/stop skupper model on crc`). Scoping rules now distinguish provider vs consumer sites. Added S10a/S10b specs, T10a/T10b/T10c tests. No script changes.
+- skills/skupper-model-provider v8.4.0 — Added consumer site signal routing (`start/stop skupper model on crc`). Scoping rules now distinguish provider vs consumer sites. Added S10a/S10b specs, T10a/T10b/T10c tests. No script changes.
 
 ## 2026-08-26 21:55
 
-agentfs-setup: Added deterministic scope auto-detection to scaffold-dotagents.sh and seed-agents-md.sh. Scripts now compare ROOT_DIR against CWD — different path = LITE, same path or no path = PROJECT. Agent no longer needs to decide --scope flag. Updated SKILL.md to reflect simplified agent workflow (just pass the target dir).
+- agentfs-setup: Added deterministic scope auto-detection to scaffold-dotagents.sh and seed-agents-md.sh. Scripts now compare ROOT_DIR against CWD — different path = LITE, same path or no path = PROJECT. Agent no longer needs to decide --scope flag. Updated SKILL.md to reflect simplified agent workflow (just pass the target dir).
 
 ## 2026-08-26 21:48
 
-agentfs-setup SKILL.md: added LITE scope usage section with inference rule table, updated Sync and Verification sections for LITE scope awareness. This was missing and caused the agent to create PROJECT scope when given an explicit remote path.
+- agentfs-setup SKILL.md: added LITE scope usage section with inference rule table, updated Sync and Verification sections for LITE scope awareness. This was missing and caused the agent to create PROJECT scope when given an explicit remote path.
 
 ## 2026-08-26 21:34
 
-Scope consolidation (v4.19.0): renamed --mode to --scope across all agentfs-setup scripts. Standardized all prose from 'USER/PROJECT mode' to 'USER/PROJECT scope'. Added LITE scope for small-context models — minimal AGENTS.md template (~850 tokens), no skills/profiles/knowledge. Updated scaffold-dotagents.sh, seed-agents-md.sh, sync-agents-md.sh, verify-setup.sh, test-soul-authoring.sh. Added LITE scope guards to agentfs-profile, agentfs-eval, agentfs-ctx-chk, skill-gen, skill-harvest, skill-index, okf-bundle-gen, okf-bundle-harvest, okf-bundle-setup. Updated SKILL.md and CHANGELOG.md for agentfs-setup, agentfs-profile, agentfs-eval, agentfs-ctx-chk. Updated design-spec.md, design-decisions.md, hermes-agentfs-setup, okf-bundle-gen, skill-merge, README.md terminology.
+- Scope consolidation (v4.19.0): renamed --mode to --scope across all agentfs-setup scripts. Standardized all prose from 'USER/PROJECT mode' to 'USER/PROJECT scope'. Added LITE scope for small-context models — minimal AGENTS.md template (~850 tokens), no skills/profiles/knowledge. Updated scaffold-dotagents.sh, seed-agents-md.sh, sync-agents-md.sh, verify-setup.sh, test-soul-authoring.sh. Added LITE scope guards to agentfs-profile, agentfs-eval, agentfs-ctx-chk, skill-gen, skill-harvest, skill-index, okf-bundle-gen, okf-bundle-harvest, okf-bundle-setup. Updated SKILL.md and CHANGELOG.md for agentfs-setup, agentfs-profile, agentfs-eval, agentfs-ctx-chk. Updated design-spec.md, design-decisions.md, hermes-agentfs-setup, okf-bundle-gen, skill-merge, README.md terminology.
 
 ## 2026-08-26 18:42
 
-README.md: added Goose Desktop Operations to knowledge bundle list (README audit fix)
+- README.md: added Goose Desktop Operations to knowledge bundle list (README audit fix)
 
 ## 2026-08-26 17:49
 
-hosted-model-ctl v7.4.0 (cont): updated SKILL.md profile table and references/deployment-profiles.md to version-agnostic Granite 3B naming. All 4.2-specific model references removed from user-facing docs.
+- hosted-model-ctl v7.4.0 (cont): updated SKILL.md profile table and references/deployment-profiles.md to version-agnostic Granite 3B naming. All 4.2-specific model references removed from user-facing docs.
 
 ## 2026-08-26 17:31
 
-hosted-model-ctl v7.4.0: rollback g3b-16k profile to version-agnostic granite-3b (auto-detect GGUF, prefer 4.1). Container rolled back to granite-4.1-3b on rhtevan-work. Goose config updated.
+- hosted-model-ctl v7.4.0: rollback g3b-16k profile to version-agnostic granite-3b (auto-detect GGUF, prefer 4.1). Container rolled back to granite-4.1-3b on rhtevan-work. Goose config updated.
 
 ## 2026-08-26 17:07
 
-goose-skupper-provider v5.3.0: Fix test.sh chat completion for Granite 4.2 reasoning models — increase max_tokens, add reasoning_content fallback
+- goose-skupper-provider v5.3.0: Fix test.sh chat completion for Granite 4.2 reasoning models — increase max_tokens, add reasoning_content fallback
 
 ## 2026-08-26 17:06
 
-hosted-model-ctl v7.3.1: Fix test.sh for Granite 4.2 reasoning models — increase max_tokens, add reasoning_content fallback
+- hosted-model-ctl v7.3.1: Fix test.sh for Granite 4.2 reasoning models — increase max_tokens, add reasoning_content fallback
 
 ## 2026-08-26 17:03
 
-hosted-model-ctl v7.3.0: Upgrade g3b-16k profile from Granite 4.1 to 4.2 — model ID, GGUF repo/filename, deployment-profiles.md, SKILL.md
+- hosted-model-ctl v7.3.0: Upgrade g3b-16k profile from Granite 4.1 to 4.2 — model ID, GGUF repo/filename, deployment-profiles.md, SKILL.md
 
 ## 2026-08-26 14:29
 
-hosted-model-ctl: Added Section 12 (Self-Hosted vs Cloud Provider Comparison) to benchmark-report.md — measured Granite 8B FP8 spec-decode vs Opus 4.6 via GCP Vertex. Granite 2.4-3.3× faster on short/tool-call workloads (0.34s vs 2.54s tool-call latency), Opus 1.1× faster on sustained 1K token generation. Updated Section 8 speed table and Section 10 recommendations with measured cloud data.
+- hosted-model-ctl: Added Section 12 (Self-Hosted vs Cloud Provider Comparison) to benchmark-report.md — measured Granite 8B FP8 spec-decode vs Opus 4.6 via GCP Vertex. Granite 2.4-3.3× faster on short/tool-call workloads (0.34s vs 2.54s tool-call latency), Opus 1.1× faster on sustained 1K token generation. Updated Section 8 speed table and Section 10 recommendations with measured cloud data.
 
 ## 2026-08-26 14:08
 
-goose-skupper-provider v5.2.0: Set supports_streaming:false in setup.sh and PROVIDER.md to work around goose v1.47.0 streaming parser bug with vLLM hermes tool calls. Confirmed fix in Test rhel-ai v3 session — model correctly called load_skill(agentfs-setup) and completed sync.
+- goose-skupper-provider v5.2.0: Set supports_streaming:false in setup.sh and PROVIDER.md to work around goose v1.47.0 streaming parser bug with vLLM hermes tool calls. Confirmed fix in Test rhel-ai v3 session — model correctly called load_skill(agentfs-setup) and completed sync.
 
 ## 2026-08-26 14:01
 
-Updated goose-desktop-operations knowledge bundle: documented vLLM hermes streaming bug in goose v1.47.0 (streaming tool-call accumulator drops initial argument fragment when vLLM sends name and args as separate entries in same chunk). Fix: set supports_streaming:false in custom_skupper provider JSON. Updated custom_skupper.json provider config.
+- Updated goose-desktop-operations knowledge bundle: documented vLLM hermes streaming bug in goose v1.47.0 (streaming tool-call accumulator drops initial argument fragment when vLLM sends name and args as separate entries in same chunk). Fix: set supports_streaming:false in custom_skupper provider JSON. Updated custom_skupper.json provider config.
 
 ## 2026-08-26 13:40
 
-agentfs-setup v4.18.0: Added Guardrail #0 (Signal-First Dispatch) — ⛔ GATE requiring models to scan skill description signals in system prompt before generic interpretation. Addresses signal-routing failures observed on smaller models (Granite 8B failed to match 'sync agentfs' despite exact match in skill descriptions). Updated Guardrail Quick Reference table. Bumped template version.
+- agentfs-setup v4.18.0: Added Guardrail #0 (Signal-First Dispatch) — ⛔ GATE requiring models to scan skill description signals in system prompt before generic interpretation. Addresses signal-routing failures observed on smaller models (Granite 8B failed to match 'sync agentfs' despite exact match in skill descriptions). Updated Guardrail Quick Reference table. Bumped template version.
 
 ## 2026-08-26 12:36
 
-okf-bundle-index v1.4.0: rebuild-index.sh sorts newest-first by mtime. agentfs-setup v4.17.8: post-edit.sh audits knowledge indexes, Gate 3 MUST use rebuild-index.sh.
+- okf-bundle-index v1.4.0: rebuild-index.sh sorts newest-first by mtime. agentfs-setup v4.17.8: post-edit.sh audits knowledge indexes, Gate 3 MUST use rebuild-index.sh.
 
 ## 2026-08-26 12:22
 
-agentfs-setup v4.17.7: Guardrail #5 template — log.md entries MUST use merge-log-entry.sh; added knowledge root log to scope table
+- agentfs-setup v4.17.7: Guardrail #5 template — log.md entries MUST use merge-log-entry.sh; added knowledge root log to scope table
 
 ## 2026-08-26 12:09
 
-Created knowledge bundle goose-desktop-operations (toolshim-and-tool-calls.md, custom-provider-schema.md). Moved Incident 5 from skupper-vllm-deployment to new bundle. Updated knowledge/index.md.
+- Created knowledge bundle goose-desktop-operations (toolshim-and-tool-calls.md, custom-provider-schema.md). Moved Incident 5 from skupper-vllm-deployment to new bundle. Updated knowledge/index.md.
 
 ## 2026-08-26 12:04
 
-Added Incident 5 (GOOSE_TOOLSHIM Desktop hang) to skupper-vllm-deployment/agentfs-process-lessons.md knowledge bundle
+- Added Incident 5 (GOOSE_TOOLSHIM Desktop hang) to skupper-vllm-deployment/agentfs-process-lessons.md knowledge bundle
 
 ## 2026-08-26 11:07
 
-goose-skupper-provider v5.1.0: Skill check fixes — added Signal Routing Table (10 patterns), expanded opening paragraph, updated signal phrases (test/recreate/check), fixed heredoc injection (env vars + single-quoted PYEOF), removed redundant PROVIDER.md changelog, concrete T8 test.
+- goose-skupper-provider v5.1.0: Skill check fixes — added Signal Routing Table (10 patterns), expanded opening paragraph, updated signal phrases (test/recreate/check), fixed heredoc injection (env vars + single-quoted PYEOF), removed redundant PROVIDER.md changelog, concrete T8 test.
 
 ## 2026-08-26 10:33
 
-goose-skupper-provider v5.0.0: Replaced static alias mapping with API-driven model discovery. setup.sh accepts host/profile names, discovers model ID + context from live API. Added poison-JSON safeguard (Python json.dumps + round-trip + post-write validation + backup restore). Rewrote SKILL.md and PROVIDER.md.
+- goose-skupper-provider v5.0.0: Replaced static alias mapping with API-driven model discovery. setup.sh accepts host/profile names, discovers model ID + context from live API. Added poison-JSON safeguard (Python json.dumps + round-trip + post-write validation + backup restore). Rewrote SKILL.md and PROVIDER.md.
 
 ## 2026-08-26 09:52
 
-skupper-model-provider v8.3.0: Aligned with hosted-model-ctl v7.2.0. Replaced alias layer with host-based routing (common.sh, test-model.sh, up.sh, down.sh). Updated SKILL.md routing table, signal routing, scoping rules. Updated van-topology diagram and re-delivered HTML.
+- skupper-model-provider v8.3.0: Aligned with hosted-model-ctl v7.2.0. Replaced alias layer with host-based routing (common.sh, test-model.sh, up.sh, down.sh). Updated SKILL.md routing table, signal routing, scoping rules. Updated van-topology diagram and re-delivered HTML.
 
 ## 2026-08-25 22:43
 
-hosted-model-ctl sanity check complete: Fixed --tool-call-parser granite→hermes in report.sh (8 occurrences). Replaced co-hosting combos with speculative decoding recommendation in Large tier report. Fixed vLLM ≥0.9→nightly in model-landscape.md (3 occurrences). Fixed --profile→direct profile name in benchmark-report.md (3 occurrences). Rewrote memory-budget.md to match current 4-profile architecture. Updated co-hosting finding to historical context in benchmark-report.md.
+- hosted-model-ctl sanity check complete: Fixed --tool-call-parser granite→hermes in report.sh (8 occurrences). Replaced co-hosting combos with speculative decoding recommendation in Large tier report. Fixed vLLM ≥0.9→nightly in model-landscape.md (3 occurrences). Fixed --profile→direct profile name in benchmark-report.md (3 occurrences). Rewrote memory-budget.md to match current 4-profile architecture. Updated co-hosting finding to historical context in benchmark-report.md.
 
 ## 2026-08-25 22:11
 
-hosted-model-ctl: Removed gemma4-128k and qwen38-128k profiles — 11.8-13.4 tok/s not usable vs 58-79 tok/s default. Now 4 profiles total (2 per host). Cleaned all scripts, SKILL.md, deployment-profiles.md.
+- hosted-model-ctl: Removed gemma4-128k and qwen38-128k profiles — 11.8-13.4 tok/s not usable vs 58-79 tok/s default. Now 4 profiles total (2 per host). Cleaned all scripts, SKILL.md, deployment-profiles.md.
 
 ## 2026-08-25 22:07
 
-v7.1.0 hosted-model-ctl: Profile-only architecture. Removed Model Registry and on-demand individual aliases. All deployments go through profiles. Added g350m-2k profile. Renamed gemma4-31b→gemma4-128k, qwen38-27b→qwen38-128k. Rewrote all scripts (setup.sh, start.sh, stop.sh, status.sh, test.sh, list.sh) to accept profile names directly. Rewrote deployment-profiles.md as canonical reference with full specs per profile. Updated SKILL.md to v7.1.0.
+- v7.1.0 hosted-model-ctl: Profile-only architecture. Removed Model Registry and on-demand individual aliases. All deployments go through profiles. Added g350m-2k profile. Renamed gemma4-31b→gemma4-128k, qwen38-27b→qwen38-128k. Rewrote all scripts (setup.sh, start.sh, stop.sh, status.sh, test.sh, list.sh) to accept profile names directly. Rewrote deployment-profiles.md as canonical reference with full specs per profile. Updated SKILL.md to v7.1.0.
 
 ## 2026-08-25 21:51
 
-v7.0.0 hosted-model-ctl: Major simplification — removed all co-hosting and solo-* profiles. New naming: g3b-16k, g8b-spec-128k, g8b-fp8-spec-128k. Added vllm-spec engine with SPEC_CONFIGS for speculative decoding. Added FP8+CUDA graphs benchmark results (58-79 tok/s). Updated common.sh, setup.sh, SKILL.md, CHANGELOG.md, benchmark-report.md. Removed obsolete aliases (g350m, g1b, g8b-lc), legacy engines (vllm-ilab, vllm-bnb), co-host GPU pinning logic.
+- v7.0.0 hosted-model-ctl: Major simplification — removed all co-hosting and solo-* profiles. New naming: g3b-16k, g8b-spec-128k, g8b-fp8-spec-128k. Added vllm-spec engine with SPEC_CONFIGS for speculative decoding. Added FP8+CUDA graphs benchmark results (58-79 tok/s). Updated common.sh, setup.sh, SKILL.md, CHANGELOG.md, benchmark-report.md. Removed obsolete aliases (g350m, g1b, g8b-lc), legacy engines (vllm-ilab, vllm-bnb), co-host GPU pinning logic.
 
 ## 2026-08-25 21:04
 
-Created benchmark-report.md under hosted-model-ctl/references — comprehensive 7-test benchmark results across all models (Granite 350M/3B/8B, Qwen3.8-27B, Gemma 4 31B), hosts (rhtevan-work, rhel-ai), and speculative decoding strategies (ngram, gemma4_mtp, draft_model). Includes hardware analysis, failed experiments, and final deployment recommendations.
+- Created benchmark-report.md under hosted-model-ctl/references — comprehensive 7-test benchmark results across all models (Granite 350M/3B/8B, Qwen3.8-27B, Gemma 4 31B), hosts (rhtevan-work, rhel-ai), and speculative decoding strategies (ngram, gemma4_mtp, draft_model). Includes hardware analysis, failed experiments, and final deployment recommendations.
 
 ## 2026-08-25 16:23
 
-hosted-model-ctl: Removed g1b model (Granite 4.0 1B vLLM-BnB) from common.sh and rhtevan-work. Cleaned container. Conducted benchmark tests on rhtevan-work: solo-g3b (Granite 3B Q4, ~22 tok/s) and solo-g8b-lc (Granite 8B Q4, ~6.5 tok/s). Both pass all 7 benchmark tests (instruction following, reasoning, tool calling, code gen, multi-step, conciseness, speed). g3b is 3.4x faster with comparable quality — confirms default profile choice.
+- hosted-model-ctl: Removed g1b model (Granite 4.0 1B vLLM-BnB) from common.sh and rhtevan-work. Cleaned container. Conducted benchmark tests on rhtevan-work: solo-g3b (Granite 3B Q4, ~22 tok/s) and solo-g8b-lc (Granite 8B Q4, ~6.5 tok/s). Both pass all 7 benchmark tests (instruction following, reasoning, tool calling, code gen, multi-step, conciseness, speed). g3b is 3.4x faster with comparable quality — confirms default profile choice.
 
 ## 2026-08-25 16:05
 
-hosted-model-ctl: Switched ALL Qwen3.8 entries from vLLM v0.27.1 to nightly image. Added --reasoning-parser qwen3 flag to both qwen38-27b and qwen38-27b-40k aliases. This fixes the thinking token leak in content field (CoT now routed to reasoning_content). Solo profile (solo-qwen38) will now use nightly + reasoning parser automatically — same fix as validated in co-host testing.
+- hosted-model-ctl: Switched ALL Qwen3.8 entries from vLLM v0.27.1 to nightly image. Added --reasoning-parser qwen3 flag to both qwen38-27b and qwen38-27b-40k aliases. This fixes the thinking token leak in content field (CoT now routed to reasoning_content). Solo profile (solo-qwen38) will now use nightly + reasoning parser automatically — same fix as validated in co-host testing.
 
 ## 2026-08-25 15:23
 
-hosted-model-ctl: Fixed tool calling for ALL models. Root cause: Granite 4.1 outputs <tool_call>JSON</tool_call> XML format but the 'granite' parser in vLLM 0.8.4 expects bare JSON arrays — switched to 'hermes' parser which matches. For Qwen3.8 on vLLM 0.27.1, switched from 'hermes' to 'qwen3_xml' parser (new in 0.27.1). Both models now return finish_reason=tool_calls with properly parsed tool_calls array. Updated common.sh (qwen3_xml parser for all Qwen entries), setup.sh (hermes parser for vllm-ilab and vllm-bnb engines). Qwen3.8 still leaks thinking tokens in content field — separate issue requiring reasoning parser support.
+- hosted-model-ctl: Fixed tool calling for ALL models. Root cause: Granite 4.1 outputs <tool_call>JSON</tool_call> XML format but the 'granite' parser in vLLM 0.8.4 expects bare JSON arrays — switched to 'hermes' parser which matches. For Qwen3.8 on vLLM 0.27.1, switched from 'hermes' to 'qwen3_xml' parser (new in 0.27.1). Both models now return finish_reason=tool_calls with properly parsed tool_calls array. Updated common.sh (qwen3_xml parser for all Qwen entries), setup.sh (hermes parser for vllm-ilab and vllm-bnb engines). Qwen3.8 still leaks thinking tokens in content field — separate issue requiring reasoning parser support.
 
 ## 2026-08-25 14:40
 
-hosted-model-ctl: Phase 7 co-hosting validated. Deployed co-g8b-qwen38 profile — Granite 8B BF16 TP=2 @128K on GPUs 0,1 (port 9000) + Qwen3.8-27B FP8 TP=2 @40K on GPUs 2,3 (port 9001). Both models responding simultaneously, all 4 GPUs ~21.2/23 GB utilized. Key learnings: (1) CDI per-GPU selection works with --device nvidia.com/gpu=N syntax + --security-opt label=disable. (2) CUDA_VISIBLE_DEVICES env var does NOT work inside CDI containers. (3) Qwen3.8 FP8 TP=2 maxes out at ~40K context (not 64K) due to enforce-eager overhead. Updated common.sh aliases (64k→40k), deployment-profiles.md, SKILL.md. Implemented GPU pinning in setup.sh for vllm and vllm-ilab engines.
+- hosted-model-ctl: Phase 7 co-hosting validated. Deployed co-g8b-qwen38 profile — Granite 8B BF16 TP=2 @128K on GPUs 0,1 (port 9000) + Qwen3.8-27B FP8 TP=2 @40K on GPUs 2,3 (port 9001). Both models responding simultaneously, all 4 GPUs ~21.2/23 GB utilized. Key learnings: (1) CDI per-GPU selection works with --device nvidia.com/gpu=N syntax + --security-opt label=disable. (2) CUDA_VISIBLE_DEVICES env var does NOT work inside CDI containers. (3) Qwen3.8 FP8 TP=2 maxes out at ~40K context (not 64K) due to enforce-eager overhead. Updated common.sh aliases (64k→40k), deployment-profiles.md, SKILL.md. Implemented GPU pinning in setup.sh for vllm and vllm-ilab engines.
 
 ## 2026-08-25 14:10
 
-hosted-model-ctl: Updated deployment-profiles.md, memory-budget.md, SKILL.md with corrected VRAM numbers from Gemma 4 deployment. Key corrections: BF16 removed (OOM), solo-gemma4-fp8 profile removed, all Gemma 4 entries now use RedHatAI FP8-block + enforce-eager. Added VRAM reality check table showing CUDA graph overhead. Co-host profiles marked NOT YET TESTED with GPU pinning requirements noted.
+- hosted-model-ctl: Updated deployment-profiles.md, memory-budget.md, SKILL.md with corrected VRAM numbers from Gemma 4 deployment. Key corrections: BF16 removed (OOM), solo-gemma4-fp8 profile removed, all Gemma 4 entries now use RedHatAI FP8-block + enforce-eager. Added VRAM reality check table showing CUDA graph overhead. Co-host profiles marked NOT YET TESTED with GPU pinning requirements noted.
 
 ## 2026-08-25 14:06
 
-hosted-model-ctl: Phase 5 complete. Gemma 4 31B deployed successfully on rhel-ai with critical learnings: (1) BF16 OOMs on 4x L4 even at 48K context — CUDA graphs + weights consume ~19.3 GB/GPU leaving no room for KV cache. (2) Must use pre-quantized FP8 model (RedHatAI/gemma-4-31B-it-FP8-block). (3) Must use --enforce-eager to skip CUDA graph capture (~10 GB/GPU savings). (4) Must use vLLM nightly (>v0.27.1) due to AmbiguousGlobalPerLayerAttributeError with heterogeneous Gemma 4 layers. (5) Removed solo-gemma4-fp8 profile (256K) and gemma4-31b-fp8 alias — consolidated to single gemma4-31b alias using RedHatAI FP8-block. Updated common.sh model registry. Both solo-gemma4 and solo-qwen38 profiles tested and working (4/4 tests each). Default restored to solo-qwen38.
+- hosted-model-ctl: Phase 5 complete. Gemma 4 31B deployed successfully on rhel-ai with critical learnings: (1) BF16 OOMs on 4x L4 even at 48K context — CUDA graphs + weights consume ~19.3 GB/GPU leaving no room for KV cache. (2) Must use pre-quantized FP8 model (RedHatAI/gemma-4-31B-it-FP8-block). (3) Must use --enforce-eager to skip CUDA graph capture (~10 GB/GPU savings). (4) Must use vLLM nightly (>v0.27.1) due to AmbiguousGlobalPerLayerAttributeError with heterogeneous Gemma 4 layers. (5) Removed solo-gemma4-fp8 profile (256K) and gemma4-31b-fp8 alias — consolidated to single gemma4-31b alias using RedHatAI FP8-block. Updated common.sh model registry. Both solo-gemma4 and solo-qwen38 profiles tested and working (4/4 tests each). Default restored to solo-qwen38.
 
 ## 2026-08-25 11:53
 
-hosted-model-ctl: Phase 3+4 complete. Pulled vLLM v0.27.1 (21.6 GB) on rhel-ai. Downloaded Granite 4.1 3B GGUF Q4_K_M (2.0 GB) on rhtevan-work. Deployed solo-g3b profile on rhtevan-work (4/4 tests pass, model ready in 15s). Deployed solo-qwen38 profile on rhel-ai — Qwen3.8-27B-FP8 TP=4 @128K on vLLM v0.27.1 (4/4 tests pass, model ready in 555s including 28.8 GB weight download). Fixed PROFILE_STATE_DIR escaping in common.sh. Updated setup.sh with --profile support, g3b llamacpp config, upstream vLLM engine type. Both default profiles active and serving.
+- hosted-model-ctl: Phase 3+4 complete. Pulled vLLM v0.27.1 (21.6 GB) on rhel-ai. Downloaded Granite 4.1 3B GGUF Q4_K_M (2.0 GB) on rhtevan-work. Deployed solo-g3b profile on rhtevan-work (4/4 tests pass, model ready in 15s). Deployed solo-qwen38 profile on rhel-ai — Qwen3.8-27B-FP8 TP=4 @128K on vLLM v0.27.1 (4/4 tests pass, model ready in 555s including 28.8 GB weight download). Fixed PROFILE_STATE_DIR escaping in common.sh. Updated setup.sh with --profile support, g3b llamacpp config, upstream vLLM engine type. Both default profiles active and serving.
 
 ## 2026-08-25 10:19
 
-hosted-model-ctl v6.0.0: Created references/deployment-profiles.md (deployment profile system with mutual exclusion, 12 profiles, defaults). Updated references/model-landscape.md (added Gemma 4 31B/26B-A4B/12B, Qwen3.8-27B, Qwen3-Coder-30B, GLM-4-32B, Nemotron entries, vLLM v0.27.1 image, gemma4 tool-call parser). Updated references/memory-budget.md (VRAM budgets for all new models at TP=2/4). Updated SKILL.md to v6.0.0 (deployment profiles section, new model registry, profile-aware specs S1b/S3b/S4b/S5c, cold start times). Updated scripts/common.sh (new model entries, DEPLOY_PROFILES registry, profile helper functions). Updated scripts/start.sh (--profile flag, mutual exclusion, multi-model startup). Updated scripts/stop.sh (--profile flag, active profile cleanup). Updated scripts/status.sh (active profile display). Updated scripts/list.sh (--profiles flag, new aliases). Updated CHANGELOG.md.
+- hosted-model-ctl v6.0.0: Created references/deployment-profiles.md (deployment profile system with mutual exclusion, 12 profiles, defaults). Updated references/model-landscape.md (added Gemma 4 31B/26B-A4B/12B, Qwen3.8-27B, Qwen3-Coder-30B, GLM-4-32B, Nemotron entries, vLLM v0.27.1 image, gemma4 tool-call parser). Updated references/memory-budget.md (VRAM budgets for all new models at TP=2/4). Updated SKILL.md to v6.0.0 (deployment profiles section, new model registry, profile-aware specs S1b/S3b/S4b/S5c, cold start times). Updated scripts/common.sh (new model entries, DEPLOY_PROFILES registry, profile helper functions). Updated scripts/start.sh (--profile flag, mutual exclusion, multi-model startup). Updated scripts/stop.sh (--profile flag, active profile cleanup). Updated scripts/status.sh (active profile display). Updated scripts/list.sh (--profiles flag, new aliases). Updated CHANGELOG.md.
 
 ## 2026-08-24 19:29
 
-dsh-setup v1.2.1: separate Chrome profile for security/maximize/process tracking; replaced connection monitoring with wait \'$CHROME_PID\'; fixed WMClass to chrome-127.0.0.1__-Default for Wayland icon matching; updated SKILL.md, CHANGELOG.md, install-desktop.sh, launcher, teardown.sh, verify.sh
+- dsh-setup v1.2.1: separate Chrome profile for security/maximize/process tracking; replaced connection monitoring with wait \'$CHROME_PID\'; fixed WMClass to chrome-127.0.0.1__-Default for Wayland icon matching; updated SKILL.md, CHANGELOG.md, install-desktop.sh, launcher, teardown.sh, verify.sh
 
 ## 2026-08-24 17:58
 
-dsh-setup v1.2.0: replaced PID-based idle detection with systemd user service (dsh.service) + TCP connection monitoring; fixed ss header line false-positive; updated SKILL.md, install-desktop.sh, verify.sh, teardown.sh, launcher
+- dsh-setup v1.2.0: replaced PID-based idle detection with systemd user service (dsh.service) + TCP connection monitoring; fixed ss header line false-positive; updated SKILL.md, install-desktop.sh, verify.sh, teardown.sh, launcher
 
 ## 2026-08-24 16:59
 
-dsh-litellm-provider v1.1.0: fixed apiKeyEnv (DSH rejects empty — now uses LITELLM_VERTEX_AI_API_KEY with dummy value), fixed verify.sh bash arithmetic and model grep patterns; dsh-setup: updated launcher and install-desktop.sh to export dummy API key env var; dsh icon whale size bumped 680→760px
+- dsh-litellm-provider v1.1.0: fixed apiKeyEnv (DSH rejects empty — now uses LITELLM_VERTEX_AI_API_KEY with dummy value), fixed verify.sh bash arithmetic and model grep patterns; dsh-setup: updated launcher and install-desktop.sh to export dummy API key env var; dsh icon whale size bumped 680→760px
 
 ## 2026-08-24 14:26
 
-Guardrail #5 catch-up: bumped dsh-setup v1.0.0→v1.1.0 (post-install fixes), dsh-litellm-provider v1.0.0→v1.0.1 (markdown fix), updated changelogs, regenerated skills/index.md
+- Guardrail #5 catch-up: bumped dsh-setup v1.0.0→v1.1.0 (post-install fixes), dsh-litellm-provider v1.0.0→v1.0.1 (markdown fix), updated changelogs, regenerated skills/index.md
 
 ## 2026-08-24 14:24
 
-Updated goose-desktop-env-fix v1.2.0 → v1.3.0: added Gotchas section documenting hermit node wrapper PATH interference and per-skill workaround pattern
+- Updated goose-desktop-env-fix v1.2.0 → v1.3.0: added Gotchas section documenting hermit node wrapper PATH interference and per-skill workaround pattern
 
 ## 2026-08-24 14:01
 
-Fixed dsh-litellm-provider/SKILL.md markdown rendering (blank lines around code fence). Added official DSH whale icon (favicon.svg → dsh.png) to dsh-setup/assets/.
+- Fixed dsh-litellm-provider/SKILL.md markdown rendering (blank lines around code fence). Added official DSH whale icon (favicon.svg → dsh.png) to dsh-setup/assets/.
 
 ## 2026-08-24 13:52
 
-Created skills: dsh-setup v1.0.0 (pnpm-based DSH install, Chrome app-mode launcher, .desktop integration, update/teardown/verify) and dsh-litellm-provider v1.0.0 (auto-discover models from LiteLLM, write DSH settings.yaml with compat flags). Regenerated skills/index.md.
+- Created skills: dsh-setup v1.0.0 (pnpm-based DSH install, Chrome app-mode launcher, .desktop integration, update/teardown/verify) and dsh-litellm-provider v1.0.0 (auto-discover models from LiteLLM, write DSH settings.yaml with compat flags). Regenerated skills/index.md.
 
 ## 2026-08-21 00:04
-agentfs-setup v4.17.6: bump version for Guardrail #5 scope note addition
+- agentfs-setup v4.17.6: bump version for Guardrail #5 scope note addition
 
-agentfs-setup seed-agents-md.sh: add Guardrail #5 scope note — README.md at ~/.agents/ is AgentFS-managed and not exempt from post-edit.sh + log.md requirements
+- agentfs-setup seed-agents-md.sh: add Guardrail #5 scope note — README.md at ~/.agents/ is AgentFS-managed and not exempt from post-edit.sh + log.md requirements
 
 ## 2026-08-20 23:52
 
-README.md: fix Guardrail #10 description — README audit trigger updated from 'README.md staged + staleness Clean' to 'agentfs files staged'
+- README.md: fix Guardrail #10 description — README audit trigger updated from 'README.md staged + staleness Clean' to 'agentfs files staged'
 
 ## 2026-08-20 23:44
 
-agentfs-readme-audit v1.2.0 + pre-push-scan.sh: fix README audit trigger — runs whenever agentfs files staged (not gated on README.md being staged); Category 7 replaced with README_AUDIT_REQUIRED signal; seed-agents-md.sh Guardrail #10 updated to match
+- agentfs-readme-audit v1.2.0 + pre-push-scan.sh: fix README audit trigger — runs whenever agentfs files staged (not gated on README.md being staged); Category 7 replaced with README_AUDIT_REQUIRED signal; seed-agents-md.sh Guardrail #10 updated to match
 
 ## 2026-08-20 23:27
 
-agentfs-setup: v4.17.5 — author-soul.sh is_stub() fixed to use awk multi-line comment stripping, consistent with sync-agents-md.sh
+- agentfs-setup: v4.17.5 — author-soul.sh is_stub() fixed to use awk multi-line comment stripping, consistent with sync-agents-md.sh
 
 ## 2026-08-20 23:24
 
-agentfs-setup: v4.17.4 — sync-agents-md.sh emits SOUL_ACTION_REQUIRED signal; SKILL.md documents agent post-sync guidance flow (apply default / customise / skip)
+- agentfs-setup: v4.17.4 — sync-agents-md.sh emits SOUL_ACTION_REQUIRED signal; SKILL.md documents agent post-sync guidance flow (apply default / customise / skip)
 
 ## 2026-08-20 23:17
 
-agentfs-setup: sync-agents-md.sh — added SOUL.md stub detection; warns with author-soul.sh command when SOUL is empty or missing, even when AGENTS.md is already up to date
+- agentfs-setup: sync-agents-md.sh — added SOUL.md stub detection; warns with author-soul.sh command when SOUL is empty or missing, even when AGENTS.md is already up to date
 
 ## 2026-08-20 22:55
 
-agentfs-setup v4.17.2: fix merge-changelog-entry.sh timestamp format (HH:MM added); dedup now matches on date+version
+- agentfs-setup v4.17.2: fix merge-changelog-entry.sh timestamp format (HH:MM added); dedup now matches on date+version
 
 ## 2026-08-20 22:48
-agentfs-readme-audit v1.1.0: trigger condition corrected (staged AND Clean); flow diagram updated
+- agentfs-readme-audit v1.1.0: trigger condition corrected (staged AND Clean); flow diagram updated
 
-agentfs-setup v4.17.1: test-pre-push-scan.sh Cat 9+10 (25 pass); test-agents-md-fidelity.sh 84 checks; sync-agents-md.sh pre-versioning fallback; agentfs-readme-audit v1.1.0 trigger fix
+- agentfs-setup v4.17.1: test-pre-push-scan.sh Cat 9+10 (25 pass); test-agents-md-fidelity.sh 84 checks; sync-agents-md.sh pre-versioning fallback; agentfs-readme-audit v1.1.0 trigger fix
 
 ## 2026-08-20 22:40
 
-agentfs-setup v4.17.0: add sync-agents-md.sh (deterministic idempotent sync, fixes Agent Profiles duplication bug); update SKILL.md docs
+- agentfs-setup v4.17.0: add sync-agents-md.sh (deterministic idempotent sync, fixes Agent Profiles duplication bug); update SKILL.md docs
 
 ## 2026-08-20 22:26
 
-agentfs-setup v4.16.0: Guardrail #10 rendered Markdown report; Category 10 memory PII detection in pre-push-scan.sh; 5th violation added; project AGENTS.md synced
+- agentfs-setup v4.16.0: Guardrail #10 rendered Markdown report; Category 10 memory PII detection in pre-push-scan.sh; 5th violation added; project AGENTS.md synced
 
 ## 2026-08-20 22:07
 
-agentfs-setup v4.15.0: harden Guardrail #10 — numbered workflow, README audit trigger fix, same-turn confirmation, 4 explicit violations
+- agentfs-setup v4.15.0: harden Guardrail #10 — numbered workflow, README audit trigger fix, same-turn confirmation, 4 explicit violations
 
 ## 2026-08-20 21:45
 
-agentfs-setup v4.14.0: add merge-changelog-entry.sh (deterministic CHANGELOG, repair, dedup); CHANGELOG coverage in pre-push-scan.sh (Cat 9); post-edit.sh reminder; seed-agents-md.sh delegation table; README Guardrail #5
+- agentfs-setup v4.14.0: add merge-changelog-entry.sh (deterministic CHANGELOG, repair, dedup); CHANGELOG coverage in pre-push-scan.sh (Cat 9); post-edit.sh reminder; seed-agents-md.sh delegation table; README Guardrail #5
 
 ## 2026-08-20 19:04
 
-README.md: fixed SOUL.md auto-load description (@import, not agent-initiated); updated profiles/ tree entry (recipe.yaml, output/); added author-soul.sh and gen-profile-recipe.sh to Agent Setup category; updated memory model table
+- README.md: fixed SOUL.md auto-load description (@import, not agent-initiated); updated profiles/ tree entry (recipe.yaml, output/); added author-soul.sh and gen-profile-recipe.sh to Agent Setup category; updated memory model table
 
 ## 2026-08-20 18:44
-agentfs-profile v1.9.0: refactor create-profile.sh (delegate SOUL to author-soul.sh), add recipe.yaml + output/ dir, add gen-profile-recipe.sh
+- agentfs-profile v1.9.0: refactor create-profile.sh (delegate SOUL to author-soul.sh), add recipe.yaml + output/ dir, add gen-profile-recipe.sh
 
-agentfs-setup v4.13.0: add author-soul.sh, @.agents/SOUL.md import, expanded Guardrail #7, SOUL verify checks, test suite (21 tests)
+- agentfs-setup v4.13.0: add author-soul.sh, @.agents/SOUL.md import, expanded Guardrail #7, SOUL verify checks, test suite (21 tests)
 
 ## 2026-08-20 10:30
-Updated fedora-nm-boot-slow to v1.1.0 — added Specification and Tests sections for P4 compliance
+- Updated fedora-nm-boot-slow to v1.1.0 — added Specification and Tests sections for P4 compliance
 
-Updated skill-gen to v3.2.0 — added explicit GATE requiring user permission before skipping P4/P5 principles
+- Updated skill-gen to v3.2.0 — added explicit GATE requiring user permission before skipping P4/P5 principles
 
 ## 2026-08-20 10:16
 
-Created skill fedora-nm-boot-slow v1.0.0 — documents root cause and remediation of NM-wait-online boot delay on Fedora
+- Created skill fedora-nm-boot-slow v1.0.0 — documents root cause and remediation of NM-wait-online boot delay on Fedora
 
 ## 2026-08-19 16:18
 
-Added .pre-push-allowlist for semantic false-positive filtering in Guardrail #10 Git Push Safety. Updated seed-agents-md.sh workflow and Quick Reference. Bumped agentfs-setup to v4.12.0. Removed hardcoded skill count from README.md.
+- Added .pre-push-allowlist for semantic false-positive filtering in Guardrail #10 Git Push Safety. Updated seed-agents-md.sh workflow and Quick Reference. Bumped agentfs-setup to v4.12.0. Removed hardcoded skill count from README.md.
 
 ## 2026-08-19 14:56
 
-hosted-model-ctl: simplified report signal phrases to 'model hosting report' and 'hosting machine report'
+- hosted-model-ctl: simplified report signal phrases to 'model hosting report' and 'hosting machine report'
 
 ## 2026-08-19 13:59
 
-hosted-model-ctl: strengthened report rendering instruction — agent MUST echo full stdout in response message since tool outputs may not be visible to user in many UIs
+- hosted-model-ctl: strengthened report rendering instruction — agent MUST echo full stdout in response message since tool outputs may not be visible to user in many UIs
 
 ## 2026-08-19 13:22
 
-hosted-model-ctl v5.4.1 — Fixed report operation agent instruction (present output as-is). Fixed signal phrases with hosted model prefix for reliable routing.
+- hosted-model-ctl v5.4.1 — Fixed report operation agent instruction (present output as-is). Fixed signal phrases with hosted model prefix for reliable routing.
 
 ## 2026-08-19 11:31
 
-hosted-model-ctl v5.4.0 — Added report operation (S8) with report.sh script generating 3-section platform report (basic specs, accelerator, model recommendations by VRAM tier). Added references/model-landscape.md curated model database. New signals: hosted model report, machine spec, host report. Updated rhtevan-work gotcha: nvidia-smi now available.
+- hosted-model-ctl v5.4.0 — Added report operation (S8) with report.sh script generating 3-section platform report (basic specs, accelerator, model recommendations by VRAM tier). Added references/model-landscape.md curated model database. New signals: hosted model report, machine spec, host report. Updated rhtevan-work gotcha: nvidia-smi now available.
 
 ## 2026-08-18 23:29
 
-Added interactive diagram links to skupper-model-provider SKILL.md Architecture section
+- Added interactive diagram links to skupper-model-provider SKILL.md Architecture section
 
 ## 2026-08-18 23:23
 
@@ -425,11 +447,11 @@ Added interactive diagram links to skupper-model-provider SKILL.md Architecture 
 
 ## 2026-08-18 23:20
 
-Fixed regen-skill-index.py: now uses max mtime across all files in skill directory instead of SKILL.md only; ensures index date reflects any file change (docs, CHANGELOG, scripts)
+- Fixed regen-skill-index.py: now uses max mtime across all files in skill directory instead of SKILL.md only; ensures index date reflects any file change (docs, CHANGELOG, scripts)
 
 ## 2026-08-18 23:16
 
-Added CHANGELOG.md entry for skupper-model-provider: architecture and lifecycle diagrams added to docs/
+- Added CHANGELOG.md entry for skupper-model-provider: architecture and lifecycle diagrams added to docs/
 
 ## 2026-08-18 23:11
 
@@ -437,108 +459,108 @@ Added CHANGELOG.md entry for skupper-model-provider: architecture and lifecycle 
 
 ## 2026-08-18 23:10
 
-Updated README.md skill count 50 → 51 (archify added)
+- Updated README.md skill count 50 → 51 (archify added)
 
 ## 2026-08-18 23:05
 
-Created architecture and lifecycle diagrams for skupper-model-provider skill using archify: van-topology.architecture.html and operations.lifecycle.html in docs/
+- Created architecture and lifecycle diagrams for skupper-model-provider skill using archify: van-topology.architecture.html and operations.lifecycle.html in docs/
 
 ## 2026-08-18 22:39
 
-Added Defaults section to archify SKILL.md: working directory (project root), output location (docs/).
+- Added Defaults section to archify SKILL.md: working directory (project root), output location (docs/).
 
 ## 2026-08-18 22:32
 
-Updated archify description to all Command-pattern signal phrases (verb+noun), 9 signals covering all 5 diagram types + mermaid conversion
+- Updated archify description to all Command-pattern signal phrases (verb+noun), 9 signals covering all 5 diagram types + mermaid conversion
 
 ## 2026-08-18 22:22
 
-Restored original archify description as first paragraph in SKILL.md body, preserving context for agents loading the skill
+- Restored original archify description as first paragraph in SKILL.md body, preserving context for agents loading the skill
 
 ## 2026-08-18 22:20
 
-Updated archify skill frontmatter: added metadata.tags, converted description to concise signal phrases per AgentFS skill conventions
+- Updated archify skill frontmatter: added metadata.tags, converted description to concise signal phrases per AgentFS skill conventions
 
 ## 2026-08-18 22:11
 
-Installed archify skill (v2.15.0) via npx skills add tt-a1i/archify -g; doctor checks all passed
+- Installed archify skill (v2.15.0) via npx skills add tt-a1i/archify -g; doctor checks all passed
 
 ## 2026-08-18 22:00
 
-Added custom CSS override to reduce Cayman theme header height
+- Added custom CSS override to reduce Cayman theme header height
 
 ## 2026-08-18 21:55
 
-Changed GitHub Pages theme from minimal to cayman for wider content area
+- Changed GitHub Pages theme from minimal to cayman for wider content area
 
 ## 2026-08-18 21:48
 
-Excluded index.md from Jekyll build in _config.yml so README.md serves as GitHub Pages homepage
+- Excluded index.md from Jekyll build in _config.yml so README.md serves as GitHub Pages homepage
 
 ## 2026-08-18 21:32
 
-Added _config.yml (Jekyll theme: minimal) and permalink front matter to README.md to enable GitHub Pages rendering with README.md as homepage
+- Added _config.yml (Jekyll theme: minimal) and permalink front matter to README.md to enable GitHub Pages rendering with README.md as homepage
 
 ## 2026-08-17 11:22
 
-agentfs-setup v4.11.0 — Enhanced Gate guardrails (⛔ GATE with STOP language) in seed-agents-md.sh template and design-spec.md
+- agentfs-setup v4.11.0 — Enhanced Gate guardrails (⛔ GATE with STOP language) in seed-agents-md.sh template and design-spec.md
 
 ## 2026-08-17 11:16
 
-Fixed 5 pre-existing version mismatches (fuseki 1.1.0, goose-agentfs-setup 1.4.0, hermes-desktop-fixes 2.1.0, hermes-headroom-provider 1.2.1, skupper-model-provider 8.1.1). Updated AGENTS.md Guardrails #5, #9, #10 from 🚧 to ⛔ GATE with STOP language and explicit violation definitions.
+- Fixed 5 pre-existing version mismatches (fuseki 1.1.0, goose-agentfs-setup 1.4.0, hermes-desktop-fixes 2.1.0, hermes-headroom-provider 1.2.1, skupper-model-provider 8.1.1). Updated AGENTS.md Guardrails #5, #9, #10 from 🚧 to ⛔ GATE with STOP language and explicit violation definitions.
 
 ## 2026-08-17 10:08
 
-hosted-model-ctl v5.3.0 — Added tool-calling flags to vllm-ilab engine, fixed local keyword outside function in setup.sh
+- hosted-model-ctl v5.3.0 — Added tool-calling flags to vllm-ilab engine, fixed local keyword outside function in setup.sh
 
 ## 2026-08-17 10:01
 
-crc-ols v2.2.0 — Added self-hosted Skupper model provider documentation (setup pattern, Provider Types Reference, dependency notes)
+- crc-ols v2.2.0 — Added self-hosted Skupper model provider documentation (setup pattern, Provider Types Reference, dependency notes)
 
 ## 2026-08-16 19:36
 
-agentfs-setup v4.10.0: merge-log-entry.sh duplicate heading fix; version bump
+- agentfs-setup v4.10.0: merge-log-entry.sh duplicate heading fix; version bump
 
 ## 2026-08-16 19:32
 
-merge-log-entry.sh: fixed duplicate heading bug — replaced echo-pipe grep with direct file grep for heading detection
+- merge-log-entry.sh: fixed duplicate heading bug — replaced echo-pipe grep with direct file grep for heading detection
 
 ## 2026-08-16 19:27
 
-README.md: updated Guardrail #5 description to reflect edit-time logging rule and deterministic log coverage check
-Guardrail #5: added edit-time logging rule to seed-agents-md.sh; added log coverage check (Category 8) to pre-push-scan.sh; bumped agentfs-setup to 4.9.0
+- README.md: updated Guardrail #5 description to reflect edit-time logging rule and deterministic log coverage check
+- Guardrail #5: added edit-time logging rule to seed-agents-md.sh; added log coverage check (Category 8) to pre-push-scan.sh; bumped agentfs-setup to 4.9.0
 
 ## 2026-08-16 19:20
 
-README.md: fixed skill count (48→50), added 2 missing knowledge bundles (llm-inference-constrained-gpu, skupper-vllm-deployment), updated Guardrail #5 description to match current template (completion gate pattern)
+- README.md: fixed skill count (48→50), added 2 missing knowledge bundles (llm-inference-constrained-gpu, skupper-vllm-deployment), updated Guardrail #5 description to match current template (completion gate pattern)
 
 ## 2026-08-16 19:11
 
-agentfs-setup v4.8.0 — integrated agentfs-readme-audit into Guardrail #10 (Git Push Safety): semantic README alignment check runs after pre-push-scan.sh returns Clean for README staleness
+- agentfs-setup v4.8.0 — integrated agentfs-readme-audit into Guardrail #10 (Git Push Safety): semantic README alignment check runs after pre-push-scan.sh returns Clean for README staleness
 
 ## 2026-08-16 19:02
 
-Created agentfs-readme-audit skill v1.0.0 — semantic README alignment check complementing pre-push-scan.sh deterministic staleness check
+- Created agentfs-readme-audit skill v1.0.0 — semantic README alignment check complementing pre-push-scan.sh deterministic staleness check
 
 ## 2026-08-16 18:41
 
-agentfs-setup v4.7.0 — pre-push-scan.sh: promoted README staleness check from interactive prompt to structured report row (Category 7); removed y/n notice that gets swallowed in non-interactive execution
+- agentfs-setup v4.7.0 — pre-push-scan.sh: promoted README staleness check from interactive prompt to structured report row (Category 7); removed y/n notice that gets swallowed in non-interactive execution
 
 ## 2026-08-16 17:45
 
-agentfs-setup v4.6.0: Guardrail #5 Filesystem Integrity rewrite — separated WHAT (completion gate) from HOW (delegation table with Gate column); added scope rule table for log routing; scripts path declared once, removed inline code block
+- agentfs-setup v4.6.0: Guardrail #5 Filesystem Integrity rewrite — separated WHAT (completion gate) from HOW (delegation table with Gate column); added scope rule table for log routing; scripts path declared once, removed inline code block
 
 ## 2026-08-16 16:54
 
-agentfs-setup v4.4.0: Template version now derived from metadata.version (single source of truth).
+- agentfs-setup v4.4.0: Template version now derived from metadata.version (single source of truth).
 
 ## 2026-08-16 16:49
 
-agentfs-setup v4.3.0: Made Guardrail #5 completion gate explicit (4-item checklist). Added version-CHANGELOG alignment check to regen-skill-index.py (v4.1.0). Synced AGENTS.md to v4.3.0.
+- agentfs-setup v4.3.0: Made Guardrail #5 completion gate explicit (4-item checklist). Added version-CHANGELOG alignment check to regen-skill-index.py (v4.1.0). Synced AGENTS.md to v4.3.0.
 
 ## 2026-08-16 16:19
 
-AGENTS.md optimization (v3.14→v4.0): extracted regen-skill-index.py from post-edit.sh (DRY), created pre-push-scan.sh and checkpoint.sh (Strategy A), compressed guardrails prose (Strategy C), added completion gate to Guardrail #5, updated seed-agents-md.sh template, updated skill-index/SKILL.md to use canonical script, added test scripts for validation.
+- AGENTS.md optimization (v3.14→v4.0): extracted regen-skill-index.py from post-edit.sh (DRY), created pre-push-scan.sh and checkpoint.sh (Strategy A), compressed guardrails prose (Strategy C), added completion gate to Guardrail #5, updated seed-agents-md.sh template, updated skill-index/SKILL.md to use canonical script, added test scripts for validation.
 
 ## 2026-08-16 13:38
 
@@ -1129,24 +1151,24 @@ AGENTS.md optimization (v3.14→v4.0): extracted regen-skill-index.py from post-
 
 ## 2026-07-22 19:06
 
-* **Update**: Updated `knowledge/skupper-v2-concepts/` — added migration (V1→V2), platform-details (Linux architecture, site bundles, multi-site, skrouterd install), and firewall rules. 6 new concept docs, 2 new sub-bundles.
+- **Update**: Updated `knowledge/skupper-v2-concepts/` — added migration (V1→V2), platform-details (Linux architecture, site bundles, multi-site, skrouterd install), and firewall rules. 6 new concept docs, 2 new sub-bundles.
 
 ## 2026-07-22 15:41
 
-* **Update**: Updated `knowledge/skupper-v2-concepts/security/` — added TLS passthrough, inter-router mTLS enforcement, and link port documentation to existing concepts.
+- **Update**: Updated `knowledge/skupper-v2-concepts/security/` — added TLS passthrough, inter-router mTLS enforcement, and link port documentation to existing concepts.
 
 ## 2026-07-20 17:36
 
-* **Update**: Regenerated `skills/index.md` (41 skills) — okf-bundle-gen timestamp updated to 2026-07-20 17:33 after v3.2 edit.
+- **Update**: Regenerated `skills/index.md` (41 skills) — okf-bundle-gen timestamp updated to 2026-07-20 17:33 after v3.2 edit.
 
 ## 2026-07-20 17:33
 
-* **Update**: Updated `skills/okf-bundle-gen/SKILL.md` v3.1→v3.2: Added Phase 7c (USER scope log.md entry) to fix Guardrail #5 compliance gap.
+- **Update**: Updated `skills/okf-bundle-gen/SKILL.md` v3.1→v3.2: Added Phase 7c (USER scope log.md entry) to fix Guardrail #5 compliance gap.
 
 ## 2026-07-20 17:31
 
-* **Creation**: Generated OKF knowledge bundle `knowledge/skupper-v2-concepts/` with 11 concept documents across 4 sub-bundles (core-concepts, security, advanced-features, operations).
-* **Update**: Updated `knowledge/index.md` with new bundle entry.
+- **Creation**: Generated OKF knowledge bundle `knowledge/skupper-v2-concepts/` with 11 concept documents across 4 sub-bundles (core-concepts, security, advanced-features, operations).
+- **Update**: Updated `knowledge/index.md` with new bundle entry.
 
 ## 2026-07-16 11:12
 - Created skill `crc-aap-demo-config` at `~/.agents/skills/crc-aap-demo-config/SKILL.md` — clone aap-demo repo, pre-flight checks against local CRC, apply protective config to prevent preset/resource override
@@ -1424,11 +1446,11 @@ AGENTS.md optimization (v3.14→v4.0): extracted regen-skill-index.py from post-
 
 ## 2026-07-08 10:11
 
-* **Memory**: Added OKF non-concept type guideline to user-level MEMORY.md — distinguishes concept bundles from reference dataset bundles, documents valid use of Dataset/Script/Ground Truth types for companion data metadata
+- **Memory**: Added OKF non-concept type guideline to user-level MEMORY.md — distinguishes concept bundles from reference dataset bundles, documents valid use of Dataset/Script/Ground Truth types for companion data metadata
 ## 2026-07-08 09:46
 
-* **Memory**: Added two OKF guidelines to user-level MEMORY.md — (1) keep bundle roots clean of concept files, (2) distill true concepts rather than raw documentation
-* **Reorganize**: Moved `claude-compat-analysis.md` from user-global knowledge root into sub-bundle `agentfs-claude-compat/`
+- **Memory**: Added two OKF guidelines to user-level MEMORY.md — (1) keep bundle roots clean of concept files, (2) distill true concepts rather than raw documentation
+- **Reorganize**: Moved `claude-compat-analysis.md` from user-global knowledge root into sub-bundle `agentfs-claude-compat/`
 ## 2026-07-08 08:54
 
 - Created knowledge bundle `knowledge/headroom-openai-compression-analysis/` with 3 concept documents: problem-analysis (root cause of zero compression), configuration-history (v1→v2 timeline), options-assessment (4 options, recommended passthrough + watch)

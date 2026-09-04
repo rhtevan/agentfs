@@ -7,7 +7,7 @@ argument-hint: "No arguments required — run the skill to diagnose and fix"
 compatibility: "Fedora with GNOME/Wayland, Obsidian installed via Snap (classic)"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.1.0"
   tags: [fedora, obsidian, wayland, snap, desktop-fix]
 user-invocable: true
 disable-model-invocation: false
@@ -72,9 +72,13 @@ dialog, no error visible to the user.
    This creates:
    - `~/.local/bin/obsidian-wrapper.sh` — sets
      `BAMF_DESKTOP_FILE_HINT`, `SNAP_DESKTOP_FILE`, `GTK_USE_PORTAL=1`,
-     and passes `--ozone-platform=x11` to Obsidian
+     and passes `--ozone-platform=x11 --class=md.obsidian.Obsidian`
+     to Obsidian
    - `~/.local/share/applications/obsidian_md.obsidian.Obsidian.desktop`
      — user-local `.desktop` override that launches via the wrapper
+   - `~/.local/share/applications/obsidian_obsidian.desktop`
+     — shadows the Snap-provided default `.desktop` to prevent
+     duplicate icon on the GNOME Dash
 
 3. **Restart Obsidian**
 
@@ -91,6 +95,20 @@ dialog, no error visible to the user.
 - **Snap refreshes do not break the fix.** The user-local `.desktop`
   file in `~/.local/share/applications/` takes priority over the
   snap-provided one in `/var/lib/snapd/desktop/applications/`.
+- **Competing `.desktop` files cause duplicate Dash icons.** Snap
+  installs `obsidian_obsidian.desktop` with the same
+  `StartupWMClass=md.obsidian.Obsidian` as our user override. When
+  GNOME sees two `.desktop` files claiming the same `StartupWMClass`,
+  it matches running windows to both — the pinned favorite gets one
+  match, and the second file spawns a duplicate generic icon. The
+  fix script shadows the Snap default with a `Hidden=true` override.
+- **`--class` flag is required with `--ozone-platform=x11`.** Without
+  it, Electron creates utility/splash windows with WM_CLASS
+  `Obsidian` (the binary name) while the main vault window uses
+  `md.obsidian.Obsidian` (the Electron app-id). The mixed WM_CLASS
+  values can cause additional icon mismatches. The wrapper passes
+  `--class=md.obsidian.Obsidian` to force all windows to use the
+  same WM_CLASS that matches the `.desktop` file's `StartupWMClass`.
 - **Stale SingletonLock.** If Obsidian was killed without clean
   shutdown, `~/.config/obsidian/SingletonLock` may be stale. The
   fix script removes it automatically.
@@ -109,8 +127,12 @@ dialog, no error visible to the user.
 ## Verification
 
 - [ ] `~/.local/bin/obsidian-wrapper.sh` exists and is executable
+- [ ] Wrapper includes `--class=md.obsidian.Obsidian` and `--ozone-platform=x11`
 - [ ] `~/.local/share/applications/obsidian_md.obsidian.Obsidian.desktop`
       exists and `Exec=` points to the wrapper
+- [ ] `~/.local/share/applications/obsidian_obsidian.desktop` exists
+      with `Hidden=true` (shadows Snap default)
+- [ ] No duplicate Obsidian icons on the GNOME Dash when running
 - [ ] Obsidian launches from Dash without portal errors
 - [ ] "Open folder as vault" → "Open" button opens the file picker
 

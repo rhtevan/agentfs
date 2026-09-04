@@ -185,13 +185,17 @@ Skills cover topics like:
 
 | Category | Examples |
 |----------|----------|
-| **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`) |
-| **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes/DSH provider config, Headroom proxy, MaaS providers |
-| **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB), cluster lifecycle (start/stop/cleanup), cluster config |
-| **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation |
+| **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`), session cleanup (`goose-recipe-session-cleanup`) |
+| **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes/DSH provider config, Headroom proxy, MaaS providers, Skupper provider (`goose-skupper-provider`) |
+| **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB, NAD dynamic plugin), cluster lifecycle (start/stop/cleanup), cluster config, AAP demo |
+| **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation, KGM lifecycle (`goose-kgm`) |
 | **Model Serving** | Hosted model lifecycle (deploy, start, stop, test on NVIDIA GPUs via Podman), platform report (specs, accelerator, model recommendations by VRAM tier), Skupper model provider (remote GPU exposure via VAN) |
 | **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
-| **Desktop/System** | Hermes desktop fixes, Fedora window list, Goose CLI fixes, Obsidian Snap fix |
+| **Diagramming** | Architecture/workflow/sequence/data-flow diagrams (`agentfs-archify`), draw.io integration (`goose-nextai-drawio`) |
+| **Desktop/System** | Hermes desktop fixes, Fedora window list, desktop WMClass fixes, DNS cache, NetworkManager boot delays, Goose CLI/desktop fixes, Obsidian Snap fix |
+| **Shell Tooling** | Bash tab-completion generation (`bash-completion-gen`) |
+| **Spec Authoring** | Spec-kit setup and configuration (`spec-kit-setup`) |
+| **Data Services** | Apache Fuseki triplestore lifecycle (`agentflow-fuseki`) |
 
 See [`skills/index.md`](skills/index.md) for the full catalog.
 
@@ -258,24 +262,30 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS enforces 12 structural rules via Trigger/Action pairs in a
-flat table within AGENTS.md. Each rule fires on a specific trigger
-and prescribes a concrete action.
+AgentFS enforces 16 structural rules via Type/Stimulus/Action triples
+in a flat table within AGENTS.md, preceded by a Discovery Tiers
+section that defines the three-tier context lookup chain (frontmatter
+match → index scan → KGM search). Each rule fires on a specific
+stimulus and prescribes a concrete action.
 
-| # | Trigger | Action |
-|---|---------|--------|
-| 1 | User message received | Scan skill descriptions for signal match → `load_skill` → follow. Check Signal Routing table. If `search_nodes` available, query topic keywords, select most relevant results (max 3). MUST read `Source:` files before answering. |
-| 2 | Accessing `.agents/` content | Browse `index.md` first, follow links to content. |
-| 3 | Session start | Check for `CLAUDE.md`, `.cursorrules`, etc. Treat as supplementary. `AGENTS.md` wins on conflict. |
-| 4 | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
-| 5 | Any write/edit under `.agents/` or `~/.agents/` | `merge-log-entry.sh` → `merge-changelog-entry.sh` + version bump → `post-edit.sh` → links resolve. |
-| 6 | `git add` or "hey git" | `load_skill(name: "agentfs-git-push")` — follow completely. |
-| 7 | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
-| 8 | Action involves policy, domain concepts, or unfamiliar procedures | Consult knowledge index for relevant context before acting. |
-| 9 | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. |
-| 10 | Always | No validation phrases. Lead with substance. Name risks proactively. |
-| 11 | Always | Don't reverse position without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
-| 12 | Always | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
+| # | Type | Stimulus | Action |
+|---|------|----------|--------|
+| 1 | Event | Session start | Check for `CLAUDE.md`, `.cursorrules`, etc. Treat as supplementary. `AGENTS.md` wins on conflict. |
+| 2 | Signal | "remember this", "note that", "keep in mind" | → `.agents/memories/MEMORY.md` |
+| 3 | Signal | "always do X", "never do Y", "this is a rule" | → Propose as `AGENTS.md` guardrail (human approval) |
+| 4 | Signal | "I prefer", "I like", "my style is" | → `.agents/memories/USER.md` |
+| 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
+| 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
+| 7 | Signal | "hey git", `git add` | → `load_skill(name: "agentfs-git-push")` — follow completely |
+| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2 → 3). Scan rules table for stimulus match. No match → generic interpretation. |
+| 9 | Event | First read of any `.agents/` file | Browse that scope's `index.md` first, follow links to content. |
+| 10 | Event | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 11 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
+| 12 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF. |
+| 13 | Event | Any write/edit under `.agents/` or `~/.agents/` | `merge-log-entry.sh` → `merge-changelog-entry.sh` + version bump → `post-edit.sh` → links resolve. |
+| 14 | Always | Every response | No validation phrases. Lead with substance. Name ≥1 risk when evaluating a plan or design. |
+| 15 | Always | Every response | No position reversal without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
+| 16 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
 
 The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.
@@ -519,7 +529,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 5.3.0 -->
+<!-- agentfs-template-version: 5.4.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

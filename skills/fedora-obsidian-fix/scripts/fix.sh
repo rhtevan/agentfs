@@ -7,7 +7,10 @@ set -euo pipefail
 WRAPPER="$HOME/.local/bin/obsidian-wrapper.sh"
 USER_DESKTOP="$HOME/.local/share/applications/obsidian_md.obsidian.Obsidian.desktop"
 SNAP_DESKTOP="/var/lib/snapd/desktop/applications/obsidian_md.obsidian.Obsidian.desktop"
+SNAP_DEFAULT_DESKTOP="/var/lib/snapd/desktop/applications/obsidian_obsidian.desktop"
+SNAP_DEFAULT_OVERRIDE="$HOME/.local/share/applications/obsidian_obsidian.desktop"
 SNAP_ICON="/var/lib/snapd/snap/obsidian/current/meta/gui/obsidian.png"
+WMCLASS="md.obsidian.Obsidian"
 
 echo "=== Applying Obsidian Snap Portal Fix ==="
 echo ""
@@ -35,6 +38,7 @@ export SNAP_DESKTOP_FILE="/var/lib/snapd/desktop/applications/obsidian_md.obsidi
 export GTK_USE_PORTAL=1
 exec /snap/obsidian/current/app/obsidian \
   --ozone-platform=x11 \
+  --class=md.obsidian.Obsidian \
   "$@"
 WRAPPER_EOF
 chmod +x "$WRAPPER"
@@ -59,8 +63,26 @@ Categories=Office;
 DESKTOP_EOF
 echo "   ✅ Desktop override created"
 
-# Step 3: Update desktop database
-echo "3. Updating desktop database"
+# Step 3: Shadow the Snap-provided default .desktop file
+# Snap installs obsidian_obsidian.desktop with the same StartupWMClass.
+# If both files are visible to GNOME, it matches running windows to both,
+# causing a duplicate icon on the Dash. Shadow it with a Hidden override.
+echo "3. Shadowing competing Snap .desktop file"
+if [[ -f "$SNAP_DEFAULT_DESKTOP" ]]; then
+  cat > "$SNAP_DEFAULT_OVERRIDE" << SHADOW_EOF
+[Desktop Entry]
+Name=Obsidian (Snap default)
+Type=Application
+NoDisplay=true
+Hidden=true
+SHADOW_EOF
+  echo "   ✅ Created user override to hide $SNAP_DEFAULT_DESKTOP"
+else
+  echo "   ℹ️  No competing Snap .desktop file found — skipping"
+fi
+
+# Step 4: Update desktop database
+echo "4. Updating desktop database"
 if command -v update-desktop-database &>/dev/null; then
   update-desktop-database "$HOME/.local/share/applications/" 2>/dev/null || true
   echo "   ✅ Desktop database updated"
@@ -68,8 +90,8 @@ else
   echo "   ⚠️  update-desktop-database not found — GNOME will pick up changes on next login"
 fi
 
-# Step 4: Clean stale singleton locks
-echo "4. Cleaning stale Obsidian locks"
+# Step 5: Clean stale singleton locks
+echo "5. Cleaning stale Obsidian locks"
 OBSIDIAN_CONFIG="$HOME/.config/obsidian"
 if [[ -L "$OBSIDIAN_CONFIG/SingletonLock" ]]; then
   LOCK_PID=$(readlink "$OBSIDIAN_CONFIG/SingletonLock" 2>/dev/null | grep -oP '\d+$' || echo "")

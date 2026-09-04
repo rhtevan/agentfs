@@ -3,14 +3,13 @@
 #
 # Usage: bash merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>
 #
-# If today's date heading already exists at the top of the log, the new
-# entry lines are inserted under it. Otherwise a new date section is
-# created above all existing date sections (reverse chronological order).
+# Writes ENTRY_TEXT verbatim under a timestamped ## YYYY-MM-DD HH:MM
+# heading. If that heading already exists, appends under it. Otherwise
+# creates a new heading above all existing date sections (reverse
+# chronological order).
 #
-# ENTRY_TEXT should be one or more bullet lines, e.g.:
-#   "- **Creation**: Generated 5 concept docs from session context."
-#
-# Multiple lines can be passed as a single string with embedded newlines.
+# Multiple lines can be passed as a single string with embedded
+# newlines (\n). The script interprets \n escape sequences via printf.
 
 set -euo pipefail
 

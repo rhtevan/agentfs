@@ -40,6 +40,27 @@ bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh clear           # afte
 bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh check           # on session start
 ```
 
+## Cross-Skill Script Execution
+
+Scripts are owned by a parent skill but may be called by other skills
+(e.g., `agentfs-git-push` calling `agentfs-setup`'s
+`merge-log-entry.sh`). When executing a script owned by a different
+skill, resolve input conventions in this priority order:
+
+| Priority | Source | Action |
+|:--------:|--------|--------|
+| 1 | **Calling skill's prose** | If it specifies the format, use it |
+| 2 | **Existing output patterns** | Check the target file/resource for established conventions |
+| 3 | **Owning skill's prose** | Load the owning SKILL.md if needed |
+| 4 | **Script comments** | Last resort — treat as implementation hints, not usage instructions |
+
+**Rationale:** Script comments describe *how the code works
+internally*, not *how it should be used*. Input/output format
+conventions belong in the owning SKILL.md (Separation of Concerns).
+When a calling skill doesn't specify format, the agent should check
+ground truth (existing patterns) before falling back to the owning
+skill's prose or script comments.
+
 ## General Rules
 
 - Prefer incremental edits over full rewrites — full rewrites risk
