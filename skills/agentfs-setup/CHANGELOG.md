@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-08 15:33 | v5.6.0 — Added Anti-Action-Sycophancy: Rule 17 (no action on assumed inputs — state missing info, ask, do not execute; flag low confidence at top) to seed-agents-md.sh template; added anti-assumption identity principle to author-soul.sh default SOUL.md template; updated SKILL.md rule inventory (12→13 rules). Addresses action sycophancy gap exposed by Agentbox weather session. |
 | 2026-09-04 15:01 | v5.5.0 — Added Script Input/Output Conventions section to SKILL.md (log entry format: bullet-prefixed). Fixed merge-log-entry.sh header comment: removed format prescription, now mechanical-only (SoC). Added Cross-Skill Script Execution priority table to filesystem-integrity.md. |
 | 2026-09-04 13:12 | v5.4.0 — Redesigned Rules system: merged Signal Routing + Rules into single typed table (Signal/Event/Always); added Discovery Tiers section (Frontmatter → Index → KGM fallback chain); added mandatory enforcement preamble; grouped rules by phase (session-start → dispatch → before-read → before-write → after-write → always); inlined script paths pointing directly to ~/.agents/skills/agentfs-setup/scripts/; absorbed old Rule 8 into Discovery Tiers; clarified trigger thresholds for destructive ops and .agents/ access; added Rule 12/13 complementary note for memories writes |
 | 2026-08-31 20:45 | v5.3.0 — Rule #1 KGM triage tightened: MUST read Source files for top 3 results before answering, summaries alone are insufficient (replaces ambiguous review-then-read wording) |

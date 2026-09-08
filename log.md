@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-08 15:33
+
+- Updated agentfs-setup v5.5.0→v5.6.0: added Anti-Action-Sycophancy (Rule 17) to seed-agents-md.sh, anti-assumption identity principle to author-soul.sh, updated SKILL.md rule inventory (12→13). Root cause: Agentbox weather session — model fabricated NYC coordinates instead of asking for location.
+
 ## 2026-09-04 16:55
 
 - Log format cleanup: normalized all entries in ~/.agents/log.md (138 plain-text → bullet, 9 star-bullet → dash-bullet) and ~/.agents/knowledge/log.md (20 star-bullet → dash-bullet, 1 plain-text → bullet)

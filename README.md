@@ -262,7 +262,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS enforces 16 structural rules via Type/Stimulus/Action triples
+AgentFS enforces 17 structural rules via Type/Stimulus/Action triples
 in a flat table within AGENTS.md, preceded by a Discovery Tiers
 section that defines the three-tier context lookup chain (frontmatter
 match → index scan → KGM search). Each rule fires on a specific
@@ -286,6 +286,7 @@ stimulus and prescribes a concrete action.
 | 14 | Always | Every response | No validation phrases. Lead with substance. Name ≥1 risk when evaluating a plan or design. |
 | 15 | Always | Every response | No position reversal without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
 | 16 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
+| 17 | Always | Every response | No action on assumed inputs. State what is missing, ask explicitly, do not execute. Flag low confidence at top. |
 
 The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.
@@ -516,7 +517,7 @@ Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 12 structural rules; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 13 structural rules; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 
@@ -529,7 +530,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 5.4.0 -->
+<!-- agentfs-template-version: 5.6.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

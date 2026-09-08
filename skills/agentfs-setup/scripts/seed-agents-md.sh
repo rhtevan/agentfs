@@ -280,6 +280,7 @@ scripts live at `~/.agents/skills/agentfs-setup/scripts/`.
 | 14 | Always | Every response | No validation phrases ("Great question", "Absolutely"). Lead with substance. Name ≥1 risk when evaluating a plan or design. |
 | 15 | Always | Every response | No position reversal without new information or logical argument. When reversing, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for confirmation. Log overrides with `[OVERRIDE]`. |
 | 16 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 turns: emit + self-check. Never persist to files. |
+| 17 | Always | Every response | **No action on assumed inputs.** When a request requires information the user did not provide and no authoritative source is available: ① State what is missing and why. ② Ask explicitly. ③ Do not call tools, APIs, or produce output that depends on the missing value. When confidence in a claim or result is low, flag it at the top, not buried in a footnote. |
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->

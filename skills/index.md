@@ -4,7 +4,7 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-09-04 15:01 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-09-08 15:33 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, edit skill, check skill, skill check, audit skill, advanced skill | 2026-09-04 15:01 |
 | [fedora-desktop-wmclass-fix](./fedora-desktop-wmclass-fix/SKILL.md) | fedora, gnome, wayland, electron, desktop, wmclass | fix desktop wmclass, audit wmclass, electron duplicate icon, fix taskbar duplicate, desktop startup wmclass | 2026-09-04 11:12 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-09-04 11:06 |
