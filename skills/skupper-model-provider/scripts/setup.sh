@@ -246,7 +246,7 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHEL_AI_ROUTING_KEY}
-  host: localhost
+  host: ${LOCAL_LISTENER_HOST}
   port: ${RHEL_AI_MODEL_PORT}
 EOF
 
@@ -258,7 +258,7 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHTEVAN_WORK_ROUTING_KEY}
-  host: localhost
+  host: ${LOCAL_LISTENER_HOST}
   port: ${RHTEVAN_WORK_MODEL_PORT}
 EOF
 

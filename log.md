@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-09 14:32
+
+Fixed skupper-model-provider T6 test: localhost→127.0.0.1 for rootless Podman pasta IPv4-only listener
+
+## 2026-09-09 14:25
+
+Updated skupper-model-provider v8.11.0: added LOCAL_LISTENER_HOST for configurable listener bind address, updated topology.env and topology.env.example, patched live Listener YAMLs to 0.0.0.0
+
+## 2026-09-09 14:02
+
+Updated litellm-vertex-ai-proxy v3.1.0: added --host flag to setup.sh, verify.sh auto-detects bind address, Gotcha #8 for container access
+
 ## 2026-09-09 09:36
 
 README.md: clarified title to 'AgentFS (agent-filesystem)'

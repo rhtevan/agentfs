@@ -90,13 +90,15 @@ else
   fail "$REMOTE_HOST unreachable"
 fi
 
-# T6: Remote model serving (direct API check, bypasses VAN)
+# T6: Remote model container (direct API check via SSH, bypasses VAN)
 echo "T6: Remote model API (direct)"
 if host_reachable "$REMOTE_HOST"; then
   IFS='|' read -r _ _ _ model_port _ <<< "${SITE_PROFILES[$REMOTE_HOST]}"
-  REMOTE_HTTP=$(run_on_host "$REMOTE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${model_port}/v1/models 2>/dev/null" || echo "000")
+  # Use 127.0.0.1 explicitly — rootless Podman (pasta) listens on IPv4 only,
+  # and curl may resolve localhost to ::1 (IPv6) first, causing connection reset.
+  REMOTE_HTTP=$(run_on_host "$REMOTE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${model_port}/v1/models 2>/dev/null" || echo "000")
   if [[ "$REMOTE_HTTP" == "200" ]]; then
-    REMOTE_MODEL=$(run_on_host "$REMOTE_HOST" "curl -s http://localhost:${model_port}/v1/models" | \
+    REMOTE_MODEL=$(run_on_host "$REMOTE_HOST" "curl -s http://127.0.0.1:${model_port}/v1/models" | \
       python3 -c "import json,sys; print(json.load(sys.stdin)['data'][0]['id'])" 2>/dev/null || echo "PARSE_ERROR")
     if [[ "$REMOTE_MODEL" != "PARSE_ERROR" && -n "$REMOTE_MODEL" ]]; then
       pass "Remote model: $REMOTE_MODEL (on $REMOTE_HOST:${model_port})"

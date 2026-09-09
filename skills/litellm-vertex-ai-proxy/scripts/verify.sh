@@ -4,9 +4,19 @@
 # Exit codes: 0 = all checks pass, 1 = one or more checks failed
 set -euo pipefail
 
-LITELLM_URL="http://127.0.0.1:4000"
 CONFIG_FILE="$HOME/.config/litellm/config.yaml"
 SERVICE_FILE="$HOME/.config/systemd/user/litellm-proxy.service"
+
+# Detect bind address and port from the live service file
+if [[ -f "$SERVICE_FILE" ]]; then
+  _HOST=$(grep -oP '(?<=--host )\S+' "$SERVICE_FILE" 2>/dev/null || echo "127.0.0.1")
+  _PORT=$(grep -oP '(?<=--port )\S+' "$SERVICE_FILE" 2>/dev/null || echo "4000")
+else
+  _HOST="127.0.0.1"
+  _PORT="4000"
+fi
+# Always verify against loopback — even when bound to 0.0.0.0, loopback works
+LITELLM_URL="http://127.0.0.1:${_PORT}"
 
 PASS=0
 FAIL=0

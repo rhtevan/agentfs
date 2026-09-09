@@ -10,7 +10,7 @@ argument-hint: "setup skupper | teardown skupper | start skupper | start skupper
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.10.0"
+  version: "8.11.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -377,6 +377,7 @@ remote host reachable, remote container running.
 | CRC TCP precheck fails during fresh setup | Hub routers aren't up yet when CRC precheck runs (setup creates them in Phase 1-2) | Downgraded to warning — CRC link will connect once hubs are up |
 | `((var++))` exits with code 1 in bash | `((0++))` evaluates to 0 (falsy), triggering `set -e` exit | Added `|| true` to all `((var++))` in CRC code paths |
 | OLS duplicate volume mount with shared secret | Two OLS providers referencing the same `credentialsSecretRef` cause Kubernetes `Duplicate value` error on volume name and mount path | Each provider MUST use a separate secret, even if contents are identical (e.g., `skupper-model-llmcreds` vs `skupper-model-rhtevan-llmcreds`) |
+| Local listener unreachable from containers | Listener `host: localhost` binds to 127.0.0.1; containers reaching via `host.containers.internal` hit the bridge IP, not loopback | Set `LOCAL_LISTENER_HOST="0.0.0.0"` in `topology.env` (safe on private networks) |
 | llama.cpp incompatible with OLS tool-use | OLS sends `response_format: { type: "json_schema" }` for structured output; llama-server's grammar parser fails with "failed to parse grammar" (400) | Set `introspectionEnabled: false` in OLSConfig to disable MCP tools — basic Q&A works, tool-use does not. vLLM handles structured output correctly. |
 | OLS provider naming for Skupper models | Single `skupper-model` name is ambiguous when multiple model hosts exist | Use `skupper-model-rhel` / `skupper-model-rhtevan` convention — provider name encodes the target host |
 

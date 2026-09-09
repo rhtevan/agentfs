@@ -7,6 +7,7 @@ set -euo pipefail
 PROJECT=""
 SA_KEY=""
 REGION="us-east5"
+HOST="127.0.0.1"
 PORT="4000"
 DRY_RUN=false
 FORCE=false
@@ -21,6 +22,7 @@ while [[ $# -gt 0 ]]; do
     --project)  PROJECT="$2"; shift 2 ;;
     --sa-key)   SA_KEY="$2"; shift 2 ;;
     --region)   REGION="$2"; shift 2 ;;
+    --host)     HOST="$2"; shift 2 ;;
     --port)     PORT="$2"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
     --force)    FORCE=true; shift ;;
@@ -33,6 +35,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Optional:"
       echo "  --region  REGION   Vertex AI region (default: us-east5)"
+      echo "  --host    HOST     Bind address (default: 127.0.0.1, use 0.0.0.0 for container access)"
       echo "  --port    PORT     Proxy port (default: 4000)"
       echo "  --dry-run          Write to /tmp/litellm-setup-preview/ instead of live paths"
       echo "  --force            Overwrite even if proxy is currently healthy"
@@ -178,7 +181,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 Environment=GOOGLE_APPLICATION_CREDENTIALS=$SA_KEY
-ExecStart=$LITELLM_BIN --config $HOME/.config/litellm/config.yaml --host 127.0.0.1 --port $PORT
+ExecStart=$LITELLM_BIN --config $HOME/.config/litellm/config.yaml --host $HOST --port $PORT
 Restart=on-failure
 RestartSec=5
 

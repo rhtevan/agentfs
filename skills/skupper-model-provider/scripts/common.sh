@@ -25,6 +25,8 @@ ROUTER_IMAGE="quay.io/skupper/skupper-router:3.5.1"
 ROUTER_CONTAINER="${NAMESPACE}-skupper-router"
 CONTROLLER_SUFFIX="skupper-controller"
 
+# ── Local Listener (built from topology.env) ──────────────────
+LOCAL_LISTENER_HOST="${LOCAL_LISTENER_HOST:-localhost}"
 # ── Local RouterAccess (built from topology.env) ─────────────
 LOCAL_INTER_ROUTER_PORT="${LOCAL_INTER_ROUTER_PORT:-55672}"
 LOCAL_RA_NAME="${LOCAL_RA_NAME:-local-ezhang-ra}"

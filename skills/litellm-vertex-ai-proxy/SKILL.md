@@ -4,7 +4,7 @@ description: >
   setup litellm vertex, vertex ai proxy, litellm vertex
 platforms: ['linux']
 metadata:
-  version: "3.0.0"
+  version: "3.1.0"
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   related_skills: [litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
 user-invocable: true
@@ -20,7 +20,8 @@ account credentials.
 ## Overview
 
 This skill deploys LiteLLM locally as a proxy that:
-- Exposes `http://127.0.0.1:4000/v1` (OpenAI-compatible)
+- Exposes `http://127.0.0.1:4000/v1` (OpenAI-compatible) by default
+  (use `--host 0.0.0.0` for container/sandbox access)
 - Routes requests to GCP Vertex AI (Anthropic Claude models)
 - Uses a GCP service account key (no expiring refresh tokens)
 - Auto-starts at boot via a systemd user service
@@ -110,6 +111,17 @@ bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/setup.sh \
   --force
 ```
 
+To bind on all interfaces (required for container/sandbox access):
+
+```bash
+bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/setup.sh \
+  --project <project_id> \
+  --sa-key <path_to_key.json> \
+  --region us-east5 \
+  --host 0.0.0.0 \
+  --force
+```
+
 The setup script:
 - Discovers available models from live Vertex AI
 - Generates `~/.config/litellm/config.yaml`
@@ -150,6 +162,7 @@ journalctl --user -u litellm-proxy -f     # follow logs
 | 5 | **Context windows differ across model families** | Opus/Sonnet 4.6 have 1M token context; Haiku 4.5 and Sonnet 4.5 have 200k tokens. Downstream consumers (Goose, Hermes) must set `context_limit` correctly per model. |
 | 6 | **Service account key, not user ADC** | systemd services cannot re-authenticate interactively. User ADC refresh tokens expire and the proxy silently fails. Always use a service account key file via `GOOGLE_APPLICATION_CREDENTIALS`. |
 | 7 | **`setup.sh` discovers all available models** | The probe may find models you've intentionally excluded (e.g., `claude-sonnet-4-5`). After running `setup.sh`, review the generated config and remove unwanted models before restarting. |
+| 8 | **`--host 127.0.0.1` blocks container access** | Default binds to loopback only. Containers (Podman, Docker, OpenShell sandboxes) reach the host via bridge IPs like `host.containers.internal`, which is not `127.0.0.1`. Use `--host 0.0.0.0` when the proxy must be reachable from containers. Safe on private networks with no public-facing interfaces. |
 
 ---
 
