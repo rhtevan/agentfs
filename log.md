@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-09 09:36
+
+README.md: clarified title to 'AgentFS (agent-filesystem)'
+
 ## 2026-09-08 15:33
 
 - Updated agentfs-setup v5.5.0→v5.6.0: added Anti-Action-Sycophancy (Rule 17) to seed-agents-md.sh, anti-assumption identity principle to author-soul.sh, updated SKILL.md rule inventory (12→13). Root cause: Agentbox weather session — model fabricated NYC coordinates instead of asking for location.
