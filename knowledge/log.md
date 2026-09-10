@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-10 18:05
+
+- Created llm-behavioral-properties bundle: 5 concepts (sycophancy, multi-turn-discipline-decay, partial-completion, improvised-recovery, hallucinated-confidence). OKF v0.1 conformant.
+
 ## 2026-08-26 12:14
 
 - Created knowledge bundle goose-desktop-operations with 2 concept documents (toolshim-and-tool-calls.md, custom-provider-schema.md). Moved GOOSE_TOOLSHIM incident from skupper-vllm-deployment/agentfs-process-lessons.md to new bundle. Updated root index.md.

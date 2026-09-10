@@ -254,6 +254,7 @@ Current bundles:
 - **RCA Labeled Dataset** — Realistic labeled dataset for training GNNs on telecom network faults
 - **AgentFS ↔ Claude Compatibility** — Cross-agent context discovery gap analysis
 - **Headroom Compression Analysis** — Proxy compression analysis for OpenAI-compatible endpoints
+- **LLM Behavioral Properties** — Observable LLM behavioral properties that degrade agent reliability (sycophancy, discipline decay, partial completion, improvised recovery, hallucinated confidence) and AgentFS mitigations
 - **LLM Inference on Constrained GPUs** — LLM inference strategies for constrained GPU environments (vLLM, llama-cpp, quantization)
 - **Skupper vLLM Deployment** — Lessons learned from deploying Granite models on multi-GPU cloud instances via Skupper V2 VAN
 - **Goose Desktop Operations** — GOOSE_TOOLSHIM incident postmortem, custom provider JSON schema, Desktop hang diagnostics

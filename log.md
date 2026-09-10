@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-10 18:05
+
+- Created knowledge bundle llm-behavioral-properties v1.0: 5 concepts documenting LLM behavioral properties and AgentFS mitigations. OKF v0.1 conformant (13/13 checks pass).
+
 ## 2026-09-10 17:39
 
 - Updated agentfs-setup v5.8.1: post-edit.sh enhanced with log drift detection — compares skill file mtimes against latest log entry, warns on unlogged modifications. Catches missed Rule 13 obligations during iterative debugging.
