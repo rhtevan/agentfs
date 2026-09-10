@@ -51,7 +51,7 @@ if [[ -f "$PROVIDER_JSON" ]]; then
   MODEL_COUNT=$(python3 -c "import json; d=json.load(open('$PROVIDER_JSON')); print(len(d.get('models',[])))" 2>/dev/null)
 
   [[ "$ENGINE" == "openai" ]] && check "S2b: engine=openai" "PASS" || check "S2b: engine=openai (got: $ENGINE)" "FAIL"
-  [[ "$BASE_URL" == "http://localhost:4000" ]] && check "S2c: base_url=http://localhost:4000" "PASS" || check "S2c: base_url=http://localhost:4000 (got: $BASE_URL)" "FAIL"
+  [[ "$BASE_URL" == "http://host.containers.internal:4000" ]] && check "S2c: base_url=http://host.containers.internal:4000" "PASS" || check "S2c: base_url=http://host.containers.internal:4000 (got: $BASE_URL)" "FAIL"
   [[ "$MODEL_COUNT" -ge 1 ]] && check "S2d: models list non-empty ($MODEL_COUNT models)" "PASS" || check "S2d: models list non-empty" "FAIL"
   [[ "$FAST_MODEL" != "null" ]] && check "S2e: fast_model is set ($FAST_MODEL)" "PASS" || check "S2e: fast_model is set (got: null)" "FAIL"
 fi

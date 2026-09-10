@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-09 21:27 | vv5.4.0 — Changed base_url from localhost to host.containers.internal in setup.sh JSON generator and SKILL.md. Enables dual-resolution for host and container environments. |
 | 2026-08-26 17:07 | v5.3.0 — Fix test.sh T6 chat completion for reasoning models: increase max_tokens to 200, add reasoning_content fallback |
 | 2026-08-26 14:08 | v5.2.0 — Set supports_streaming:false in setup.sh and PROVIDER.md. Workaround for goose v1.47.0 streaming tool-call parser bug: vLLM hermes sends name and initial args as separate entries in the same streaming chunk — goose drops the args-only entry, truncating tool call arguments. Non-streaming avoids the accumulation path entirely. Updated post-write validation assertion to match. |
 | 2026-08-26 11:07 | v5.1.0 — Skill check fixes: Added Signal Routing Table with 10 signal patterns, routing rules, and preconditions. Expanded opening paragraph with why/when context. Signal phrases updated: added test/recreate/check, removed ambiguous bare query. Fixed heredoc injection risk: values passed via env vars with single-quoted PYEOF. Removed redundant changelog from PROVIDER.md (links to CHANGELOG.md). Made T8 concrete with injection test command. Fixed double-v in v5.0.0 changelog entry. |

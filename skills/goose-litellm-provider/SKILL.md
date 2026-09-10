@@ -4,7 +4,7 @@ description: >
   configure goose litellm, goose litellm provider
 platforms: ['linux']
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   tags: [goose, litellm, custom-provider, redhat, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
 user-invocable: true
@@ -16,7 +16,7 @@ disable-model-invocation: false
 Set up Goose (CLI and Desktop) to use a **local LiteLLM proxy** as a
 custom provider. This covers the **RedHat** provider pattern — a local
 LiteLLM proxy backed by Vertex AI Claude models (no auth,
-`http://localhost:4000`).
+`http://host.containers.internal:4000`).
 
 For remote MaaS (Model as a Service) setup, see the `goose-maas-provider`
 skill instead.
@@ -25,7 +25,7 @@ skill instead.
 
 - Goose installed (`goose` CLI or Goose Desktop)
 - LiteLLM proxy running locally (see skill `litellm-vertex-ai-proxy` to
-  set one up); must be accessible at `http://localhost:4000` (default
+  set one up); must be accessible at `http://host.containers.internal:4000` (default
   LiteLLM port)
 - Use skill `litellm-proxy-status` to verify the proxy is healthy before
   proceeding
@@ -61,7 +61,7 @@ The custom provider is defined as a JSON file under
   "display_name": "RedHat",
   "description": "Local LiteLLM proxy to Vertex AI (Claude models)",
   "api_key_env": "",
-  "base_url": "http://localhost:4000",
+  "base_url": "http://host.containers.internal:4000",
   "models": [
     {
       "name": "claude-opus-4-6",
@@ -124,7 +124,7 @@ providers:
 | `name` | `custom_redhat` | Internal identifier; must match config.yaml |
 | `engine` | `openai` | LiteLLM exposes an OpenAI-compatible API |
 | `display_name` | `RedHat` | Friendly name shown in provider picker |
-| `base_url` | `http://localhost:4000` | Local LiteLLM proxy address |
+| `base_url` | `http://host.containers.internal:4000` | Local LiteLLM proxy address |
 | `requires_auth` | `false` | Local LiteLLM proxy does not require an API key |
 | `api_key_env` | `""` | No API key environment variable needed |
 | `timeout_seconds` | `600` | 10-minute timeout for long-running requests |
@@ -179,7 +179,7 @@ goose configure
 1. Select **Custom Providers** → **Add A Custom Provider**
 2. API Type → **OpenAI Compatible**
 3. Name → `RedHat`
-4. API URL → `http://localhost:4000`
+4. API URL → `http://host.containers.internal:4000`
 5. Authentication Required → **No**
 6. Available Models → `claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-4-5`
 7. Streaming Support → **Yes**
@@ -262,7 +262,7 @@ Then follow Step 3 (verify) and Step 4 (test).
 |---|---|---|
 | RedHat not in provider list | Missing JSON file | Run `scripts/restore.sh` |
 | "Connection refused" | LiteLLM proxy not running | `systemctl --user start litellm-proxy` |
-| Provider shows but won't connect | `base_url` wrong | Verify `http://localhost:4000` is correct |
+| Provider shows but won't connect | `base_url` wrong | Verify `http://host.containers.internal:4000` is correct |
 | Only 1 model available | Models not listed in JSON | Run `scripts/restore.sh` to regenerate |
 | Config lost after update | Goose config reset | Run `scripts/restore.sh` |
 | Timeout on long requests | `timeout_seconds` too low | Edit JSON, increase from 600 |

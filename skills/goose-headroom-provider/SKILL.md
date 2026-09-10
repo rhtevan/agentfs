@@ -4,7 +4,7 @@ description: >
   configure goose headroom, goose headroom provider
 platforms: ['linux']
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   tags: [goose, headroom, custom-provider, context-optimization, compression, configuration]
   related_skills: [headroom-litellm-proxy, headroom-proxy-status, goose-litellm-provider, litellm-proxy-status]
 ---
@@ -45,7 +45,7 @@ Goose (custom_headroom) → Headroom Proxy (:8787) → LiteLLM (:4000) → Verte
   "display_name": "Headroom",
   "description": "Headroom context-optimization proxy → LiteLLM (Vertex AI Claude models)",
   "api_key_env": "",
-  "base_url": "http://localhost:8787",
+  "base_url": "http://host.containers.internal:8787",
   "models": [
     {
       "name": "claude-opus-4-6",
@@ -120,7 +120,7 @@ entry in `.env` for the `<NAME>_API_KEY` pattern.
 | `name` | `custom_headroom` | Internal identifier; must match config.yaml |
 | `engine` | `openai` | Headroom exposes OpenAI-compatible `/v1/chat/completions` |
 | `display_name` | `Headroom` | Friendly name shown in provider picker |
-| `base_url` | `http://localhost:8787` | Local Headroom proxy address |
+| `base_url` | `http://host.containers.internal:8787` | Local Headroom proxy address |
 | `requires_auth` | `false` | Headroom proxy does not require authentication |
 | `api_key_env` | `""` | No API key environment variable needed |
 | `timeout_seconds` | `600` | 10-minute timeout for long-running requests |
@@ -181,7 +181,7 @@ goose configure
 2. Select **Add A Custom Provider**
 3. API Type → **OpenAI Compatible**
 4. Name → `Headroom`
-5. API URL → `http://localhost:8787`
+5. API URL → `http://host.containers.internal:8787`
 6. Authentication Required → **No**
 7. Available Models → `claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-4-5`
 8. Streaming Support → **Yes**
@@ -284,7 +284,7 @@ cat > "$PROVIDER_FILE" << 'EOF'
   "display_name": "Headroom",
   "description": "Headroom context-optimization proxy → LiteLLM (Vertex AI Claude models)",
   "api_key_env": "",
-  "base_url": "http://localhost:8787",
+  "base_url": "http://host.containers.internal:8787",
   "models": [
     {
       "name": "claude-opus-4-6",
@@ -369,11 +369,11 @@ echo "     systemctl --user status headroom-proxy"
 |---|---|---|
 | Headroom not in provider list | Missing JSON file | Copy `custom_headroom.json` to `~/.config/goose/custom_providers/` |
 | "Connection refused" on :8787 | Headroom proxy not running | `systemctl --user start headroom-proxy` (see `headroom-litellm-proxy` skill) |
-| Provider shows but won't connect | `base_url` wrong in JSON | Verify `http://localhost:8787` |
+| Provider shows but won't connect | `base_url` wrong in JSON | Verify `http://host.containers.internal:8787` |
 | Only 1 model available | Models not listed in JSON | Update the `models` array to match LiteLLM models |
 | Config lost after update | Goose config reset | Re-run the recovery procedure above |
 | Timeout on long requests | `timeout_seconds` too low | Increase from 600 to a higher value |
-| No compression visible in `/stats` | Short messages don't compress | Use longer conversations; check `curl http://localhost:8787/stats` |
+| No compression visible in `/stats` | Short messages don't compress | Use longer conversations; check `curl http://host.containers.internal:8787/stats` |
 
 
 ## Changelog

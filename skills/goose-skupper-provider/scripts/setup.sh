@@ -150,7 +150,7 @@ provider = {
     "display_name": "Skupper",
     "description": "Skupper VAN to remote GPU model (IBM Granite)",
     "api_key_env": "",
-    "base_url": f"http://localhost:{port}",
+    "base_url": f"http://host.containers.internal:{port}",
     "models": [
         {
             "name": model_id,

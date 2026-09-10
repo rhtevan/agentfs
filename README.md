@@ -282,7 +282,7 @@ stimulus and prescribes a concrete action.
 | 10 | Event | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
 | 11 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
 | 12 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF. |
-| 13 | Event | Any write/edit under `.agents/` or `~/.agents/` | `merge-log-entry.sh` → `merge-changelog-entry.sh` + version bump → `post-edit.sh` → links resolve. |
+| 13 | Event | Before sending any response | If any write/edit touched `.agents/` or `~/.agents/` this turn: `post-write.sh` for each modified file. Do not respond until complete. |
 | 14 | Always | Every response | No validation phrases. Lead with substance. Name ≥1 risk when evaluating a plan or design. |
 | 15 | Always | Every response | No position reversal without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
 | 16 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
@@ -517,7 +517,7 @@ Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 13 structural rules; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 17 structural rules; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 

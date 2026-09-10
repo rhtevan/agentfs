@@ -8,7 +8,7 @@ argument-hint: "setup goose skupper provider for rhel-ai | recreate skupper prov
 compatibility: "goose CLI or Desktop, skupper-model-provider running"
 metadata:
   author: agentfs
-  version: "5.3.0"
+  version: "5.4.0"
   tags: [goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -21,8 +21,8 @@ Configure Goose (CLI and Desktop) to use a remote GPU-hosted LLM
 model as a custom provider named **Skupper**. The model is served
 through a Skupper V2 Virtual Application Network managed by
 `skupper-model-provider`, which exposes remote GPU hosts (rhel-ai,
-rhtevan-work) as local endpoints on `localhost:9000` and
-`localhost:10000`. Use this skill after the VAN is running
+rhtevan-work) as local endpoints on `host.containers.internal:9000` and
+`host.containers.internal:10000`. Use this skill after the VAN is running
 (`skupper model up`) to wire Goose to the self-hosted model
 instead of a cloud provider.
 

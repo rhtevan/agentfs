@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-09 21:27 | vv1.7.0 — Changed base_url from localhost:4000 to host.containers.internal:4000 in restore.sh, verify.sh, and SKILL.md. Enables dual-resolution for host and container environments. |
 | 2026-08-10 15:39 | v1.6.0 — Removed claude-sonnet-4-5; fixed context_limit (opus/sonnet: 1M, haiku: 200k); fixed config.yaml default model to claude-opus-4-6 |
 | 2026-08-10 15:25 | v1.5.0 — Added claude-haiku-4-5 to models; changed fast_model from claude-sonnet-4-6 to claude-haiku-4-5; updated Vertex AI region from global to us-east5 in LiteLLM config |
 | 2026-08-10 12:55 | v1.4.0 — Removed pyyaml dependency from verify.sh (replaced with awk); consolidated Steps 1-2 (inline curl commands) into single pre-flight check using verify.sh; renumbered steps (6→5); 5-principle skill check clean |

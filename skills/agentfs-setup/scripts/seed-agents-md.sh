@@ -274,8 +274,8 @@ scripts live at `~/.agents/skills/agentfs-setup/scripts/`.
 | 10 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
 | 11 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
 | 12 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. (Rule 13 also fires — this rule is routing, Rule 13 is mechanical.) |
-| | | **After writing `.agents/`** | |
-| 13 | Event | Any write/edit under `.agents/` or `~/.agents/` completed | Run ALL: ① `~/.agents/skills/agentfs-setup/scripts/merge-log-entry.sh <path-to-log.md> "<msg>"` for each touched scope (e.g., `~/.agents/log.md` or `./.agents/log.md`) ② `~/.agents/skills/agentfs-setup/scripts/merge-changelog-entry.sh <path-to-CHANGELOG.md> "<version>" "<desc>"` + version bump for modified skills ③ `~/.agents/skills/agentfs-setup/scripts/post-edit.sh` runs clean ④ All markdown links resolve. Details: `load_skill(name: "agentfs-setup/references/filesystem-integrity.md")` |
+| | | **Before responding** | |
+| 13 | Event | Before sending any response | If any write/edit touched `.agents/` or `~/.agents/` this turn: `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). Do not respond until complete. |
 | | | **Always** | |
 | 14 | Always | Every response | No validation phrases ("Great question", "Absolutely"). Lead with substance. Name ≥1 risk when evaluating a plan or design. |
 | 15 | Always | Every response | No position reversal without new information or logical argument. When reversing, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for confirmation. Log overrides with `[OVERRIDE]`. |

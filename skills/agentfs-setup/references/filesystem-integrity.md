@@ -7,6 +7,7 @@ instead of direct edits for managed files.
 
 | What | Script | Usage |
 |------|--------|-------|
+| Post-write orchestrator | `post-write.sh` | `bash post-write.sh <file> "<desc>" [--version <ver>]` — single call replaces manual ①②③④ sequence (log, changelog, post-edit, link check) |
 | `log.md` (any scope) | `merge-log-entry.sh` | `bash merge-log-entry.sh <path> "<msg>"` — direct `write`/`edit` to `log.md` only permitted when creating a new file (initial entry) |
 | `skills/*/CHANGELOG.md` | `merge-changelog-entry.sh` | `bash merge-changelog-entry.sh <path> "<version>" "<description>"` |
 | `metadata.version` | *(agent direct edit)* | Edit skill frontmatter YAML `version:` field |

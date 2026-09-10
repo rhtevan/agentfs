@@ -35,7 +35,7 @@ cat > "$PROVIDER_FILE" << EOF
   "display_name": "RedHat",
   "description": "Local LiteLLM proxy to Vertex AI (Claude models)",
   "api_key_env": "",
-  "base_url": "http://localhost:4000",
+  "base_url": "http://host.containers.internal:4000",
   "models": [
     {
       "name": "claude-opus-4-6",
