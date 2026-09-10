@@ -275,7 +275,7 @@ Defines ten structural guardrails (reordered by usage frequency):
 1. 🔄 **Progressive Disclosure** — browse `index.md` before opening files
 2. ⚖️ **Memory Scope** — memories are PROJECT-only; graduation path to OKF
 3. 🔄 **Cross-Agent Discovery** — read CLAUDE.md, .cursorrules, etc.
-4. ⚖️ **Skill Placement** — default to USER, PROJECT only when explicit
+4. ⚖️ **Skill Placement** — default to PROJECT, promote to USER when cross-project demand is proven
 5. ⛔ **Filesystem Integrity** — link integrity, log currency, content
    file currency, and index currency in a single guardrail
 6. 🔄 **Idempotency** — every skill and workflow must be idempotent

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# post-edit.sh — Mechanical post-edit checks for AgentFS files.
+# post-edit.sh — Post-edit checks and audit trail verification for AgentFS.
 #
 # Run after editing any file under .agents/ (either scope).
-# Handles the fragile/deterministic steps; agent handles contextual
-# steps (log entries, CHANGELOG entries) separately.
+# Handles structural integrity (indexes, anchors) AND detects
+# unlogged modifications (log drift) to catch missed Rule 13
+# obligations.
 #
 # Usage: bash post-edit.sh [--user] [--project] [--all]
 #   --user     Check USER scope (~/.agents/) only
@@ -13,7 +14,8 @@
 # What it does:
 #   1. Regenerate skills/index.md (if skills exist in scope)
 #   2. Validate log.md comment-line anchors
-#   3. Report results
+#   3. Detect unlogged skill modifications (log drift)
+#   4. Report results
 #
 # Exit codes:
 #   0 = all checks passed
@@ -132,6 +134,73 @@ check_log_anchor() {
   fi
 }
 
+# ── Log drift detection ────────────────────────────────────────────
+# Compares latest file modification time in each skill directory
+# against the latest log entry timestamp. Warns if a skill has files
+# newer than the last log entry, indicating a missed post-write.sh call.
+check_log_drift() {
+  local skills_root="$1"
+  local log_file="$2"
+  local scope_label="$3"
+
+  if [[ ! -d "$skills_root" ]] || [[ ! -f "$log_file" ]]; then
+    return
+  fi
+
+  # Extract the latest log timestamp as epoch seconds
+  # Log format: ## YYYY-MM-DD HH:MM
+  local latest_log_ts=0
+  local latest_log_line
+  latest_log_line="$(grep -m1 '^## [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}' "$log_file" || true)"
+  if [[ -n "$latest_log_line" ]]; then
+    local log_datetime
+    log_datetime="$(echo "$latest_log_line" | sed 's/^## //')"
+    latest_log_ts="$(date -d "$log_datetime" '+%s' 2>/dev/null || echo 0)"
+  fi
+
+  if [[ "$latest_log_ts" -eq 0 ]]; then
+    return  # Can't parse log timestamps — skip drift check
+  fi
+
+  # Check each skill directory
+  for skill_dir in "$skills_root"/*/; do
+    [[ -f "${skill_dir}SKILL.md" ]] || continue
+
+    local skill_name
+    skill_name="$(basename "$skill_dir")"
+
+    # Find the latest modification time across all files in the skill
+    local latest_file_ts=0
+    local latest_file=""
+    while IFS= read -r line; do
+      local file_ts file_path
+      # %T@ gives fractional epoch — truncate to integer
+      file_ts="$(echo "$line" | cut -d'.' -f1)"
+      file_path="$(echo "$line" | sed 's/^[^ ]* //')"
+      if [[ "$file_ts" -gt "$latest_file_ts" ]]; then
+        latest_file_ts="$file_ts"
+        latest_file="$file_path"
+      fi
+    done < <(find "$skill_dir" -type f ! -name 'index.md' -printf '%T@ %p\n' 2>/dev/null)
+
+    if [[ "$latest_file_ts" -eq 0 ]]; then
+      continue
+    fi
+
+    # Allow 120-second grace period (log entry may be written slightly
+    # before the last file touch during the same post-write cycle)
+    local drift_threshold=$((latest_log_ts + 120))
+
+    if [[ "$latest_file_ts" -gt "$drift_threshold" ]]; then
+      local file_time log_time
+      file_time="$(date -d "@$latest_file_ts" '+%Y-%m-%d %H:%M:%S')"
+      log_time="$(date -d "@$latest_log_ts" '+%Y-%m-%d %H:%M')"
+      warn "[$scope_label] Log drift: $skill_name/ has file modified at $file_time but latest log entry is $log_time"
+      echo "    File: $(basename "$latest_file")"
+    fi
+  done
+}
+
 # ── Main ───────────────────────────────────────────────────────────
 echo "=== AgentFS Post-Edit Check ==="
 echo
@@ -149,6 +218,7 @@ if $CHECK_USER; then
     fi
     check_log_anchor "$USER_ROOT/log.md" "USER"
     check_log_anchor "$USER_ROOT/knowledge/log.md" "USER/knowledge"
+    check_log_drift "$USER_ROOT/skills" "$USER_ROOT/log.md" "USER"
     echo
   fi
 fi
@@ -159,6 +229,7 @@ if $CHECK_PROJECT; then
     echo "[PROJECT] Checking ./.agents/"
     regen_skills_index "$PROJECT_ROOT/skills" "PROJECT"
     check_log_anchor "./.agents/log.md" "PROJECT"
+    check_log_drift "$PROJECT_ROOT/skills" "./.agents/log.md" "PROJECT"
     echo
   fi
 fi

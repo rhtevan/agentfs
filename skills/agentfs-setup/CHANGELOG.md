@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-10 17:39 | v5.8.1 — post-edit.sh: added log drift detection — compares skill file modification times against latest log entry timestamp, warns on unlogged modifications to catch missed Rule 13 obligations. |
+| 2026-09-10 13:56 | vv5.8.0 — Updated Skill Placement guardrail: default to PROJECT, promote to USER when cross-project demand is proven. Updated design-spec.md to match. |
 | 2026-09-09 22:16 | v5.7.0 — agentfs-setup v5.7.0: Added post-write.sh orchestrator script. Redesigned Rule 13 — trigger moved from 'after each write' to 'before sending response' (end-of-turn audit); action collapsed from 4 manual steps to single post-write.sh call. Updated seed-agents-md.sh template, filesystem-integrity.md, and project AGENTS.md. |
 | 2026-09-08 15:33 | v5.6.0 — Added Anti-Action-Sycophancy: Rule 17 (no action on assumed inputs — state missing info, ask, do not execute; flag low confidence at top) to seed-agents-md.sh template; added anti-assumption identity principle to author-soul.sh default SOUL.md template; updated SKILL.md rule inventory (12→13 rules). Addresses action sycophancy gap exposed by Agentbox weather session. |
 | 2026-09-04 15:01 | v5.5.0 — Added Script Input/Output Conventions section to SKILL.md (log entry format: bullet-prefixed). Fixed merge-log-entry.sh header comment: removed format prescription, now mechanical-only (SoC). Added Cross-Skill Script Execution priority table to filesystem-integrity.md. |

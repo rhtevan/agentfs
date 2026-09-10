@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.4.0"
+  version: "3.5.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -181,9 +181,27 @@ past mistakes.
 
 ### Step 2 — Determine Scope
 
-- **Default: USER** (`~/.agents/skills/<skill-name>/`)
-- **PROJECT only when explicit**: user says "project skill",
-  "for this project", "local skill" → `./.agents/skills/<skill-name>/`
+Scope governs **discovery and context loading**, not what the
+skill operates on. A skill managing system infrastructure can
+live at PROJECT scope if only one project needs to discover it.
+USER-scope skill signals load into every session on the machine;
+PROJECT-scope signals load only when working in that project.
+
+| Criterion | → USER | → PROJECT |
+|-----------|:------:|:---------:|
+| Every session on this machine needs this skill | ✅ | |
+| Skill is tied to a specific project or workflow | | ✅ |
+| Proven reusable across multiple projects | ✅ | |
+| Signals would be noise in unrelated sessions | | ✅ |
+
+**Default: PROJECT** (`./.agents/skills/<skill-name>/`).
+Promote to USER (`~/.agents/skills/<skill-name>/`) when
+cross-project demand is demonstrated. Starting at PROJECT
+avoids signal phrase bloat in unrelated sessions.
+
+USER scope when **explicit**: user says "user skill", "shared
+skill", "global skill", or the skill clearly serves every
+session (e.g., `skill-gen`, `agentfs-setup`, `agentfs-eval`).
 
 ### Step 3 — Create Directory Structure
 

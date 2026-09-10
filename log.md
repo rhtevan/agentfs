@@ -2,9 +2,25 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-10 17:39
+
+- Updated agentfs-setup v5.8.1: post-edit.sh enhanced with log drift detection — compares skill file mtimes against latest log entry, warns on unlogged modifications. Catches missed Rule 13 obligations during iterative debugging.
+
+## 2026-09-10 13:59
+
+- Moved fedora-openshell from USER to PROJECT scope (./.agents/skills/) in agentbox. USER index: 58 skills (was 59).
+
+## 2026-09-10 13:56
+
+- Reversed default skill scope from USER to PROJECT in skill-gen v3.5.0, agentfs-setup v5.8.0, and AGENTS.md Rule 11. Scope governs discovery/context loading, not operational target. PROJECT avoids signal phrase bloat; promote to USER when cross-project demand is proven.
+
+## 2026-09-10 13:13
+
+- Created fedora-openshell v1.0.0: Install, start, stop, status, upgrade, teardown for NVIDIA OpenShell on Fedora. Includes verify.sh (S1–S9), privilege gate pattern (exit 3) for sudo operations. All 10 tests pass.
+
 ## 2026-09-10 12:59
 
-Updated skill-gen v3.4.0: Added Principle 6 (Context Economy) with soft 300-line threshold, two-step audit, references/ conventions. Added Principle 7 (Error Contract) with semantic exit codes 0-3, privilege gate pattern, idempotency/troubleshooting/recovery obligations. Made Skill Check mandatory in Post-Creation Checklist. Updated skill-schema.md v2.3.0 with directory structure and exit code conventions.
+- Updated skill-gen v3.4.0: Added Principle 6 (Context Economy) with soft 300-line threshold, two-step audit, references/ conventions. Added Principle 7 (Error Contract) with semantic exit codes 0-3, privilege gate pattern, idempotency/troubleshooting/recovery obligations. Made Skill Check mandatory in Post-Creation Checklist. Updated skill-schema.md v2.3.0 with directory structure and exit code conventions.
 
 ## 2026-09-09 22:25
 

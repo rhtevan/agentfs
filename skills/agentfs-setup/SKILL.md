@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "5.7.0"
+  version: "5.8.1"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -273,7 +273,7 @@ as Trigger/Action pairs:
 1. **Signal-First Dispatch** — scan skill descriptions before generic interpretation
 2. **Progressive Disclosure** — browse `index.md` before opening files
 3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
-4. **Skill Placement** — default to USER, PROJECT only when explicit
+4. **Skill Placement** — default to PROJECT, promote to USER when cross-project demand is proven
 5. **Filesystem Integrity** — log, changelog, index, link checks
 6. **Git Push Safety** — `load_skill(name: "agentfs-git-push")`
 7. **Checkpoints** — checkpoint before destructive ops
