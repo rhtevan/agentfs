@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-10 12:59
+
+Updated skill-gen v3.4.0: Added Principle 6 (Context Economy) with soft 300-line threshold, two-step audit, references/ conventions. Added Principle 7 (Error Contract) with semantic exit codes 0-3, privilege gate pattern, idempotency/troubleshooting/recovery obligations. Made Skill Check mandatory in Post-Creation Checklist. Updated skill-schema.md v2.3.0 with directory structure and exit code conventions.
+
 ## 2026-09-09 22:25
 
 - Fixed escaped backticks in Rule 13 template row (\\)

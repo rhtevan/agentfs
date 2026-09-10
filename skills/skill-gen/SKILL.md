@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.3.0"
+  version: "3.4.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -23,9 +23,10 @@ disable-model-invocation: false
 Create new skills, modify and improve existing ones with built-in AgentFS
 conventions. Operates in three modes: **simple** (quick scaffold),
 **advanced** (full eval/iterate/optimize loop using upstream Anthropic
-skill-creator), and **skill check** (audit existing skills against five
+skill-creator), and **skill check** (audit existing skills against seven
 quality principles). Default mode is simple; use advanced when requesting
-"thorough", "with evals", or "production quality".
+"thorough", "with evals", or "production quality". Skill Check runs
+automatically after every creation or update (Post-Creation Checklist).
 
 This is a **proxy skill** that operates in three modes:
 
@@ -33,7 +34,7 @@ This is a **proxy skill** that operates in three modes:
 |------|------|-------------|
 | **Simple** (default) | Quick utility skills, SOPs, small workflows | Scaffold + write + AgentFS post-creation checklist |
 | **Advanced** | "advanced", "thorough", "with evals", "production quality" | Full upstream eval/iterate/optimize loop + AgentFS checklist |
-| **Skill Check** | "check skill", "skill check", "audit skill" | Audit existing skill against five quality principles |
+| **Skill Check** | "check skill", "skill check", "audit skill" | Audit existing skill against seven quality principles |
 
 ## Mode Selection
 
@@ -103,6 +104,43 @@ script execution. A process skill defines:
   user responses
 - **External gates** — steps that wait for external input
   (approvals, reference numbers, third-party data)
+- **Privilege gates** — steps requiring elevated privileges
+  (`sudo`, root access) that the agent cannot provide
+
+**Privilege Gate pattern:**
+
+Some steps require `sudo` or system-level access. The agent cannot
+execute these directly. Mark them in SKILL.md with the 🔒 icon and
+prescribe the exact interaction:
+
+```markdown
+### Step N — Description (🔒 Privilege Gate)
+
+This step requires `sudo`. The agent cannot execute this directly.
+
+**Agent action:** Present the command to the user and request
+manual execution. Wait for confirmation before proceeding.
+
+` ` `bash
+sudo dnf install -y example-package
+` ` `
+
+**Gate condition:** User confirms completion.
+**Verification:** Run `scripts/verify.sh` to confirm.
+```
+
+Scripts that detect missing privileges MUST exit with code **3**
+(see Error Contract below) and print a human-readable message
+with the exact command to run:
+
+```bash
+if ! sudo -n true 2>/dev/null; then
+  echo "🔒 Privilege gate: this operation requires sudo."
+  echo "   Run manually:"
+  echo "     sudo dnf install -y example-package"
+  exit 3
+fi
+```
 
 This preserves all guardrails — scripts stay idempotent
 (Guardrail #6), the SKILL.md *is* the process documentation,
@@ -253,21 +291,78 @@ and when to use it.
   ```
   This prevents agents from bypassing the skill and writing
   malformed files from stale context or hallucinated schemas.
-- **Keep SKILL.md under 500 lines** — if longer, add `references/`
-  directory with supporting docs and clear pointers from SKILL.md
+- **Context economy** — SKILL.md is loaded in full on every
+  `load_skill` call. Every line consumes context budget. A soft
+  threshold of **300 lines** triggers a two-step audit:
+  (1) Can content move to `references/` without degrading execution
+  quality? If yes, extract. (2) If SKILL.md is still large after
+  step 1, is this a skill scope problem? If yes, decompose into
+  smaller skills. If neither applies, the size is justified.
+  See Principle 6 (Context Economy) in Skill Check for details.
+- **`references/` directory** — for supporting documentation the
+  agent loads on demand: design specs, architecture context,
+  extended troubleshooting, research findings. Create a
+  `## References` section in SKILL.md linking to these files.
+  The agent loads them via
+  `load_skill(name: "skill-name/references/file.md")`.
 - **Progressive disclosure** — signal phrases always in context;
-  opening paragraph + body loaded on trigger; bundled resources
-  loaded as needed
+  opening paragraph + body loaded on trigger; reference files
+  loaded on demand
 
 ### Step 5 — Write Scripts (if applicable)
 
 Generate executable scripts under `scripts/`:
 
-- **Idempotent**: Check preconditions before acting
-- **Exit codes**: 0 = success, 1 = failure, 2 = usage error
+- **Idempotent**: Check preconditions before acting; safe to re-run
+  after failure without corrupting state
+- **Semantic exit codes**: See Error Contract table below
 - **Portable**: Use `$HOME` not hardcoded paths; use `$(uname)` for
   platform-specific commands
 - **Documented**: Header comment with usage
+- **Diagnostic output**: Write structured output to stdout using
+  `✅`/`❌`/`⚠️`/`🔒` markers. Be specific about **what failed**
+  and **what state was left** (e.g., "Config write failed — backup
+  restored" not bare "Error").
+- **Clean up on failure**: Restore backups, remove partial state,
+  or document in SKILL.md that manual cleanup is required.
+
+**Error Contract — exit codes:**
+
+| Exit Code | Meaning | Agent Behavior |
+|:---------:|---------|----------------|
+| 0 | Success | Continue to next step |
+| 1 | Failure | Read stdout. Match against Troubleshooting table. If match → follow prescribed fix. If no match → present full output to user, do NOT improvise recovery. |
+| 2 | Usage error | Fix invocation (wrong args). Retry once. If still exit 2 → stop and ask user. |
+| 3 | Privilege gate | Present the script's output (contains the manual command) to user. Wait for confirmation. Then proceed to verification. |
+
+Exit codes 0–3 are reserved across all skills. Scripts MUST NOT
+use these codes for other meanings.
+
+**SKILL.md error handling obligations:**
+
+Every skill with scripts MUST include:
+1. **Idempotency declaration** per script — mark each script as
+   idempotent (safe to retry) or not in an Error Handling table
+2. **Recovery path** per workflow step — what to do on exit 1
+3. **Troubleshooting table** — known failure modes with
+   symptom → cause → fix columns
+
+```markdown
+## Error Handling
+
+| Script | Idempotent | On Failure |
+|--------|:----------:|------------|
+| `setup.sh` | ✅ | Safe to retry. Restores backup on validation failure. |
+| `teardown.sh` | ✅ | Safe to retry. Partial teardown is cleanable. |
+| `verify.sh` | ✅ (read-only) | Never modifies state. Report failing checks. |
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| exit 1 + "port in use" | Another process on port | `ss -tlnp \| grep PORT`, kill or use `--port` |
+| exit 1 + "backup restored" | JSON validation failed | Check upstream API; re-run |
+```
 
 ```bash
 #!/usr/bin/env bash
@@ -316,8 +411,8 @@ this order:
 **MUST complete ALL of these after creating/updating the skill:**
 
 > ⛔ **GATE — Principle waiver requires explicit permission.**
-> If you believe Principle 4 (Spec/Tests) or Principle 5 (Security)
-> does not apply to this skill, you MUST:
+> If you believe a principle (P4 Spec/Tests, P5 Security, P6 Context
+> Economy, P7 Error Contract) does not apply to this skill, you MUST:
 > 1. State your reasoning clearly to the user
 > 2. Get **explicit confirmation** before omitting the section
 > 3. Log the waiver in the skill's `CHANGELOG.md` entry
@@ -353,6 +448,11 @@ this order:
       For example, a skill in `crc-ols/SKILL.md` must have `name: crc-ols`.
       The name must be lowercase alphanumeric + hyphens only, no
       consecutive hyphens, and must not start or end with a hyphen.
+- [ ] **Skill Check (P1–P7)** — Run the Skill Check procedure
+      (below) against the created or updated skill. All seven
+      principles must pass or have explicit waivers logged per the
+      gate above. Do NOT proceed to the remaining checklist items
+      until the check passes.
 - [ ] **Changelog** — `CHANGELOG.md` exists with at least a v1.0 entry
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
@@ -448,7 +548,12 @@ For both modes:
 
 ## Skill Check Mode
 
-Audit one or more skills against five quality principles. Use when:
+Audit one or more skills against seven quality principles. Skill
+Check runs automatically as part of the Post-Creation Checklist
+after every skill creation or update. It can also be triggered
+independently for periodic audits.
+
+**When to run independently:**
 - A skill has undergone significant changes across sessions
 - Scripts may be stale after architecture changes
 - Pre-flight check before committing skill updates
@@ -457,7 +562,7 @@ Audit one or more skills against five quality principles. Use when:
 **Trigger phrases:** "skill check", "scan skill", "check skill",
 "audit skill", "verify skill quality"
 
-### Five Principles
+### Seven Principles
 
 #### Principle 1 — Accuracy, Consistency & Testability (Code-First)
 
@@ -600,6 +705,108 @@ like or provides a manual alternative, it stays inline.
 - [ ] For imported/third-party skills: full audit completed before
       first execution
 
+#### Principle 6 — Context Economy
+
+> SKILL.md is loaded into the agent's context window in full on
+> every `load_skill` call. Every line consumed is context budget
+> spent. SKILL.md MUST contain what the agent needs to execute the
+> skill. Supporting material that the agent does NOT need during
+> execution belongs in `references/`.
+
+**The separation rule:**
+
+| Belongs in SKILL.md | Belongs in references/ |
+|---------------------|----------------------|
+| Workflow steps the agent executes | Design rationale / DSD |
+| Decision points and branching logic | Architecture context |
+| Spec and Test tables (S1–Sn, T1–Tn) | Extended troubleshooting |
+| Gotchas that affect execution | Research findings |
+| Prerequisites checklist | Investigation notes |
+| Signal routing table | API reference / protocol details |
+| Privilege gates and interaction points | Migration plans |
+| Error Handling and Troubleshooting tables | Evaluation data |
+
+**Standard reference files:**
+
+| File | Purpose | When to create |
+|------|---------|---------------|
+| `references/design-spec.md` | Design decisions, constraints, threat model | Complex skills with non-obvious tradeoffs |
+| `references/troubleshooting.md` | Extended diagnostics | When Troubleshooting table exceeds ~10 rows |
+| `references/architecture.md` | System architecture, data flow | Skills integrating multiple external systems |
+
+The agent loads reference files on demand via
+`load_skill(name: "skill-name/references/file.md")`. SKILL.md
+MUST include a `## References` section linking to these files
+when the `references/` directory exists.
+
+**Soft threshold:** 300 lines triggers a two-step audit:
+1. Can content move to `references/` without degrading execution
+   quality? If yes, extract. If no, leave it.
+2. If SKILL.md is still large after step 1, is this a skill scope
+   problem? If yes, decompose into smaller skills. If neither
+   applies, the size is justified and the audit documents why.
+
+There is no hard maximum. Size is a warning signal, not a rule.
+
+**Check for:**
+- [ ] SKILL.md contains only content the agent needs during
+      execution — no design rationale, research narrative, or
+      investigation logs in the body
+- [ ] Content that supports understanding but isn't step-by-step
+      instructions lives in `references/`
+- [ ] `## References` section exists if `references/` directory
+      exists, with links to each file
+- [ ] If SKILL.md exceeds 300 lines, the two-step audit has been
+      applied and the result documented (either content extracted,
+      skill split, or size justified)
+
+#### Principle 7 — Error Contract
+
+> Scripts communicate outcomes to the agent through exit codes
+> and structured diagnostic output. The agent's response to
+> failures MUST be prescribed by the skill, not improvised.
+> The three-party contract (script → SKILL.md → agent) ensures
+> deterministic error handling.
+
+**Script obligations:**
+- Exit with semantic codes: 0 (success), 1 (failure), 2 (usage
+  error), 3 (privilege gate)
+- Write diagnostic output to stdout with structured markers
+  (`✅`/`❌`/`⚠️`/`🔒`)
+- Be specific: what failed, what state was left, whether cleanup
+  occurred
+- Be idempotent — safe to re-run after failure
+- Clean up partial state on failure or document that manual
+  cleanup is required
+
+**SKILL.md obligations:**
+- Error Handling table declaring idempotency per script
+- Recovery path per workflow step
+- Troubleshooting table mapping symptoms to causes and fixes
+
+**Agent obligations (enforced by SKILL.md prose):**
+
+| Exit Code | Agent Behavior |
+|:---------:|----------------|
+| 0 | Continue to next step |
+| 1 | Read stdout. Match against Troubleshooting table. If match → follow prescribed fix. If no match → present full output to user, do NOT improvise. |
+| 2 | Fix invocation. Retry once. If still 2 → ask user. |
+| 3 | Present script output (contains manual command) to user. Wait for confirmation. Proceed to verification. |
+| Other | Present full output to user. Do NOT retry without approval. |
+
+**Check for:**
+- [ ] Every script uses semantic exit codes (0/1/2/3)
+- [ ] Scripts produce structured diagnostic output (not bare
+      "Error" messages)
+- [ ] Error Handling table exists declaring idempotency per script
+- [ ] Troubleshooting table exists with symptom → cause → fix
+- [ ] Recovery paths are prescribed for each workflow step that
+      can fail
+- [ ] Scripts that require `sudo` detect it early and exit 3 with
+      a human-readable message containing the exact command to run
+- [ ] No improvised error recovery — agent behavior on failure is
+      fully prescribed by SKILL.md prose
+
 ### Skill Check Procedure
 
 1. **Load the target skill** — `load_skill(name: "<skill-name>")`
@@ -615,9 +822,16 @@ like or provides a manual alternative, it stays inline.
    exist; check spec coverage and test determinism
 7. **Apply Principle 5** — audit scripts for scope overreach, secret
    handling, unexpected network calls, and prompt injection
-8. **Report findings** — table of issues with severity (🔴 critical,
-   🟡 warning, 🟢 info) and recommended fix
-9. **Fix** — apply fixes with user approval; version bump; changelog
+8. **Apply Principle 6** — check SKILL.md line count; if >300 lines,
+   apply two-step audit (extract to references → decompose skill);
+   verify `## References` section if `references/` directory exists
+9. **Apply Principle 7** — verify exit codes are semantic (0/1/2/3);
+   verify Error Handling table exists; verify Troubleshooting table
+   exists; verify privilege gates use exit 3 with human-readable
+   output; verify no improvised recovery paths
+10. **Report findings** — table of issues with severity (🔴 critical,
+    🟡 warning, 🟢 info) and recommended fix
+11. **Fix** — apply fixes with user approval; version bump; changelog
 
 ### Report Format
 

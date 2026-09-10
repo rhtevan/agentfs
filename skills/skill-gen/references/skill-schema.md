@@ -1,6 +1,6 @@
 ---
 title: SKILL.md Frontmatter Schema
-version: "2.2.0"
+version: "2.3.0"
 status: canonical
 ---
 
@@ -232,6 +232,64 @@ disable-model-invocation: false
 why it exists, and when to use it. This is the hydrated context that
 the signal-phrase description cannot convey.>
 ```
+
+## Skill Directory Structure
+
+A skill directory contains these standard files and subdirectories:
+
+| Path | Required | Purpose |
+|------|:--------:|---------|
+| `SKILL.md` | ✅ | Main skill document — agent execution instructions |
+| `CHANGELOG.md` | ✅ | Version history (externalized from SKILL.md) |
+| `scripts/` | Optional | Executable scripts (bash, python, etc.) |
+| `references/` | Optional | Supporting documentation loaded on demand |
+
+### `references/` Directory
+
+The `references/` directory holds supporting documentation that the
+agent does NOT need during every skill invocation. This content is
+loaded on demand via `load_skill(name: "skill-name/references/file.md")`
+when the agent needs additional context for a specific task.
+
+**Standard file names:**
+
+| File | Purpose |
+|------|---------|
+| `design-spec.md` | Design Specification — goals, constraints, architecture decisions, threat model |
+| `architecture.md` | System architecture, component interactions, data flow diagrams |
+| `troubleshooting.md` | Extended diagnostics beyond the inline Troubleshooting table |
+
+Custom reference files are permitted. Use descriptive kebab-case
+names (e.g., `migration-plan.md`, `api-reference.md`).
+
+**SKILL.md linking requirement:** When `references/` exists,
+SKILL.md MUST include a `## References` section:
+
+```markdown
+## References
+
+| Document | Path | Purpose |
+|----------|------|---------|
+| Design Spec | [references/design-spec.md](./references/design-spec.md) | Architecture decisions and constraints |
+```
+
+**What does NOT belong in `references/`:**
+- Scripts (use `scripts/`)
+- Content the agent needs during every invocation (keep in SKILL.md)
+- Changelog (use `CHANGELOG.md` at skill root)
+
+## Exit Code Convention
+
+Skills use four reserved exit codes for script → agent communication:
+
+| Exit Code | Meaning | Agent Response |
+|:---------:|---------|----------------|
+| 0 | Success | Continue to next step |
+| 1 | Failure | Match stdout against Troubleshooting table; follow prescribed fix or present to user |
+| 2 | Usage error | Fix invocation, retry once |
+| 3 | Privilege gate | Present script output to user, wait for confirmation |
+
+Exit codes 0–3 are reserved. Skills MUST NOT redefine their meaning.
 
 ## Changelog
 

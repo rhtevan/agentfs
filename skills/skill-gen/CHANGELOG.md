@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-10 12:59 | vv3.4.0 — Added Principle 6 (Context Economy): soft 300-line threshold with two-step audit, references/ directory conventions, standard reference file names. Added Principle 7 (Error Contract): semantic exit codes (0/1/2/3), privilege gate pattern (exit 3), script diagnostic output conventions, SKILL.md error handling obligations (idempotency table, recovery paths, troubleshooting table), prescribed agent behavior per exit code. Made Skill Check mandatory in Post-Creation Checklist after every creation/update. Expanded Business Process Modeling with privilege gate markup pattern. Updated skill-schema.md v2.3.0: added references/ directory convention, exit code convention, standard file names. |
 | 2026-09-04 15:01 | v3.3.0 — Added Script Comment Separation of Concerns principle and cross-skill execution priority order to SKILL.md Step 5. Added Script Comment Rules section to skill-schema.md (v2.2.0). |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-08-20 10:30 | v3.2.0 — Added explicit ⛔ GATE to Post-Creation Checklist requiring user permission before skipping Principle 4 (Spec/Tests) or Principle 5 (Security) |
