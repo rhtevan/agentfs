@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-11 11:03
+
+- fix log coverage check to find log.md in both USER scope (repo root) and PROJECT scope (.agents/)
+
 ## 2026-09-11 10:56
 
 - Fix template version reference 5.6.0 → 5.9.0 in README.md

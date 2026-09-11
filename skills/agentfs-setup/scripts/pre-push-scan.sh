@@ -151,13 +151,21 @@ fi
 TODAY=$(date '+%Y-%m-%d')
 LOG_GAPS=""
 
-# USER scope: any file under the repo root changed (we're in ~/.agents)
-USER_SCOPE_EDITS=$(echo "$CHANGED_FILES" | grep -vE '^log\.md$' | head -1 || true)
-if [[ -n "$USER_SCOPE_EDITS" ]]; then
-  # Check if log.md has a today entry
+# Resolve log.md path — USER scope keeps it at repo root,
+# PROJECT scope keeps it under .agents/
+SCOPE_EDITS=$(echo "$CHANGED_FILES" | grep -vE '^(\.agents/)?log\.md$' | head -1 || true)
+if [[ -n "$SCOPE_EDITS" ]]; then
+  # Find log.md: try repo root first (USER scope), then .agents/ (PROJECT scope)
+  LOG_FILE=""
   if [[ -f "log.md" ]]; then
-    if ! grep -q "^## $TODAY" log.md; then
-      LOG_GAPS="Edited files in scope but log.md has no entry for $TODAY"
+    LOG_FILE="log.md"
+  elif [[ -f ".agents/log.md" ]]; then
+    LOG_FILE=".agents/log.md"
+  fi
+
+  if [[ -n "$LOG_FILE" ]]; then
+    if ! grep -q "^## $TODAY" "$LOG_FILE"; then
+      LOG_GAPS="Edited files in scope but $LOG_FILE has no entry for $TODAY"
     fi
   else
     LOG_GAPS="Edited files in scope but log.md does not exist"
