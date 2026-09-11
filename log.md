@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-10 21:32
+
+- Added Pre-Flight Checklist as primary mitigation; restructured effectiveness section with preventive/detective/corrective layers
+
+## 2026-09-10 21:31
+
+- Added Rule 18 (Pre-Flight Checklist) to AGENTS.md template
+
 ## 2026-09-10 18:05
 
 - Created knowledge bundle llm-behavioral-properties v1.0: 5 concepts documenting LLM behavioral properties and AgentFS mitigations. OKF v0.1 conformant (13/13 checks pass).

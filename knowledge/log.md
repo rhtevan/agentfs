@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-10 21:32
+
+- Added Pre-Flight Checklist as primary mitigation; restructured effectiveness section with preventive/detective/corrective layers
+
 ## 2026-09-10 18:05
 
 - Created llm-behavioral-properties bundle: 5 concepts (sycophancy, multi-turn-discipline-decay, partial-completion, improvised-recovery, hallucinated-confidence). OKF v0.1 conformant.

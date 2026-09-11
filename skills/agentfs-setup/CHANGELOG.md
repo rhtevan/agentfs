@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-10 21:31 | v5.9.0 — Added Rule 18 (Pre-Flight Checklist) to AGENTS.md template |
 | 2026-09-10 17:39 | v5.8.1 — post-edit.sh: added log drift detection — compares skill file modification times against latest log entry timestamp, warns on unlogged modifications to catch missed Rule 13 obligations. |
 | 2026-09-10 13:56 | vv5.8.0 — Updated Skill Placement guardrail: default to PROJECT, promote to USER when cross-project demand is proven. Updated design-spec.md to match. |
 | 2026-09-09 22:16 | v5.7.0 — agentfs-setup v5.7.0: Added post-write.sh orchestrator script. Redesigned Rule 13 — trigger moved from 'after each write' to 'before sending response' (end-of-turn audit); action collapsed from 4 manual steps to single post-write.sh call. Updated seed-agents-md.sh template, filesystem-integrity.md, and project AGENTS.md. |

@@ -37,24 +37,55 @@ limits under cognitive load.
 
 ## AgentFS Mitigations
 
-| Mitigation | Location | Mechanism |
-|-----------|----------|-----------|
-| `post-write.sh` chain | Rule 13 + agentfs-setup | Single entry point enforces log + changelog + post-edit in one call |
-| Log drift detection | `post-edit.sh` | Compares file mtimes against latest log entry; warns on unlogged modifications |
-| Mandatory Skill Check | skill-gen Post-Creation Checklist | P1–P7 gate before changelog/index/log steps |
-| `merge-changelog-entry.sh` | agentfs-setup | Enforces consistent table format mechanically |
+| Mitigation | Location | Mechanism | Type |
+|-----------|----------|-----------|------|
+| Pre-flight checklist | AGENTS.md Rule 18 | Write action plan before executing; include process obligations; review against rules | **Preventive** |
+| `post-write.sh` chain | Rule 13 + agentfs-setup | Single entry point enforces log + changelog + post-edit in one call | Procedural |
+| Log drift detection | `post-edit.sh` | Compares file mtimes against latest log entry; warns on unlogged modifications | **Detective** |
+| Mandatory Skill Check | skill-gen Post-Creation Checklist | P1–P7 gate before changelog/index/log steps | Gate |
+| `merge-changelog-entry.sh` | agentfs-setup | Enforces consistent table format mechanically | Mechanical |
+
+### Pre-Flight Checklist (Primary Mitigation)
+
+The most effective mitigation for discipline decay is making
+obligations **visible before execution begins**. The pre-flight
+checklist pattern (Rule 18) requires the agent to:
+
+1. **Plan** — write out all steps including process obligations
+   (post-write, changelog, version bump) before starting
+2. **Review** — check the plan against Rules 13–17 and add any
+   missing obligations
+3. **Execute** — follow the plan in order, not skipping ahead
+4. **Complete** — do not respond until all planned steps are done
+
+This works because it converts a **memory problem** (remembering
+to run post-write.sh during a debugging frenzy) into a **checklist
+problem** (following a written plan). The same principle behind
+aviation pre-flight checklists: pilots don't rely on memory because
+knowing and consistently doing under cognitive load are different
+things.
 
 ## Key Insight
 
 **The agent's session log is not a ledger.** It records everything
 that happened but is not structured for checking "what did I modify
-but not log?" The solution is mechanical detection (`post-edit.sh`
-drift check) that compares filesystem state against log state —
-catching what discipline missed.
+but not log?" The defense is layered:
+
+1. **Preventive** — Pre-flight checklist (Rule 18) makes obligations
+   visible before execution
+2. **Detective** — Drift detection (`post-edit.sh`) catches what
+   prevention missed by comparing filesystem state against log state
+3. **Corrective** — Agent fixes drift before responding when
+   detection warns
+
+No single layer is sufficient. Prevention reduces incidents,
+detection catches escapes, correction fixes them.
 
 ## Effectiveness
 
-Drift detection catches 100% of unlogged `.agents/` modifications
-after the fact. The remaining gap is for files outside `.agents/`
-that skills depend on but Rule 13 doesn't govern. Those require
-agent discipline, which remains unreliable over long sessions.
+- **Pre-flight checklist** — not yet tested at scale; addresses the
+  root cause (obligations not in working memory during execution)
+- **Drift detection** — catches 100% of unlogged `.agents/`
+  modifications after the fact
+- **Remaining gap** — files outside `.agents/` that skills depend on
+  but Rule 13 doesn't govern require agent discipline only

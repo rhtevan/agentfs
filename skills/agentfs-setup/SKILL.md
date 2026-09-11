@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "5.8.1"
+  version: "5.9.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -267,7 +267,7 @@ overwriting existing content.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with thirteen rules
+The `seed-agents-md.sh` script creates `AGENTS.md` with fourteen rules
 as Trigger/Action pairs:
 
 1. **Signal-First Dispatch** — scan skill descriptions before generic interpretation
@@ -283,6 +283,7 @@ as Trigger/Action pairs:
 11. **Conflict Resolution** — don't reverse without new info, quote rules, log overrides
 12. **Anti-Daydreaming** — ephemeral session canary name; never persisted
 13. **Anti-Action-Sycophancy** — no action on assumed inputs; ask before acting on missing info; flag low confidence at top
+14. **Pre-Flight Checklist** — write action plan before multi-step changes; review against rules; execute in order; do not skip process obligations
 
 ## Layer Reference
 
