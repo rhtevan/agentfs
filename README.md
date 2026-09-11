@@ -6,6 +6,11 @@ permalink: /
 
 **Shared agent scaffolding with skills, knowledge bundles, and cross-agent context.**
 
+Part of the **agent-x trilogy**:
+- **AgentFS** (agent-filesystem) — foundation file structures for agents ← this project
+- **[AgentFLOW](https://github.com/rhtevan/agentflow)** (agent-flow) — deterministic workflow orchestration
+- **[AgentBOX](https://github.com/rhtevan/agentbox)** (agent-box) — secure enterprise sandbox for agent sessions
+
 AgentFS is a structured filesystem convention for AI agents (Goose, Hermes, Claude Code, etc.) that enables persistent memory, reusable skills, and shared knowledge across agents and sessions.
 
 ## Scope Definitions
