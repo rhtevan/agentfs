@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-11 10:56
+
+- Fix template version reference 5.6.0 → 5.9.0 in README.md
+
+## 2026-09-11 10:52
+
+- v2.0.0 — Add PROJECT scope support: scope resolution, PROJECT dimensions P1–P7, dual report format
+
 ## 2026-09-10 21:32
 
 - Added Pre-Flight Checklist as primary mitigation; restructured effectiveness section with preventive/detective/corrective layers
