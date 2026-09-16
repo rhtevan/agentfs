@@ -2,6 +2,33 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-16 11:49
+- Log entries now include relative file path for traceability in batch invocations (skills/agentfs-setup/scripts/post-write.sh)
+
+- Test log entry (knowledge/ocp-containerfile/base-images-ubi.md)
+
+## 2026-09-16 11:46
+
+- Added regen_knowledge_index to post-edit checks — regenerates knowledge/index.md using rebuild-index.sh (reverse-chronological ordering) before auditing
+
+## 2026-09-16 11:37
+- OCP Containerfile skill v1.0.0 (skills/ocp-containerfile/SKILL.md)
+- OCP Containerfile skill v1.0.0 (skills/ocp-containerfile/scripts/audit.sh)
+- OCP Containerfile skill v1.0.0 (skills/ocp-containerfile/scripts/generate.sh)
+- OCP Containerfile skill v1.0.0 (skills/ocp-containerfile/scripts/verify.sh)
+- OCP Containerfile skill v1.0.0 (skills/ocp-containerfile/references/containerfile-templates.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/index.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/uid-model-restricted-v2.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/uid-model-user-namespaces.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/scc-and-security-context.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/file-permissions-gid0.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/base-images-ubi.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/image-metadata-labels.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/layer-optimization.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/runtime-constraints.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/certification-requirements.md)
+- OCP Containerfile knowledge bundle (knowledge/ocp-containerfile/s2i-compatibility.md)
+
 ## 2026-09-16 09:12
 - Discovery Tiers template updated: 2a/2b/2c split, KGM-preferred, staleness guard, freshness check
 

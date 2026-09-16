@@ -73,8 +73,11 @@ regen_skills_index() {
   fi
 }
 
-# ── Knowledge index audit ──────────────────────────────────────────
-audit_knowledge_index() {
+# ── Knowledge index regen + audit ──────────────────────────────────
+# Parallel to regen_skills_index: regenerate the top-level knowledge
+# index.md using rebuild-index.sh (reverse-chronological by mtime),
+# then audit for missing/broken entries.
+regen_knowledge_index() {
   local knowledge_root="$1"
   local scope_label="$2"
 
@@ -92,7 +95,19 @@ audit_knowledge_index() {
     return
   fi
 
-  # Check if audit-index.sh exists
+  # Regenerate index.md if rebuild-index.sh exists
+  local rebuild_script
+  rebuild_script="${HOME}/.agents/skills/okf-bundle-index/scripts/rebuild-index.sh"
+  if [[ -f "$rebuild_script" ]]; then
+    echo "[$scope_label] Regenerating knowledge/index.md ($bundle_count bundles)..."
+    local new_index
+    new_index="$(bash "$rebuild_script" "$knowledge_root" "Knowledge" 2>/dev/null)"
+    if [[ -n "$new_index" ]]; then
+      echo "$new_index" > "$knowledge_root/index.md"
+    fi
+  fi
+
+  # Audit for missing/broken entries
   local audit_script
   audit_script="${HOME}/.agents/skills/okf-bundle-index/scripts/audit-index.sh"
   if [[ ! -f "$audit_script" ]]; then
@@ -210,7 +225,7 @@ if $CHECK_USER; then
   if [[ -d "$USER_ROOT" ]]; then
     echo "[USER] Checking ~/.agents/"
     regen_skills_index "$USER_ROOT/skills" "USER"
-    audit_knowledge_index "$USER_ROOT/knowledge" "USER"
+    regen_knowledge_index "$USER_ROOT/knowledge" "USER"
     # Conditional KGM reindex (only when KGM extension is enabled)
     KGM_REINDEX="$USER_ROOT/skills/goose-kgm/scripts/reindex-kgm.sh"
     if [[ -f "$KGM_REINDEX" ]]; then

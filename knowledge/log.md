@@ -2,6 +2,23 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-16 11:49
+
+- Test log entry (knowledge/ocp-containerfile/base-images-ubi.md)
+
+## 2026-09-16 11:37
+- OCP Containerfile knowledge bundle (ocp-containerfile/index.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/uid-model-restricted-v2.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/uid-model-user-namespaces.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/scc-and-security-context.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/file-permissions-gid0.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/base-images-ubi.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/image-metadata-labels.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/layer-optimization.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/runtime-constraints.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/certification-requirements.md)
+- OCP Containerfile knowledge bundle (ocp-containerfile/s2i-compatibility.md)
+
 ## 2026-09-10 21:32
 
 - Added Pre-Flight Checklist as primary mitigation; restructured effectiveness section with preventive/detective/corrective layers

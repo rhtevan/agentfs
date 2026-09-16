@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-16 11:46 | v5.10.1 — Added regen_knowledge_index to post-edit checks — regenerates knowledge/index.md using rebuild-index.sh (reverse-chronological ordering) before auditing |
 | 2026-09-16 09:11 | v5.10.0 — Discovery Tiers restructured: split Tier 2 into 2a (skills), 2b (KGM preferred), 2c (knowledge index fallback); added staleness guard and freshness check rules |
 | 2026-09-10 21:31 | v5.9.0 — Added Rule 18 (Pre-Flight Checklist) to AGENTS.md template |
 | 2026-09-10 17:39 | v5.8.1 — post-edit.sh: added log drift detection — compares skill file modification times against latest log entry timestamp, warns on unlogged modifications to catch missed Rule 13 obligations. |

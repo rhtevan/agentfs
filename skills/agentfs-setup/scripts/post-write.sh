@@ -104,10 +104,28 @@ else
 fi
 
 # ── Prepare descriptions ───────────────────────────────────────────
-# Log entries need bullet prefix; changelog entries do not
+# Log entries include the relative filename for traceability.
+# Format: "- <description> (<relative-path>)"
+# This ensures batch invocations with the same description still
+# produce distinguishable log entries.
+
+# Build a short relative path for the log entry
+REL_PATH=""
+if [[ "$ABS_FILE" == "$USER_ROOT/"* ]]; then
+  REL_PATH="${ABS_FILE#"$USER_ROOT/"}"
+elif [[ "$ABS_FILE" == "$PROJECT_ROOT/"* ]]; then
+  REL_PATH="${ABS_FILE#"$PROJECT_ROOT/"}"
+else
+  REL_PATH="$BASENAME"
+fi
+
 LOG_DESCRIPTION="$DESCRIPTION"
 if [[ "$LOG_DESCRIPTION" != "- "* ]]; then
   LOG_DESCRIPTION="- $DESCRIPTION"
+fi
+# Append relative path if not already present in the description
+if [[ "$LOG_DESCRIPTION" != *"$REL_PATH"* ]] && [[ "$LOG_DESCRIPTION" != *"$BASENAME"* ]]; then
+  LOG_DESCRIPTION="$LOG_DESCRIPTION ($REL_PATH)"
 fi
 # Strip bullet prefix for changelog (table row, not a list)
 CHANGELOG_DESCRIPTION="${DESCRIPTION#- }"
