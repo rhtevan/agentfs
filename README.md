@@ -270,9 +270,10 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 AgentFS enforces 18 structural rules via Type/Stimulus/Action triples
 in a flat table within AGENTS.md, preceded by a Discovery Tiers
-section that defines the three-tier context lookup chain (frontmatter
-match → index scan → KGM search). Each rule fires on a specific
-stimulus and prescribes a concrete action.
+section that defines the tiered context lookup chain (frontmatter
+match → skill index scan → KGM search → knowledge index fallback).
+Each rule fires on a specific stimulus and prescribes a concrete
+action.
 
 | # | Type | Stimulus | Action |
 |---|------|----------|--------|
@@ -283,7 +284,7 @@ stimulus and prescribes a concrete action.
 | 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
 | 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
 | 7 | Signal | "hey git", `git add` | → `load_skill(name: "agentfs-git-push")` — follow completely |
-| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2 → 3). Scan rules table for stimulus match. No match → generic interpretation. |
+| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2a → 2b → 2c). Scan rules table for stimulus match. No match → generic interpretation. |
 | 9 | Event | First read of any `.agents/` file | Browse that scope's `index.md` first, follow links to content. |
 | 10 | Event | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
 | 11 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
@@ -440,14 +441,20 @@ personal intellectual property — never committed to any project repository.
   or distilled from session context
 - **Managed by:** `okf-bundle-gen`, `okf-bundle-harvest`, `okf-bundle-setup`,
   `okf-bundle-index` skills
-- **Optional accelerator:** When the `goose-kgm` skill is set up and
-  enabled, a KG Memory (KGM) MCP extension provides `search_nodes`
-  for fast substring lookup over bundle/concept metadata. KGM is a
-  cached index — it collapses the multi-hop OKF index walk into a
-  single tool call but does NOT replace reading the actual concept
-  documents. The JSONL file (`~/.agents/knowledge/.kgm-index.jsonl`)
-  is a derived, gitignored artifact rebuilt from OKF indexes by
-  `reindex-kgm.sh`. See `goose-kgm` skill for lifecycle management.
+- **Optional accelerator:** When the `goose-kgm` skill is set up,
+  a KG Memory (KGM) MCP extension provides `search_nodes` for fast
+  substring lookup over bundle/concept metadata. KGM is enabled and
+  disabled **per session** via the extension manager (the global
+  config retains `enabled: false`). When active, KGM is the
+  **preferred** knowledge discovery path (Tier 2b) — it collapses
+  the multi-hop OKF index walk into a single tool call. The
+  knowledge index scan (Tier 2c) serves as fallback when KGM is
+  inactive or returns no results. A **staleness guard** detects
+  when Tier 2c finds concepts that KGM missed, triggering an
+  automatic reindex. The JSONL file
+  (`~/.agents/knowledge/.kgm-index.jsonl`) is a derived, gitignored
+  artifact rebuilt from OKF indexes by `reindex-kgm.sh`. See
+  `goose-kgm` skill for lifecycle management.
 
 #### Procedural Memory — Skills
 
@@ -537,7 +544,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 5.9.0 -->
+<!-- agentfs-template-version: 5.10.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

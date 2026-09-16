@@ -1,28 +1,21 @@
 #!/usr/bin/env bash
-# enable-kgm.sh — Enable KG Memory MCP extension in Goose config
+# enable-kgm.sh — DEPRECATED: KGM enable/disable is now session-scoped
+#
+# The agent should use the extensionmanager tool instead:
+#   extensionmanager__manage_extensions(action: "enable", extension_name: "knowledgegraphmemory")
+#
+# This script is retained for backward compatibility but simply prints
+# instructions for the agent.
 set -euo pipefail
 
-CONFIG="$HOME/.config/goose/config.yaml"
+cat << 'EOF'
+⚠️  KGM enable/disable is session-scoped (not global config).
 
-if ! grep -q 'knowledgegraphmemory' "$CONFIG" 2>/dev/null; then
-  echo "❌ KGM extension not configured. Run setup-kgm.sh first."
-  exit 1
-fi
+To enable KGM in the current session, the agent should call:
+  extensionmanager__manage_extensions(action: "enable", extension_name: "knowledgegraphmemory")
 
-python3 << 'PYEOF'
-import yaml, os
+This activates KGM tools (search_nodes, read_graph, etc.) for the
+current session only, without modifying the global Goose config.
 
-config_path = os.path.expanduser("~/.config/goose/config.yaml")
-
-with open(config_path, 'r') as f:
-    config = yaml.safe_load(f)
-
-ext = config.get('extensions', {}).get('knowledgegraphmemory')
-if ext and ext.get('enabled'):
-    print("✅ KGM extension already enabled.")
-else:
-    config['extensions']['knowledgegraphmemory']['enabled'] = True
-    with open(config_path, 'w') as f:
-        yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
-    print("✅ KGM extension enabled. Restart Goose session to activate.")
-PYEOF
+The global config retains enabled: false — KGM is opt-in per session.
+EOF

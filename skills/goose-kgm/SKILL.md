@@ -1,9 +1,9 @@
 ---
 name: goose-kgm
 description: >
-  setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status
+  setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm
 metadata:
-  version: "1.0.1"
+  version: "1.1.0"
   tags: [goose, kgm, knowledge-graph, mcp, knowledge]
 ---
 
@@ -20,7 +20,10 @@ replacement for OKF progressive discovery.
   → bundle `index.md` → concept docs) is the required discovery path.
   KGM collapses multi-hop lookups into a single `search_nodes` call
   when enabled, but OKF must work without KGM.
-- **Disabled by default.** User must explicitly enable.
+- **Session-scoped activation.** KGM is enabled/disabled per session
+  using the extension manager, not by editing `config.yaml`. The
+  global config keeps `enabled: false` — KGM is opt-in each session.
+- **Disabled by default.** User must explicitly enable per session.
 - **Knowledge concepts only.** KGM indexes bundle/concept metadata
   from OKF — not guardrails, not memories, not skill content.
 - **Derived artifact.** The JSONL file is regenerated from OKF indexes.
@@ -30,7 +33,7 @@ replacement for OKF progressive discovery.
 
 | Setting | Value |
 |---------|-------|
-| Extension name | `knowledge-graph-memory` |
+| Extension name | `knowledgegraphmemory` |
 | Type | `stdio` (MCP server) |
 | Command | `npx` |
 | Args | `["-y", "@modelcontextprotocol/server-memory"]` |
@@ -48,7 +51,7 @@ replacement for OKF progressive discovery.
 bash ~/.agents/skills/goose-kgm/scripts/setup-kgm.sh
 ```
 
-Adds the `knowledge-graph-memory` extension entry to Goose config
+Adds the `knowledgegraphmemory` extension entry to Goose config
 with `enabled: false`. Creates the JSONL directory if needed.
 Idempotent — skips if entry already exists.
 
@@ -60,56 +63,75 @@ Idempotent — skips if entry already exists.
 bash ~/.agents/skills/goose-kgm/scripts/teardown-kgm.sh
 ```
 
-Removes the `knowledge-graph-memory` extension entry from Goose
+Removes the `knowledgegraphmemory` extension entry from Goose
 config and deletes the JSONL file. Idempotent.
 
-### Enable
+### Enable (Session-scoped)
 
 > Signal: "enable kgm"
 
-```bash
-bash ~/.agents/skills/goose-kgm/scripts/enable-kgm.sh
+**Do not edit config.yaml.** Use the extension manager tool:
+
+```
+extensionmanager__manage_extensions(action: "enable", extension_name: "knowledgegraphmemory")
 ```
 
-Sets `enabled: true` in the extension config. Requires setup first.
-After enabling, the agent should restart or the extension becomes
-available in the next Goose session.
+This activates KGM tools (`search_nodes`, `read_graph`, etc.) for
+the current session only. The global config retains `enabled: false`.
+Requires setup to have been run first (extension entry must exist).
 
-### Disable
+### Disable (Session-scoped)
 
 > Signal: "disable kgm"
 
-```bash
-bash ~/.agents/skills/goose-kgm/scripts/disable-kgm.sh
+**Do not edit config.yaml.** Use the extension manager tool:
+
+```
+extensionmanager__manage_extensions(action: "disable", extension_name: "knowledgegraphmemory")
 ```
 
-Sets `enabled: false` in the extension config. The JSONL file is
-preserved — re-enabling restores the index without rebuild.
+Deactivates KGM tools for the current session. The JSONL index file
+is preserved on disk for future sessions.
 
 ### Status
 
 > Signal: "kgm status"
 
+Two-part check:
+
+**1. Infrastructure status** (JSONL file, config entry):
+
 ```bash
 bash ~/.agents/skills/goose-kgm/scripts/status-kgm.sh
 ```
 
-Reports:
-- Configured: yes/no (extension entry exists in config)
-- Enabled: yes/no
-- JSONL file: exists/missing, entity count, file size
-- Last reindex: timestamp from JSONL file mtime
+**2. Session status** (agent self-check):
 
-## KGM Reindex
+The agent verifies whether `knowledgegraphmemory` tools are available
+in the current session by inspecting its active tool set. Report:
 
-Reindexing rebuilds the JSONL from OKF bundle indexes. It runs:
+- Session active: yes/no (are KGM tools available right now?)
+- Config entry: yes/no (is the extension configured in `config.yaml`?)
+- JSONL: exists/missing, bundle count, concept count, last reindex
 
-1. As part of `sync agentfs` (via `agentfs-setup`) — conditional on
-   KGM being enabled
-2. Manually via `bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh`
+### Reindex
 
-See [references/kgm-entity-schema.md](./references/kgm-entity-schema.md)
-for the entity/relation/observation schema (created in A8).
+> Signal: "reindex kgm", "sync kgm"
+
+```bash
+bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh
+```
+
+Rebuilds the JSONL index from scratch by parsing OKF knowledge
+bundle indexes. Use after adding, removing, or modifying knowledge
+bundles to keep KGM in sync.
+
+Also runs automatically as part of `sync agentfs` (via `agentfs-setup`)
+when KGM is configured — pass `--check-enabled` flag to conditionally
+skip when disabled in config.
+
+**Manual reindex does not require KGM to be enabled** — the JSONL
+file can be rebuilt at any time regardless of session state.
 
 ## Agent Usage (when KGM is enabled)
 
@@ -119,3 +141,17 @@ paths before loading them. This replaces the multi-hop index walk
 but does NOT replace reading the actual concept documents.
 
 **Flow:** `search_nodes` → get `Source` observation → read file path.
+
+## Sync Model
+
+KGM does **not** auto-sync with OKF. The JSONL is a point-in-time
+snapshot rebuilt on demand. Staleness signals:
+
+- `kgm status` reports last reindex timestamp
+- If a `Source:` path from `search_nodes` points to a missing file,
+  the index is stale — reindex and retry
+
+Sync triggers:
+1. Manual: "reindex kgm" or "sync kgm"
+2. Automatic: as part of `sync agentfs` (conditional on config)
+3. No file watchers, no hooks, no reactive sync

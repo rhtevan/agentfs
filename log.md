@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-16 09:12
+- Discovery Tiers template updated: 2a/2b/2c split, KGM-preferred, staleness guard, freshness check
+
+- v5.10.0 — Discovery Tiers restructured: 2a/2b/2c split, KGM-preferred knowledge discovery, staleness guard
+
+## 2026-09-16 08:57
+- Now reports config entry + session note + detailed JSONL breakdown (bundles/concepts/relations)
+- Deprecated: prints session-scoped instructions instead of editing config.yaml
+- Deprecated: prints session-scoped instructions instead of editing config.yaml
+
+- v1.1.0 — session-scoped enable/disable, status session check, reindex signal, sync model docs
+
 ## 2026-09-11 11:03
 
 - fix log coverage check to find log.md in both USER scope (repo root) and PROJECT scope (.agents/)

@@ -233,21 +233,34 @@ cat > "$TARGET" << 'AGENTSEOF'
 
 ## Discovery Tiers
 
-Context discovery uses a three-tier fallback chain. Execute tiers
-in order; stop at the first match. Index files are **active lookup
-tools**, not passive documentation — they are the always-available
-fallback when frontmatter matching is too narrow and KGM is not
-enabled.
+Context discovery uses a tiered fallback chain. Execute tiers in
+order; stop at the first match. Skills and knowledge have separate
+discovery paths — KGM accelerates only the knowledge path.
 
 | Tier | Mechanism | Source | When |
 |------|-----------|--------|------|
 | 1 | **Frontmatter match** | Skill descriptions in system prompt | Always available — matched against user message |
-| 2 | **Index scan** | `~/.agents/skills/index.md` (tags, descriptions) and `~/.agents/knowledge/index.md` (bundle names, concept summaries) | When Tier 1 finds no match — read the index files, scan for relevant tags/descriptions/concepts |
-| 3 | **KGM search** | `search_nodes` tool (knowledge graph extension) | When extension is enabled — query with task topic keywords; read `Source:` files for top results (max 3); summaries alone are insufficient |
+| 2a | **Skill index scan** | `~/.agents/skills/index.md` (tags, descriptions) | When Tier 1 finds no match — scan for relevant skills |
+| 2b | **KGM search** (preferred for knowledge) | `search_nodes` tool | When KGM extension is active in session — query with task topic keywords; read `Source:` files for top results (max 3); summaries alone are insufficient |
+| 2c | **Knowledge index scan** (fallback) | `~/.agents/knowledge/index.md` (bundle names, concept summaries) | When KGM is not active in session, or KGM returns no results |
 
-- **Tier 2 skill match** → `load_skill` → follow instructions
-- **Tier 2 knowledge match** → read the linked concept file(s) before answering
+- **Tier 2a skill match** → `load_skill` → follow instructions
+- **Tier 2b/2c knowledge match** → read the linked concept file(s) before answering
 - **No match at any tier** → generic interpretation
+
+**Staleness guard:** When KGM is active and Tier 2b returns no
+results but Tier 2c finds a knowledge match, the agent MUST:
+① Emit a warning: "⚠️ KGM index appears stale — found knowledge
+at index walk that KGM missed."
+② Continue with the 2c result (do not block the user's task).
+③ After responding, run
+`bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh` to resync.
+④ Confirm reindex completed with count delta.
+
+**Freshness check (once per session):** On the first successful
+Tier 2b match, compare KGM bundle count against the number of
+bundles listed in `~/.agents/knowledge/index.md`. If they diverge,
+emit staleness warning and queue a reindex after the current response.
 
 ## Rules
 
@@ -267,7 +280,7 @@ scripts live at `~/.agents/skills/agentfs-setup/scripts/`.
 | 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
 | 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
 | 7 | Signal | "hey git", `git add` | → `load_skill(name: "agentfs-git-push")` — follow completely |
-| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2 → 3). Scan this table for stimulus match. Execute matched action. No match at any tier: generic interpretation. |
+| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2a → 2b → 2c). Scan this table for stimulus match. Execute matched action. No match at any tier: generic interpretation. |
 | | | **Before reading `.agents/`** | |
 | 9 | Event | First read of any `.agents/` file in a session | Browse that scope's `index.md` first, follow links to content. |
 | | | **Before writing `.agents/`** | |
