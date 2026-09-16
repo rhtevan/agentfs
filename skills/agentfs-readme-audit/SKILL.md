@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
@@ -20,7 +20,7 @@ README staleness check in `pre-push-scan.sh`.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 2.0 |
+| **Version** | 2.1 |
 | **Trigger** | Automatic during Git Push Safety workflow, or explicit |
 | **Scope** | USER (`~/.agents/README.md`) or PROJECT (repo-root `README.md` / `.agents/README.md`) — resolved at runtime |
 | **Dependencies** | `ls`, `grep`, `wc`, `cat`, `git` — data gathering is deterministic |
@@ -159,6 +159,7 @@ differ by scope.
 | D6 | **Version References** | Any version numbers mentioned — do they match current metadata? |
 | D7 | **Feature Descriptions** | Do capability descriptions reflect what skills actually exist? Are there described features with no backing skill, or skills with no README mention? |
 | D8 | **Setup Instructions** | Do installation/setup steps still work given current directory layout? |
+| D9 | **Coverage Gaps** | Do major content categories (skills, knowledge) exist on the filesystem but have zero mention in the README? Report as ℹ️ informational, not ⚠️ drift. Example: "11 knowledge bundles exist but README doesn't reference any by name or count." |
 
 #### PROJECT scope dimensions
 
@@ -171,6 +172,7 @@ differ by scope.
 | P5 | **AGENTS.md References** | If README references guardrails, rules, or AGENTS.md content, are those references accurate? |
 | P6 | **Feature Descriptions** | Do capability descriptions reflect what actually exists in `.agents/`? Are there described features with no backing file, or files with no README mention? |
 | P7 | **Setup / Onboarding** | If README has setup or onboarding instructions, do paths and commands still work? |
+| P8 | **Coverage Gaps** | Do major content categories (skills, profiles, agent identity) exist on the filesystem but have zero mention in the README? Report as ℹ️ informational, not ⚠️ drift. |
 
 > **Note:** Dimensions D3 (Knowledge Bundles), D5 (Guardrail Summary
 > from seed template), and D8 (Setup Instructions for USER scope) are
@@ -196,10 +198,12 @@ Format findings as:
 | D6 Version References | ✅ / ⚠️ / N/A | [specifics] |
 | D7 Feature Descriptions | ✅ / ⚠️ | [specifics] |
 | D8 Setup Instructions | ✅ / ⚠️ | [specifics] |
+| D9 Coverage Gaps | ✅ / ℹ️ | [specifics — content exists but not mentioned] |
 
 ### Verdict
 
 ✅ **ALIGNED** — README accurately reflects current AgentFS state.
+ℹ️ **COVERAGE GAPS** — N content area(s) exist but are not mentioned in README. Non-blocking.
 ⚠️ **DRIFT DETECTED** — N dimension(s) misaligned. Recommend updating README before push.
 ```
 
@@ -217,16 +221,25 @@ Format findings as:
 | P5 AGENTS.md References | ✅ / ⚠️ / N/A | [specifics] |
 | P6 Feature Descriptions | ✅ / ⚠️ / N/A | [specifics] |
 | P7 Setup / Onboarding | ✅ / ⚠️ / N/A | [specifics] |
+| P8 Coverage Gaps | ✅ / ℹ️ | [specifics — content exists but not mentioned] |
 
 ### Verdict
 
 ✅ **ALIGNED** — README accurately reflects current project AgentFS state.
+ℹ️ **COVERAGE GAPS** — N content area(s) exist but are not mentioned in README. Non-blocking.
 ⚠️ **DRIFT DETECTED** — N dimension(s) misaligned. Recommend updating README before push.
 ```
 
 > When a dimension is not mentioned in the README at all, mark it
 > `N/A` — absence of a claim is not drift. Drift only occurs when
 > the README makes a claim that contradicts reality.
+>
+> **Exception:** D9/P8 (Coverage Gaps) specifically checks for content
+> that exists but is never mentioned. Mark as `ℹ️ Gap` (not ⚠️ drift)
+> when the filesystem has substantive content (skills, bundles,
+> profiles) that the README doesn't acknowledge at all. This is a
+> non-blocking informational signal — the user decides whether to
+> update the README.
 
 ### Step 5: Recommend Fixes (if drift detected)
 
@@ -265,5 +278,6 @@ When acting as part of the pre-push workflow, the agent should:
 
 | Date | Change |
 |------|--------|
+| 2026-09-16 | v2.1.0 — Added D9/P8 Coverage Gaps dimension: non-blocking informational signal when filesystem content (skills, bundles, profiles) exists but README doesn't mention it |
 | 2026-09-11 | v2.0.0 — Add PROJECT scope support: scope resolution (Step 0), PROJECT-specific dimensions (P1–P7), dual report format, graceful skip when no README exists |
 | 2026-08-16 | Initial version — semantic README alignment check |

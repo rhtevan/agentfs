@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-16 12:11
+
+- Added D9/P8 Coverage Gaps dimension — non-blocking signal for unmentioned content (skills/agentfs-readme-audit/SKILL.md)
+
 ## 2026-09-16 11:49
 - Log entries now include relative file path for traceability in batch invocations (skills/agentfs-setup/scripts/post-write.sh)
 

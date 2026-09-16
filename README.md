@@ -13,6 +13,15 @@ Part of the **agent-x trilogy**:
 
 AgentFS is a structured filesystem convention for AI agents (Goose, Hermes, Claude Code, etc.) that enables persistent memory, reusable skills, and shared knowledge across agents and sessions.
 
+## Quick Navigation
+
+| Resource | Path | What's Inside |
+|----------|------|---------------|
+| Skills catalog | [skills/index.md](skills/index.md) | All available skills — signal phrases, tags, descriptions |
+| Knowledge bundles | [knowledge/index.md](knowledge/index.md) | Curated knowledge — concepts, patterns, postmortems |
+| Activity log | [log.md](log.md) | Reverse-chronological change history |
+| Design spec | [skills/agentfs-setup/references/design-spec.md](skills/agentfs-setup/references/design-spec.md) | Architecture, scope model, layer definitions |
+
 ## Scope Definitions
 
 AgentFS operates in three scopes. These definitions are canonical.
