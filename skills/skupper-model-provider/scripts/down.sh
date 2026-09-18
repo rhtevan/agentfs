@@ -3,6 +3,7 @@
 # Usage:
 #   bash down.sh              — stop ALL routers + controllers (all hosts + local)
 #   bash down.sh HOST          — stop only HOST; preserve local if other hosts still active
+#   bash down.sh localhost     — stop only local router + controller (providers untouched)
 #   bash down.sh all           — same as no args: stop everything
 # Model containers are managed separately via hosted-model-ctl.
 #
@@ -14,12 +15,17 @@ source "$(dirname "$0")/common.sh"
 TARGET="${1:-all}"
 ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
 CRC_TARGET=false
+LOCAL_ONLY=false
 
 # Determine which remote hosts to stop
 if [[ "$TARGET" == "all" ]]; then
   HOSTS=("${ALL_REMOTE_HOSTS[@]}")
   SCOPED=false
   [[ "$CRC_ENABLED" == "true" ]] && CRC_TARGET=true
+elif [[ "$TARGET" == "localhost" || "$TARGET" == "local" ]]; then
+  HOSTS=()
+  SCOPED=true
+  LOCAL_ONLY=true
 elif [[ "$TARGET" == "crc" ]]; then
   HOSTS=()
   SCOPED=true
@@ -35,12 +41,68 @@ else
 fi
 
 echo "=== Skupper VAN — DOWN ==="
-if [[ ${#HOSTS[@]} -gt 0 ]]; then
+if [[ "$LOCAL_ONLY" == "true" ]]; then
+  echo "  Target: localhost only (providers untouched)"
+elif [[ ${#HOSTS[@]} -gt 0 ]]; then
   echo "  Hosts: ${HOSTS[*]}"
 fi
 [[ "$CRC_TARGET" == "true" ]] && echo "  CRC:   ${CRC_SITE_NAME}"
 [[ "$SCOPED" == "true" ]] && echo "  Mode:  scoped (preserving other routes)"
 echo
+
+# ── LOCAL-ONLY fast path ──────────────────────────────────────
+if [[ "$LOCAL_ONLY" == "true" ]]; then
+  echo "Phase 1: Stop local router"
+  systemctl --user stop "skupper-${NAMESPACE}.service" 2>/dev/null || true
+  echo "  ✅ Local router stopped"
+  echo
+
+  echo "Phase 2: Stop local controller"
+  systemctl --user stop skupper-controller.service 2>/dev/null || true
+  echo "  ✅ Local controller stopped"
+  echo
+
+  echo "Phase 3: Verify"
+  # All listener ports should be down
+  for host in "${ALL_REMOTE_HOSTS[@]}"; do
+    IFS='|' read -r _ _ _ MODEL_PORT _ <<< "${SITE_PROFILES[$host]}"
+    LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${MODEL_PORT} " || true)
+    LISTENING=${LISTENING:-0}
+    if [[ "$LISTENING" -gt 0 ]]; then
+      echo "  ⚠️  localhost:${MODEL_PORT} ($host route) — still listening"
+    else
+      echo "  ✅ localhost:${MODEL_PORT} ($host route) — stopped"
+    fi
+  done
+
+  # Check remote providers are still running
+  echo
+  echo "Phase 4: Verify providers untouched"
+  for host in "${ALL_REMOTE_HOSTS[@]}"; do
+    if host_reachable "$host"; then
+      remote_router=$(check_router_status "$host")
+      remote_ctl=$(check_controller_status "$host")
+      if [[ "$remote_router" == *"Up"* && "$remote_ctl" == *"Up"* ]]; then
+        echo "  ✅ $host: router=up, controller=up (untouched)"
+      elif [[ "$remote_router" == *"Up"* || "$remote_ctl" == *"Up"* ]]; then
+        echo "  ⚠️  $host: router=${remote_router}, controller=${remote_ctl}"
+      else
+        echo "  ℹ️  $host: router=down, controller=down (was already down)"
+      fi
+    else
+      echo "  ⏭️  $host: unreachable (cannot verify)"
+    fi
+  done
+  echo
+
+  echo "=== Skupper VAN — STOP SUMMARY ==="
+  echo "  🔴 Stopped: localhost"
+  echo "  ✅ Kept:    remote providers (untouched)"
+  echo
+  echo "✅ LOCAL DOWN — Local infrastructure stopped. Remote providers preserved."
+  echo "   Run: bash up.sh localhost  — to restart local only"
+  exit 0
+fi
 
 # ── Phase 0: Check reachability ───────────────────────────────
 echo "Phase 0: Reachability"

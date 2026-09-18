@@ -2,6 +2,29 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-18 12:12
+
+- Added ocp-containerfile knowledge bundle to README knowledge list — fixes D3 drift (README.md)
+
+## 2026-09-18 11:54
+- v8.14.0: signal cleanup (skills/skupper-model-provider/SKILL.md)
+- v7.6.0: new script for setting default profile (skills/hosted-model-ctl/scripts/set-default.sh)
+- v7.6.0: persistent default profile support (skills/hosted-model-ctl/scripts/common.sh)
+
+- v7.6.0: signal cleanup + set default profile (skills/hosted-model-ctl/SKILL.md)
+
+## 2026-09-18 11:26
+- v8.13.0: add S11/T11 specs, update operations docs (skills/skupper-model-provider/SKILL.md)
+- v8.13.0: add localhost target fast path (skills/skupper-model-provider/scripts/down.sh)
+
+- v8.13.0: add localhost target fast path (skills/skupper-model-provider/scripts/up.sh)
+
+## 2026-09-18 10:19
+- v8.12.0: add linger Known Issue entry (skills/skupper-model-provider/SKILL.md)
+- v8.12.0: call enable_linger in Phase 5 (skills/skupper-model-provider/scripts/setup.sh)
+
+- v8.12.0: add enable_linger() function (skills/skupper-model-provider/scripts/common.sh)
+
 ## 2026-09-16 12:11
 
 - Added D9/P8 Coverage Gaps dimension — non-blocking signal for unmentioned content (skills/agentfs-readme-audit/SKILL.md)

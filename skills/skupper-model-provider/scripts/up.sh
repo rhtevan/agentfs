@@ -3,6 +3,7 @@
 # Usage:
 #   bash up.sh              — start ALL controllers + routers (all hosts + local)
 #   bash up.sh HOST          — start only HOST + local (if not already running)
+#   bash up.sh localhost     — start only local router + controller (providers untouched)
 #   bash up.sh all           — same as no args: start everything
 # Model containers are managed separately via hosted-model-ctl.
 #
@@ -14,12 +15,17 @@ source "$(dirname "$0")/common.sh"
 TARGET_HOST="${1:-all}"
 ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
 CRC_TARGET=false
+LOCAL_ONLY=false
 
 # Determine which remote hosts to start
 if [[ "$TARGET_HOST" == "all" ]]; then
   HOSTS=("${ALL_REMOTE_HOSTS[@]}")
   SCOPED=false
   [[ "$CRC_ENABLED" == "true" ]] && CRC_TARGET=true
+elif [[ "$TARGET_HOST" == "localhost" || "$TARGET_HOST" == "local" ]]; then
+  HOSTS=()
+  SCOPED=true
+  LOCAL_ONLY=true
 elif [[ "$TARGET_HOST" == "crc" ]]; then
   HOSTS=()
   SCOPED=true
@@ -35,12 +41,114 @@ else
 fi
 
 echo "=== Skupper VAN — UP ==="
-if [[ ${#HOSTS[@]} -gt 0 ]]; then
+if [[ "$LOCAL_ONLY" == "true" ]]; then
+  echo "  Target: localhost only (providers untouched)"
+elif [[ ${#HOSTS[@]} -gt 0 ]]; then
   echo "  Hosts: ${HOSTS[*]}"
 fi
 [[ "$CRC_TARGET" == "true" ]] && echo "  CRC:   ${CRC_SITE_NAME}"
 [[ "$SCOPED" == "true" ]] && echo "  Mode:  scoped"
 echo
+
+# ── LOCAL-ONLY fast path ──────────────────────────────────────
+if [[ "$LOCAL_ONLY" == "true" ]]; then
+  LOCAL_NS_DIR="$HOME/.local/share/skupper/namespaces/${NAMESPACE}"
+  if [[ ! -d "${LOCAL_NS_DIR}/runtime/resources" ]]; then
+    echo "  ❌ Setup not done. Run: bash setup.sh"
+    exit 1
+  fi
+
+  echo "Phase 1: Start local controller"
+  LOCAL_CTL=$(check_controller_status localhost)
+  if [[ "$LOCAL_CTL" == *"Up"* ]]; then
+    echo "  ✅ Local controller already running"
+  else
+    systemctl --user start skupper-controller.service 2>/dev/null || true
+    sleep 2
+    echo "  ✅ Local controller started"
+  fi
+  echo
+
+  echo "Phase 2: Start local router"
+  LOCAL_ROUTER=$(check_router_status localhost)
+  if [[ "$LOCAL_ROUTER" == *"Up"* ]]; then
+    echo "  ✅ Local router already running"
+  else
+    systemctl --user start "skupper-${NAMESPACE}.service" 2>/dev/null || true
+    sleep 5
+    echo "  ✅ Local router started"
+  fi
+  echo
+
+  echo "Phase 3: Verify links + listeners"
+  # Wait for links to reconverge (AMQP reconnection with backoff)
+  MAX_WAIT=30
+  WAITED=0
+  LINKS_UP=0
+  EXPECTED_LINKS=0
+
+  for host in "${ALL_REMOTE_HOSTS[@]}"; do
+    if host_reachable "$host"; then
+      remote_router=$(check_router_status "$host")
+      [[ "$remote_router" == *"Up"* ]] && ((EXPECTED_LINKS++)) || true
+    fi
+  done
+
+  if [[ "$EXPECTED_LINKS" -gt 0 ]]; then
+    echo "  Waiting for ${EXPECTED_LINKS} link(s) to reconverge..."
+    while [[ "$WAITED" -lt "$MAX_WAIT" ]]; do
+      LINKS_UP=0
+      for host in "${ALL_REMOTE_HOSTS[@]}"; do
+        IFS='|' read -r _ _ _ MODEL_PORT _ <<< "${SITE_PROFILES[$host]}"
+        LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${MODEL_PORT} " || true)
+        LISTENING=${LISTENING:-0}
+        [[ "$LISTENING" -gt 0 ]] && ((LINKS_UP++)) || true
+      done
+      [[ "$LINKS_UP" -ge "$EXPECTED_LINKS" ]] && break
+      sleep 2
+      ((WAITED+=2)) || true
+    done
+  fi
+
+  # Report listener status for all hosts
+  for host in "${ALL_REMOTE_HOSTS[@]}"; do
+    IFS='|' read -r _ _ _ MODEL_PORT _ <<< "${SITE_PROFILES[$host]}"
+    LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${MODEL_PORT} " || true)
+    LISTENING=${LISTENING:-0}
+    if [[ "$LISTENING" -gt 0 ]]; then
+      echo "  ✅ localhost:${MODEL_PORT} listening ($host route)"
+    else
+      # Check if the remote router is even up
+      if host_reachable "$host"; then
+        remote_router=$(check_router_status "$host")
+        if [[ "$remote_router" == *"Up"* ]]; then
+          echo "  ⚠️  localhost:${MODEL_PORT} not listening ($host route — link may need more time)"
+        else
+          echo "  ℹ️  localhost:${MODEL_PORT} not listening ($host — remote router down)"
+        fi
+      else
+        echo "  ℹ️  localhost:${MODEL_PORT} not listening ($host — unreachable)"
+      fi
+    fi
+  done
+  echo
+
+  echo "=== Skupper VAN — START SUMMARY ==="
+  echo "  ✅ Up:      localhost"
+  echo "  ✅ Kept:    remote providers (untouched)"
+  if [[ "$LINKS_UP" -ge "$EXPECTED_LINKS" && "$EXPECTED_LINKS" -gt 0 ]]; then
+    echo
+    echo "✅ LOCAL UP — Local infrastructure started. All ${EXPECTED_LINKS} link(s) reconverged."
+  elif [[ "$EXPECTED_LINKS" -eq 0 ]]; then
+    echo
+    echo "✅ LOCAL UP — Local infrastructure started. No remote routers detected."
+  else
+    echo
+    echo "⚠️  LOCAL UP — Local infrastructure started. ${LINKS_UP}/${EXPECTED_LINKS} link(s) reconverged (others may need more time)."
+  fi
+  echo "   Model containers are managed via hosted-model-ctl."
+  exit 0
+fi
 
 # ── Phase 1: Check prerequisites ──────────────────────────────
 echo "Phase 1: Prerequisites"

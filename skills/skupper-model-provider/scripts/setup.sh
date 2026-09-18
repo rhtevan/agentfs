@@ -373,13 +373,14 @@ sleep 10
 echo
 
 # ── Phase 5: Auto-restart patches ─────────────────────────────
-echo "Phase 5: Auto-restart patches"
+echo "Phase 5: Auto-restart patches + linger"
 
 for host in rhel-ai rhtevan-work localhost; do
   local_name="$host"
   [[ "$host" == "localhost" ]] && local_name="local"
 
   echo "  → Patching $host..."
+  enable_linger "$host"
   install_router_auto_restart "$host"
   install_controller_auto_restart "$host"
   run_on_host "$host" "systemctl --user restart skupper-controller.service 2>/dev/null" || true

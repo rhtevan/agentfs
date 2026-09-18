@@ -541,6 +541,20 @@ recreate_router_with_tmpfs() {
 # Fix: start-watch.sh blocks on `podman wait`, checks exit code,
 # exits non-zero on crash → Restart=on-failure triggers restart.
 
+enable_linger() {
+  local host="$1"
+  local user
+  user=$(run_on_host "$host" 'whoami')
+  local current
+  current=$(run_on_host "$host" "loginctl show-user ${user} 2>/dev/null | grep '^Linger=' | cut -d= -f2" || echo "unknown")
+  if [[ "$current" == "yes" ]]; then
+    echo "  ✅ $host: linger already enabled for ${user}"
+  else
+    run_on_host "$host" "loginctl enable-linger ${user}"
+    echo "  ✅ $host: linger enabled for ${user}"
+  fi
+}
+
 install_router_auto_restart() {
   local host="$1"
   local ns_dir

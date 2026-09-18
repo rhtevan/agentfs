@@ -3,14 +3,13 @@ name: skupper-model-provider
 description: >
   setup skupper, teardown skupper, start skupper, stop skupper,
   skupper status, test skupper, precheck skupper, skupper topology,
-  start skupper on crc, stop skupper on crc,
-  start skupper on rhel-ai, stop skupper on rhtevan-work,
-  start skupper with g8b-fp8-spec-128k
-argument-hint: "setup skupper | teardown skupper | start skupper | start skupper on crc | stop skupper on crc | stop skupper | skupper status | skupper precheck"
+  start skupper on SITE, stop skupper on SITE,
+  start skupper with PROFILE, stop skupper with PROFILE
+argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | stop skupper on localhost | skupper status"
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.11.0"
+  version: "8.14.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -99,8 +98,8 @@ All values in the table above are defined in `topology.env`.
 | `setup.sh` | One-time infrastructure | First time, or after teardown |
 | `setup.sh --check` | Precheck only (topology + validation) | Before setup, or to inspect topology |
 | `teardown.sh` | Remove infrastructure | Decommissioning |
-| `up.sh [HOST]` | Start VAN (controllers + routers) | Daily use (`HOST` = `rhel-ai`, `rhtevan-work`, `crc`, or `all`) |
-| `down.sh [HOST]` | Stop VAN (routers + controllers) | End of day (`HOST` = `rhel-ai`, `rhtevan-work`, `crc`, or `all`) |
+| `up.sh [HOST]` | Start VAN (controllers + routers) | Daily use (`HOST` = `rhel-ai`, `rhtevan-work`, `crc`, `localhost`, or `all`) |
+| `down.sh [HOST]` | Stop VAN (routers + controllers) | End of day (`HOST` = `rhel-ai`, `rhtevan-work`, `crc`, `localhost`, or `all`) |
 | `status.sh` | Full health check | Troubleshooting |
 | `test-model.sh HOST_OR_PROFILE` | E2E connectivity test | Verification |
 
@@ -236,9 +235,10 @@ to deploy default models on each host.
 ### Start VAN
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh           # all sites
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh rhel-ai   # specific provider host
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh crc       # CRC consumer site only
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh             # all sites
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh rhel-ai     # specific provider host
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh crc         # CRC consumer site only
+bash ~/.agents/skills/skupper-model-provider/scripts/up.sh localhost   # local infra only (providers untouched)
 ```
 
 4-phase process (+ Phase 5 for CRC when targeted):
@@ -247,19 +247,26 @@ bash ~/.agents/skills/skupper-model-provider/scripts/up.sh crc       # CRC consu
 3. Start routers (systemd — same path for all hosts)
 4. Verify VAN connectivity
 
+`localhost` target uses a dedicated fast path: starts local controller
++ router only, waits for AMQP links to reconverge to active remote
+routers (up to 30s), reports listener status. No SSH, no model delegation.
+
 Agent then semantically triggers `hosted-model-ctl` to start model containers.
 
 ### Stop VAN
 
 ```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh           # all sites
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh rhel-ai   # specific provider host
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh crc       # CRC consumer site only
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh             # all sites
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh rhel-ai     # specific provider host
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh crc         # CRC consumer site only
+bash ~/.agents/skills/skupper-model-provider/scripts/down.sh localhost   # local infra only (providers untouched)
 ```
 
 For provider hosts, the agent first semantically triggers
 `hosted-model-ctl` to stop model containers, then runs `down.sh`.
 For consumer hosts (`crc`), only VAN infrastructure is affected.
+`localhost` target stops local router + controller only, verifies
+remote providers are untouched. No SSH, no model delegation.
 
 ### Status
 
@@ -326,6 +333,8 @@ remote host reachable, remote container running.
 | S9c | Partial stop — provider unreachable | `down.sh` with one provider down → stop reachable hosts, report skipped |
 | S10a | Start scoped consumer site (CRC) | `up.sh crc` → CRC link recreated, localhost infra started (if needed), no model delegation |
 | S10b | Stop scoped consumer site (CRC) | `down.sh crc` → CRC link deleted, localhost kept if providers still active, no model delegation |
+| S11a | Start localhost independently | `up.sh localhost` → local controller + router started, links reconverge to active remote routers, no SSH, no model delegation |
+| S11b | Stop localhost independently | `down.sh localhost` → local controller + router stopped, remote providers untouched, no SSH, no model delegation |
 
 ## Tests
 
@@ -352,6 +361,9 @@ remote host reachable, remote container running.
 | T10a | S10a | CRC authenticated, providers may be up or down | `up.sh crc` | CRC link recreated, localhost started, no model containers touched |
 | T10b | S10b | CRC authenticated, providers still active | `down.sh crc` | CRC link deleted, localhost kept running, no model containers touched |
 | T10c | S10b | CRC authenticated, no providers active | `down.sh crc` | CRC link deleted, localhost stopped (last consumer) |
+| T11a | S11b | Both providers up, all listeners active | `down.sh localhost` | Local stopped, :9000 + :10000 stopped, both remote routers still up |
+| T11b | S11a | Local down, both providers still up | `up.sh localhost` | Local started, links reconverge, :9000 + :10000 listening, e2e 12/12 |
+| T11c | S11a | Local down, only rhel-ai up | `up.sh localhost` | Local started, :9000 listening, :10000 not listening (rhtevan-work down) |
 
 ## Known Issues & Workarounds
 
@@ -380,6 +392,7 @@ remote host reachable, remote container running.
 | Local listener unreachable from containers | Listener `host: localhost` binds to 127.0.0.1; containers reaching via `host.containers.internal` hit the bridge IP, not loopback | Set `LOCAL_LISTENER_HOST="0.0.0.0"` in `topology.env` (safe on private networks) |
 | llama.cpp incompatible with OLS tool-use | OLS sends `response_format: { type: "json_schema" }` for structured output; llama-server's grammar parser fails with "failed to parse grammar" (400) | Set `introspectionEnabled: false` in OLSConfig to disable MCP tools — basic Q&A works, tool-use does not. vLLM handles structured output correctly. |
 | OLS provider naming for Skupper models | Single `skupper-model` name is ambiguous when multiple model hosts exist | Use `skupper-model-rhel` / `skupper-model-rhtevan` convention — provider name encodes the target host |
+| User services killed on last SSH logout | `Linger=no` (default) causes systemd to tear down the user slice when the last login session ends. Transient SSH commands (`ssh host 'cmd'`) create and destroy sessions rapidly — if the original session ends concurrently, the last SSH exit triggers a clean shutdown (exit 0) of all user services. `Restart=on-failure` does not fire because exit 0 is not a failure. | `loginctl enable-linger <user>` on all remote hosts. Now applied in `setup.sh` Phase 5. |
 
 ## Prerequisites
 

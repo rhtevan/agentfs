@@ -35,9 +35,27 @@ declare -A SPEC_CONFIGS=(
   ["{SPEC_G8B_FP8}"]='{ "method": "draft_model", "model": "ibm-granite/granite-4.2-3b-fp8", "num_speculative_tokens": 5, "draft_tensor_parallel_size": 4 }'
 )
 
-# Default profiles per host
-DEFAULT_PROFILE_RHTEVAN="g3b-16k"
-DEFAULT_PROFILE_RHELAI="g8b-fp8-spec-128k"
+# Default profiles per host (fallback if no persistent override)
+_BUILTIN_DEFAULT_RHTEVAN="g3b-16k"
+_BUILTIN_DEFAULT_RHELAI="g8b-fp8-spec-128k"
+
+# Persistent defaults override builtins
+_read_persistent_default() {
+  local host="$1"
+  local state_file="${HOME}/.hosted-model-ctl/default-profile-${host}"
+  if [[ -f "$state_file" ]]; then
+    cat "$state_file"
+  else
+    case "$host" in
+      rhtevan-work) echo "$_BUILTIN_DEFAULT_RHTEVAN" ;;
+      rhel-ai)      echo "$_BUILTIN_DEFAULT_RHELAI" ;;
+      *)            echo "" ;;
+    esac
+  fi
+}
+
+DEFAULT_PROFILE_RHTEVAN="$(_read_persistent_default rhtevan-work)"
+DEFAULT_PROFILE_RHELAI="$(_read_persistent_default rhel-ai)"
 
 # All profiles ordered for display
 ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k)
@@ -98,11 +116,18 @@ clear_active_profile() {
 
 get_default_profile() {
   local host="$1"
-  case "$host" in
-    rhtevan-work) echo "$DEFAULT_PROFILE_RHTEVAN" ;;
-    rhel-ai)      echo "$DEFAULT_PROFILE_RHELAI" ;;
-    *)            echo "" ;;
-  esac
+  _read_persistent_default "$host"
+}
+
+set_default_profile() {
+  local profile="$1"
+  parse_profile "$profile" 2>/dev/null || { echo "❌ Unknown profile: $profile"; return 1; }
+  local host="$PROFILE_HOST"
+  local current
+  current=$(get_default_profile "$host")
+  mkdir -p "${PROFILE_STATE_DIR}"
+  echo "$profile" > "${PROFILE_STATE_DIR}/default-profile-${host}"
+  echo "✅ Default profile for $host: $current → $profile"
 }
 
 list_profiles() {

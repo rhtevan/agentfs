@@ -1,15 +1,15 @@
 ---
 name: hosted-model-ctl
 description: >
-  hosted model list, setup hosted model, start hosted model,
+  list hosted model, setup hosted model, start hosted model,
   stop hosted model, hosted model status, test hosted model,
   teardown hosted model, precheck hosted model,
-  model hosting report, hosting machine report
-argument-hint: "hosted model list | hosted model report | setup g8b-fp8-spec-128k | hosted model status"
+  set default profile, hosted model report, hosting machine report
+argument-hint: "list hosted model | hosted model status | start hosted model | set default profile on rhel-ai"
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "7.5.3"
+  version: "7.6.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
 disable-model-invocation: false
@@ -74,6 +74,7 @@ into useful token verification (2-6× speedup).
 | S6 | Show status (includes active profile) | `scripts/status.sh [PROFILE]` → status report |
 | S7 | Test running model | `scripts/test.sh PROFILE` → 4 tests pass |
 | S8 | Generate platform report | `scripts/report.sh [HOST]` → markdown report |
+| S9 | Set default profile for a host | `scripts/set-default.sh PROFILE` → persisted, shown in list/status |
 
 ## Operations
 
@@ -141,7 +142,19 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh
 bash ~/.agents/skills/hosted-model-ctl/scripts/report.sh rhel-ai
 ```
 
-### 9. Teardown
+### 9. Set Default Profile
+
+```bash
+bash ~/.agents/skills/hosted-model-ctl/scripts/set-default.sh --show
+bash ~/.agents/skills/hosted-model-ctl/scripts/set-default.sh g8b-spec-128k
+```
+
+Persists the default profile for a host. The profile resolves to its
+host automatically. Overrides the builtin default. Affects which
+profile `start.sh` and `stop.sh` use when called without a specific
+profile (e.g., from `skupper-model-provider` delegation).
+
+### 10. Teardown
 
 ```bash
 bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g3b-16k --remove
