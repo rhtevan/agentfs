@@ -1,4 +1,4 @@
-# Directory Update Log
+r# Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
 
