@@ -9,7 +9,7 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | stop s
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.14.0"
+  version: "8.15.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -393,6 +393,7 @@ remote host reachable, remote container running.
 | llama.cpp incompatible with OLS tool-use | OLS sends `response_format: { type: "json_schema" }` for structured output; llama-server's grammar parser fails with "failed to parse grammar" (400) | Set `introspectionEnabled: false` in OLSConfig to disable MCP tools — basic Q&A works, tool-use does not. vLLM handles structured output correctly. |
 | OLS provider naming for Skupper models | Single `skupper-model` name is ambiguous when multiple model hosts exist | Use `skupper-model-rhel` / `skupper-model-rhtevan` convention — provider name encodes the target host |
 | User services killed on last SSH logout | `Linger=no` (default) causes systemd to tear down the user slice when the last login session ends. Transient SSH commands (`ssh host 'cmd'`) create and destroy sessions rapidly — if the original session ends concurrently, the last SSH exit triggers a clean shutdown (exit 0) of all user services. `Restart=on-failure` does not fire because exit 0 is not a failure. | `loginctl enable-linger <user>` on all remote hosts. Now applied in `setup.sh` Phase 5. |
+| Orphaned Skupper namespace on localhost | Running `skupper` CLI commands without `-n` creates resources in the `default` namespace — a separate router container (`default-skupper-router`) that `down.sh` doesn't manage | `status.sh` now scans `~/.local/share/skupper/namespaces/` and flags any namespace that isn't `model-provider-podman`. Clean up with `skupper system stop --namespace <name> --platform podman` |
 
 ## Prerequisites
 

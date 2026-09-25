@@ -346,5 +346,44 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
   echo
 fi
 
+# ══════════════════════════════════════════════════════════════
+# ORPHANED NAMESPACES — detect unexpected Skupper namespaces
+# ══════════════════════════════════════════════════════════════
+NS_BASE="$HOME/.local/share/skupper/namespaces"
+if [[ -d "$NS_BASE" ]]; then
+  ORPHANS=()
+  for ns_dir in "$NS_BASE"/*/; do
+    ns_name=$(basename "$ns_dir")
+    # Skip known entries
+    [[ "$ns_name" == "$NAMESPACE" ]] && continue
+    [[ "$ns_name" == "controller.lock" ]] && continue
+    ORPHANS+=("$ns_name")
+  done
+  if [[ ${#ORPHANS[@]} -gt 0 ]]; then
+    echo "⚠️  Orphaned Skupper Namespaces:"
+    echo "   Expected only: ${NAMESPACE}"
+    echo "   Found unexpected:"
+    for orphan in "${ORPHANS[@]}"; do
+      # Try to extract site name and creation info
+      site_yaml=$(ls "$NS_BASE/$orphan/input/resources/Site-"*.yaml 2>/dev/null | head -1)
+      if [[ -n "$site_yaml" ]]; then
+        site_name=$(grep '  name:' "$site_yaml" 2>/dev/null | head -1 | awk '{print $2}')
+        echo "     🔴 ${orphan} (site: ${site_name:-unknown})"
+      else
+        echo "     🔴 ${orphan}"
+      fi
+      # Check if it has a running container
+      orphan_container="${orphan}-skupper-router"
+      orphan_status=$(podman ps --filter "name=${orphan_container}" --format '{{.Status}}' 2>/dev/null || echo "")
+      if [[ -n "$orphan_status" ]]; then
+        echo "        └─ Container: ${orphan_container} (${orphan_status})"
+      fi
+    done
+    echo
+    echo "   To clean up: skupper system stop --namespace <name> --platform podman"
+    echo
+  fi
+fi
+
 echo "=== VAN status complete ==="
 echo "    For model container status, use: hosted-model-ctl status"

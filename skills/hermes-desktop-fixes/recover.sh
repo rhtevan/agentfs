@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Hermes Desktop Fixes — Full Recovery Script
-# Re-applies all patches, sets skip-worktree, clears stale Desktop cache.
+# Hermes Desktop Fixes — Full Recovery Script (v3.0)
+# Re-applies patches, installs desktop entry, configures launcher.
 # Safe to run multiple times (idempotent).
 
 set -euo pipefail
 REPO="$HOME/.hermes/hermes-agent"
 HERMES_HOME="$HOME/.hermes"
 
-echo "=== Hermes Desktop Fixes Recovery ==="
+echo "=== Hermes Desktop Fixes Recovery (v3.0) ==="
 echo ""
 
 # --- 1. Ensure hermes-env.sh exists ---
@@ -74,38 +74,9 @@ def _resolve_session_info_provider(agent) -> str:\
     sed -i 's/"provider": getattr(agent, "provider", "")/"provider": _resolve_session_info_provider(agent)/' "${SERVER}"
 fi
 
-# Sandbox bypass (hermes_cli/main.py)
-MAIN="${REPO}/hermes_cli/main.py"
-if [ -f "${MAIN}" ] && ! grep -q "ELECTRON_DISABLE_SANDBOX" "${MAIN}"; then
-    sed -i '/def _desktop_linux_sandbox_fixup/,/return True/{
-        /return True/a\
-\
-    if os.environ.get("ELECTRON_DISABLE_SANDBOX"):\
-        return True
-    }' "${MAIN}"
-fi
-
-# Electron workspace symlink (prebuilder script)
-PREBUILDER="${REPO}/apps/desktop/scripts/patch-electron-builder-mac-binary.cjs"
-MARKER="hermes-electron-workspace-symlink"
-if [ -f "${PREBUILDER}" ] && ! grep -q "${MARKER}" "${PREBUILDER}"; then
-    sed -i "2a\\
-\\
-// ${MARKER}: bridge npm workspace hoisting gap\\
-const _rootElectron = path.join(path.resolve(__dirname, '..', '..', '..'), 'node_modules', 'electron')\\
-const _wsElectron = path.join(__dirname, '..', 'node_modules', 'electron')\\
-if (!fs.existsSync(_rootElectron) \&\& fs.existsSync(path.join(_wsElectron, 'dist'))) {\\
-  fs.symlinkSync(_wsElectron, _rootElectron)\\
-  console.log('[prebuilder] symlinked root electron -> workspace electron')\\
-}\\
-" "${PREBUILDER}"
-fi
-
-# Set skip-worktree
+# Set skip-worktree (only for files that are still patched)
 cd "${REPO}"
-for f in tui_gateway/server.py hermes_cli/main.py apps/desktop/scripts/patch-electron-builder-mac-binary.cjs; do
-    git update-index --skip-worktree "$f" 2>/dev/null || true
-done
+git update-index --skip-worktree tui_gateway/server.py 2>/dev/null || true
 echo "[hermes-patches] All patches applied."
 APPLYEOF
 chmod +x "${APPLY}"
@@ -118,11 +89,9 @@ cat > "${REVERT}" << 'REVERTEOF'
 set -euo pipefail
 REPO="$HOME/.hermes/hermes-agent"
 cd "${REPO}"
-FILES=(tui_gateway/server.py hermes_cli/main.py apps/desktop/scripts/patch-electron-builder-mac-binary.cjs)
-for f in "${FILES[@]}"; do
-    git update-index --no-skip-worktree "$f" 2>/dev/null || true
-    git checkout -- "$f" 2>/dev/null || true
-done
+# Only revert files that are still actively patched
+git update-index --no-skip-worktree tui_gateway/server.py 2>/dev/null || true
+git checkout -- tui_gateway/server.py 2>/dev/null || true
 echo "[hermes-patches] Patches reverted for clean update."
 REVERTEOF
 chmod +x "${REVERT}"
@@ -149,10 +118,46 @@ if [ "$1" = "update" ]; then
     exit $rc
 fi
 
+# Desktop entry fix: upstream writes hermes.desktop on every launch with a
+# broken Exec path. Our real entry is com.nousresearch.hermes.desktop (matches
+# Electron's Wayland app-id). Background watcher deletes the upstream duplicate
+# and ensures our entry stays correct.
+if [ "$1" = "desktop" ]; then
+    _DESKTOP_DIR="$HOME/.local/share/applications"
+    _UPSTREAM_ENTRY="$_DESKTOP_DIR/hermes.desktop"
+    _OUR_ENTRY="$_DESKTOP_DIR/com.nousresearch.hermes.desktop"
+    _DESIRED_EXEC="env ELECTRON_DISABLE_SANDBOX=1 $HOME/.local/bin/hermes desktop --skip-build"
+    (
+        # Wait for upstream to write hermes.desktop (up to 30s), then remove it
+        for _i in $(seq 1 30); do
+            sleep 1
+            if [ -f "$_UPSTREAM_ENTRY" ]; then
+                rm -f "$_UPSTREAM_ENTRY"
+                # Ensure our entry has the correct Exec
+                cat > "$_OUR_ENTRY" << ENTRY
+[Desktop Entry]
+Name=Hermes Agent
+Comment=Hermes Agent Desktop App
+Exec=${_DESIRED_EXEC}
+Icon=hermes
+Terminal=false
+Type=Application
+Categories=Development;Utility;
+StartupNotify=true
+StartupWMClass=Hermes
+ENTRY
+                chmod +x "$_OUR_ENTRY"
+                update-desktop-database "$_DESKTOP_DIR" 2>/dev/null
+                break
+            fi
+        done
+    ) &
+fi
+
 exec "$HERMES_BIN" "$@"
 LAUNCHEOF
 chmod +x "${LAUNCHER}"
-echo "✓ Installed launcher with update interception"
+echo "✓ Installed launcher with update interception + desktop entry watcher"
 
 # --- 6. Install post-merge hook ---
 HOOK="${REPO}/.git/hooks/post-merge"
@@ -169,33 +174,122 @@ echo ""
 echo "→ Applying patches..."
 bash "${APPLY}"
 
-# --- 8. Clear stale Desktop localStorage ---
+# --- 8. Install desktop entry ---
+DESKTOP_DIR="$HOME/.local/share/applications"
+OUR_ENTRY="${DESKTOP_DIR}/com.nousresearch.hermes.desktop"
+UPSTREAM_ENTRY="${DESKTOP_DIR}/hermes.desktop"
+OLD_ENTRY="${DESKTOP_DIR}/hermes-desktop.desktop"
+
+# Remove stale entries
+rm -f "${UPSTREAM_ENTRY}" "${OLD_ENTRY}" 2>/dev/null
+
+cat > "${OUR_ENTRY}" << DESKEOF
+[Desktop Entry]
+Name=Hermes Agent
+Comment=Hermes Agent Desktop App
+Exec=env ELECTRON_DISABLE_SANDBOX=1 $HOME/.local/bin/hermes desktop --skip-build
+Icon=hermes
+Terminal=false
+Type=Application
+Categories=Development;Utility;
+StartupNotify=true
+StartupWMClass=Hermes
+DESKEOF
+chmod +x "${OUR_ENTRY}"
+update-desktop-database "${DESKTOP_DIR}" 2>/dev/null
+echo "✓ Installed com.nousresearch.hermes.desktop (Wayland app-id match)"
+
+# Refresh icon cache (upstream installs hicolor icons via linux_desktop_entry.py)
+gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null && \
+    echo "✓ Refreshed hicolor icon cache" || \
+    echo "⚠ Could not refresh icon cache (icons may still work)"
+
+# Update GNOME favorites if old entry is pinned
+FAVS=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
+if echo "${FAVS}" | grep -q "hermes-desktop.desktop"; then
+    NEW_FAVS=$(echo "${FAVS}" | sed "s/'hermes-desktop.desktop'/'com.nousresearch.hermes.desktop'/g")
+    gsettings set org.gnome.shell favorite-apps "${NEW_FAVS}" 2>/dev/null && \
+        echo "✓ Updated GNOME favorites to com.nousresearch.hermes.desktop" || true
+fi
+# Also handle if hermes.desktop was pinned
+if echo "${FAVS}" | grep -q "'hermes.desktop'"; then
+    FAVS=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null || echo "")
+    NEW_FAVS=$(echo "${FAVS}" | sed "s/'hermes.desktop'/'com.nousresearch.hermes.desktop'/g")
+    gsettings set org.gnome.shell favorite-apps "${NEW_FAVS}" 2>/dev/null && \
+        echo "✓ Updated GNOME favorites to com.nousresearch.hermes.desktop" || true
+fi
+
+# --- 9. Clear stale Desktop localStorage ---
 LEVELDB="$HOME/.config/Hermes/Local Storage/leveldb"
 if [ -d "${LEVELDB}" ]; then
     rm -rf "${LEVELDB}"
     echo "✓ Cleared stale Desktop localStorage"
 fi
 
-# --- 9. Install health-check script ---
+# --- 10. Install health-check script ---
 cat > "${HERMES_HOME}/hermes-check-patches.sh" << 'CHECKEOF'
 #!/usr/bin/env bash
 REPO="$HOME/.hermes/hermes-agent"
-PASS=0; FAIL=0
+PASS=0; FAIL=0; SKIP=0
 ok()   { echo "  ✓ $1"; PASS=$((PASS+1)); }
 fail() { echo "  ✗ $1"; FAIL=$((FAIL+1)); }
+skip() { echo "  ○ $1 (retired)"; SKIP=$((SKIP+1)); }
+
 echo "Hermes Desktop patch status:"; echo
-grep -q "_resolve_session_info_provider" "${REPO}/tui_gateway/server.py" 2>/dev/null && ok "Provider identity fix (server.py)" || fail "Provider identity fix MISSING (server.py)"
-grep -q "ELECTRON_DISABLE_SANDBOX" "${REPO}/hermes_cli/main.py" 2>/dev/null && ok "Sandbox bypass (main.py)" || fail "Sandbox bypass MISSING (main.py)"
-grep -q "hermes-electron-workspace-symlink" "${REPO}/apps/desktop/scripts/patch-electron-builder-mac-binary.cjs" 2>/dev/null && ok "Electron symlink (prebuilder)" || fail "Electron symlink MISSING (prebuilder)"
-SW=$(cd "${REPO}" && git ls-files -v tui_gateway/server.py hermes_cli/main.py apps/desktop/scripts/patch-electron-builder-mac-binary.cjs 2>/dev/null | grep -c '^S')
-[ "$SW" = "3" ] && ok "Skip-worktree flags set (${SW}/3)" || fail "Skip-worktree flags incomplete (${SW}/3)"
-grep -q "hermes-env.sh" $HOME/.local/bin/hermes 2>/dev/null && ok "Launcher sources hermes-env.sh" || fail "Launcher missing hermes-env.sh source"
-grep -q 'hermes-revert-patches' $HOME/.local/bin/hermes 2>/dev/null && ok "Launcher intercepts 'hermes update'" || fail "Launcher missing update interception"
-[ -x $HOME/.hermes/hermes-apply-patches.sh ] && ok "Apply-patches script present" || fail "Apply-patches script MISSING"
-[ -x $HOME/.hermes/hermes-revert-patches.sh ] && ok "Revert-patches script present" || fail "Revert-patches script MISSING"
-[ -x "${REPO}/.git/hooks/post-merge" ] && ok "Post-merge hook installed" || fail "Post-merge hook MISSING"
-echo
-[ "$FAIL" -eq 0 ] && echo "All patches healthy. (${PASS} checks passed)" || echo "WARNING: ${FAIL} check(s) failed! Run: bash ~/.hermes/hermes-apply-patches.sh"
+
+# Active patches
+grep -q "_resolve_session_info_provider" "${REPO}/tui_gateway/server.py" 2>/dev/null \
+    && ok "Provider identity fix (server.py)" \
+    || fail "Provider identity fix MISSING (server.py)"
+
+SW=$(cd "${REPO}" && git ls-files -v tui_gateway/server.py 2>/dev/null | grep -c '^S')
+[ "$SW" = "1" ] && ok "Skip-worktree flag set (server.py)" || fail "Skip-worktree flag missing (server.py)"
+
+# Retired patches (informational only)
+skip "Sandbox bypass (main.py) — env var ELECTRON_DISABLE_SANDBOX sufficient"
+skip "Electron symlink (prebuilder) — file removed upstream"
+
+# Infrastructure
+grep -q "hermes-env.sh" "$HOME/.local/bin/hermes" 2>/dev/null \
+    && ok "Launcher sources hermes-env.sh" \
+    || fail "Launcher missing hermes-env.sh source"
+grep -q 'hermes-revert-patches' "$HOME/.local/bin/hermes" 2>/dev/null \
+    && ok "Launcher intercepts 'hermes update'" \
+    || fail "Launcher missing update interception"
+grep -q 'com.nousresearch.hermes' "$HOME/.local/bin/hermes" 2>/dev/null \
+    && ok "Launcher has desktop entry watcher" \
+    || fail "Launcher missing desktop entry watcher"
+[ -x "$HOME/.hermes/hermes-apply-patches.sh" ] \
+    && ok "Apply-patches script present" \
+    || fail "Apply-patches script MISSING"
+[ -x "$HOME/.hermes/hermes-revert-patches.sh" ] \
+    && ok "Revert-patches script present" \
+    || fail "Revert-patches script MISSING"
+[ -x "${REPO}/.git/hooks/post-merge" ] \
+    && ok "Post-merge hook installed" \
+    || fail "Post-merge hook MISSING"
+
+# Desktop entry
+[ -f "$HOME/.local/share/applications/com.nousresearch.hermes.desktop" ] \
+    && ok "Desktop entry (com.nousresearch.hermes.desktop)" \
+    || fail "Desktop entry MISSING (com.nousresearch.hermes.desktop)"
+[ ! -f "$HOME/.local/share/applications/hermes-desktop.desktop" ] \
+    && ok "Old desktop entry removed (hermes-desktop.desktop)" \
+    || fail "Stale desktop entry exists (hermes-desktop.desktop) — remove it"
+
+# Icon theme
+python3 -c "
+import gi; gi.require_version('Gtk','3.0')
+from gi.repository import Gtk
+i = Gtk.IconTheme.get_default().lookup_icon('hermes',48,0)
+exit(0 if i else 1)
+" 2>/dev/null \
+    && ok "Icon theme resolves 'hermes'" \
+    || fail "Icon theme cannot resolve 'hermes' — run: gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor"
+
+echo ""
+echo "Active: ${PASS} passed, ${FAIL} failed | Retired: ${SKIP} skipped"
+[ "$FAIL" -eq 0 ] && echo "All checks healthy." || echo "WARNING: ${FAIL} check(s) failed! Run: bash ~/.agents/skills/hermes-desktop-fixes/recover.sh"
 CHECKEOF
 chmod +x "${HERMES_HOME}/hermes-check-patches.sh"
 echo "✓ Installed health-check script"

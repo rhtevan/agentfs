@@ -3,7 +3,7 @@ name: hermes-desktop-fixes
 description: >
   fix hermes desktop, hermes electron fix, hermes identity fix
 metadata:
-  version: "2.1.0"
+  version: "3.0.0"
   tags: [hermes, desktop, electron, fix, provider]
 ---
 
@@ -30,51 +30,83 @@ metadata:
 **Root cause:** `/usr/lib/Goose/resources/bin/node` wrapper does `cd ~/.config/goose/mcp-hermit` before running real node.
 **Fix:** `hermes-env.sh` strips it from PATH.
 
-### 3. Electron Sandbox Requires Sudo
-**Symptom:** `hermes desktop` prompts for sudo password to set SUID on chrome-sandbox.
-**Root cause:** `_desktop_linux_sandbox_fixup()` in `hermes_cli/main.py` requires root.
-**Fix:** Early return when `ELECTRON_DISABLE_SANDBOX=1` is set. Env var set in `hermes-env.sh` and `.env`.
+### 3. Electron Sandbox Requires Sudo (RETIRED — v3.0)
+**Status:** Patch retired as of Sep 2026. Upstream refactored `_desktop_linux_sandbox_fixup()` — the function still exists but the code structure changed, so the sed pattern no longer matches. The `ELECTRON_DISABLE_SANDBOX=1` env var in `hermes-env.sh` and `.env` still prevents the sudo prompt; the source patch is no longer needed or applied.
+**Original symptom:** `hermes desktop` prompts for sudo password to set SUID on chrome-sandbox.
+**Original fix:** Early return when `ELECTRON_DISABLE_SANDBOX=1` is set, injected via sed into `main.py`.
 
-### 4. Duplicate Taskbar Icon on Fedora/GNOME Wayland
-**Symptom:** Two Hermes icons appear in the GNOME launch bar — one for the pinned `.desktop` entry and a second for the running window.
-**Root cause:** The hand-crafted `~/.local/share/applications/hermes-desktop.desktop` had `StartupWMClass=hermes` (lowercase), but the Electron binary reports `WM_CLASS=Hermes` (capital H, matching `productName` / `executableName` in `builder-effective-config.yaml`). GNOME Wayland does a **case-sensitive** match, so the running window couldn't be associated with the pinned launcher.
-**Fix:** `StartupWMClass=Hermes` (capital H) in the `.desktop` file, then `update-desktop-database ~/.local/share/applications/`.
+### 4. Generic Taskbar Icon on Fedora/GNOME Wayland (Rewritten — v3.0)
+**Symptom:** Hermes shows a generic application icon in the GNOME taskbar/dock instead of the Hermes logo. May also show duplicate icons (one pinned, one for the running window).
+**Root cause (v2.1, Jul 2026):** `StartupWMClass=hermes` (lowercase) vs Electron's `WM_CLASS=Hermes` (capital H). This was the X11-era fix.
+**Root cause (v3.0, Sep 2026):** On Wayland, GNOME matches windows to `.desktop` files using the **app-id**, not `StartupWMClass`. Electron derives the app-id from `package.json` `desktopName` field, which electron-builder sets via `extraMetadata: { desktopName: appId }` → resolves to `com.nousresearch.hermes`. GNOME looks for `com.nousresearch.hermes.desktop` — if that file doesn't exist, no icon match → generic icon.
+**Additional complication:** Upstream's `linux_desktop_entry.py` auto-generates `hermes.desktop` on every `hermes desktop` launch with a broken `Exec` path (points into a stale install environment venv). If both `hermes.desktop` and our entry coexist, GNOME shows two entries in Apps grid.
+**Fix (v3.0):**
+1. Desktop entry named `com.nousresearch.hermes.desktop` — matches Electron's Wayland app-id
+2. `Icon=hermes` (themed name) — resolves via upstream's hicolor icon installs at 24/32/48/256px
+3. `Exec` uses our launcher wrapper with `ELECTRON_DISABLE_SANDBOX=1` and `--skip-build`
+4. Background watcher in launcher wrapper detects upstream's `hermes.desktop` regeneration, deletes it, and refreshes our entry
+5. GNOME favorites pinned to `com.nousresearch.hermes.desktop`
 
-### 5. electron-builder Can't Find Electron
-**Symptom:** Build fails looking for `../../node_modules/electron/dist`.
-**Root cause:** npm workspace hoisting puts electron in `apps/desktop/node_modules/electron/`, not repo root.
-**Fix:** Inject symlink creation into `apps/desktop/scripts/patch-electron-builder-mac-binary.cjs`.
+**Diagnostics:**
+```bash
+# Check Electron's Wayland app-id (from built package.json)
+npx asar extract ~/.hermes/hermes-agent/apps/desktop/release/linux-unpacked/resources/app.asar /tmp/asar-check
+python3 -c "import json; print(json.load(open('/tmp/asar-check/package.json'))['desktopName'])"
+
+# Check which .desktop file GNOME used to launch
+cat /proc/$(pgrep -f "linux-unpacked/Hermes" | head -1)/environ 2>/dev/null | tr '\0' '\n' | grep GIO_LAUNCHED_DESKTOP_FILE
+
+# Verify icon theme resolves
+python3 -c "import gi; gi.require_version('Gtk','3.0'); from gi.repository import Gtk; i=Gtk.IconTheme.get_default().lookup_icon('hermes',48,0); print(i.get_filename() if i else 'NOT FOUND')"
+
+# Check for duplicate entries
+ls ~/.local/share/applications/*hermes*.desktop
+```
+
+### 5. electron-builder Can't Find Electron (RETIRED — v3.0)
+**Status:** Patch retired as of Sep 2026. Upstream removed `patch-electron-builder-mac-binary.cjs` entirely — only `dmgbuild-diagnostics.cjs` remains in `apps/desktop/scripts/`. The electron workspace hoisting issue may have been fixed upstream or is no longer relevant with current electron-builder versions.
+**Original symptom:** Build fails looking for `../../node_modules/electron/dist`.
+**Original fix:** Inject symlink creation into the prebuilder script.
 
 ## Architecture
 
 ### Update-proof mechanism
-The key challenge: `git pull --ff-only` refuses to merge when skip-worktree files differ from the index (despite hiding from `git status`). And `git reset --hard` (the fallback) fires no hooks.
+The key challenge: upstream's `linux_desktop_entry.py` regenerates `hermes.desktop` on every `hermes desktop` launch, and `git pull --ff-only` refuses to merge when skip-worktree files differ from the index.
 
-**Solution:** The launcher intercepts `hermes update`:
-1. **Before update:** `hermes-revert-patches.sh` reverts all 3 files to clean upstream + clears skip-worktree
+**Solution:** The launcher wrapper (`~/.local/bin/hermes`) handles two concerns:
+
+**Update interception:**
+1. **Before update:** `hermes-revert-patches.sh` reverts patched files + clears skip-worktree
 2. **During update:** `git pull --ff-only` succeeds (working tree is clean)
-3. **After update:** Two mechanisms re-apply patches:
-   - `post-merge` git hook calls `hermes-apply-patches.sh` (fires when pull has new commits)
-   - Launcher calls `hermes-apply-patches.sh` as belt-and-suspenders (always fires)
+3. **After update:** `hermes-apply-patches.sh` re-applies patches + sets skip-worktree
+4. **Belt-and-suspenders:** `post-merge` git hook also calls apply-patches
+
+**Desktop entry maintenance (background watcher):**
+On `hermes desktop`, a background subshell polls for upstream's `hermes.desktop` (up to 30s). When detected:
+1. Deletes upstream's `hermes.desktop` (broken `Exec`, causes duplicate in Apps grid)
+2. Writes/refreshes `com.nousresearch.hermes.desktop` with correct `Exec` and `Icon=hermes`
+3. Runs `update-desktop-database`
 
 ### Files outside git (permanent, never overwritten by update)
 
 | File | Purpose |
 |------|---------|
 | `~/.hermes/hermes-env.sh` | PATH fix + `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE` fix |
-| `~/.hermes/hermes-apply-patches.sh` | Idempotent: applies all 3 source patches + sets skip-worktree |
+| `~/.hermes/hermes-apply-patches.sh` | Idempotent: applies source patches + sets skip-worktree |
 | `~/.hermes/hermes-revert-patches.sh` | Reverts patched files to clean upstream before update |
-| `~/.hermes/hermes-check-patches.sh` | Health check (9 checks) |
+| `~/.hermes/hermes-check-patches.sh` | Health check |
 | `~/.hermes/.env` | `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE=en_US.UTF-8` (loaded by `load_hermes_dotenv()`) |
-| `~/.local/share/applications/hermes-desktop.desktop` | GNOME desktop entry (`StartupWMClass=Hermes`) |
-| `~/.local/bin/hermes` | Launcher: sources env, intercepts update |
+| `~/.local/share/applications/com.nousresearch.hermes.desktop` | GNOME desktop entry (matches Wayland app-id) |
+| `~/.local/bin/hermes` | Launcher: sources env, intercepts update, desktop entry watcher |
 | `~/.hermes/hermes-agent/.git/hooks/post-merge` | Calls hermes-apply-patches.sh |
 
 ### Files patched (git-tracked, skip-worktree protected)
 
 1. `tui_gateway/server.py` — `_resolve_session_info_provider()` + usage in `_session_info()`
-2. `hermes_cli/main.py` — `ELECTRON_DISABLE_SANDBOX` check in `_desktop_linux_sandbox_fixup()`
-3. `apps/desktop/scripts/patch-electron-builder-mac-binary.cjs` — electron symlink at line 2
+
+*Retired patches (no longer applied):*
+- ~~`hermes_cli/main.py` — sandbox bypass~~ (upstream refactored, env var sufficient)
+- ~~`apps/desktop/scripts/patch-electron-builder-mac-binary.cjs` — electron symlink~~ (file removed upstream)
 
 ## Recovery
 
@@ -90,9 +122,10 @@ rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
 ```
 
 ## Known Limitations
-- If upstream renames `_session_info`, `_desktop_linux_sandbox_fixup`, or removes the `process.exit(0)` in the prebuilder, the sed patterns will silently fail. The health check detects this.
+- If upstream renames `_session_info` or changes the provider plumbing, the sed pattern for Bug #1 will silently fail. The health check detects this.
+- If upstream changes `desktopName` from `com.nousresearch.hermes` to a different app-id, the desktop entry filename must be updated to match.
+- The background watcher polls for up to 30s. If upstream's deferred desktop entry write takes longer (unlikely), the duplicate may briefly appear.
 - The Desktop rebuild during `hermes update` calls `python -m hermes_cli.main desktop --build-only` directly (bypasses launcher), but `--build-only` returns before the sandbox check, so it's non-fatal.
-
 
 ## Changelog
 

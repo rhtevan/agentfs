@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-25 13:34
+- v3.0: Updated recovery script — new desktop entry, launcher watcher, retired stale patches (skills/hermes-desktop-fixes/recover.sh)
+- v3.0: Rewrote Bug #4 (Wayland app-id), retired Bugs #3/#5, updated architecture (skills/hermes-desktop-fixes/SKILL.md)
+
+## 2026-09-25 10:05
+- Added orphaned namespace Known Issue entry, bumped to v8.15.0 (skills/skupper-model-provider/SKILL.md)
+- Added orphaned namespace detection section (skills/skupper-model-provider/scripts/status.sh)
+
 ## 2026-09-25 01:46
 - Update rule count 18→17, A5 checks Rule 7 for search_nodes+load_skill (skills/agentfs-eval/scripts/template-check.sh)
 - v5.16.0 — Remove Tool Priority section and Rule 8; generalize Rule 7 to 'hey `<keywords>`' dispatch; renumber rules 8-17; -190 tokens (skills/agentfs-setup/scripts/seed-agents-md.sh)
