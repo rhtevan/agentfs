@@ -28,7 +28,6 @@ if [[ ! -f "$LOG_FILE" ]]; then
 <!-- Append-only. Newest entries at top. -->
 
 ## ${NOW}
-
 ${ENTRY_TEXT}
 EOF
   echo "Created $LOG_FILE with current entry."
@@ -37,14 +36,17 @@ fi
 
 # Check if current timestamp heading already exists
 if grep -q "^## ${NOW}" "$LOG_FILE"; then
-  # Heading exists — insert new entries right after it
+  # Heading exists — insert new entries directly after heading (no blank line)
   awk -v heading="## ${NOW}" -v entry="$ENTRY_TEXT" '
     $0 == heading {
       print
       print entry
+      found = 1
       next
     }
-    { print }
+    # Skip blank line immediately after heading (entries go right after)
+    found && /^[[:space:]]*$/ { found = 0; next }
+    { found = 0; print }
   ' "$LOG_FILE" > "$LOG_FILE.tmp"
   mv "$LOG_FILE.tmp" "$LOG_FILE"
   echo "Appended entries under existing ## ${NOW} heading."
@@ -60,7 +62,6 @@ else
       echo ""
     fi
     echo "## ${NOW}"
-    echo ""
     echo "$ENTRY_TEXT"
     echo ""
     # Skip the original heading + comment + trailing blank lines, keep the rest

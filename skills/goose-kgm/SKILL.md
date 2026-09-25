@@ -3,7 +3,7 @@ name: goose-kgm
 description: >
   setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm
 metadata:
-  version: "1.1.0"
+  version: "1.4.0"
   tags: [goose, kgm, knowledge-graph, mcp, knowledge]
 ---
 
@@ -135,12 +135,17 @@ file can be rebuilt at any time regardless of session state.
 
 ## Agent Usage (when KGM is enabled)
 
-When KGM tools are available in the session, the agent can use
-`search_nodes("<query>")` to quickly find relevant knowledge bundle
-paths before loading them. This replaces the multi-hop index walk
-but does NOT replace reading the actual concept documents.
+KGM indexes both **skills** and **knowledge**. `search_nodes` returns:
 
-**Flow:** `search_nodes` → get `Source` observation → read file path.
+| entityType | Observations | Agent action |
+|------------|-------------|-------------|
+| `AgentSkill` | `Signals:` (match phrases), `Action:` (exact `load_skill` call) | Follow the Action observation |
+| `KnowledgeConcept` | `Source:` (file path), `Summary:` | Read the Source file |
+| `KnowledgeBundle` | `Source:` (index path), `Summary:` | Browse the bundle index |
+
+Do not use `shell`, `extensionmanager`, or file browsing to discover skills. `load_skill` is the only correct tool for loading skills.
+
+**Staleness guard:** If `search_nodes` returns nothing but the index files (`~/.agents/skills/index.md` or `~/.agents/knowledge/index.md`) contain a match → ① warn "⚠️ KGM index stale" ② use the index result ③ run `bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh` after responding ④ confirm reindex count delta.
 
 ## Sync Model
 

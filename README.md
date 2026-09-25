@@ -273,12 +273,13 @@ Current bundles:
 - **OCP Containerfile Best Practices** — Containerfile authoring for OpenShift: UID models (restricted-v2/v3), GID 0 pattern, UBI base images, layer optimization, certification requirements, S2I compatibility
 - **Skupper vLLM Deployment** — Lessons learned from deploying Granite models on multi-GPU cloud instances via Skupper V2 VAN
 - **Goose Desktop Operations** — GOOSE_TOOLSHIM incident postmortem, custom provider JSON schema, Desktop hang diagnostics
+- **KGM-Based Skill Dispatch** — Design decisions, evidence, and architecture for using KGM as the primary skill dispatch mechanism
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS enforces 18 structural rules via Type/Stimulus/Action triples
+AgentFS enforces 17 structural rules via Type/Stimulus/Action triples
 in a flat table within AGENTS.md, preceded by a Discovery Tiers
 section that defines the tiered context lookup chain (frontmatter
 match → skill index scan → KGM search → knowledge index fallback).
@@ -287,24 +288,23 @@ action.
 
 | # | Type | Stimulus | Action |
 |---|------|----------|--------|
-| 1 | Event | Session start | Check for `CLAUDE.md`, `.cursorrules`, etc. Treat as supplementary. `AGENTS.md` wins on conflict. |
+| 1 | Event | Session start | If other context files loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `USER.md` if it exists. |
 | 2 | Signal | "remember this", "note that", "keep in mind" | → `.agents/memories/MEMORY.md` |
 | 3 | Signal | "always do X", "never do Y", "this is a rule" | → Propose as `AGENTS.md` guardrail (human approval) |
 | 4 | Signal | "I prefer", "I like", "my style is" | → `.agents/memories/USER.md` |
 | 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
 | 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
-| 7 | Signal | "hey git", `git add` | → `load_skill(name: "agentfs-git-push")` — follow completely |
-| 8 | Event | User message received | Follow Discovery Tiers (Tier 1 → 2a → 2b → 2c). Scan rules table for stimulus match. No match → generic interpretation. |
-| 9 | Event | First read of any `.agents/` file | Browse that scope's `index.md` first, follow links to content. |
-| 10 | Event | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
-| 11 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
-| 12 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF. |
-| 13 | Event | Before sending any response | If any write/edit touched `.agents/` or `~/.agents/` this turn: `post-write.sh` for each modified file. Do not respond until complete. |
-| 14 | Always | Every response | No validation phrases. Lead with substance. Name ≥1 risk when evaluating a plan or design. |
-| 15 | Always | Every response | No position reversal without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
-| 16 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
-| 17 | Always | Every response | No action on assumed inputs. State what is missing, ask explicitly, do not execute. Flag low confidence at top. |
-| 18 | Always | Before any multi-step task | Pre-flight checklist. Write action plan before executing; include process obligations; review against rules. |
+| 7 | Signal | `hey <keywords>` | → `search_nodes` with keywords. If AgentSkill found, execute its Action (`load_skill`). `hey` is the skill-dispatch prefix. |
+| 8 | Event | First read of any `.agents/` file | Browse that scope's `index.md` first, follow links to content. |
+| 9 | Event | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 10 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
+| 11 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF. |
+| 12 | Event | Before sending any response | If any write/edit touched `.agents/` or `~/.agents/` this turn: `post-write.sh` for each modified file. Do not respond until complete. |
+| 13 | Always | Every response | No validation phrases. Lead with substance. Name ≥1 risk when evaluating a plan or design. |
+| 14 | Always | Every response | No position reversal without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
+| 15 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
+| 16 | Always | Every response | No action on assumed inputs. State what is missing, ask explicitly, do not execute. Flag low confidence at top. |
+| 17 | Always | Before any multi-step task | Pre-flight checklist. Write action plan before executing; include process obligations; review against rules. |
 
 The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.
@@ -541,7 +541,7 @@ Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 18 structural rules; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 17 structural rules; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 

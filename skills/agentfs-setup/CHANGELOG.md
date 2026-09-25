@@ -1,13 +1,22 @@
 # agentfs-setup Changelog
 
-
 | Updated | Change |
 |---------|--------|
+| 2026-09-25 01:46 | v5.16.0 — v5.16.0 — Remove Tool Priority section and Rule 8; generalize Rule 7 to 'hey <keywords>' dispatch; renumber rules 8-17; -190 tokens |
+| 2026-09-25 00:50 | v5.15.0 — v5.15.0 — Generic Rule 7: 'hey <keywords>' → search_nodes dispatch prefix for reliable skill invocation on weaker models |
+| 2026-09-25 00:22 | v5.14.0 — Add Known Issues section: KI-1 command-shaped signal phrase vs shell tool dispatch ambiguity |
+| 2026-09-24 23:26 | v5.14.0 — v5.14.0 — Add Tool Priority section, strengthen Rule 8 anti-shell clause for weaker models |
+| 2026-09-24 20:46 | v5.13.0 — Delete Discovery Tiers section, add context lookup fallback note, Rule 8 uses search_nodes |
+| 2026-09-24 19:24 | v5.12.0 — Rule 8: KGM-based skill dispatch via search_nodes, fallback to # Skills |
+| 2026-09-24 17:43 | v5.11.3 — Rule 8: add anti-pattern clause and concrete example (audit context → agentfs-ctx-chk → load_skill) |
+| 2026-09-24 16:09 | v5.11.2 — post-write.sh now fails (exit 1) instead of warning when skill file modified without --version |
+| 2026-09-24 14:54 | v5.11.1 — Rule 1 agent-agnostic, USER.md read at session start, fix USER.md orphan |
+| 2026-09-24 12:39 | v5.11.0 — Reorder sections (Scopes→Discovery→Rules→Orientation), merge Discovery tier table with Action column, remove redundant CRITICAL preamble and WHY prose from rules, add anti-pattern callout, trim ~22% tokens |
 | 2026-09-16 11:46 | v5.10.1 — Added regen_knowledge_index to post-edit checks — regenerates knowledge/index.md using rebuild-index.sh (reverse-chronological ordering) before auditing |
 | 2026-09-16 09:11 | v5.10.0 — Discovery Tiers restructured: split Tier 2 into 2a (skills), 2b (KGM preferred), 2c (knowledge index fallback); added staleness guard and freshness check rules |
 | 2026-09-10 21:31 | v5.9.0 — Added Rule 18 (Pre-Flight Checklist) to AGENTS.md template |
 | 2026-09-10 17:39 | v5.8.1 — post-edit.sh: added log drift detection — compares skill file modification times against latest log entry timestamp, warns on unlogged modifications to catch missed Rule 13 obligations. |
-| 2026-09-10 13:56 | vv5.8.0 — Updated Skill Placement guardrail: default to PROJECT, promote to USER when cross-project demand is proven. Updated design-spec.md to match. |
+| 2026-09-10 13:56 | v5.8.0 — Updated Skill Placement guardrail: default to PROJECT, promote to USER when cross-project demand is proven. Updated design-spec.md to match. |
 | 2026-09-09 22:16 | v5.7.0 — agentfs-setup v5.7.0: Added post-write.sh orchestrator script. Redesigned Rule 13 — trigger moved from 'after each write' to 'before sending response' (end-of-turn audit); action collapsed from 4 manual steps to single post-write.sh call. Updated seed-agents-md.sh template, filesystem-integrity.md, and project AGENTS.md. |
 | 2026-09-08 15:33 | v5.6.0 — Added Anti-Action-Sycophancy: Rule 17 (no action on assumed inputs — state missing info, ask, do not execute; flag low confidence at top) to seed-agents-md.sh template; added anti-assumption identity principle to author-soul.sh default SOUL.md template; updated SKILL.md rule inventory (12→13 rules). Addresses action sycophancy gap exposed by Agentbox weather session. |
 | 2026-09-04 15:01 | v5.5.0 — Added Script Input/Output Conventions section to SKILL.md (log entry format: bullet-prefixed). Fixed merge-log-entry.sh header comment: removed format prescription, now mechanical-only (SoC). Added Cross-Skill Script Execution priority table to filesystem-integrity.md. |

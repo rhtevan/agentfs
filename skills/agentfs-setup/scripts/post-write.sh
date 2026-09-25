@@ -162,7 +162,9 @@ if [[ -n "$SKILL_DIR" ]]; then
     echo "[post-write] Updating changelog: $SKILL_DIR/CHANGELOG.md v$VERSION"
     bash "$SCRIPT_DIR/merge-changelog-entry.sh" "$SKILL_DIR/CHANGELOG.md" "$VERSION" "$CHANGELOG_DESCRIPTION"
   else
-    echo "[post-write] ⚠️  Skill file modified ($SKILL_DIR) but no --version provided — skipping changelog"
+    echo "[post-write] ❌ Skill file modified ($SKILL_DIR) but no --version provided."
+    echo "  Re-run with: bash post-write.sh <file> \"<description>\" --version <ver>"
+    exit 1
   fi
 fi
 

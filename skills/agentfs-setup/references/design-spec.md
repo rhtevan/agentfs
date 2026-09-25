@@ -631,6 +631,70 @@ Sync preserves scope — it never auto-switches. To convert a project
 from LITE to PROJECT scope, explicitly re-seed with `--scope project`
 and re-scaffold with `--scope project`.
 
+## Known Issues
+
+### KI-1: Command-Shaped Signal Phrases vs Shell Tool Dispatch
+
+**Status:** Open — model capability limitation, mitigated but not eliminated
+**Affected models:** Granite 4.2 8B (and likely other ≤14B models)
+**Added:** 2026-09-25 v5.14.0
+
+**Problem:**
+
+Rule 8 requires models to call `search_nodes` before any other tool.
+However, when user input resembles a shell command (e.g., `"skupper status"`,
+`"crc status"`, `"litellm proxy status"`), weaker models bypass Rule 8
+entirely and call the `shell` tool directly. This happens because:
+
+1. The `shell` tool description ("Execute a shell command") is a stronger
+   pattern match for command-shaped inputs than Rule 8's instruction to
+   call `search_nodes` ("Search for nodes in the knowledge graph").
+2. The `developer` extension instructions ("operate a terminal") reinforce
+   `shell` as the natural tool for anything that looks like a command.
+3. Smaller models (≤8B params) lack the instruction-following depth to
+   override tool-description-level pattern matching with system-prompt-level
+   dispatch rules.
+
+The issue extends beyond CLI tool names — Granite also hallucinates tool
+names from the `# Skills` section (e.g., tries to call `litellm-proxy-status`
+or `headroom-proxy-status` as direct tools) rather than routing through
+`search_nodes` → `load_skill`.
+
+**Mitigations applied (v5.14.0):**
+
+| Mitigation | Effect |
+|-----------|--------|
+| Disabled `extensionmanager` extension | Removed competing "search first" instruction | 
+| Added `## Tool Priority` section above Rules table | Standalone numbered dispatch order visible before dense rules |
+| Strengthened Rule 8 with explicit anti-shell clause | *"Never call `shell` as the first tool"* |
+| Changed behavioral test B1 to use natural-language phrasing | Avoids testing inputs that are unsolvable for weaker models |
+
+**Behavioral test results (v5.14.0):**
+
+| Model | B1 (skill dispatch) | B2 (explicit signal) | B3 (anti-pattern) |
+|-------|:-------------------:|:--------------------:|:-----------------:|
+| Claude Opus | ✅ `search_nodes` | ✅ `load_skill` | ✅ `search_nodes` |
+| Granite 4.2 8B | ❌ `shell` (non-deterministic) | ✅ `load_skill` | ⚠️ non-deterministic |
+
+**Root cause:** This is a model capability ceiling, not a template deficiency.
+Larger models (Claude Opus, GPT-4+) consistently follow Rule 8 because they
+can process multi-step dispatch chains in system prompts. Models ≤8B params
+cannot reliably override tool-description pattern matching with system-prompt
+rules, especially when the input surface-matches a tool description.
+
+**Potential future mitigations:**
+
+1. **Upstream goose feature**: Allow AGENTS.md to declare tool routing
+   priorities that the platform enforces before the model sees tools
+2. **Tool description override**: Let extensions customize tool descriptions
+   per-session (e.g., `shell` → "Execute a shell command. Do NOT use this
+   for skill dispatch — call search_nodes first.")
+3. **Larger Granite models**: Test with Granite 4.2 30B+ when available
+   via Skupper provider to determine if model scale resolves the issue
+4. **Signal phrase redesign**: Adopt natural-language-only signal phrases
+   that never overlap with CLI command patterns (e.g., "check crc health"
+   instead of "crc status")
+
 ## Changelog
 
 | Updated | Change |

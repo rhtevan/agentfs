@@ -11,7 +11,8 @@ set -euo pipefail
 
 KNOWLEDGE_DIR="$HOME/.agents/knowledge"
 INDEX="$KNOWLEDGE_DIR/index.md"
-JSONL_PATH="$KNOWLEDGE_DIR/.kgm-index.jsonl"
+JSONL_KNOWLEDGE="$KNOWLEDGE_DIR/.kgm-knowledge.jsonl"
+JSONL_COMBINED="$KNOWLEDGE_DIR/.kgm-index.jsonl"
 CONFIG="$HOME/.config/goose/config.yaml"
 
 # ── Optional: check if KGM is enabled ─────────────────────────────
@@ -43,7 +44,7 @@ from pathlib import Path
 
 knowledge_dir = Path(os.path.expanduser("~/.agents/knowledge"))
 index_path = knowledge_dir / "index.md"
-jsonl_path = knowledge_dir / ".kgm-index.jsonl"
+jsonl_path = knowledge_dir / ".kgm-knowledge.jsonl"
 
 entities = []
 
@@ -149,3 +150,16 @@ print(f"   Concepts:  {concept_count}")
 print(f"   Relations: {relation_count}")
 print(f"   Total lines: {len(entities)}")
 PYEOF
+
+# ── Reindex skills ─────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+bash "$SCRIPT_DIR/reindex-skills-kgm.sh"
+
+# ── Merge knowledge + skills → combined index ─────────────────────
+SKILLS_JSONL="$HOME/.agents/skills/.kgm-skills.jsonl"
+cat "$JSONL_KNOWLEDGE" > "$JSONL_COMBINED"
+if [[ -f "$SKILLS_JSONL" ]]; then
+  cat "$SKILLS_JSONL" >> "$JSONL_COMBINED"
+fi
+TOTAL=$(wc -l < "$JSONL_COMBINED")
+echo "✅ Combined index: $JSONL_COMBINED ($TOTAL lines)"

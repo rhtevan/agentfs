@@ -1,9 +1,9 @@
 ---
 name: agentfs-eval
 description: >
-  eval agentfs, agentfs health, maturity check
+  eval agentfs, agentfs health, agentfs status, agentfs score, maturity check
 metadata:
-  version: "1.1.0"
+  version: "1.5.7"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -11,6 +11,13 @@ metadata:
 
 Assess the health and maturity of an AgentFS workspace through
 three layers of progressively deeper verification.
+
+## Quick Dispatch
+
+| User says | Run |
+|-----------|-----|
+| "agentfs score", "agentfs status" | `bash ~/.agents/skills/agentfs-eval/scripts/template-eval.sh "$PROJECT"` — auto-detects provider/model from session, runs checks, records scores |
+| "eval agentfs", "agentfs health", "maturity check" | Full eval: L1 (`agentfs-check.sh`) + L2 (`agentfs-behavior.sh`) + template eval (`template-eval.sh`) |
 
 ## Overview
 
@@ -194,6 +201,39 @@ Pure shell. Requires accumulated evidence. Script: `scripts/agentfs-behavior.sh`
 | After a few sessions (memories, skills created) | B1, B2, B5 |
 | Mature project (rich history, multiple skills) | B1, B2, B3, B4, B5 |
 
+## AGENTS.md Template Quality
+
+Validates that the AGENTS.md prose is structurally sound and behaviorally effective.
+
+### Deterministic (no LLM): `scripts/template-check.sh [TARGET_DIR]`
+
+| ID | Assertion |
+|----|-----------|
+| A1 | **Token budget** — template-owned content ≤ 2000 tokens |
+| A2 | **Section order** — Scopes before Rules |
+| A3 | **Rule completeness** — all 18 rules present |
+| A4 | **Context lookup fallback** — fallback note present for when `search_nodes` unavailable |
+| A5 | **Skill discovery in Rule 8** — names `search_nodes` and `load_skill` |
+| A7 | **Redundancy** — skill lookup procedure not defined in 3+ places |
+| A8 | **WHY vs HOW** — no explanatory prose in rule cells |
+| A9 | **Version consistency** — template version matches skill version |
+
+### Behavioral (requires LLM): `scripts/template-behavioral.sh --provider PROVIDER [--model MODEL] [TARGET_DIR]`
+
+### One-command wrapper: `scripts/template-eval.sh [TARGET_DIR]`
+
+Auto-detects provider and model from `~/.config/goose/config.yaml`. Runs both checks and records scores. Zero arguments required.
+
+Replays fixed user inputs and asserts the model's first tool call.
+
+| ID | Input | Expected Tool | Catches |
+|----|-------|--------------|---------|
+| B1 | "skupper status" | `load_skill` | Model using shell/extensionmanager for skill discovery |
+| B2 | "hey git" | `load_skill` | Rule 7 signal not triggering |
+| B3 | "check crc status" | `load_skill` | Model going to extensionmanager |
+
+Run against each provider/model to build a compatibility matrix.
+
 ## Layer 3: Semantic Assertions
 
 Constrained LLM classification. Rubrics in `rubrics/` directory.
@@ -251,12 +291,17 @@ This skill is designed to enforce three non-negotiable principles:
 
 - `scripts/agentfs-check.sh` → `load_skill(name: "agentfs-eval/scripts/agentfs-check.sh")`
 - `scripts/agentfs-behavior.sh` → `load_skill(name: "agentfs-eval/scripts/agentfs-behavior.sh")`
+- `scripts/template-check.sh` → `load_skill(name: "agentfs-eval/scripts/template-check.sh")`
+- `scripts/template-behavioral.sh` → `load_skill(name: "agentfs-eval/scripts/template-behavioral.sh")`
+- `scripts/template-eval.sh` → `load_skill(name: "agentfs-eval/scripts/template-eval.sh")`
+- `scripts/merge-score-entry.sh` → `load_skill(name: "agentfs-eval/scripts/merge-score-entry.sh")`
 - `rubrics/memory-classification.yaml` → `load_skill(name: "agentfs-eval/rubrics/memory-classification.yaml")`
 - `rubrics/reference-verification.yaml` → `load_skill(name: "agentfs-eval/rubrics/reference-verification.yaml")`
 - `rubrics/sycophancy-detection.yaml` → `load_skill(name: "agentfs-eval/rubrics/sycophancy-detection.yaml")`
 - `rubrics/skill-accuracy.yaml` → `load_skill(name: "agentfs-eval/rubrics/skill-accuracy.yaml")`
 - `templates/report.md` → `load_skill(name: "agentfs-eval/templates/report.md")`
 - `references/design-decisions.md` → `load_skill(name: "agentfs-eval/references/design-decisions.md")`
+- `references/template-scores.md` → `load_skill(name: "agentfs-eval/references/template-scores.md")`
 
 ## Companion Skills
 

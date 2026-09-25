@@ -1,41 +1,171 @@
+# Directory Update Log
+
+<!-- Append-only. Newest entries at top. -->
+
+## 2026-09-25 01:46
+- Update rule count 18→17, A5 checks Rule 7 for search_nodes+load_skill (skills/agentfs-eval/scripts/template-check.sh)
+- v5.16.0 — Remove Tool Priority section and Rule 8; generalize Rule 7 to 'hey `<keywords>`' dispatch; renumber rules 8-17; -190 tokens (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-25 00:50
+- v5.15.0 — Generic Rule 7: 'hey `<keywords>`' → search_nodes dispatch prefix for reliable skill invocation on weaker models (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-25 00:22
+- Add Known Issues section: KI-1 command-shaped signal phrase vs shell tool dispatch ambiguity (skills/agentfs-setup/references/design-spec.md)
+- B1 test: use 'check headroom status' (no CLI-name collision); document command-shape ambiguity (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-09-24 23:26
+- v5.14.0 — Add Tool Priority section, strengthen Rule 8 anti-shell clause for weaker models (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-24 23:10
+- v1.1.0 — Add scope boundaries, hard gate on stopped cluster, decision-point table per skill design principles (skills/crc-status/SKILL.md)
+
+## 2026-09-24 22:50
+- Resilient session cleanup: trap EXIT handler, per-session cleanup fn, orphan sweep on updated_at, DB timeout=5s (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-09-24 22:24
+- Fix test expectations: accept search_nodes as valid first tool (Rule 8 dispatch), add dedup guard, exit 0 always, multi-tool expected support (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-09-24 22:13
+- Add 10-min dedup guard + exit 0 + anti-loop warning — prevents weaker models from re-running behavioral test (skills/agentfs-eval/scripts/template-behavioral.sh)
+- Exit 0 always + anti-loop warning — prevents weaker models from re-running eval in a loop (skills/agentfs-eval/scripts/template-eval.sh)
+- Add 10-min dedup guard + exit 0 + anti-loop warning — prevents weaker models from re-running behavioral test in a loop (skills/agentfs-eval/scripts/template-behavioral.sh)
+- Exit 0 always + anti-loop warning — prevents weaker models from re-running eval in a loop (skills/agentfs-eval/scripts/template-eval.sh)
+
+## 2026-09-24 21:21
+- New knowledge bundle: KGM-Based Skill Dispatch (5 concepts) (knowledge/agentfs-kgm-skill-dispatch/architecture.md)
+
+## 2026-09-24 21:14
+- Update assertion docs: A2 Scopes before Rules, A4 context lookup fallback, A5 search_nodes + load_skill, remove stale A6 (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 21:09
+- Add durable fix principle to default SOUL.md template (skills/agentfs-setup/scripts/author-soul.sh)
+
+## 2026-09-24 21:06
+- Add ledger integrity principle to default SOUL.md template (skills/agentfs-setup/scripts/author-soul.sh)
+
+## 2026-09-24 20:46
+- Document AgentSkill entity type, staleness guard, anti-pattern moved from AGENTS.md (skills/goose-kgm/SKILL.md)
+- Delete Discovery Tiers section, add context lookup fallback note, Rule 8 uses search_nodes (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-24 19:25
+- Version bump 1.5.2 (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 19:24
+- SQLite-based test session cleanup instead of goose session remove (skills/agentfs-eval/scripts/template-behavioral.sh)
+- Rule 8: KGM-based skill dispatch via search_nodes, fallback to # Skills (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Separate knowledge/skills KGM indexes, merge into combined .kgm-index.jsonl (skills/goose-kgm/scripts/reindex-kgm.sh)
+
+## 2026-09-24 19:11
+- setup-kgm.sh: symlink server-memory default memory.jsonl to managed .kgm-index.jsonl (workaround for envs not passed to MCP process)
+
+## 2026-09-24 17:43
+- Rule 8: add anti-pattern clause and concrete example (audit context → agentfs-ctx-chk → load_skill) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-24 17:25
+- Fix double-run bug: capture output from single run instead of running checks twice (skills/agentfs-eval/scripts/template-eval.sh)
+
+## 2026-09-24 17:17
+- template-eval.sh reads AGENT_SESSION_ID to detect provider/model from current session. Zero args required. Fallback chain: session metadata → config.yaml (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 16:51
+- template-eval.sh accepts --provider/--model args, falls back to config.yaml. Quick Dispatch passes session provider/model. (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 16:09
+- Test without version (skills/agentfs-eval/SKILL.md)
+- post-write.sh now fails (exit 1) instead of warning when skill file modified without --version
+
+## 2026-09-24 16:05
+- Version bump 3.6.0 (skills/skill-gen/SKILL.md)
+- Version bump 1.3.0 (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 16:01
+- Add corollary: lower cognitive bar for model callers — wrapper scripts, auto-detect context, avoid similar names (skills/skill-gen/SKILL.md)
+- Rename agents-md-* to template-*, add template-eval.sh zero-arg wrapper, simplify Quick Dispatch (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 15:43
+- Fix arg parsing bug: TARGET consumed first positional before while loop (skills/agentfs-eval/scripts/agents-md-behavioral.sh)
+
+## 2026-09-24 15:34
+- Add merge-score-entry.sh: deterministic score sheet management (insert/update/dedup)
+
+## 2026-09-24 14:54
+- v5.11.1: Rule 1 agent-agnostic, USER.md read at session start, fix USER.md orphan (skills/agentfs-setup/SKILL.md)
+
+## 2026-09-24 14:48
+- Rule 1: remove vendor-specific filenames, add USER.md read at session start (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-24 13:51
+- Auto-append behavioral results to score sheet (skills/agentfs-eval/scripts/agents-md-behavioral.sh)
+
+## 2026-09-24 13:42
+- Single score table with model column, reverse chronological (skills/agentfs-eval/references/template-scores.md)
+
+## 2026-09-24 13:39
+- Split score sheet into deterministic + behavioral tables, reverse chronological, model column for behavioral (skills/agentfs-eval/references/template-scores.md)
+
+## 2026-09-24 13:31
+- Move template-scores.md from agentfs-setup to agentfs-eval, update all references (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 13:27
+- Add agentfs score signal phrase (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 13:25
+- Add agentfs status signal, add quick score dispatch row (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 13:21
+- Simplify signals to eval agentfs/agentfs health/maturity check. Fold AGENTS.md check into full eval flow (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 13:16
+- Add score/quality signal phrases and Quick Dispatch table mapping user requests to scripts (skills/agentfs-eval/SKILL.md)
+
+## 2026-09-24 13:14
+- Add template-scores.md: persistent quality score history for AGENTS.md template versions
+
+## 2026-09-24 13:08
+- Document agents-md-check.sh and agents-md-behavioral.sh in SKILL.md body and supporting files list
+
+## 2026-09-24 13:03
+- Add agents-md-behavioral.sh: LLM-based behavioral test for skill discovery compliance
+- Add agents-md-check.sh: deterministic AGENTS.md template quality assertions (A1-A9)
+
+## 2026-09-24 12:39
+- Bump version to 5.11.0 (skills/agentfs-setup/SKILL.md)
+- v5.11.0: Reorder sections (Scopes→Discovery→Rules→Orientation), merge Discovery tier table with Action column, remove redundant CRITICAL preamble and WHY prose from rules, add anti-pattern callout, trim ~22% tokens (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-24 11:02
+- Rewrote Discovery Tiers and Rule 8 for small-model compatibility: explicit skill lookup procedure, direct load_skill references, anti-pattern callouts (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 r# Directory Update Log
 
 <!-- Append-only. Newest entries at top. -->
 
 ## 2026-09-18 12:12
-
 - Added ocp-containerfile knowledge bundle to README knowledge list — fixes D3 drift (README.md)
 
 ## 2026-09-18 11:54
 - v8.14.0: signal cleanup (skills/skupper-model-provider/SKILL.md)
 - v7.6.0: new script for setting default profile (skills/hosted-model-ctl/scripts/set-default.sh)
 - v7.6.0: persistent default profile support (skills/hosted-model-ctl/scripts/common.sh)
-
 - v7.6.0: signal cleanup + set default profile (skills/hosted-model-ctl/SKILL.md)
 
 ## 2026-09-18 11:26
 - v8.13.0: add S11/T11 specs, update operations docs (skills/skupper-model-provider/SKILL.md)
 - v8.13.0: add localhost target fast path (skills/skupper-model-provider/scripts/down.sh)
-
 - v8.13.0: add localhost target fast path (skills/skupper-model-provider/scripts/up.sh)
 
 ## 2026-09-18 10:19
 - v8.12.0: add linger Known Issue entry (skills/skupper-model-provider/SKILL.md)
 - v8.12.0: call enable_linger in Phase 5 (skills/skupper-model-provider/scripts/setup.sh)
-
 - v8.12.0: add enable_linger() function (skills/skupper-model-provider/scripts/common.sh)
 
 ## 2026-09-16 12:11
-
 - Added D9/P8 Coverage Gaps dimension — non-blocking signal for unmentioned content (skills/agentfs-readme-audit/SKILL.md)
 
 ## 2026-09-16 11:49
 - Log entries now include relative file path for traceability in batch invocations (skills/agentfs-setup/scripts/post-write.sh)
-
 - Test log entry (knowledge/ocp-containerfile/base-images-ubi.md)
 
 ## 2026-09-16 11:46
-
 - Added regen_knowledge_index to post-edit checks — regenerates knowledge/index.md using rebuild-index.sh (reverse-chronological ordering) before auditing
 
 ## 2026-09-16 11:37
@@ -58,74 +188,57 @@ r# Directory Update Log
 
 ## 2026-09-16 09:12
 - Discovery Tiers template updated: 2a/2b/2c split, KGM-preferred, staleness guard, freshness check
-
 - v5.10.0 — Discovery Tiers restructured: 2a/2b/2c split, KGM-preferred knowledge discovery, staleness guard
 
 ## 2026-09-16 08:57
 - Now reports config entry + session note + detailed JSONL breakdown (bundles/concepts/relations)
 - Deprecated: prints session-scoped instructions instead of editing config.yaml
 - Deprecated: prints session-scoped instructions instead of editing config.yaml
-
 - v1.1.0 — session-scoped enable/disable, status session check, reindex signal, sync model docs
 
 ## 2026-09-11 11:03
-
 - fix log coverage check to find log.md in both USER scope (repo root) and PROJECT scope (.agents/)
 
 ## 2026-09-11 10:56
-
 - Fix template version reference 5.6.0 → 5.9.0 in README.md
 
 ## 2026-09-11 10:52
-
 - v2.0.0 — Add PROJECT scope support: scope resolution, PROJECT dimensions P1–P7, dual report format
 
 ## 2026-09-10 21:32
-
 - Added Pre-Flight Checklist as primary mitigation; restructured effectiveness section with preventive/detective/corrective layers
 
 ## 2026-09-10 21:31
-
 - Added Rule 18 (Pre-Flight Checklist) to AGENTS.md template
 
 ## 2026-09-10 18:05
-
 - Created knowledge bundle llm-behavioral-properties v1.0: 5 concepts documenting LLM behavioral properties and AgentFS mitigations. OKF v0.1 conformant (13/13 checks pass).
 
 ## 2026-09-10 17:39
-
 - Updated agentfs-setup v5.8.1: post-edit.sh enhanced with log drift detection — compares skill file mtimes against latest log entry, warns on unlogged modifications. Catches missed Rule 13 obligations during iterative debugging.
 
 ## 2026-09-10 13:59
-
 - Moved fedora-openshell from USER to PROJECT scope (./.agents/skills/) in agentbox. USER index: 58 skills (was 59).
 
 ## 2026-09-10 13:56
-
 - Reversed default skill scope from USER to PROJECT in skill-gen v3.5.0, agentfs-setup v5.8.0, and AGENTS.md Rule 11. Scope governs discovery/context loading, not operational target. PROJECT avoids signal phrase bloat; promote to USER when cross-project demand is proven.
 
 ## 2026-09-10 13:13
-
 - Created fedora-openshell v1.0.0: Install, start, stop, status, upgrade, teardown for NVIDIA OpenShell on Fedora. Includes verify.sh (S1–S9), privilege gate pattern (exit 3) for sudo operations. All 10 tests pass.
 
 ## 2026-09-10 12:59
-
 - Updated skill-gen v3.4.0: Added Principle 6 (Context Economy) with soft 300-line threshold, two-step audit, references/ conventions. Added Principle 7 (Error Contract) with semantic exit codes 0-3, privilege gate pattern, idempotency/troubleshooting/recovery obligations. Made Skill Check mandatory in Post-Creation Checklist. Updated skill-schema.md v2.3.0 with directory structure and exit code conventions.
 
 ## 2026-09-09 22:25
-
 - Fixed escaped backticks in Rule 13 template row (\\)
 
 ## 2026-09-09 22:16
-
 - agentfs-setup v5.7.0: Added post-write.sh orchestrator script. Redesigned Rule 13 — trigger moved from 'after each write' to 'before sending response' (end-of-turn audit); action collapsed from 4 manual steps to single post-write.sh call. Updated seed-agents-md.sh template, filesystem-integrity.md, and project AGENTS.md.
 
 ## 2026-09-09 22:10
-
 - Fixed 7 log entries missing bullet prefix (plain text and [OVERRIDE] entries) — added '- ' prefix to match canonical format.
 
 ## 2026-09-09 22:08
-
 - Fixed 42 malformatted log entries in ~/.agents/log.md: inserted missing blank lines between ## headings and bullet content to match merge-log-entry.sh canonical format.
 
 ## 2026-09-09 21:21
@@ -161,7 +274,6 @@ r# Directory Update Log
 
 ## 2026-09-04 13:13
 - AgentFS template v5.4.0: redesigned Rules system — merged Signal Routing + Rules into single typed table; added Discovery Tiers section; added enforcement preamble; phase-grouped rules; inlined script paths; created ~/.agents/scripts/ symlinks
-
 - Updated fedora-obsidian-fix v1.1.0 and fedora-desktop-wmclass-fix v1.1.0 — fixed duplicate GNOME Dash icon caused by competing .desktop files and inconsistent Electron WM_CLASS under X11 mode
 
 ## 2026-09-01 18:58
@@ -202,7 +314,6 @@ r# Directory Update Log
 
 ## 2026-08-31 15:55
 - A9: Wired conditional KGM reindex into post-edit.sh, added KGM integration section to agentfs-setup SKILL.md (agentfs-v5 A9)
-
 - A8: Created KGM entity schema reference doc — KnowledgeBundle + KnowledgeConcept entity types, contains relation, observation conventions (agentfs-v5 A8)
 
 ## 2026-08-31 15:51
@@ -411,7 +522,6 @@ r# Directory Update Log
 
 ## 2026-08-21 00:04
 - agentfs-setup v4.17.6: bump version for Guardrail #5 scope note addition
-
 - agentfs-setup seed-agents-md.sh: add Guardrail #5 scope note — README.md at ~/.agents/ is AgentFS-managed and not exempt from post-edit.sh + log.md requirements
 
 ## 2026-08-20 23:52
@@ -434,7 +544,6 @@ r# Directory Update Log
 
 ## 2026-08-20 22:48
 - agentfs-readme-audit v1.1.0: trigger condition corrected (staged AND Clean); flow diagram updated
-
 - agentfs-setup v4.17.1: test-pre-push-scan.sh Cat 9+10 (25 pass); test-agents-md-fidelity.sh 84 checks; sync-agents-md.sh pre-versioning fallback; agentfs-readme-audit v1.1.0 trigger fix
 
 ## 2026-08-20 22:40
@@ -454,12 +563,10 @@ r# Directory Update Log
 
 ## 2026-08-20 18:44
 - agentfs-profile v1.9.0: refactor create-profile.sh (delegate SOUL to author-soul.sh), add recipe.yaml + output/ dir, add gen-profile-recipe.sh
-
 - agentfs-setup v4.13.0: add author-soul.sh, @.agents/SOUL.md import, expanded Guardrail #7, SOUL verify checks, test suite (21 tests)
 
 ## 2026-08-20 10:30
 - Updated fedora-nm-boot-slow to v1.1.0 — added Specification and Tests sections for P4 compliance
-
 - Updated skill-gen to v3.2.0 — added explicit GATE requiring user permission before skipping P4/P5 principles
 
 ## 2026-08-20 10:16
@@ -673,6 +780,7 @@ r# Directory Update Log
 - Updated `skupper-model-provider` SKILL.md (v7.1.0 → v7.2.0): split S2→S2a/S2b, S3→S3a/S3b/S3c with negative assertions for scoped operations. Added tests T2b/T2c/T3b/T3c/T3d/T3e covering all scoped start/stop scenarios. Added Gotcha for shared-infrastructure incident.
 - Updated `hosted-model-ctl` SKILL.md (v5.1.0 → v5.2.0): split S5→S5a/S5b with negative assertion for single-alias stop. Updated tests T5a/T5b. Added Scoping Safety gotcha. Scripts confirmed correct (no code changes needed).
 - Regenerated `~/.agents/skills/index.md` (48 skills).
+
 ## 2026-08-12 11:35
 - skupper-model-provider v7.1.0: Enhanced `status.sh` with dual-column reporting (Last-Known vs Live). Sites show controller+router systemd state with STALE flag. Links include TCP probe. Listeners check local port binding. Removed redundant systemd section.
 
@@ -822,6 +930,7 @@ r# Directory Update Log
 - Fixed model ID: granite-4.1-8b-instruct → granite-4.1-8b in PROVIDER.md
 - All scripts syntax-verified and live-tested
 - Regenerated `skills/index.md` (48 skills)
+
 ## 2026-08-08 12:15
 - Created OKF knowledge bundle `skupper-vllm-deployment` with 5 concept documents
 - Added bundle to `~/.agents/knowledge/index.md`
@@ -832,10 +941,12 @@ r# Directory Update Log
 - Updated `skill-gen` v1.5→v1.6: added "Defensive file templates" writing guidance
 - Updated `skill-gen/references/skill-schema.md` v1.0→v1.1: added `writes-files` optional field
 - Regenerated `skills/index.md` (48 skills)
+
 ## 2026-08-08 10:09
 - Fixed `goose-skupper-provider/PROVIDER.md` v3.0→v3.1: added schema warning, templated JSON placeholders; root cause: agent bypassed skill and wrote invalid custom_skupper.json with non-Goose fields
 - Fixed `custom_skupper.json` to use correct Goose custom provider schema
 - Regenerated `skills/index.md` (48 skills)
+
 ## 2026-08-08 01:43
 - Updated `skupper-model-provider/SKILL.md` v3.0→v4.0: complete rewrite for interior mode (not edge), podman platform (not linux/systemd), routing keys `model-api-rhtevan-work` and `model-api-rhel-ai`, ports 10000 (rhtevan-work) and 9000 (rhel-ai), inter-router links on 55671 and 8000, documented podman gotchas
 - Updated `hosted-model-ctl/SKILL.md` v3.2→v4.0: rhtevan-work model port 8000→10000, updated all container commands and test commands
@@ -1260,6 +1371,7 @@ r# Directory Update Log
 
 ## 2026-07-09 17:43
 - Added Memory Architecture section to ~/.agents/README.md
+
 ## 2026-07-09 02:09
 - Updated `okf-bundle-index/scripts/rebuild-index.sh` — sub-bundle entries now include descriptions extracted from their `index.md` (first paragraph after heading, truncated to 120 chars)
 - Updated `okf-bundle-index/SKILL.md` v1.3 — documented sub-bundle description extraction
@@ -1316,14 +1428,17 @@ r# Directory Update Log
 ## 2026-07-08 17:49
 - Updated `skills/goose-setup/SKILL.md` — v1.1: added Git Push Safety guardrail
 - Updated `~/.config/goose/instructions.md` — added Git Push Safety section
+
 ## 2026-07-08 17:41
 - Created `skills/goose-setup/SKILL.md` — new skill for configuring Goose global persistent instructions and tool discovery
 - Regenerated `skills/index.md` — 32 skills indexed
 - Created `~/.config/goose/instructions.md` — persistent instructions file for cross-session tool discovery
 - Added `GOOSE_MOIM_MESSAGE_FILE` to `~/.config/goose/config.yaml`
+
 ## 2026-07-08 14:34
 - Deleted `okf-bundle-merge` skill — obsolete since okf-bundle-gen now writes directly to `~/.agents/knowledge/`
 - Regenerated `skills/index.md` (31 skills)
+
 ## 2026-07-08 14:19
 - Modified `okf-bundle-gen/SKILL.md`: v3.0 — bundle root changed to `~/.agents/knowledge/` (user-level), removed project-local staging, SOUL.md links use absolute paths, memory scan PROJECT-only
 - Modified `okf-bundle-merge/SKILL.md`: marked **OBSOLETE** — no longer needed since okf-bundle-gen writes directly to user-level knowledge
@@ -1339,108 +1454,140 @@ r# Directory Update Log
 
 ## 2026-07-08 10:11
 - **Memory**: Added OKF non-concept type guideline to user-level MEMORY.md — distinguishes concept bundles from reference dataset bundles, documents valid use of Dataset/Script/Ground Truth types for companion data metadata
+
 ## 2026-07-08 09:46
 - **Memory**: Added two OKF guidelines to user-level MEMORY.md — (1) keep bundle roots clean of concept files, (2) distill true concepts rather than raw documentation
 - **Reorganize**: Moved `claude-compat-analysis.md` from user-global knowledge root into sub-bundle `agentfs-claude-compat/`
+
 ## 2026-07-08 08:54
 - Created knowledge bundle `knowledge/headroom-openai-compression-analysis/` with 3 concept documents: problem-analysis (root cause of zero compression), configuration-history (v1→v2 timeline), options-assessment (4 options, recommended passthrough + watch)
 - Updated `knowledge/index.md` and `knowledge/log.md`
+
 ## 2026-07-07 16:52
 - Created new skill `goose-agentfs-setup` — configures Goose CONTEXT_FILE_NAMES for cross-agent context file discovery (CLAUDE.md, .cursorrules, .windsurfrules)
 - Updated `agentfs-setup` skill v2.9 — added Cross-Agent Context Discovery guardrail (§7) to AGENTS.md template in `seed-agents-md.sh`
+
 ## 2026-07-07 16:08
 - Updated `skills/headroom-litellm-proxy/SKILL.md` to v1.1 — removed `--lossless`, added `--target-ratio 0.5` and `--intercept-tool-results`; added Compression Tuning section, Flags NOT to Use section, expanded health/stats verification and troubleshooting
 - Regenerated `skills/index.md` via `skill-index` (31 skills)
+
 ## 2026-07-07 16:04
 - Updated `skills/agentfs-setup/SKILL.md` to v2.8 — added guardrails §6 bullets: mandatory `skill-index` invocation, scope-aware `log.md` updates; clarified skill-index requirement in Maintaining the Layers section
 - Updated `skills/agentfs-setup/scripts/seed-agents-md.sh` AGENTS.md template with new §6 guardrail bullets
-
 - Regenerated `skills/index.md` via `skill-index` (31 skills)
+
 ## 2026-07-07 15:58
 - Created `memories/MEMORY.md` at USER level (`~/.agents/memories/`) with cross-project agent workflow guardrail: always run `skill-index` after modifying any skill
 - Regenerated `skills/index.md` via `skill-index` skill (31 skills indexed)
+
 ## 2026-07-07 15:54
 - Updated `skills/headroom-proxy-status/SKILL.md` to v1.1 — added Kompress ML, target ratio, uncompressed reasons to report format; expanded compression stats extraction fields; added compression troubleshooting section; removed `--lossless` from key flags example
 - Updated `skills/index.md` timestamp for headroom-proxy-status
+
 ## 2026-07-07 00:00
 - Removed USER skill `claude-skills-link` — redundant; Goose natively scans `.claude/skills/` at both project and global scope
 - Regenerated `~/.agents/skills/index.md` — 31 skills indexed
+
 ## 2026-07-06 23:28
 - Updated `skills/claude-skills-link/SKILL.md` — confirmed v2.0 (no content change); verified skill execution with CWD test: symlink creation, idempotency, stale cleanup, and PROJECT skill index generation all pass
+
 ## 2026-07-06 22:01
 - Created USER skill `hermes-headroom-provider` at `~/.agents/skills/hermes-headroom-provider/SKILL.md` — configure Hermes Agent to use the local Headroom proxy as its custom LLM provider
 - Regenerated `~/.agents/skills/index.md` — 31 skills indexed
+
 ## 2026-07-06 21:48
 - Created skill `headroom-litellm-proxy` at `~/.agents/skills/headroom-litellm-proxy/SKILL.md` — Headroom installation and systemd setup chained to LiteLLM
 - Refactored skill `goose-headroom-provider` (v2.0) — now covers Goose custom provider config only; installation/systemd content moved to `headroom-litellm-proxy`
 - Regenerated `~/.agents/skills/index.md` — 30 skills indexed
+
 ## 2026-07-06 21:39
 - Created skill `goose-headroom-provider` at `~/.agents/skills/goose-headroom-provider/SKILL.md` — configure Goose to use the Headroom context-optimization proxy as a custom provider
 - Regenerated `~/.agents/skills/index.md` — 29 skills indexed
+
 ## 2026-07-06 21:32
 - Created skill `headroom-proxy-status` at `~/.agents/skills/headroom-proxy-status/SKILL.md` — check health, config, and runtime status of the local Headroom context-optimization proxy
 - Regenerated `~/.agents/skills/index.md` — 28 skills indexed
+
 ## 2026-07-06 20:06
 - Updated `skills/goose-maas-provider/SKILL.md` to v1.3 — Goose Desktop v1.41 is incompatible with MaaS for tool-calling tasks (fails under all tested configurations: streaming on/off, toolshim on/off); CLI with `GOOSE_TOOLSHIM: true` is the only working approach; updated Desktop section, troubleshooting
+
 ## 2026-07-06 20:00
 - Updated `skills/goose-maas-provider/SKILL.md` to v1.2 — added `GOOSE_TOOLSHIM: true` as required config (smaller models strip namespace prefixes from tool names); added `supports_streaming: false` as required for Desktop (streaming responses lost due to goose Desktop bug); documented Desktop vs CLI behavioral differences; updated checklist, troubleshooting, recovery
+
 ## 2026-07-06 19:39
 - Updated `skills/goose-maas-provider/SKILL.md` to v1.1 — reasoning models (`gpt-oss-120b`, `qwen3-14b`, `deepseek-r1-*`) are fundamentally incompatible with Goose v1.41 streaming parser; changed default model to `llama-scout-17b`; added model compatibility matrix; updated recovery script, checklist, troubleshooting
+
 ## 2026-07-06 19:25
 - Created `skills/goose-maas-provider/SKILL.md` v1.0 — new dedicated skill for MaaS (remote LiteLLM) provider setup; covers API key keyring storage, critical reasoning model fixes (`reasoning: false`, `preserves_thinking: false`), documented failure modes with evidence from real sessions, diagnostic tests, recovery script
 - Updated `skills/goose-litellm-provider/SKILL.md` to v1.2 — removed all MaaS-related content (moved to `goose-maas-provider`); restored as local-proxy-only skill; updated description, tags, and `related_skills` to reference new skill
 - Updated `skills/index.md` — added `goose-maas-provider`, bumped count to 27, refreshed `goose-litellm-provider` description
+
 ## 2026-07-06 19:14
 - Updated `skills/goose-litellm-provider/SKILL.md` to v1.1 — added MaaS remote provider configuration, reasoning model gotcha (`reasoning: true` for thinking models), API key GNOME Keyring storage, available model discovery, expanded troubleshooting and recovery procedures
 - Updated `skills/index.md` — refreshed description and timestamp for goose-litellm-provider
+
 ## 2026-07-06 18:04
 - Created `skills/goose-litellm-provider/SKILL.md` v1.0 — skill to configure Goose with local LiteLLM proxy as 'RedHat' custom provider, includes reference JSON, config.yaml entries, recovery script, and troubleshooting
 - Updated `skills/index.md` — added `goose-litellm-provider` entry, bumped count to 26
+
 ## 2026-07-06 14:38
 - Updated `skills/litellm-vertex-ai-proxy/SKILL.md` v1.1 — made agent-agnostic by removing Hermes-specific Step 8, updated description and troubleshooting
 - Updated `skills/index.md` — refreshed description for `litellm-vertex-ai-proxy`
+
 ## 2026-07-06 12:27
 - Updated `agentfs-setup` skill to fully align all scripts, flags, and documentation from the legacy 'SYSTEM' terminology to 'USER' mode.
+
 ## 2026-07-06 11:37
 - Strengthened guardrail §6 (Index Currency) in `AGENTS.md` and `seed-agents-md.sh`: `skills/index.md` must now be regenerated after any content modification to skill files (SKILL.md, scripts, references), not just structural changes (create/rename/move/delete)
+
 ## 2026-07-06 11:31
 - Renamed AgentFS mode label `SYSTEM` → `USER` across all skills, scripts, design specs, AGENTS.md, and seed templates
 - Updated script variable names: `AGENTS_SKILLS_SYSTEM` → `AGENTS_SKILLS_USER`, `AGENTS_SKILLS_SYSTEM_EXPANDED` → `AGENTS_SKILLS_USER_EXPANDED`
 - Preserved `SYSTEM_RESERVED_*` kubelet variables in `crc-post-setup-config` (unrelated to AgentFS modes)
 - Historical `log.md` entries left unchanged per append-only guardrail
+
 ## 2026-07-06 11:18
 - Renamed `agent-fs-profile` → `agentfs-profile` and `agent-fs-setup` → `agentfs-setup` for consistent `agentfs` naming
 - Renamed 6 skills to replace `-configuration` suffix with `-config`: `crc-coo-config`, `crc-nad-dynamic-plugin-config`, `crc-nmstate-config`, `crc-noo-config`, `crc-ovn-frr-metallb-config`, `crc-post-setup-config`
 - Updated all internal references across SKILL.md files, scripts, index.md, and project-level files
+
 ## 2026-07-06 11:00
 - Updated `hermes-agentfs-setup` to v1.1 — added PROJECT scope support (`--project`, `--undo-project`, `--list`)
 - PROJECT scope registers a project's `.agents/skills/` as an absolute path in `skills.external_dirs` (per-project action)
 - Regenerated `skills/index.md` (25 skills)
+
 ## 2026-07-06 10:54
 - Created `hermes-agentfs-setup` skill — configures Hermes Agent to discover AgentFS SYSTEM skills from `~/.agents/skills/` via `skills.external_dirs`
 - Includes `scripts/setup.sh` with `--check`, `--undo`, and idempotent setup modes
 - Regenerated `skills/index.md` (25 skills) with Python-based YAML frontmatter parser to fix folded-scalar description truncation
+
 ## 2026-07-01 00:07
 - Added total count to `skills/index.md` and `profiles/index.md` summary lines (e.g., `> 24 skills | Sorted by…`).
 - Updated `scaffold-dotagents.sh`, `verify-setup.sh`, `create-profile.sh`, and `skill-index/SKILL.md` to emit/maintain the count.
 - Regenerated `~/.agents/skills/index.md` (24 skills).
+
 ## 2026-07-01 00:00
 - Added missing YAML frontmatter (name + description) to `crc-ovn-frr-metallb-config/SKILL.md`; was the only skill without frontmatter, causing empty description in `skills/index.md`.
 - Regenerated `skills/index.md`.
+
 ## 2026-06-30 23:54
 - Added `## Changelog` section to 19 SYSTEM skills that were missing it; all 24 skills now have consistent `| Updated | Change |` tables with `YYYY-MM-DD HH:MM` timestamps.
+
 ## 2026-06-30 23:49
 - Expanded guardrail §2 (Log Currency): explicit SYSTEM/PROJECT/sub-bundle scope coverage; mandatory logging when skills or concept files change; standardized `log.md` format (title, comment, heading precision, entry style).
 - Fixed `okf-bundle-setup/scripts/scaffold-bundle.sh` and `okf-bundle-gen/scripts/merge-log-entry.sh` to use `YYYY-MM-DD HH:MM` timestamps, `<!-- Append-only -->` comment, and `- ` entry style.
 - Standardized this file to use consistent format.
+
 ## 2026-06-30 23:36
 - Updated guardrail §3 (Content File Currency): Changelog tables now require `YYYY-MM-DD HH:MM` timestamps and `Updated` column header.
 - Updated Changelog tables in 6 files: `agentfs-setup/SKILL.md`, `agentfs-setup/references/design-spec.md`, `agentfs-profile/SKILL.md`, `skill-index/SKILL.md`, `skill-merge/SKILL.md`, `okf-bundle-gen/SKILL.md`.
+
 ## 2026-06-30 23:31
 - Renamed index column `Added` → `Updated` across all `skills/index.md` and `profiles/index.md` templates and live files.
 - Increased timestamp precision to `YYYY-MM-DD HH:MM` in all index.md seeds, log.md seeds, and script `date` calls.
 - Updated guardrails §2 and §6 to use timestamp headings.
 - Regenerated `~/.agents/skills/index.md` (30 skills, `Updated` column, `YYYY-MM-DD HH:MM`).
+
 ## 2026-06-30 23:16
 - Added Index Currency guardrail (§6) to AGENTS.md template in `seed-agents-md.sh`.
 - Updated `profiles/index.md` schema: Identity + Memories + Updated columns, sorted newest-first.
@@ -1449,25 +1596,31 @@ r# Directory Update Log
 - Updated `create-profile.sh` to insert entries newest-first with memories link.
 - Reinforced mandatory `skills/index.md` update in `skill-merge/SKILL.md`.
 - Regenerated `~/.agents/skills/index.md`.
+
 ## 2026-06-30 18:30
 - Added `profiles/index.md` to scaffold and verify scripts; all `profiles/` links now point to `profiles/index.md`; all `memories/` links now point to `memories/MEMORY.md`.
+
 ## 2026-06-30 17:45
 - All mutating scripts (`seed-agents-md.sh`, `init-speckit.sh`, `rename-agent-context.sh`) now append entries to `.agents/log.md` per the Log Currency guardrail.
+
 ## 2026-06-30 17:30
 - Idempotent re-run: agent detects existing `.agents/` and skips creation phases; `verify-setup.sh --fix` repairs missing files/dirs without overwriting; link integrity checks; profile completeness checks; `skills/index.md` seeded instead of `.gitkeep`.
+
 ## 2026-06-30 16:30
 - Fixed `index.md` link convention: all relative links now use `./` prefix for consistent rendering across GitHub, VS Code, and other markdown viewers.
+
 ## 2026-06-30 16:00
 - Fixed `rename-agent-context.sh` sed bug: replaced `sed -i c\` with `awk` block replacement for SPECKIT marker merging.
+
 ## 2026-06-30 15:30
 - Added Agent Profiles table to AGENTS.md; `seed-agents-md.sh` creates default row and retrofits existing files; `create-profile.sh` auto-registers new profiles.
+
 ## 2026-06-30 14:00
 - v2.0 redesign of `agentfs-setup`: USER → SYSTEM mode rename; `memory/` → `memories/`; `roles/` → `profiles/`; added SOUL.md, USER.md, MEMORY.md; removed constitution.md (Spec-kit owns it); multi-agent collaboration design; prompt stacking order.
 - Created companion skill `agentfs-profile`: scaffolds named agent profiles under `.agents/profiles/` with SOUL.md + memories/.
+
 ## 2026-06-26 22:00
 - Fixed `verify-setup.sh` to use opt-in `--with-git` / `--with-spec` flags instead of auto-detecting git/spec-kit on disk.
+
 ## 2026-06-26 14:00
 - Initialized .agents/ directory structure (mode: system).
-
-
-

@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.5.0"
+  version: "3.6.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -90,6 +90,15 @@ transformations. SKILL.md is the contract between them.
 → write code.* When logic is approximate and benefits from model
 judgment, describe it in SKILL.md prose. When logic is precise,
 fragile, or must be consistent across runs, implement it as a script.
+
+**Corollary — lower the cognitive bar for model callers:**
+- When a model fails to follow prose instructions reliably (wrong
+  script, missing arguments, wrong tool), convert the prose to a
+  single wrapper script the model can call with zero or minimal args.
+- Wrapper scripts should auto-detect context (provider, model, paths)
+  from config files rather than requiring the model to supply them.
+- Avoid similar script names within the same skill directory — models
+  confuse `agentfs-behavior.sh` with `agents-md-behavioral.sh`.
 
 ### Business Process Modeling
 
