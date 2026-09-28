@@ -3,7 +3,7 @@ name: hermes-desktop-fixes
 description: >
   fix hermes desktop, hermes electron fix, hermes identity fix
 metadata:
-  version: "3.1.1"
+  version: "3.2.0"
   tags: [hermes, desktop, electron, fix, provider]
 ---
 
@@ -43,9 +43,10 @@ metadata:
 **Fix (v3.0):**
 1. Desktop entry named `com.nousresearch.hermes.desktop` — matches Electron's Wayland app-id
 2. `Icon=hermes` (themed name) — resolves via upstream's hicolor icon installs at 24/32/48/256px
-3. `Exec` uses our launcher wrapper with `ELECTRON_DISABLE_SANDBOX=1` and `--skip-build`
-4. Background watcher in launcher wrapper detects upstream's `hermes.desktop` regeneration, deletes it, and refreshes our entry
-5. GNOME favorites pinned to `com.nousresearch.hermes.desktop`
+3. `StartupWMClass=com.nousresearch.hermes` — matches Electron's Wayland app-id (NOT the X11 `productName` "Hermes")
+4. `Exec` uses our launcher wrapper with `ELECTRON_DISABLE_SANDBOX=1` and `--skip-build`
+5. Background watcher in launcher wrapper detects upstream's `hermes.desktop` regeneration AND upstream overwriting our entry (checks Exec line), deletes duplicates and restores correct content
+6. GNOME favorites pinned to `com.nousresearch.hermes.desktop`
 
 **Diagnostics:**
 ```bash
@@ -61,6 +62,26 @@ python3 -c "import gi; gi.require_version('Gtk','3.0'); from gi.repository impor
 
 # Check for duplicate entries
 ls ~/.local/share/applications/*hermes*.desktop
+```
+
+### 6. GPU Process Crash on Intel Arc + Wayland (v3.2)
+**Symptom:** Hermes Desktop starts, backend comes up healthy, but ~40s later Electron crashes with `FATAL: GPU process isn't usable. Goodbye.` in `desktop-chromium.log`. The Electron window disappears silently.
+**Root cause:** Intel Arc (Meteor Lake-P) iGPU + Electron 40 + `--no-sandbox` + Wayland. The GPU subprocess fails to launch (error_code=1002 = `kLaunchFailed`), the zygote communication breaks, Electron retries 6×, then exits with FATAL. Occurs after kernel/mesa updates (e.g., kernel 7.2.7, mesa 26.2.3 on Fedora 44). The i915 driver + Chromium GPU process isolation don't play well together when the sandbox is disabled.
+**Fix:** `desktop.disable_gpu: true` in `~/.hermes/config.yaml` → Python launcher sets `HERMES_DESKTOP_DISABLE_GPU=1` in env → Electron calls `app.disableHardwareAcceleration()` + appends `--disable-gpu-compositing` before `app.ready`. Software rendering is used instead. The GPU FATAL still appears in the chromium log but is non-fatal because the main process no longer depends on the GPU subprocess.
+**Config:**
+```bash
+hermes config set desktop.disable_gpu true
+```
+**Diagnostics:**
+```bash
+# Check for GPU crash in chromium log
+grep "FATAL.*GPU" ~/.hermes/logs/desktop-chromium.log
+
+# Verify disable_gpu is set
+grep disable_gpu ~/.hermes/config.yaml
+
+# Verify env var reaches Electron
+cat /proc/$(pgrep -f "linux-unpacked/Hermes --disable" | head -1)/environ 2>/dev/null | tr '\0' '\n' | grep HERMES_DESKTOP_DISABLE_GPU
 ```
 
 ### 5. electron-builder Can't Find Electron (RETIRED — v3.0)
@@ -124,13 +145,20 @@ rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
 
 ## Resolved Issues (v3.1)
 - **Orphaned skip-worktree on `hermes_cli/main.py`:** The v3.0 retirement of Bug #3 stopped *applying* the `main.py` patch but never cleared the `skip-worktree` flag left behind by older versions. When upstream changed `hermes_cli/main.py`, `git reset --hard` failed with `Entry 'hermes_cli/main.py' not uptodate. Cannot merge.` The revert script now generically discovers and clears all skip-worktree flags, and the health check detects orphaned flags.
+- **GPU process crash kills Electron on Intel Arc + Wayland:** Fixed via `desktop.disable_gpu: true` in config.yaml — uses Hermes's built-in `HERMES_DESKTOP_DISABLE_GPU` mechanism to call `app.disableHardwareAcceleration()` before `app.ready`.
+- **Desktop entry overwritten by upstream after update:** Upstream's `linux_desktop_entry.py` overwrites `com.nousresearch.hermes.desktop` with a broken `Exec` path (raw python invocation instead of our launcher wrapper). The background watcher only detects `hermes.desktop` creation, not modifications to our own entry. Manually restored correct entry.
 - **Unconditional TUI/web/desktop rebuild on every `hermes update`:** Upstream's completion path (`complete_source_checkout` → `build_update_products`) unconditionally rebuilds all frontends even when already up to date. This was masked before because the orphaned skip-worktree flag made updates fail before reaching the build step. Fixed by adding a `--check` pre-flight in the launcher: plain `hermes update` now fetches and checks first, short-circuiting in ~2s when current instead of ~2min of unnecessary rebuilds.
+
+## Safety Rules
+- **NEVER use `gdbus call org.gnome.Shell.Eval` to inspect windows on Wayland.** This can crash the entire GNOME session (compositor crash = full logout). There is no safe programmatic way to introspect live Wayland windows from a terminal. Verify `.desktop` entry correctness by reading the file and checking `package.json desktopName` — never by poking the compositor.
 
 ## Known Limitations
 - If upstream renames `_session_info` or changes the provider plumbing, the sed pattern for Bug #1 will silently fail. The health check detects this.
 - If upstream changes `desktopName` from `com.nousresearch.hermes` to a different app-id, the desktop entry filename must be updated to match.
 - The background watcher polls for up to 30s. If upstream's deferred desktop entry write takes longer (unlikely), the duplicate may briefly appear.
 - The Desktop rebuild during `hermes update` calls `python -m hermes_cli.main desktop --build-only` directly (bypasses launcher), but `--build-only` returns before the sandbox check, so it's non-fatal.
+- The launcher wrapper uses `$HOME` in `HERMES_BIN` path, but upstream's `_wrapper_targets_checkout()` does literal string comparison against the resolved absolute path. The probe won't recognize our wrapper — harmless because `manage_launcher_entry: false` prevents the desktop entry rewrite.
+- Upstream's `linux_desktop_entry.py` now writes directly to `com.nousresearch.hermes.desktop` (not just `hermes.desktop`). The `manage_launcher_entry: false` config opt-out is the primary defense; the launcher's background watcher is belt-and-suspenders.
 
 ## Changelog
 

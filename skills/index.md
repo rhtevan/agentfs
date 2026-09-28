@@ -4,9 +4,10 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check | 2026-09-28 00:00 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-09-27 23:47 |
-| [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-09-27 20:33 |
+| [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-09-28 11:33 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-09-28 11:05 |
+| [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-09-28 10:11 |
+| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check | 2026-09-28 00:15 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-09-27 20:02 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-09-25 10:05 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-09-24 23:10 |
@@ -22,7 +23,6 @@
 | [fedora-desktop-wmclass-fix](./fedora-desktop-wmclass-fix/SKILL.md) | fedora, gnome, wayland, electron, desktop, wmclass | fix desktop wmclass, audit wmclass, electron duplicate icon, fix taskbar duplicate, desktop startup wmclass | 2026-09-04 11:12 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-09-04 11:06 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-09-01 18:07 |
-| [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-08-31 17:29 |
 | [agentflow-fuseki](./agentflow-fuseki/SKILL.md) | fuseki, jena, sparql, rdf, infrastructure, service | setup fuseki, start fuseki, stop fuseki, fuseki status | 2026-08-31 15:41 |
 | [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-08-31 15:41 |
 | [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-08-31 14:39 |

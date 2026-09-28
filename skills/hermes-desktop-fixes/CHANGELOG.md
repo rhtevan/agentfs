@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-28 | v3.2.0 — Added Bug #6: GPU process crash (Intel Arc Meteor Lake + Electron 40 + no-sandbox + Wayland). GPU subprocess fails to launch (error_code=1002), retries 6×, then FATAL exits Electron. Fix: `desktop.disable_gpu: true` in config.yaml → `HERMES_DESKTOP_DISABLE_GPU=1` → `app.disableHardwareAcceleration()`. Also fixed `.desktop` entry overwritten by upstream's `linux_desktop_entry.py` regeneration (Exec pointed to raw python path instead of launcher wrapper). |
 | 2026-09-27 20:22 | v3.1.1 — Added `--check` pre-flight to launcher: plain `hermes update` short-circuits in ~2s when already up to date, avoiding upstream's unconditional ~2min TUI/web/desktop rebuild. Read-only flags (`--check`, `--plan`) pass through without touching patches. |
 | 2026-09-27 20:09 | v3.1.0 — Fixed orphaned skip-worktree on `hermes_cli/main.py` (retired Bug #3 leftover) that blocked `hermes update`. Rewrote `hermes-revert-patches.sh` to generically clear all skip-worktree flags instead of hardcoding filenames. Added orphaned skip-worktree detection to health check. |
 | 2026-09-25 13:34 | v3.0.0 — v3.0: Rewrote Bug #4 (Wayland app-id), retired Bugs #3/#5, updated architecture |

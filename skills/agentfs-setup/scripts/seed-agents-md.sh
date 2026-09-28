@@ -165,7 +165,11 @@ Then proceed normally with the user's request.
 | Memories | [.agents/memories/](./.agents/memories/MEMORY.md) | Project observations |
 | Activity log | [.agents/log.md](./.agents/log.md) | Change history |
 
+<!-- Agent identity — inlined by Goose at session start via @import.
+     Other agents: the plain-text fallback below covers non-Goose harnesses. -->
 @.agents/SOUL.md
+
+**If `.agents/SOUL.md` was not loaded above, read it now and adopt it as your identity for this session.**
 
 ## Rules
 
@@ -198,10 +202,11 @@ cat > "$TARGET" << 'AGENTSEOF'
 <!-- agentfs-template-version: __TEMPLATE_VERSION__ agentfs-scope: project -->
 # AGENTS.md — Workspace Entry Point
 
-<!-- Agent identity — inlined by Goose at session start via @import -->
+<!-- Agent identity — inlined by Goose at session start via @import.
+     Other agents: the plain-text fallback below covers non-Goose harnesses. -->
 @.agents/SOUL.md
 
-**Context lookup fallback:** Each scope uses `index.md` for progressive disclosure. When `search_nodes` is unavailable, browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md` (USER), or `./.agents/index.md` (PROJECT) to discover skills, knowledge, and directory structure.
+**If `.agents/SOUL.md` was not loaded above, read it now and adopt it as your identity for this session.**
 
 
 ## Rules
@@ -213,7 +218,7 @@ cat > "$TARGET" << 'AGENTSEOF'
 | | | **Session start** | |
 | 1 | Event | Session start | If other context files are loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `.agents/memories/USER.md` if it exists — apply preferences. |
 | | | **Per-message dispatch** | |
-| 2 | Signal | User signal phrase detected | Route per **Signal Dispatch** table below. \`hey\` is the user's explicit dispatch prefix — not a greeting. If no pattern matches: **first tool call MUST be \`search_nodes\`** with the keywords — never skip this step, even if you think you know the skill. Then call \`load_skill\` with the result. If \`search_nodes\` returns nothing, use your best judgment. |
+| 2 | Signal | User signal phrase detected | Route per **Signal Dispatch** table below. \`hey\` is the user's explicit dispatch prefix — not a greeting. If no pattern matches: **first tool call MUST be \`search_nodes\`** with the keywords — never skip this step, even if you think you know the skill. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. If no results, retry with progressively fewer terms (drop rightmost first) before concluding no match. Then call \`load_skill\` with the result. If \`search_nodes\` still returns nothing, use your best judgment. |
 | | | **Before reading `.agents/`** | |
 | 3 | Event | First read of any `.agents/` file in session | Browse that scope's `index.md` first, follow links to content. |
 | | | **Before writing `.agents/`** | |
@@ -248,6 +253,8 @@ When the user message starts with `hey`, match the keywords and route:
 | Knowledge index | `~/.agents/knowledge/index.md` | Knowledge discovery by bundle names and concept summaries |
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
+
+**Context lookup fallback:** When `search_nodes` is unavailable, browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md` (USER), or `./.agents/index.md` (PROJECT) to discover skills, knowledge, and directory structure.
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->

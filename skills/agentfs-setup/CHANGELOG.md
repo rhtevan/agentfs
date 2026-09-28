@@ -2,6 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-28 11:05 | v6.0.4 — Rule 2: Added query construction constraint — use literal signal keywords only, no expansion/padding; progressive narrowing on miss (drop rightmost first) |
+| 2026-09-28 10:51 | v6.0.3 — Vendor-neutral SOUL.md fallback: added plain-text instruction for non-Goose agents. Moved context lookup fallback from top-of-file to Quick Orientation section. Applied same SOUL.md pattern to lite template. |
 | 2026-09-27 23:47 | v6.0.2 — Rule 2: mandatory search_nodes first — 'first tool call MUST be search_nodes', closes smart-model shortcut |
 | 2026-09-27 22:11 | v6.0.1 — v6.0.1: Patch — SOUL.md sync via seed-soul.sh, plugin version detection in post-write, Rule 10 unconditional re-read |
 | 2026-09-27 20:02 | v6.0.0 — v6.0.0: Added plugins/ and scripts/ directories to USER scope scaffolding and index.md template |

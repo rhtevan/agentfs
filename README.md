@@ -281,7 +281,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v6.0.2 enforces 10 operational rules via Type/Stimulus/Action
+AgentFS v6.0.4 enforces 10 operational rules via Type/Stimulus/Action
 triples in a flat table within AGENTS.md. Behavioral norms (no validation
 phrases, no assumed inputs, risk naming) live in SOUL.md Principles —
 the self-discipline layer. AGENTS.md rules handle external enforcement
@@ -290,7 +290,7 @@ only: routing, hooks, process obligations.
 | # | Type | Stimulus | Action |
 |---|------|----------|--------|
 | 1 | Event | Session start | AGENTS.md wins conflicts. Read `USER.md` if it exists. |
-| 2 | Signal | User signal phrase detected | Route per Signal Dispatch table. `hey` is the dispatch prefix. First tool call MUST be `search_nodes` for unmatched signals. |
+| 2 | Signal | User signal phrase detected | Route per Signal Dispatch table. `hey` is the dispatch prefix. First tool call MUST be `search_nodes` for unmatched signals. Query construction: literal signal keywords only, no expansion; progressive narrowing on miss (drop rightmost first). |
 | 3 | Event | First `.agents/` read | Browse that scope's `index.md` first. |
 | 4 | Event | Before destructive `.agents/` op | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
 | 5 | Event | Creating a skill | Default USER scope; PROJECT only when explicit. |

@@ -2,6 +2,21 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-28 11:33
+- Skill Check overhaul v2.0.0: resolve-target.sh, spec/tests, error contract (skills/agentfs-git-push/SKILL.md)
+
+## 2026-09-28 11:05
+- Rule 2: added search_nodes query construction constraint (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-28 10:51
+- Vendor-neutral SOUL.md fallback; moved context lookup fallback to Quick Orientation (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-28 10:11
+- v3.2.0: Added safety rules, updated known limitations with manage_launcher_entry opt-out and wrapper path mismatch (skills/hermes-desktop-fixes/SKILL.md)
+
+## 2026-09-28 09:48
+- v3.2.0: Added Bug #6 (GPU process crash on Intel Arc + Wayland), fixed desktop entry overwrite (skills/hermes-desktop-fixes/SKILL.md)
+
 ## 2026-09-28 00:08
 - Table-match discrimination: only set enforcement flag for unmatched hey signals (skill dispatch fallthrough). Table-matched signals (remember, forget, prefer, always, never) skip enforcement entirely. (plugins/signal-dispatch/scripts/detect-hey.sh)
 
