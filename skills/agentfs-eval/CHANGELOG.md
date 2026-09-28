@@ -3,6 +3,9 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-27 23:47 | v1.6.2 — Tighten behavioral tests: expected first tool is search_nodes only (not search_nodes OR load_skill), load_skill moved to anti-pattern list |
+| 2026-09-27 23:35 | v1.6.1 — Fix B2 expected tool order: search_nodes before load_skill, matching Rule 2 fallthrough sequence |
+| 2026-09-27 20:18 | v1.6.0 — Update template-check.sh for agentfs v6.0.0: A2 removes Scopes requirement (Rules must be 1st section), A3 expects 10 rules (not 17), A5 checks template-wide for search_nodes/load_skill (not a single rule row), adds A2c Signal Dispatch ordering |
 | 2026-09-25 01:46 | v1.5.7 — Update template-check.sh: 17 rules, A5 checks Rule 7 instead of Rule 8 |
 | 2026-09-25 00:22 | v1.5.6 — B1 test: use 'check headroom status' (no CLI-name collision); document command-shape ambiguity |
 | 2026-09-24 22:50 | v1.5.5 — Resilient session cleanup: trap EXIT handler, per-session cleanup fn, orphan sweep on updated_at, DB timeout=5s |

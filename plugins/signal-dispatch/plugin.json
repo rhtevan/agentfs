@@ -1,0 +1,5 @@
+{
+  "name": "signal-dispatch",
+  "version": "1.8.0",
+  "description": "Deterministic enforcement of the 'hey' signal dispatch prefix. Blocks non-dispatch tool calls when a hey-prefixed prompt is detected, injecting step-by-step dispatch instructions with the exact tool name, query, and fallback path."
+}

@@ -52,6 +52,10 @@ Memory Collision Avoidance:
   --memory-install  Install/update memory routing override in persistent instructions
   --memory-remove   Remove memory routing override from persistent instructions
 
+Plugin Management:
+  --plugin-check    Verify signal-dispatch plugin installation and health
+  --plugin-list     List all discovered Goose plugins with status
+
   --help            Show this help
 
 Examples:
@@ -67,6 +71,8 @@ Examples:
   setup.sh --memory-check            # Check memory override status
   setup.sh --memory-install          # Install memory collision avoidance
   setup.sh --memory-remove           # Remove memory collision avoidance
+  setup.sh --plugin-check            # Verify signal-dispatch plugin
+  setup.sh --plugin-list             # List all Goose plugins
 EOF
 }
 
@@ -627,6 +633,171 @@ PYEOF
     info "Restart your Goose session to apply."
 }
 
+# --- Plugin Management ---
+
+PLUGIN_DIR="${HOME}/.agents/plugins"
+
+do_plugin_check() {
+    echo "=== Goose Plugin Check: signal-dispatch ==="
+    echo ""
+
+    local plugin_path="$PLUGIN_DIR/signal-dispatch"
+    local pass=0
+    local fail=0
+
+    # 1. Directory exists
+    if [[ -d "$plugin_path" ]]; then
+        info "Plugin directory exists: $plugin_path"
+        pass=$((pass + 1))
+    else
+        error "Plugin directory missing: $plugin_path"
+        fail=$((fail + 1))
+        echo ""
+        echo "Install: clone or pull the agentfs repo into ~/.agents/"
+        echo "   git -C ~/.agents pull"
+        return 1
+    fi
+
+    # 2. plugin.json valid
+    if [[ -f "$plugin_path/plugin.json" ]]; then
+        if jq empty "$plugin_path/plugin.json" 2>/dev/null; then
+            local name version
+            name=$(jq -r '.name' "$plugin_path/plugin.json")
+            version=$(jq -r '.version' "$plugin_path/plugin.json")
+            info "plugin.json valid: $name v$version"
+            pass=$((pass + 1))
+        else
+            error "plugin.json is invalid JSON"
+            fail=$((fail + 1))
+        fi
+    else
+        error "plugin.json missing"
+        fail=$((fail + 1))
+    fi
+
+    # 3. hooks.json valid
+    if [[ -f "$plugin_path/hooks/hooks.json" ]]; then
+        if jq empty "$plugin_path/hooks/hooks.json" 2>/dev/null; then
+            local hook_count
+            hook_count=$(jq '[.hooks | to_entries[] | .value | length] | add' "$plugin_path/hooks/hooks.json")
+            info "hooks.json valid: $hook_count hook rule(s)"
+            pass=$((pass + 1))
+        else
+            error "hooks.json is invalid JSON"
+            fail=$((fail + 1))
+        fi
+    else
+        error "hooks/hooks.json missing"
+        fail=$((fail + 1))
+    fi
+
+    # 4. Scripts exist and are executable
+    local scripts=(detect-hey.sh enforce-hey.sh cleanup-stale.sh)
+    for s in "${scripts[@]}"; do
+        if [[ -x "$plugin_path/scripts/$s" ]]; then
+            info "Script executable: $s"
+            pass=$((pass + 1))
+        elif [[ -f "$plugin_path/scripts/$s" ]]; then
+            warn "Script exists but not executable: $s"
+            echo "  Fix: chmod +x $plugin_path/scripts/$s"
+            fail=$((fail + 1))
+        else
+            error "Script missing: $s"
+            fail=$((fail + 1))
+        fi
+    done
+
+    # 5. jq available
+    if command -v jq &>/dev/null; then
+        info "jq available: $(jq --version)"
+        pass=$((pass + 1))
+    else
+        error "jq not installed (required by hook scripts)"
+        fail=$((fail + 1))
+    fi
+
+    # 6. Not disabled in settings
+    local settings="${HOME}/.config/goose/settings.json"
+    if [[ -f "$settings" ]] && jq -e '.disabledPlugins // [] | index("signal-dispatch")' "$settings" &>/dev/null; then
+        error "Plugin is disabled in $settings"
+        echo "  Fix: remove 'signal-dispatch' from disabledPlugins"
+        fail=$((fail + 1))
+    else
+        info "Plugin not in disabledPlugins"
+        pass=$((pass + 1))
+    fi
+
+    echo ""
+    if [[ $fail -eq 0 ]]; then
+        info "All checks passed ($pass/$pass)"
+    else
+        error "$fail check(s) failed, $pass passed"
+        return 1
+    fi
+}
+
+do_plugin_list() {
+    echo "=== Discovered Goose Plugins ==="
+    echo ""
+
+    local found=0
+    local settings="${HOME}/.config/goose/settings.json"
+    local -a disabled=()
+
+    # Load disabled list if settings exist
+    if [[ -f "$settings" ]] && jq -e '.disabledPlugins' "$settings" &>/dev/null; then
+        while IFS= read -r name; do
+            disabled+=("$name")
+        done < <(jq -r '.disabledPlugins[]' "$settings" 2>/dev/null)
+    fi
+
+    # Scan USER plugins
+    if [[ -d "$PLUGIN_DIR" ]]; then
+        for d in "$PLUGIN_DIR"/*/; do
+            [[ -f "$d/plugin.json" ]] || continue
+            local name version status
+            name=$(jq -r '.name' "$d/plugin.json" 2>/dev/null || basename "$d")
+            version=$(jq -r '.version // "?"' "$d/plugin.json" 2>/dev/null)
+
+            status="enabled"
+            for dis in "${disabled[@]+"${disabled[@]}"}"; do
+                [[ "$dis" == "$name" ]] && status="disabled"
+            done
+
+            local has_hooks="no"
+            [[ -f "$d/hooks/hooks.json" ]] && has_hooks="yes"
+
+            printf "  %-25s v%-8s hooks=%-3s %s\n" "$name" "$version" "$has_hooks" "[$status]"
+            found=$((found + 1))
+        done
+    fi
+
+    # Scan PROJECT plugins
+    local project_plugins="./.agents/plugins"
+    if [[ -d "$project_plugins" ]]; then
+        for d in "$project_plugins"/*/; do
+            [[ -f "$d/plugin.json" ]] || continue
+            local name version
+            name=$(jq -r '.name' "$d/plugin.json" 2>/dev/null || basename "$d")
+            version=$(jq -r '.version // "?"' "$d/plugin.json" 2>/dev/null)
+
+            local has_hooks="no"
+            [[ -f "$d/hooks/hooks.json" ]] && has_hooks="yes"
+
+            printf "  %-25s v%-8s hooks=%-3s [project]\n" "$name" "$version" "$has_hooks"
+            found=$((found + 1))
+        done
+    fi
+
+    echo ""
+    if [[ $found -eq 0 ]]; then
+        echo "  No plugins found."
+        echo "  Plugin directories: $PLUGIN_DIR, ./.agents/plugins/"
+    else
+        echo "  $found plugin(s) found."
+    fi
+}
+
 # --- Main ---
 
 case "${1:-}" in
@@ -642,6 +813,8 @@ case "${1:-}" in
     --memory-check)    do_memory_check ;;
     --memory-install)  do_memory_install ;;
     --memory-remove)   do_memory_remove ;;
+    --plugin-check)    do_plugin_check ;;
+    --plugin-list)     do_plugin_list ;;
     --help|-h)         usage ;;
     "")                do_add "${STANDARD_FILES[@]}" ;;
     *)                 error "Unknown option: $1"; usage; exit 1 ;;

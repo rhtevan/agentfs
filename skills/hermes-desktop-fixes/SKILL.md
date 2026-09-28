@@ -3,7 +3,7 @@ name: hermes-desktop-fixes
 description: >
   fix hermes desktop, hermes electron fix, hermes identity fix
 metadata:
-  version: "3.0.0"
+  version: "3.1.1"
   tags: [hermes, desktop, electron, fix, provider]
 ---
 
@@ -76,10 +76,11 @@ The key challenge: upstream's `linux_desktop_entry.py` regenerates `hermes.deskt
 **Solution:** The launcher wrapper (`~/.local/bin/hermes`) handles two concerns:
 
 **Update interception:**
-1. **Before update:** `hermes-revert-patches.sh` reverts patched files + clears skip-worktree
-2. **During update:** `git pull --ff-only` succeeds (working tree is clean)
-3. **After update:** `hermes-apply-patches.sh` re-applies patches + sets skip-worktree
-4. **Belt-and-suspenders:** `post-merge` git hook also calls apply-patches
+1. **Pre-flight:** Read-only flags (`--check`, `--plan`, `--list-venv-holders`, `--install-id`) pass through without touching patches. Plain `hermes update` runs `--check` first; if already up to date, short-circuits (avoids upstream's unconditional TUI/web/desktop rebuild in the completion path).
+2. **Before update:** `hermes-revert-patches.sh` finds *all* skip-worktree files (`git ls-files -v | grep ^S`), clears flags, and checks out clean copies — this is generic, not hardcoded, so retired patches with orphaned flags are automatically cleaned up
+3. **During update:** `git pull --ff-only` / `git reset` succeeds (working tree is clean)
+4. **After update:** `hermes-apply-patches.sh` re-applies patches + sets skip-worktree
+5. **Belt-and-suspenders:** `post-merge` git hook also calls apply-patches
 
 **Desktop entry maintenance (background watcher):**
 On `hermes desktop`, a background subshell polls for upstream's `hermes.desktop` (up to 30s). When detected:
@@ -93,7 +94,7 @@ On `hermes desktop`, a background subshell polls for upstream's `hermes.desktop`
 |------|---------|
 | `~/.hermes/hermes-env.sh` | PATH fix + `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE` fix |
 | `~/.hermes/hermes-apply-patches.sh` | Idempotent: applies source patches + sets skip-worktree |
-| `~/.hermes/hermes-revert-patches.sh` | Reverts patched files to clean upstream before update |
+| `~/.hermes/hermes-revert-patches.sh` | Generically clears all skip-worktree flags + checks out clean upstream before update |
 | `~/.hermes/hermes-check-patches.sh` | Health check |
 | `~/.hermes/.env` | `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE=en_US.UTF-8` (loaded by `load_hermes_dotenv()`) |
 | `~/.local/share/applications/com.nousresearch.hermes.desktop` | GNOME desktop entry (matches Wayland app-id) |
@@ -120,6 +121,10 @@ bash ~/.agents/skills/hermes-desktop-fixes/recover.sh
 # Clear stale Desktop cache (if provider issue recurs)
 rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
 ```
+
+## Resolved Issues (v3.1)
+- **Orphaned skip-worktree on `hermes_cli/main.py`:** The v3.0 retirement of Bug #3 stopped *applying* the `main.py` patch but never cleared the `skip-worktree` flag left behind by older versions. When upstream changed `hermes_cli/main.py`, `git reset --hard` failed with `Entry 'hermes_cli/main.py' not uptodate. Cannot merge.` The revert script now generically discovers and clears all skip-worktree flags, and the health check detects orphaned flags.
+- **Unconditional TUI/web/desktop rebuild on every `hermes update`:** Upstream's completion path (`complete_source_checkout` → `build_update_products`) unconditionally rebuilds all frontends even when already up to date. This was masked before because the orphaned skip-worktree flag made updates fail before reaching the build step. Fixed by adding a `--check` pre-flight in the launcher: plain `hermes update` now fetches and checks first, short-circuiting in ~2s when current instead of ~2min of unnecessary rebuilds.
 
 ## Known Limitations
 - If upstream renames `_session_info` or changes the provider plumbing, the sed pattern for Bug #1 will silently fail. The health check detects this.

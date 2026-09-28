@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.4.0"
+  version: "1.5.0"
   tags: [goose, agentfs, configuration, compatibility]
 user-invocable: true
 disable-model-invocation: false
@@ -298,6 +298,36 @@ read and update `~/.config/goose/config.yaml`. It:
 | Goose reads `.claude/skills/` | ✅ (native) | ✅ (native) |
 | Goose reads `.agents/skills/` | ✅ (native) | ✅ (native) |
 
+
+## Plugin Management
+
+AgentFS v6.0.0 introduced the `signal-dispatch` plugin
+(`~/.agents/plugins/signal-dispatch/`) which uses Goose lifecycle hooks
+to deterministically enforce the `hey` signal dispatch prefix. This skill
+provides commands to verify and inspect plugin status.
+
+### Check Plugin Health
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --plugin-check
+```
+
+Verifies:
+- Plugin directory and files exist
+- `plugin.json` and `hooks.json` are valid JSON
+- Hook scripts are present and executable
+- `jq` is available (required dependency)
+- Plugin is not in Goose's `disabledPlugins` list
+
+### List Discovered Plugins
+
+```bash
+bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --plugin-list
+```
+
+Lists all plugins discovered from `~/.agents/plugins/` (USER scope)
+and `./.agents/plugins/` (PROJECT scope) with name, version, hooks
+status, and enabled/disabled state.
 
 ## Changelog
 

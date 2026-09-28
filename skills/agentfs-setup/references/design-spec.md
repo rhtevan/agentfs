@@ -31,6 +31,8 @@ all guardrails, skills, and documentation reference them.
 | `knowledge/` | ✅ shared | ❌ never |
 | `memories/` | ❌ never | ✅ per-agent |
 | `profiles/` | ❌ never | ✅ multi-agent |
+| `plugins/` | ✅ shared | ✅ project-specific |
+| `scripts/` | ✅ shared | ❌ never |
 | `SOUL.md` | ❌ never | ✅ agent identity |
 | `AGENTS.md` | ❌ never | ✅ (at repo root `./`) |
 | `index.md` | ✅ | ✅ |
@@ -129,15 +131,26 @@ Item 4 (knowledge) is USER-scoped (`~/.agents/knowledge/`) — shared across all
     │       ├── SKILL.md
     │       └── <bundled_resources>
     │
-    └── knowledge/                           # Semantic Context Layer (OKF)
-        ├── index.md
-        └── <topic>/
-            └── <concept>.md                 # YAML frontmatter: type required
+    ├── knowledge/                           # Semantic Context Layer (OKF)
+    │   ├── index.md
+    │   └── <topic>/
+    │       └── <concept>.md                 # YAML frontmatter: type required
+    │
+    ├── plugins/                             # Goose Hooks Plugins
+    │   └── <plugin-name>/
+    │       ├── plugin.json
+    │       ├── hooks/
+    │       │   └── hooks.json
+    │       └── scripts/
+    │           └── <hook-scripts>
+    │
+    └── scripts/                             # AGENTS-specific scripts
+        └── <script>.sh                      # Referenced directly from AGENTS.md
 ```
 
-**Purpose:** A shared library of skills and knowledge that spans across
-all projects and is visible to any agent. No agent identity, no memories,
-no profiles — purely a capability and knowledge store.
+**Purpose:** A shared library of skills, knowledge, plugins, and scripts
+that spans across all projects and is visible to any agent. No agent
+identity, no memories, no profiles — purely a capability and knowledge store.
 
 **Excluded from USER scope:**
 - `SOUL.md` — Agent identity is project-scoped or agent-specific
@@ -252,39 +265,59 @@ sections (Agent Profiles table, SPECKIT block).
 - **Project-owned** (everything below the marker) — Agent Profiles
   table and SPECKIT block; preserved across sync operations.
 
-**Signal Routing architecture:**
-- **LLM-direct routes** live in the AGENTS.md Signal Routing table
-  (auto-loaded every session). These handle intents that don't map
-  to any skill (e.g., "remember this" → edit MEMORY.md).
-- **Skill-routed signals** live in each SKILL.md's `description`
-  frontmatter field as signal phrases. They are the primary routing
-  surface — loaded into every session via the built-in skills
-  listing. They are also aggregated into `~/.agents/skills/index.md`
-  by the `skill-index` skill (Description column) as defense-in-depth.
-  The Routing Rules instruct the agent to read the skills index on
-  session start for additional signal discovery.
-- **Fallback** — default skill name matching via the built-in
-  skills listing.
+**Signal Dispatch architecture (v6.0.0):**
+
+All signal dispatch is unified under the `hey` prefix. When a user
+message starts with `hey`, the agent matches keywords against the
+Signal Dispatch table in AGENTS.md and routes accordingly:
+- **Skill/knowledge dispatch** — `hey <keywords>` → `search_nodes`
+  → `load_skill` or load OKF concept file
+- **Memory management** — `hey remember/forget/check notes` → read/write
+  `MEMORY.md`
+- **Preference management** — `hey I prefer` → `USER.md`
+- **Guardrail proposals** — `hey always/never` → propose AGENTS.md rule
+
+The `hey` prefix is deterministically enforced by the `signal-dispatch`
+plugin (`~/.agents/plugins/signal-dispatch/`), which uses a Goose
+`PreToolUse` hook to block non-dispatch tool calls when a `hey`-prefixed
+prompt is detected. This converts the highest-risk prose instruction
+into deterministic code — the agent literally cannot use other tools
+until it completes the dispatch.
+
+**Skill-routed signals** continue to live in each SKILL.md's `description`
+frontmatter field as signal phrases. They are aggregated into
+`~/.agents/skills/index.md` by the `skill-index` skill (Description
+column) as defense-in-depth.
+
+**Scope Definitions** are no longer inlined in AGENTS.md. They are
+relocated to `.agents/index.md` for progressive disclosure, reducing
+the system prompt footprint by ~400 bytes.
 
 **README sync rule:** When AgentFS design, guardrails, skills schema,
 or template structure changes, the README (`~/.agents/README.md`) MUST
 be updated in the same commit or session. This is a hard requirement,
 not advisory — unlike the soft README staleness check in Guardrail #10.
 
-Defines ten structural guardrails (reordered by usage frequency):
-1. 🔄 **Progressive Disclosure** — browse `index.md` before opening files
-2. ⚖️ **Memory Scope** — memories are PROJECT-only; graduation path to OKF
-3. 🔄 **Cross-Agent Discovery** — read CLAUDE.md, .cursorrules, etc.
-4. ⚖️ **Skill Placement** — default to PROJECT, promote to USER when cross-project demand is proven
-5. ⛔ **Filesystem Integrity** — link integrity, log currency, content
-   file currency, and index currency in a single guardrail
-6. 🔄 **Idempotency** — every skill and workflow must be idempotent
-7. ⚖️ **Anti-Sycophancy** — refuse conflicting requests, log overrides
-8. 🔄 **Anti-Daydreaming** — ephemeral session canary name; spot-check
-   for context drift; never persisted to AgentFS files
-9. ⛔ **Checkpoints & Resumability** — checkpoint before destructive ops
-10. ⛔ **Git Push Safety** — mandatory 5-step preflight before any
-    `git push`: stop → scan → present report → wait for approval → push
+**AGENTS.md v6.0.0 rule structure:** 10 rules (reduced from 17 in v5.x),
+organized by lifecycle phase. Behavioral norms (no validation phrases,
+no assumed inputs, risk naming) moved to SOUL.md Principles.
+
+AGENTS.md rules enforce operational concerns only:
+1. ⚖️ **Context Priority** — AGENTS.md wins conflicts; load USER.md
+2. 🔄 **Signal Dispatch** — route `hey`-prefixed messages per dispatch table
+3. 🔄 **Progressive Disclosure** — browse `index.md` before opening files
+4. ⛔ **Checkpoints** — checkpoint before destructive `.agents/` ops
+5. ⚖️ **Skill Placement** — default USER scope; PROJECT only when explicit
+6. ⚖️ **Memory Scope** — memories PROJECT-only; graduation path to OKF
+7. ⛔ **Post-Write Hook** — run `post-write.sh` after `.agents/` writes
+8. ⛔ **Pre-Flight** — enumerate steps and obligations before multi-step tasks
+9. ⚖️ **Override Protocol** — state what changed on reversal; `[OVERRIDE]` for rule conflicts
+10. 🔄 **Anti-Daydreaming** — session canary; periodic SOUL Principles re-read
+
+The underlying design guardrails remain:
+- 🔄 **Idempotency** — every skill and workflow must be idempotent
+- ⚖️ **Anti-Sycophancy** — refuse conflicting requests, log overrides
+- ⛔ **Git Push Safety** — mandatory preflight before any `git push`
 
 ### Guardrail Type System
 
@@ -339,9 +372,20 @@ any agent reading `AGENTS.md` — framework-independent.
   - Entries: `- ` (dash prefix)
 
 ### 3. Identity Layer — SOUL.md
-Human-authored agent personality and communication defaults. The default
-agent's SOUL lives at `.agents/SOUL.md`;
+Human-authored agent identity. Uses a hybrid structure: a short prose
+preamble ("who you are") followed by structured **Principles** as
+bulleted items with bold labels. Principles represent self-discipline —
+values, policies, and standards the agent internalizes. This structure
+gives weaker models individually parseable constraints while stronger
+models absorb the identity naturally.
+
+The default agent's SOUL lives at `.agents/SOUL.md`;
 named profiles have their own at `.agents/profiles/<name>/SOUL.md`.
+
+**SOUL vs AGENTS separation:** SOUL contains self-discipline (what the
+agent would follow even without AGENTS.md). AGENTS contains externally
+enforced rules (operational hooks, routing tables, process obligations).
+Behavioral norms live in SOUL; enforcement mechanisms live in AGENTS.
 
 ### 4. Profiles Layer — .agents/profiles/ (PROJECT only)
 
@@ -635,9 +679,10 @@ and re-scaffold with `--scope project`.
 
 ### KI-1: Command-Shaped Signal Phrases vs Shell Tool Dispatch
 
-**Status:** Open — model capability limitation, mitigated but not eliminated
+**Status:** Mitigated (v6.0.0) — deterministic enforcement via `signal-dispatch` plugin
 **Affected models:** Granite 4.2 8B (and likely other ≤14B models)
 **Added:** 2026-09-25 v5.14.0
+**Updated:** 2026-09-25 v6.0.0
 
 **Problem:**
 
@@ -682,23 +727,84 @@ can process multi-step dispatch chains in system prompts. Models ≤8B params
 cannot reliably override tool-description pattern matching with system-prompt
 rules, especially when the input surface-matches a tool description.
 
-**Potential future mitigations:**
+**v6.0.0 mitigation — `signal-dispatch` plugin:**
 
-1. **Upstream goose feature**: Allow AGENTS.md to declare tool routing
-   priorities that the platform enforces before the model sees tools
-2. **Tool description override**: Let extensions customize tool descriptions
-   per-session (e.g., `shell` → "Execute a shell command. Do NOT use this
-   for skill dispatch — call search_nodes first.")
-3. **Larger Granite models**: Test with Granite 4.2 30B+ when available
-   via Skupper provider to determine if model scale resolves the issue
-4. **Signal phrase redesign**: Adopt natural-language-only signal phrases
-   that never overlap with CLI command patterns (e.g., "check crc health"
-   instead of "crc status")
+The `signal-dispatch` plugin (`~/.agents/plugins/signal-dispatch/`)
+provides deterministic enforcement of the `hey` dispatch prefix using
+Goose lifecycle hooks:
+
+1. `UserPromptSubmit` hook detects `hey`-prefixed prompts and sets a
+   session-scoped flag file
+2. `PreToolUse` hook blocks any non-`search_nodes` tool call when the
+   flag is set, injecting a dispatch reminder as the block reason
+3. The block reason is visible to the model as a message, serving as
+   a just-in-time reminder of the dispatch rule
+4. Flag is cleared after one enforcement (prevents infinite loops)
+
+This implements "potential future mitigation #1" from v5.14.0 — tool
+routing priorities enforced by the platform before the model acts —
+using hooks rather than a native platform feature.
+
+**Remaining limitations:**
+- If the model responds to a `hey` prompt with pure text (no tool calls),
+  `PreToolUse` never fires and the flag persists to the next turn
+- One-shot enforcement means the hook can be "tanked" by a model that
+  retries without reading the block reason
+- Models ≤8B params may still struggle with the dispatch table
+  classification even after being reminded
+
+### KI-2: Session Poisoning from PreToolUse Block Reasons
+
+**Status:** Mitigated (v6.0.1) — affirmative block reason framing
+**Affected models:** Granite 4.2 8B (and likely other ≤14B models)
+**Added:** 2026-09-27 v6.0.1
+
+**Problem:**
+
+When the `signal-dispatch` plugin blocks a tool call via `PreToolUse`,
+the block reason is returned to the model as an error message. Weaker
+models over-generalize from the block — learning "all tools are blocked
+during hey prompts" rather than "only this specific tool was blocked."
+The model then refuses to call ANY tool (including allowed ones like
+`search_nodes` and `load_skill`) for the remainder of the session,
+answering from stale cached context instead.
+
+**Root cause:** The model's reasoning traces record the wrong conclusion
+from the block reason. Subsequent turns reference this cached reasoning
+rather than re-reading the system prompt rules. The poisoned conclusion
+persists in conversation history and compounds with each turn.
+
+**Mitigations applied:**
+
+| Mitigation | Effect |
+|-----------|--------|
+| Affirmative block reason framing (v1.2.0+) | "You CAN and SHOULD use tools" instead of "You MUST NOT call shell" |
+| Remove alarm language | "This tool is not needed yet" instead of "SIGNAL DISPATCH REQUIRED" |
+| No prohibition lists | Removed explicit lists of blocked tools — model memorizes prohibitions more strongly than permissions |
+| Include user keywords | Model sees what to match against without re-reading AGENTS.md |
+
+**Recovery pattern — compaction as session reset:**
+
+Goose compaction (`/compact` or auto-compaction) is an effective
+recovery mechanism for session poisoning. Compaction replaces the
+conversation history with a structured JSON summary (user intents,
+files, errors, pending tasks). The model's thinking traces — where
+the poisoned conclusions live — are discarded because they are not
+part of tool responses or user messages. After compaction:
+
+1. System prompt (AGENTS.md + SOUL.md) is intact at top of context
+2. Compacted summary contains work context without poisoned reasoning
+3. Model re-reads dispatch rules from system prompt with clean slate
+
+This is an accidental but reliable recovery: **compaction erases bad
+reasoning while preserving work context.** When a weaker model shows
+signs of learned tool avoidance, trigger compaction to reset.
 
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-25 23:30 | v6.0.0 — **Breaking:** AGENTS.md template reduced from 17 to 10 rules. Behavioral norms (no validation phrases, no assumed inputs, risk naming) moved to SOUL.md Principles. Signal dispatch rules (6 rules) collapsed into 1 rule + Signal Dispatch table; all signals unified under `hey` prefix. Scope Definitions relocated from AGENTS.md to `.agents/index.md`. SOUL.md restructured: prose → hybrid (identity preamble + structured Principles with bold labels). Added `signal-dispatch` plugin (`~/.agents/plugins/signal-dispatch/`) for deterministic `hey` enforcement via Goose `PreToolUse` hooks. Added `~/.agents/scripts/` directory for AGENTS-specific scripts. Added `plugins/` and `scripts/` to scope tables. KI-1 status updated to Mitigated. SOUL/AGENTS separation clarified: SOUL = self-discipline, AGENTS = external enforcement. |
 | 2026-08-13 12:40 | v3.11 — SKILL.md Frontmatter Schema: `description` field redefined as signal phrases (Command/Query patterns); `metadata.signals` removed; added Signal Phrase Rules, Opening Paragraph requirement; updated Signal Routing architecture (signals now in `description`, skills index Description column as defense-in-depth) |
 | 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated all cross-references |
 | 2026-07-27 18:30 | v3.7 — Added Signal Routing architecture (LLM-direct in AGENTS.md, skill signals in SKILL.md frontmatter, skills index as lookup table); added template versioning and `--sync` mechanism; added template-owned vs project-owned section markers; added SKILL.md Frontmatter Schema with `metadata.signals` field; added README sync rule (hard requirement); renamed Guardrail #2 to Memory Scope (Signal Routing promoted to standalone section) |

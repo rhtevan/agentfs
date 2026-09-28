@@ -145,18 +145,35 @@ run_test() {
   session_json=$(goose session export --name "$session_name" --format json 2>/dev/null || echo "{}")
 
   # Extract first tool call name
+  # Extract first non-denied tool call.
+  # Tool calls blocked by PreToolUse hooks (e.g., signal-dispatch plugin)
+  # are followed by an error response containing "denied by policy hook".
+  # Skip those and find the first tool call that was actually executed.
   local first_tool
   first_tool=$(echo "$session_json" | python3 -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
-    for msg in data.get('conversation', []):
+    msgs = data.get('conversation', [])
+    for i, msg in enumerate(msgs):
         for content in msg.get('content', []):
             if content.get('type') == 'toolRequest':
                 tc = content.get('toolCall', {})
                 val = tc.get('value', tc)
                 name = val.get('name', '')
-                if name:
+                if not name:
+                    continue
+                # Check if the next message contains a denial for this call
+                denied = False
+                if i + 1 < len(msgs):
+                    for rc in msgs[i + 1].get('content', []):
+                        if rc.get('type') == 'toolResponse':
+                            tr = rc.get('toolResult', rc.get('result', {}))
+                            text = str(tr.get('error', '')) + str(tr.get('result', '')) + str(tr)
+                            if 'denied by policy hook' in text:
+                                denied = True
+                                break
+                if not denied:
                     print(name)
                     sys.exit(0)
     print('NO_TOOL_CALL')
@@ -222,28 +239,27 @@ echo "  Provider: ${PROVIDER}${MODEL:+ / $MODEL}"
 echo "  Target: $TARGET"
 echo ""
 
-# B1: Skill discovery — uses the "check X" pattern that B3 also uses,
-# targeting a different skill to verify Rule 8 dispatch isn't one-off.
-# Known issue: Granite 8B is non-deterministic on skill dispatch — the
-# same input may pass or fail across runs. See agentfs design-spec.md.
-run_test "B1-skill-discovery" \
-  "check headroom status" \
-  "knowledgegraphmemory__search_nodes,load_skill" \
-  "shell,extensionmanager__manage_extensions,extensionmanager__search_available_extensions"
+# All test inputs use the "hey" prefix to trigger Signal Dispatch (Rule 2).
+# The signal-dispatch plugin enforces dispatch via PreToolUse hooks —
+# blocked tool calls are skipped when scoring (first non-denied call wins).
 
-# B2: Signal routing — "hey git" signal (Rule 7 explicit)
-# Rule 7 is a direct signal → load_skill, no search_nodes needed
+# B1: Skill discovery — "hey" + natural language skill request
+run_test "B1-skill-discovery" \
+  "hey check headroom status" \
+  "knowledgegraphmemory__search_nodes" \
+  "load_skill,shell,extensionmanager__manage_extensions,extensionmanager__search_available_extensions"
+
+# B2: Signal routing — "hey git" signal dispatch
 run_test "B2-signal-git" \
   "hey git" \
-  "load_skill,knowledgegraphmemory__search_nodes" \
-  "shell,extensionmanager__manage_extensions"
+  "knowledgegraphmemory__search_nodes" \
+  "load_skill,shell,extensionmanager__manage_extensions"
 
-# B3: Anti-pattern — general skill-like request should NOT go to extensionmanager or shell
-# Should trigger search_nodes (Rule 8) or load_skill
-run_test "B3-no-extmgr" \
-  "check crc status" \
-  "knowledgegraphmemory__search_nodes,load_skill" \
-  "shell,extensionmanager__manage_extensions,extensionmanager__search_available_extensions"
+# B3: Skill discovery — different skill to verify dispatch isn't one-off
+run_test "B3-skill-dispatch" \
+  "hey check crc status" \
+  "knowledgegraphmemory__search_nodes" \
+  "load_skill,shell,extensionmanager__manage_extensions,extensionmanager__search_available_extensions"
 
 # ── Summary & Score Sheet Update ───────────────────────────────────────
 echo ""

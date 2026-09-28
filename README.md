@@ -131,6 +131,8 @@ profiles — purely a capability and knowledge store.
 ~/.agents/
 ├── skills/          # Shared agent workflows (SKILL.md format)
 ├── knowledge/       # Shared knowledge bundles (Open Knowledge Format)
+├── plugins/         # Goose hooks plugins (deterministic enforcement)
+├── scripts/         # AGENTS-specific scripts (referenced from AGENTS.md)
 ├── index.md         # Navigation hub — start here
 └── log.md           # Activity log (reverse chronological)
 ```
@@ -279,32 +281,28 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS enforces 17 structural rules via Type/Stimulus/Action triples
-in a flat table within AGENTS.md, preceded by a Discovery Tiers
-section that defines the tiered context lookup chain (frontmatter
-match → skill index scan → KGM search → knowledge index fallback).
-Each rule fires on a specific stimulus and prescribes a concrete
-action.
+AgentFS v6.0.2 enforces 10 operational rules via Type/Stimulus/Action
+triples in a flat table within AGENTS.md. Behavioral norms (no validation
+phrases, no assumed inputs, risk naming) live in SOUL.md Principles —
+the self-discipline layer. AGENTS.md rules handle external enforcement
+only: routing, hooks, process obligations.
 
 | # | Type | Stimulus | Action |
 |---|------|----------|--------|
-| 1 | Event | Session start | If other context files loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `USER.md` if it exists. |
-| 2 | Signal | "remember this", "note that", "keep in mind" | → `.agents/memories/MEMORY.md` |
-| 3 | Signal | "always do X", "never do Y", "this is a rule" | → Propose as `AGENTS.md` guardrail (human approval) |
-| 4 | Signal | "I prefer", "I like", "my style is" | → `.agents/memories/USER.md` |
-| 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
-| 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
-| 7 | Signal | `hey <keywords>` | → `search_nodes` with keywords. If AgentSkill found, execute its Action (`load_skill`). `hey` is the skill-dispatch prefix. |
-| 8 | Event | First read of any `.agents/` file | Browse that scope's `index.md` first, follow links to content. |
-| 9 | Event | Before destructive op under `.agents/` | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
-| 10 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when explicitly requested. |
-| 11 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF. |
-| 12 | Event | Before sending any response | If any write/edit touched `.agents/` or `~/.agents/` this turn: `post-write.sh` for each modified file. Do not respond until complete. |
-| 13 | Always | Every response | No validation phrases. Lead with substance. Name ≥1 risk when evaluating a plan or design. |
-| 14 | Always | Every response | No position reversal without new information. Quote conflicting rules. Log overrides with `[OVERRIDE]`. |
-| 15 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 self-check. Never persist. |
-| 16 | Always | Every response | No action on assumed inputs. State what is missing, ask explicitly, do not execute. Flag low confidence at top. |
-| 17 | Always | Before any multi-step task | Pre-flight checklist. Write action plan before executing; include process obligations; review against rules. |
+| 1 | Event | Session start | AGENTS.md wins conflicts. Read `USER.md` if it exists. |
+| 2 | Signal | User signal phrase detected | Route per Signal Dispatch table. `hey` is the dispatch prefix. First tool call MUST be `search_nodes` for unmatched signals. |
+| 3 | Event | First `.agents/` read | Browse that scope's `index.md` first. |
+| 4 | Event | Before destructive `.agents/` op | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 5 | Event | Creating a skill | Default USER scope; PROJECT only when explicit. |
+| 6 | Event | Writing to `memories/` | PROJECT scope only. Classify: experience→MEMORY, rule→propose guardrail, preference→USER. Graduate mature patterns to OKF. |
+| 7 | Event | Post-write | `post-write.sh` for each modified `.agents/` file. Do not respond until complete. |
+| 8 | Event | Before multi-step task | Pre-flight: state plan, add process obligations, execute in order, complete before responding. |
+| 9 | Always | Every response | State what changed on reversal. Quote conflicting rules. `[OVERRIDE]` for exceptions. |
+| 10 | Always | Session continuity | Session canary + periodic SOUL Principles re-read + self-repair if canary lost. |
+
+**Signal Dispatch** is a separate table in AGENTS.md. All signals are
+unified under the `hey` prefix. Deterministic enforcement is provided
+by the `signal-dispatch` plugin via Goose `PreToolUse` hooks.
 
 The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.

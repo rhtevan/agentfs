@@ -201,56 +201,44 @@ cat > "$TARGET" << 'AGENTSEOF'
 <!-- Agent identity — inlined by Goose at session start via @import -->
 @.agents/SOUL.md
 
-## Scope Definitions
-
-| Scope | Root Path | Purpose |
-|-------|-----------|----------|
-| **USER** | `~/.agents/` | Machine-wide shared library: skills and knowledge |
-| **PROJECT** | `./.agents/` | Per-repository: identity, profiles, memories, project-scoped skills |
-
-| Resource | USER (`~/.agents/`) | PROJECT (`./.agents/`) |
-|----------|:-------------------:|:----------------------:|
-| `skills/` | ✅ shared | ✅ project-specific |
-| `knowledge/` | ✅ shared | ❌ never |
-| `memories/` | ❌ never | ✅ per-agent |
-| `profiles/` | ❌ never | ✅ multi-agent |
-| `SOUL.md` | ❌ never | ✅ agent identity |
-| `AGENTS.md` | ❌ never | ✅ (at repo root `./`) |
-| `index.md` | ✅ | ✅ |
-| `log.md` | ✅ | ✅ |
-
 **Context lookup fallback:** Each scope uses `index.md` for progressive disclosure. When `search_nodes` is unavailable, browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md` (USER), or `./.agents/index.md` (PROJECT) to discover skills, knowledge, and directory structure.
 
 
 ## Rules
 
-**All rules are mandatory.** Override requires explicit user approval logged with \`[OVERRIDE]\` per Rule 14.
+**All rules are mandatory.** Override requires explicit user approval logged with `[OVERRIDE]` per Rule 9.
 
 | # | Type | Stimulus | Action |
 |---|------|----------|--------|
 | | | **Session start** | |
 | 1 | Event | Session start | If other context files are loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `.agents/memories/USER.md` if it exists — apply preferences. |
 | | | **Per-message dispatch** | |
-| 2 | Signal | "remember this", "note that", "keep in mind" | → `.agents/memories/MEMORY.md` |
-| 3 | Signal | "always do X", "never do Y", "this is a rule" | → Propose as `AGENTS.md` guardrail (human approval) |
-| 4 | Signal | "I prefer", "I like", "my style is" | → `.agents/memories/USER.md` |
-| 5 | Signal | "forget this", "remove that note" | → Edit `MEMORY.md`, remove entry |
-| 6 | Signal | "what do you remember", "check your notes" | → Read `.agents/memories/MEMORY.md` |
-| 7 | Signal | \`hey \<keywords\>\` | → \`search_nodes\` with \<keywords\>. If AgentSkill found, execute its Action (\`load_skill\`). \`hey\` is the user's explicit skill-dispatch prefix. |
-| | | **Before reading \`.agents/\`** | |
-| 8 | Event | First read of any `.agents/` file in a session | Browse that scope's `index.md` first, follow links to content. |
-| | | **Before writing \`.agents/\`** | |
-| 9 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
-| 10 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
-| 11 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. |
+| 2 | Signal | User signal phrase detected | Route per **Signal Dispatch** table below. \`hey\` is the user's explicit dispatch prefix — not a greeting. If no pattern matches: **first tool call MUST be \`search_nodes\`** with the keywords — never skip this step, even if you think you know the skill. Then call \`load_skill\` with the result. If \`search_nodes\` returns nothing, use your best judgment. |
+| | | **Before reading `.agents/`** | |
+| 3 | Event | First read of any `.agents/` file in session | Browse that scope's `index.md` first, follow links to content. |
+| | | **Before writing `.agents/`** | |
+| 4 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 5 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
+| 6 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. |
 | | | **Before responding** | |
-| 12 | Event | Before sending any response | If any write/edit touched `.agents/` or `~/.agents/` this turn: `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). Do not respond until complete. |
+| 7 | Event | Before sending any response where writes touched `.agents/` or `~/.agents/` | `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). Do not respond until complete. |
+| 8 | Event | Before any multi-step task | **Pre-flight:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding. |
 | | | **Always** | |
-| 13 | Always | Every response | No validation phrases ("Great question", "Absolutely"). Lead with substance. Name ≥1 risk when evaluating a plan or design. |
-| 14 | Always | Every response | No position reversal without new information or logical argument. When reversing, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for `[OVERRIDE]`. |
-| 15 | Always | Every response | Session canary name (random, ephemeral). Emit turn 1. ~1-in-5 turns: emit + self-check. Never persist to files. |
-| 16 | Always | Every response | **No action on assumed inputs.** ① State what is missing. ② Ask explicitly. ③ Do not call tools or produce output that depends on the missing value. |
-| 17 | Always | Before any multi-step task | **Pre-flight checklist.** ① List all steps including process obligations (Rule 12 post-write, changelogs, version bumps, index regen). ② Review plan against Rules 12–16 — add missing obligations. ③ Execute in order. ④ Do not skip or respond before completing all steps. |
+| 9 | Always | Every response | When reversing a position, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for `[OVERRIDE]`. |
+| 10 | Always | Session continuity | Session canary: random name, emit turn 1. Every ~5 turns: emit canary + re-read AGENTS.md Rules and SOUL.md Principles already in your context + verify recent compliance. |
+
+## Signal Dispatch
+
+When the user message starts with `hey`, match the keywords and route:
+
+| Pattern | Action |
+|---------|--------|
+| `hey remember ...` / `hey note ...` / `hey keep in mind ...` | → `.agents/memories/MEMORY.md` |
+| `hey forget ...` / `hey remove ...` | → Edit `MEMORY.md`, remove entry |
+| `hey what do you remember` / `hey check your notes` | → Read `.agents/memories/MEMORY.md` |
+| `hey I prefer ...` / `hey I like ...` / `hey my style is ...` | → `.agents/memories/USER.md` |
+| `hey always ...` / `hey never ...` / `hey this is a rule` | → Propose as `AGENTS.md` guardrail (human approval required) |
+
 ## Quick Orientation
 
 | Resource | Path | What's Inside |

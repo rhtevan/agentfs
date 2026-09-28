@@ -97,6 +97,8 @@ fi
 
 if [[ "$SCOPE" == "user" ]]; then
   mkdir -p "$AGENTS/knowledge"
+  mkdir -p "$AGENTS/plugins"
+  mkdir -p "$AGENTS/scripts"
 fi
 
 if [[ "$SCOPE" == "project" ]]; then
@@ -120,6 +122,8 @@ cat > "$AGENTS/index.md" << 'EOF'
 |-------|------|---------|
 | Capability | [skills/](./skills/index.md) | Shared agent workflows (Agent Skills format) |
 | Knowledge | [knowledge/](./knowledge/index.md) | Shared knowledge base (OKF format) |
+| Plugins | [plugins/](./plugins/) | Goose hooks plugins (deterministic enforcement) |
+| Scripts | [scripts/](./scripts/) | AGENTS-specific scripts (referenced from AGENTS.md) |
 
 See [log.md](./log.md) for recent activity.
 EOF

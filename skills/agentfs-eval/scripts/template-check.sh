@@ -50,21 +50,21 @@ else
 fi
 
 # ── A2: Section Order (dependency chain) ──────────────────────────────
-# Required order: Scope Definitions before Rules
-# Quick Orientation must not precede Rules
+# v6.0.0: Scopes section removed. Rules must be the first ## section.
+# Quick Orientation must not precede Rules.
 SECTIONS=$(grep "^## " "$AGENTS_FILE" | head -10)
-SCOPE_LINE=$(echo "$SECTIONS" | grep -n "Scope" | head -1 | cut -d: -f1)
 RULES_LINE=$(echo "$SECTIONS" | grep -n "Rules" | head -1 | cut -d: -f1)
 ORIENT_LINE=$(echo "$SECTIONS" | grep -n "Orientation" | head -1 | cut -d: -f1)
+DISPATCH_LINE=$(echo "$SECTIONS" | grep -n "Signal Dispatch" | head -1 | cut -d: -f1)
 
-if [ -n "$SCOPE_LINE" ] && [ -n "$RULES_LINE" ]; then
-  if [ "$SCOPE_LINE" -lt "$RULES_LINE" ]; then
-    result_pass "A2: Section order — Scopes before Rules (dependencies respected)"
+if [ -n "$RULES_LINE" ]; then
+  if [ "$RULES_LINE" -eq 1 ]; then
+    result_pass "A2: Section order — Rules is first section"
   else
-    result_fail "A2: Section order — Scopes must precede Rules (Scopes=$SCOPE_LINE Rules=$RULES_LINE)"
+    result_warn "A2: Section order — Rules at position $RULES_LINE (expected 1st)"
   fi
 else
-  result_fail "A2: Section order — missing Scope Definitions or Rules section"
+  result_fail "A2: Section order — missing Rules section"
 fi
 
 if [ -n "$ORIENT_LINE" ] && [ -n "$RULES_LINE" ]; then
@@ -75,18 +75,27 @@ if [ -n "$ORIENT_LINE" ] && [ -n "$RULES_LINE" ]; then
   fi
 fi
 
+if [ -n "$DISPATCH_LINE" ] && [ -n "$RULES_LINE" ]; then
+  if [ "$DISPATCH_LINE" -gt "$RULES_LINE" ]; then
+    result_pass "A2c: Signal Dispatch after Rules"
+  else
+    result_warn "A2c: Signal Dispatch (line $DISPATCH_LINE) appears before Rules (line $RULES_LINE)"
+  fi
+fi
+
 # ── A3: Rule Completeness ─────────────────────────────────────────────
-# All 17 rules must be present
-for i in $(seq 1 17); do
+# v6.0.0: 10 rules (consolidated from 17 in v5.x)
+EXPECTED_RULES=10
+for i in $(seq 1 $EXPECTED_RULES); do
   if ! echo "$CONTENT" | grep -qP "^\| $i \| (Event|Signal|Always) \|"; then
     result_fail "A3: Rule $i missing from rules table"
   fi
 done
 RULE_COUNT=$(echo "$CONTENT" | grep -cP "^\| [0-9]+ \| (Event|Signal|Always) \|" || true)
-if [ "$RULE_COUNT" -eq 17 ]; then
-  result_pass "A3: Rule completeness — all 17 rules present"
+if [ "$RULE_COUNT" -eq "$EXPECTED_RULES" ]; then
+  result_pass "A3: Rule completeness — all $EXPECTED_RULES rules present"
 elif [ "$RULE_COUNT" -gt 0 ]; then
-  result_fail "A3: Rule completeness — found $RULE_COUNT rules, expected 17"
+  result_fail "A3: Rule completeness — found $RULE_COUNT rules, expected $EXPECTED_RULES"
 fi
 
 # ── A4: Context Lookup Fallback ────────────────────────────────────────
@@ -98,21 +107,22 @@ else
 fi
 
 # ── A5: Skill Discovery Instruction ───────────────────────────────────
-# Rule 7 must name search_nodes and load_skill
-RULE8=$(echo "$CONTENT" | grep -P "^\| 7 \\|" | head -1)
-RULE8_HAS_LOAD_SKILL=false
-RULE8_HAS_SEARCH_NODES=false
-echo "$RULE8" | grep -q "load_skill" && RULE8_HAS_LOAD_SKILL=true
-echo "$RULE8" | grep -q "search_nodes" && RULE8_HAS_SEARCH_NODES=true
+# v6.0.0: search_nodes and load_skill are in Signal Dispatch table +
+# context lookup fallback, not necessarily in a single numbered rule.
+# Check template-owned content for both references.
+HAS_LOAD_SKILL=false
+HAS_SEARCH_NODES=false
+echo "$TEMPLATE_CONTENT" | grep -q "load_skill" && HAS_LOAD_SKILL=true
+echo "$TEMPLATE_CONTENT" | grep -q "search_nodes" && HAS_SEARCH_NODES=true
 
-if $RULE8_HAS_LOAD_SKILL && $RULE8_HAS_SEARCH_NODES; then
-  result_pass "A5: Rule 7 names both \`search_nodes\` and \`load_skill\`"
-elif $RULE8_HAS_LOAD_SKILL; then
-  result_warn "A5: Rule 7 names \`load_skill\` but not \`search_nodes\`"
-elif $RULE8_HAS_SEARCH_NODES; then
-  result_warn "A5: Rule 7 names \`search_nodes\` but not \`load_skill\`"
+if $HAS_LOAD_SKILL && $HAS_SEARCH_NODES; then
+  result_pass "A5: Template references both \`search_nodes\` and \`load_skill\`"
+elif $HAS_LOAD_SKILL; then
+  result_warn "A5: Template references \`load_skill\` but not \`search_nodes\`"
+elif $HAS_SEARCH_NODES; then
+  result_warn "A5: Template references \`search_nodes\` but not \`load_skill\`"
 else
-  result_fail "A5: Rule 7 missing both \`search_nodes\` and \`load_skill\`"
+  result_fail "A5: Template missing both \`search_nodes\` and \`load_skill\`"
 fi
 
 # ── A7: Redundancy Detection ─────────────────────────────────────────

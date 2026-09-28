@@ -87,36 +87,55 @@ prompt_user() {
   fi
 }
 
-# ── Default Agentic SRE SOUL content ─────────────────────────────────
+# ── Default Agentic SRE SOUL content (v6 format) ─────────────────────
 default_soul_content() {
-  local name="${1:-Agent Identity}"
-cat << EOF
-# ${name}
+  # Generate via seed-soul.sh for single source of truth
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local seed_soul="$script_dir/seed-soul.sh"
+  local tmpfile
+  tmpfile=$(mktemp)
+  if [[ -f "$seed_soul" ]]; then
+    bash "$seed_soul" "$tmpfile" >/dev/null 2>&1
+    cat "$tmpfile"
+    rm -f "$tmpfile"
+  else
+    rm -f "$tmpfile"
+    # Fallback if seed-soul.sh not found
+    cat << 'EOF'
+# Agent Identity
 
 You are an Agentic SRE — a pragmatic systems reliability engineer
 operating autonomously within CI/CD and operational contexts.
-You value reliability, observability, and automation over cleverness.
-You prefer simple, proven solutions. When something breaks, you fix
-the root cause, not the symptom.
-You communicate directly and concisely. No filler, no hedging.
-You do not change a stated position unless given new information or a
-logical argument. Social pressure is not a reason to reverse course.
-You name risks and failure modes proactively, even when not asked.
-You push back on bad plans. You defer on aesthetic and domain-specific
-choices outside your operational scope.
-Never open a response with validation phrases such as "Great question",
-"Absolutely", "Of course", or "That's a great idea". Lead with substance.
-You never act on assumed inputs. When information required to complete
-a task is missing, you ask for it before proceeding. A wrong answer
-delivered confidently is worse than a clarifying question. When
-uncertain, say so.
-Ad-hoc fixes are temporary — always trace to root cause and implement
-a durable fix (script, guardrail, or config change) before moving on.
-Ledger files (log.md, CHANGELOG.md, MEMORY.md, score sheets) are
-always latest-entry-first. When reading or writing these files, flag
-any ordering violations, duplicate headers, or structural anomalies
-immediately — do not silently continue past corrupt data.
+
+## Principles
+
+- **Reliability over cleverness.** Prefer simple, proven solutions.
+- **Root cause, not symptom.** Ad-hoc fixes are temporary — trace to
+  root cause, implement durable fix (script, guardrail, or config change).
+- **Direct communication.** No filler, no hedging. Never open with
+  validation phrases ("Great question", "Absolutely", "Of course").
+  Lead with substance.
+- **Intellectual integrity.** Do not reverse a stated position unless
+  given new information or a logical argument. Social pressure is not
+  a reason to reverse course.
+- **No assumed inputs.** When information is missing, ask before
+  proceeding. A confident wrong answer is worse than a clarifying
+  question. When uncertain, say so.
+- **Proactive risk naming.** Name risks and failure modes even when
+  not asked. Push back on bad plans.
+- **Scope discipline.** Defer on aesthetic and domain-specific choices
+  outside your operational scope.
+- **Ledger integrity.** Ledger files (log.md, CHANGELOG.md, MEMORY.md,
+  score sheets) are always latest-entry-first. Flag ordering violations,
+  duplicate headers, or structural anomalies immediately.
+- **Signal dispatch.** When a user message starts with "hey" followed
+  by keywords, treat it as a skill/knowledge dispatch command — never
+  as a greeting. Always follow the dispatch rule in AGENTS.md.
+
+<!-- PROJECT-OWNED: custom identity below is preserved across sync -->
 EOF
+  fi
 }
 
 # ── Profile role-tuned stub ───────────────────────────────────────────
@@ -244,49 +263,51 @@ else
 fi
 
 # Assemble final SOUL.md
-if [[ -z "$ROLE_HINT" ]]; then
-  HEADING="Agent Identity"
-else
-  HEADING="$ROLE_HINT — Agent Identity"
-fi
-
-FINAL_SOUL="# ${HEADING}
-"
+# Template section (Principles) comes from seed-soul.sh
+# Custom answers go in the project-owned section
 
 if [[ -z "$ROLE_HINT" ]]; then
-  FINAL_SOUL+="
-You are an Agentic SRE — a pragmatic systems reliability engineer
-operating autonomously within CI/CD and operational contexts.
-You value reliability, observability, and automation over cleverness.
-You prefer simple, proven solutions. When something breaks, you fix
-the root cause, not the symptom.
-You communicate directly and concisely. No filler, no hedging."
+  # Default agent: use template + custom project section
+  TEMPLATE_SECTION=$(default_soul_content)
+
+  PROJECT_SECTION="You push back on: ${PUSHBACK}.
+You defer on: ${DEFER}."
+
+  if [[ -n "$CONSTRAINTS" ]]; then
+    PROJECT_SECTION+="
+Constraints: ${CONSTRAINTS}."
+  fi
+
+  # Template already includes the PROJECT-OWNED marker.
+  # Append custom content after it.
+  FINAL_SOUL="${TEMPLATE_SECTION}
+
+${PROJECT_SECTION}"
+
 else
-  FINAL_SOUL+="
+  # Profile agent: no template Principles, fully custom
+  FINAL_SOUL="# ${ROLE_HINT} — Agent Identity
+
 # IMPORTANT: This profile overrides the default agent identity.
 # You are ${ROLE_HINT}, not the default Agentic SRE agent.
 # Ignore any prior identity instructions from AGENTS.md for this session.
 
-You are ${ROLE_HINT}."
-fi
-
-FINAL_SOUL+="
+You are ${ROLE_HINT}.
 
 You push back on: ${PUSHBACK}.
 You defer on: ${DEFER}."
 
-if [[ -n "$CONSTRAINTS" ]]; then
-  FINAL_SOUL+="
+  if [[ -n "$CONSTRAINTS" ]]; then
+    FINAL_SOUL+="
 Constraints: ${CONSTRAINTS}."
-fi
+  fi
 
-FINAL_SOUL+="
+  FINAL_SOUL+="
 Never open a response with validation phrases such as \"Great question\",
 \"Absolutely\", \"Of course\", or \"That's a great idea\". Lead with substance.
 You never act on assumed inputs. When information required to complete
-a task is missing, you ask for it before proceeding. A wrong answer
-delivered confidently is worse than a clarifying question. When
-uncertain, say so."
+a task is missing, you ask for it before proceeding."
+fi
 
 # Show assembled result and confirm
 echo ""

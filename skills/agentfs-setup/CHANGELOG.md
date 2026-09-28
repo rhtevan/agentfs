@@ -2,6 +2,10 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-27 23:47 | v6.0.2 — Rule 2: mandatory search_nodes first — 'first tool call MUST be search_nodes', closes smart-model shortcut |
+| 2026-09-27 22:11 | v6.0.1 — v6.0.1: Patch — SOUL.md sync via seed-soul.sh, plugin version detection in post-write, Rule 10 unconditional re-read |
+| 2026-09-27 20:02 | v6.0.0 — v6.0.0: Added plugins/ and scripts/ directories to USER scope scaffolding and index.md template |
+| 2026-09-25 23:36 | v6.0.0 — v6.0.0: Updated SOUL/AGENTS layer descriptions, signal dispatch architecture, scope tables (added plugins/ scripts/), KI-1 mitigated status, added v6.0.0 changelog entry |
 | 2026-09-25 01:46 | v5.16.0 — v5.16.0 — Remove Tool Priority section and Rule 8; generalize Rule 7 to 'hey <keywords>' dispatch; renumber rules 8-17; -190 tokens |
 | 2026-09-25 00:50 | v5.15.0 — v5.15.0 — Generic Rule 7: 'hey <keywords>' → search_nodes dispatch prefix for reliable skill invocation on weaker models |
 | 2026-09-25 00:22 | v5.14.0 — Add Known Issues section: KI-1 command-shaped signal phrase vs shell tool dispatch ambiguity |

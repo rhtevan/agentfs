@@ -2,6 +2,99 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-28 00:08
+- Table-match discrimination: only set enforcement flag for unmatched hey signals (skill dispatch fallthrough). Table-matched signals (remember, forget, prefer, always, never) skip enforcement entirely. (plugins/signal-dispatch/scripts/detect-hey.sh)
+
+## 2026-09-28 00:00
+- Remove load_skill/read/write/edit from allow-list — only search_nodes passes through, enforcing Rule 2 mandatory first tool call (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 23:48
+- JIT reminder now specifies mandatory search_nodes: 'first tool call MUST be search_nodes' (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 23:47
+- Tighten behavioral tests: expected first tool is search_nodes only (not search_nodes OR load_skill), load_skill moved to anti-pattern list (skills/agentfs-eval/scripts/template-behavioral.sh)
+- Rule 2: mandatory search_nodes first — 'first tool call MUST be search_nodes', closes smart-model shortcut (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-27 23:35
+- Fix B2 expected tool order: search_nodes before load_skill, matching Rule 2 fallthrough sequence (skills/agentfs-eval/scripts/template-behavioral.sh)
+- Fix B2 expected tool order: search_nodes before load_skill, matching Rule 2 fallthrough sequence (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-09-27 23:22
+- v6.0.1: Rule 2 now includes search_nodes fallthrough. Signal Dispatch table has specific patterns only. (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-27 23:16
+- v1.5.0: JIT reminder includes search_nodes fallthrough as catch-all. Allowlist expanded with read/write/edit for memory routes. Signal Dispatch table no longer has overlapping default rule. (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 23:01
+- v1.1.0: Fixed denied-call skip — check toolResult.error field, not just result (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-09-27 22:44
+- v6.0.1: All test inputs use hey prefix for signal-dispatch plugin enforcement. Tool extraction skips denied-by-policy tool calls, scores first successful call. (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-09-27 22:31
+- v6.0.1: Added KI-2 — session poisoning from PreToolUse block reasons, compaction as recovery pattern (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-09-27 22:25
+- v1.4.0: Block reason references AGENTS.md dispatch table instead of embedding it — single source of truth (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 22:23
+- v1.3.0: Block reason includes full dispatch table inline with user keywords — covers all signal routes, not just skill dispatch (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 22:19
+- v1.2.0: Rewrote block reason — affirmative framing, no alarm language, no prohibition list, reduced session poisoning risk (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 22:11
+- v6.0.1: Patch — SOUL.md sync via seed-soul.sh, plugin version detection in post-write, Rule 10 unconditional re-read (skills/agentfs-setup/SKILL.md)
+
+## 2026-09-27 22:02
+- v6.0.0: Added plugin directory detection — warns when plugin files modified without --version (skills/agentfs-setup/scripts/post-write.sh)
+- test change (skills/agentfs-setup/scripts/post-write.sh)
+- test change (plugins/signal-dispatch/scripts/enforce-hey.sh)
+- test change (skills/agentfs-setup/scripts/post-write.sh)
+
+## 2026-09-27 21:58
+- v6.0.0: Rule 10 — unconditional re-read every ~5 turns instead of conditional on canary loss (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-27 21:25
+- v1.1.0: Version bump and updated description (plugins/signal-dispatch/plugin.json)
+- v1.1.0: Updated comment to reflect keyword file cleanup (plugins/signal-dispatch/scripts/cleanup-stale.sh)
+- v1.1.0: Now saves extracted keywords to flag file for use in block reason (plugins/signal-dispatch/scripts/detect-hey.sh)
+- v1.1.0: Block reason now includes step-by-step dispatch instructions with exact tool name, extracted keywords, KGM fallback to Skills section, and explicit tool prohibition (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-09-27 21:08
+- v6.0.0: Added fingerprint-based filtering to strip template-covered content during migration (skills/agentfs-setup/scripts/seed-soul.sh)
+
+## 2026-09-27 21:03
+- v6.0.0: SOUL.md sync now runs in both version-change and up-to-date paths (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-09-27 21:02
+- v6.0.0: Updated to use seed-soul.sh for template content, custom content goes below PROJECT-OWNED marker (skills/agentfs-setup/scripts/author-soul.sh)
+- v6.0.0: Added SOUL.md sync via seed-soul.sh — detects old format, migrates, and syncs template Principles (skills/agentfs-setup/scripts/sync-agents-md.sh)
+- v6.0.0: New script — generates and syncs template-owned SOUL.md with ownership markers (skills/agentfs-setup/scripts/seed-soul.sh)
+
+## 2026-09-27 20:33
+- v3.1.1: Added --check pre-flight to launcher to avoid unconditional rebuilds when already up to date (skills/hermes-desktop-fixes/SKILL.md)
+
+## 2026-09-27 20:18
+- Bump agentfs-eval version to 1.6.0 (skills/agentfs-eval/SKILL.md)
+- Update template-check.sh for agentfs v6.0.0: A2 no Scopes section, A3 expects 10 rules, A5 checks template-wide
+- Update template-check.sh for agentfs v6.0.0: A2 no Scopes section, A3 expects 10 rules, A5 checks template-wide
+
+## 2026-09-27 20:10
+- v3.1.0: Fixed orphaned skip-worktree cleanup in revert script, added orphan detection to health check (skills/hermes-desktop-fixes/SKILL.md)
+
+## 2026-09-27 20:02
+- v1.5.0: Added Plugin Management section documenting --plugin-check and --plugin-list (skills/goose-agentfs-setup/SKILL.md)
+- v1.5.0: Added --plugin-check and --plugin-list commands for signal-dispatch plugin management (skills/goose-agentfs-setup/scripts/setup.sh)
+- v6.0.0: Added plugins/ and scripts/ directory checks to USER scope verification (skills/agentfs-setup/scripts/verify-setup.sh)
+- v6.0.0: Added plugins/ and scripts/ directories to USER scope scaffolding and index.md template (skills/agentfs-setup/scripts/scaffold-dotagents.sh)
+
+## 2026-09-25 23:36
+- v6.0.0: Synced with design spec — updated rules table (17→10), added plugins/ and scripts/ to USER scope structure, updated signal dispatch description (README.md)
+- v6.0.0: Updated PROJECT scope template — 10 rules, Signal Dispatch table, scope tables removed (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- v6.0.0: Bumped version to 6.0.0 (skills/agentfs-setup/SKILL.md)
+- v6.0.0: Updated SOUL/AGENTS layer descriptions, signal dispatch architecture, scope tables (added plugins/ scripts/), KI-1 mitigated status, added v6.0.0 changelog entry (skills/agentfs-setup/references/design-spec.md)
+
 ## 2026-09-25 13:34
 - v3.0: Updated recovery script — new desktop entry, launcher watcher, retired stale patches (skills/hermes-desktop-fixes/recover.sh)
 - v3.0: Rewrote Bug #4 (Wayland app-id), retired Bugs #3/#5, updated architecture (skills/hermes-desktop-fixes/SKILL.md)

@@ -168,6 +168,25 @@ if [[ -n "$SKILL_DIR" ]]; then
   fi
 fi
 
+# Detect if file is under a plugins/*/ directory
+PLUGIN_DIR=""
+if [[ "$ABS_FILE" == */plugins/*/* ]]; then
+  REMAINDER="${ABS_FILE#*plugins/}"
+  PLUGIN_NAME="${REMAINDER%%/*}"
+  if [[ "$ABS_FILE" == "$USER_ROOT/"* ]]; then
+    PLUGIN_DIR="$USER_ROOT/plugins/$PLUGIN_NAME"
+  else
+    PLUGIN_DIR="$PROJECT_ROOT/plugins/$PLUGIN_NAME"
+  fi
+fi
+
+if [[ -n "$PLUGIN_DIR" && -z "$SKILL_DIR" ]]; then
+  if [[ -z "$VERSION" ]]; then
+    echo "[post-write] ⚠️  Plugin file modified ($PLUGIN_DIR) but no --version provided."
+    echo "  Update version in $PLUGIN_DIR/plugin.json manually if this is a meaningful change."
+  fi
+fi
+
 # ── Step 3: Post-edit checks ──────────────────────────────────────
 echo "[post-write] Running post-edit checks ($POST_EDIT_FLAG)"
 bash "$SCRIPT_DIR/post-edit.sh" "$POST_EDIT_FLAG"

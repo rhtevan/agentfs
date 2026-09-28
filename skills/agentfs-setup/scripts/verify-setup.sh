@@ -324,6 +324,15 @@ if [[ "$SCOPE" == "user" ]]; then
   check ".agents/knowledge/index.md exists" \
     "[[ -f '$AGENTS/knowledge/index.md' ]]" \
     "seed_knowledge_index"
+
+  # ── USER scope: plugins and scripts directories ─────────────────
+  check ".agents/plugins/ directory exists" \
+    "[[ -d '$AGENTS/plugins' ]]" \
+    "mkdir -p '$AGENTS/plugins'"
+
+  check ".agents/scripts/ directory exists" \
+    "[[ -d '$AGENTS/scripts' ]]" \
+    "mkdir -p '$AGENTS/scripts'"
   echo ""
 
   # ── USER scope: verify excluded dirs are absent ─────────────────

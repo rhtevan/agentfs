@@ -75,26 +75,21 @@ if [[ "$CURRENT_VERSION" == "unknown" ]]; then
 elif [[ "$CURRENT_VERSION" == "$TEMPLATE_VERSION" ]]; then
   echo "[sync-agents-md] Current: v$CURRENT_VERSION → Template: v$TEMPLATE_VERSION"
   echo "[sync-agents-md] Already up to date (v$TEMPLATE_VERSION). No changes needed."
-  # Still check SOUL.md even when AGENTS.md is current
+  # Still sync SOUL.md even when AGENTS.md is current
   SOUL_PATH="$PROJECT_DIR/.agents/SOUL.md"
-  if [[ ! -f "$SOUL_PATH" ]]; then
-    echo ""
-    echo "[sync-agents-md] ⚠️  SOUL.md missing — no agent identity defined."
-    echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
-    echo ""
-  else
-    SOUL_NON_STUB_LINES=$(awk '
-      /<!--/ { in_comment=1 }
-      /-->/ { in_comment=0; next }
-      in_comment { next }
-      /^[[:space:]]*$/ { next }
-      /^#/ { next }
-      { print }
-    ' "$SOUL_PATH" | wc -l)
-    if [[ "$SOUL_NON_STUB_LINES" -eq 0 ]]; then
+  SEED_SOUL_EARLY="$SCRIPT_DIR/seed-soul.sh"
+  if [[ -f "$SEED_SOUL_EARLY" ]]; then
+    if [[ ! -f "$SOUL_PATH" ]]; then
       echo ""
-      echo "[sync-agents-md] ⚠️  SOUL.md is empty (stub only) — no agent identity defined."
+      echo "[sync-agents-md] ⚠️  SOUL.md missing — seeding with v6 template."
+      bash "$SEED_SOUL_EARLY" "$SOUL_PATH"
       echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
+      echo ""
+    elif bash "$SEED_SOUL_EARLY" "$SOUL_PATH" --format-only >/dev/null 2>&1; then
+      bash "$SEED_SOUL_EARLY" "$SOUL_PATH"
+    else
+      echo ""
+      bash "$SEED_SOUL_EARLY" "$SOUL_PATH"
       echo ""
     fi
   fi
@@ -175,27 +170,27 @@ if [[ "$AGENTFS_SCOPE" == "project" ]]; then
   fi
 fi
 
-# ── SOUL.md stub detection ────────────────────────────────────────
+# ── SOUL.md sync ──────────────────────────────────────────────────
 SOUL_PATH="$PROJECT_DIR/.agents/SOUL.md"
+SEED_SOUL="$SCRIPT_DIR/seed-soul.sh"
 
-if [[ ! -f "$SOUL_PATH" ]]; then
+if [[ ! -f "$SEED_SOUL" ]]; then
+  echo "[sync-agents-md] ⚠️  seed-soul.sh not found — skipping SOUL.md sync."
+elif [[ ! -f "$SOUL_PATH" ]]; then
   echo ""
-  echo "[sync-agents-md] ⚠️  SOUL.md missing — no agent identity defined."
+  echo "[sync-agents-md] ⚠️  SOUL.md missing — seeding with v6 template."
+  bash "$SEED_SOUL" "$SOUL_PATH"
   echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
   echo ""
 else
-  SOUL_NON_STUB_LINES=$(awk '
-      /<!--/ { in_comment=1 }
-      /-->/ { in_comment=0; next }
-      in_comment { next }
-      /^[[:space:]]*$/ { next }
-      /^#/ { next }
-      { print }
-    ' "$SOUL_PATH" | wc -l)
-  if [[ "$SOUL_NON_STUB_LINES" -eq 0 ]]; then
+  # Check format and sync
+  if bash "$SEED_SOUL" "$SOUL_PATH" --format-only >/dev/null 2>&1; then
+    # Already v6 format — sync template section
+    bash "$SEED_SOUL" "$SOUL_PATH"
+  else
+    # Old format or stub — migrate
     echo ""
-    echo "[sync-agents-md] ⚠️  SOUL.md is empty (stub only) — no agent identity defined."
-    echo "[sync-agents-md] SOUL_ACTION_REQUIRED path=$SOUL_PATH"
+    bash "$SEED_SOUL" "$SOUL_PATH"
     echo ""
   fi
 fi
