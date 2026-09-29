@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 17:55
+- v7.1.2 — Removed hardcoded load_skill() syntax from harvest action for graceful degradation (plugins/signal-dispatch/patterns.txt)
+- v7.1.2 — Added load_skill failure handling to Signal Dispatch Path B step 3 (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-09-29 17:07
 - v7.1.1 — Renamed Post-Write Hook → Post-Write rule reference (skills/agentfs-setup/scripts/merge-changelog-entry.sh)
 - v7.1.1 — Renamed Post-Write Hook → Post-Write rule reference (skills/agentfs-setup/scripts/post-edit.sh)

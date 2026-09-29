@@ -18,4 +18,4 @@ my style is|Write to .agents/memories/USER.md
 always|Propose as AGENTS.md guardrail (human approval required)
 never|Propose as AGENTS.md guardrail (human approval required)
 this is a rule|Propose as AGENTS.md guardrail (human approval required)
-harvest|Based on context, load_skill("skill-harvest") and/or load_skill("okf-bundle-harvest"). May invoke both if session contains harvestable procedures AND concepts. If user specifies skill or knowledge explicitly, follow that.
+harvest|Based on context, load the skill-harvest and/or okf-bundle-harvest skill. May invoke both if session contains harvestable procedures AND concepts. If user specifies skill or knowledge explicitly, follow that.

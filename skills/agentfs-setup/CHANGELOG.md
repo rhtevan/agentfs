@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-29 17:55 | v7.1.2 — v7.1.2 — Added load_skill failure handling to Signal Dispatch Path B step 3 |
 | 2026-09-29 16:59 | v7.1.1 — Add Category 10: post-write coverage check — L3→L2 graduation for Rule 3 enforcement |
 | 2026-09-29 16:16 | v7.1.0 — v7.1.0 — Reordered rules by frequency: Pre-Flight and Post-Write promoted to HIGH (position 2-3), Session Start/Canary/Conflict Resolution moved to NORMAL (position 4-6). Post-Write Hook renamed to Post-Write. |
 | 2026-09-29 14:23 | v7.0.0 — v7.0.0 — Prose rules with priority tags, generated Signal Dispatch table from patterns.txt, named rule references |

@@ -224,7 +224,7 @@ If keywords match a Signal Dispatch entry below → execute that action directly
 **Path B — Skill/Knowledge dispatch (all other `hey` signals):**
 1. Call `search_nodes` with the literal keywords (mandatory — enforced by plugin hook; other tools are blocked until this completes).
 2. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. **Keywords** = all words after the signal prefix (`hey`), excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Example: `hey setup crc monitoring` → query: `setup crc monitoring`.
-3. If result is a skill → `load_skill` with the skill name.
+3. If result is a skill → `load_skill` with the skill name. If `load_skill` fails, inform the user the skill is not available and fall through to Tier 2.
 4. If result is a knowledge bundle → read the file at the given path.
 5. If no result → retry with fewer keywords (drop rightmost first).
 6. If still no result → fall through to Tier 2.
