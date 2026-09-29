@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 19:05
+- New concept in context-engineering bundle (knowledge/context-engineering/rule-ordering-by-frequency.md)
+- New concept in context-engineering bundle (knowledge/context-engineering/jit-reminder-recency-pattern.md)
+- New concept in context-engineering bundle (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- New concept in context-engineering bundle (knowledge/context-engineering/instruction-override-semantics.md)
+- New concept in context-engineering bundle (knowledge/context-engineering/llm-context-layer-model.md)
+
 ## 2026-09-29 17:55
 - v7.1.2 — Removed hardcoded load_skill() syntax from harvest action for graceful degradation (plugins/signal-dispatch/patterns.txt)
 - v7.1.2 — Added load_skill failure handling to Signal Dispatch Path B step 3 (skills/agentfs-setup/scripts/seed-agents-md.sh)
