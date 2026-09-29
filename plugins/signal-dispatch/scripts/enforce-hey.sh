@@ -2,7 +2,7 @@
 # signal-dispatch: enforce mandatory search_nodes first when a "hey" prompt is pending.
 # Called by PreToolUse hook for ALL tools (no matcher — runs on every tool call).
 # Only search_nodes passes through. All other tools (including load_skill) are
-# blocked with a one-shot JIT reminder pointing to Rule 2.
+# blocked with a one-shot JIT reminder pointing to the Signal Dispatch rule.
 set -euo pipefail
 
 payload="$(cat)"
@@ -11,7 +11,7 @@ tool_name="$(printf '%s' "$payload" | jq -r '.tool_name // "unknown"')"
 
 flag="/tmp/goose-dispatch/${session_id}"
 
-# Allow search_nodes through — this is the mandatory first tool per Rule 2
+# Allow search_nodes through — mandatory first tool per Signal Dispatch rule
 case "$tool_name" in
   search_nodes|knowledgegraphmemory__search_nodes)
     # Clear flag — dispatch is happening correctly
@@ -28,7 +28,7 @@ if [ -f "$flag" ]; then
   keywords="$(cat "/tmp/goose-dispatch/${session_id}.keywords" 2>/dev/null || echo '<keywords>')"
   rm -f "/tmp/goose-dispatch/${session_id}.keywords" 2>/dev/null
 
-  reason="This tool is not needed yet. The user said: hey ${keywords}. Follow AGENTS.md Rule 2: first tool call MUST be search_nodes with the keywords. You CAN and SHOULD call search_nodes right now."
+  reason="This tool is not needed yet. The user said: hey ${keywords}. Follow the Signal Dispatch rule in AGENTS.md: first tool call MUST be search_nodes with the keywords. You CAN and SHOULD call search_nodes right now."
 
   printf '{"decision":"block","reason":"%s"}' "$(echo "$reason" | tr '\n' ' ' | sed 's/"/\\"/g')"
   exit 0

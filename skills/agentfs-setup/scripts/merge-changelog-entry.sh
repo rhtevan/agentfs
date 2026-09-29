@@ -22,7 +22,7 @@
 #   1 = error
 #
 # Called by:
-#   Agent directly, guided by Guardrail #5
+#   Agent directly, guided by the Post-Write Hook rule
 #   Optionally: post-edit.sh (gap detection)
 #   Optionally: pre-push-scan.sh (coverage check)
 

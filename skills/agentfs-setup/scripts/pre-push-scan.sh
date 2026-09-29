@@ -202,7 +202,61 @@ else
   DETAILS+="| CHANGELOG coverage (G#5) | ✅ Clean |\n"
 fi
 
-# ── Category 10: Memory File PII Risk ─────────────────────────────
+# ── Category 10: Post-Write Coverage ──────────────────────────────
+# Verify that each staged file under .agents/ (or ~/.agents/) has a
+# corresponding log.md entry for today. post-write.sh leaves a trace
+# in log.md that includes the filename — absence means it was skipped.
+# This is an L3→L2 graduation: deterministic enforcement of Rule 3
+# (Post-Write [HIGH]) which the model may skip mid-workflow.
+PW_GAPS=""
+# Self-referential / auto-generated files that post-write.sh skips
+PW_SKIP_PATTERN='(log\.md|CHANGELOG\.md|index\.md|\.kgm-|\.session-marker|\.checkpoint|\.pre-push-allowlist|\.gitignore|template-scores\.md|patterns\.txt|plugin\.json)'
+# Path prefixes to skip entirely (infrastructure, not agent-edited content)
+PW_SKIP_PATHS='(^plugins/)'
+
+# Collect staged .agents/ files (for both USER and PROJECT scope)
+PW_CANDIDATES=$(echo "$CHANGED_FILES" | grep -E '(^\.agents/|^skills/|^knowledge/|^plugins/|^scripts/|^profiles/|^memories/|^README\.md$|^AGENTS\.md$)' || true)
+
+if [[ -n "$PW_CANDIDATES" ]]; then
+  # Resolve log.md path
+  PW_LOG=""
+  if [[ -f "log.md" ]]; then
+    PW_LOG="log.md"
+  elif [[ -f ".agents/log.md" ]]; then
+    PW_LOG=".agents/log.md"
+  fi
+
+  if [[ -n "$PW_LOG" ]]; then
+    # Extract ALL of today's log entries (multiple ## YYYY-MM-DD HH:MM headings)
+    TODAY_LOG=$(awk -v date="$TODAY" '/^## / { in_today = ($2 ~ date) } in_today { print }' "$PW_LOG")
+
+    while IFS= read -r staged_file; do
+      [[ -z "$staged_file" ]] && continue
+      # Skip self-referential/auto-generated files
+      BASENAME=$(basename "$staged_file")
+      if echo "$BASENAME" | grep -qE "$PW_SKIP_PATTERN"; then
+        continue
+      fi
+      # Skip infrastructure path prefixes
+      if echo "$staged_file" | grep -qE "$PW_SKIP_PATHS"; then
+        continue
+      fi
+      # Check if today's log mentions this file (basename or relative path)
+      if ! echo "$TODAY_LOG" | grep -qF "$BASENAME"; then
+        PW_GAPS+="$staged_file; "
+      fi
+    done <<< "$PW_CANDIDATES"
+  fi
+fi
+
+if [[ -n "$PW_GAPS" ]]; then
+  FINDINGS=$((FINDINGS + 1))
+  DETAILS+="| Post-write coverage | ⚠️  GAP — no post-write trace in log.md: ${PW_GAPS%; } |\n"
+else
+  DETAILS+="| Post-write coverage | ✅ Clean |\n"
+fi
+
+# ── Category 11: Memory File PII Risk ─────────────────────────────
 # Detect staged memory files — flag for agent semantic PII review
 STAGED_MEMORY_FILES=$(echo "$CHANGED_FILES" | grep -E '(\.agents/memories/|profiles/.*/memories/)' || true)
 if [[ -n "$STAGED_MEMORY_FILES" ]]; then

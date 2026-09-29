@@ -84,18 +84,42 @@ if [ -n "$DISPATCH_LINE" ] && [ -n "$RULES_LINE" ]; then
 fi
 
 # ── A3: Rule Completeness ─────────────────────────────────────────────
-# v6.0.0: 10 rules (consolidated from 17 in v5.x)
+# v7.0.0: 10 numbered rules as ### headings (### N. Name [PRIORITY])
+# v6.x: 10 rules as table rows (| N | Event|Signal|Always |)
+# Detect format and validate accordingly.
 EXPECTED_RULES=10
-for i in $(seq 1 $EXPECTED_RULES); do
-  if ! echo "$CONTENT" | grep -qP "^\| $i \| (Event|Signal|Always) \|"; then
-    result_fail "A3: Rule $i missing from rules table"
+
+# Try v7+ heading format first
+HEADING_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^### [0-9]+\. .+ \[' || true)
+# Fall back to v6 table format
+TABLE_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^\| [0-9]+ \| (Event|Signal|Always) \|' || true)
+
+if [ "$HEADING_RULE_COUNT" -gt 0 ]; then
+  # v7+ format: ### N. Name [PRIORITY]
+  for i in $(seq 1 $EXPECTED_RULES); do
+    if ! echo "$CONTENT" | grep -qP "^### $i\. .+ \["; then
+      result_fail "A3: Rule $i missing from rules headings"
+    fi
+  done
+  if [ "$HEADING_RULE_COUNT" -eq "$EXPECTED_RULES" ]; then
+    result_pass "A3: Rule completeness — all $EXPECTED_RULES rules present (heading format)"
+  elif [ "$HEADING_RULE_COUNT" -gt "$EXPECTED_RULES" ]; then
+    result_warn "A3: Rule completeness — found $HEADING_RULE_COUNT numbered rules, expected $EXPECTED_RULES"
   fi
-done
-RULE_COUNT=$(echo "$CONTENT" | grep -cP "^\| [0-9]+ \| (Event|Signal|Always) \|" || true)
-if [ "$RULE_COUNT" -eq "$EXPECTED_RULES" ]; then
-  result_pass "A3: Rule completeness — all $EXPECTED_RULES rules present"
-elif [ "$RULE_COUNT" -gt 0 ]; then
-  result_fail "A3: Rule completeness — found $RULE_COUNT rules, expected $EXPECTED_RULES"
+elif [ "$TABLE_RULE_COUNT" -gt 0 ]; then
+  # v6 format: | N | Event|Signal|Always |
+  for i in $(seq 1 $EXPECTED_RULES); do
+    if ! echo "$CONTENT" | grep -qP "^\| $i \| (Event|Signal|Always) \|"; then
+      result_fail "A3: Rule $i missing from rules table"
+    fi
+  done
+  if [ "$TABLE_RULE_COUNT" -eq "$EXPECTED_RULES" ]; then
+    result_pass "A3: Rule completeness — all $EXPECTED_RULES rules present (table format)"
+  elif [ "$TABLE_RULE_COUNT" -gt 0 ]; then
+    result_fail "A3: Rule completeness — found $TABLE_RULE_COUNT rules, expected $EXPECTED_RULES"
+  fi
+else
+  result_fail "A3: Rule completeness — no rules found in heading or table format"
 fi
 
 # ── A4: Context Lookup Fallback ────────────────────────────────────────
@@ -149,12 +173,23 @@ fi
 # Rules should be HOW instructions, not WHY explanations
 # Heuristic: flag rules with trailing explanatory sentences
 WHY_PHRASES=0
+
+# Extract rule content lines (both v7 heading sections and v6 table rows)
+# v7: lines between ### N. headings; v6: table rows starting with | N |
+RULE_LINES=""
+if [ "$HEADING_RULE_COUNT" -gt 0 ]; then
+  # v7 format: extract **When:** and **Do:** lines plus any body text under rule headings
+  RULE_LINES=$(echo "$CONTENT" | sed -n '/^### [0-9]\+\./,/^### \|^## /p')
+else
+  RULE_LINES=$(echo "$CONTENT" | grep -P '^\| [0-9]+ \|')
+fi
+
 while IFS= read -r line; do
-  # Check for trailing "This combats...", "This prevents...", "(Rule N also fires..."
-  if echo "$line" | grep -qP "This (combats|prevents|ensures|mitigates|addresses)|^\| .+\(Rule [0-9]+ also"; then
+  [ -z "$line" ] && continue
+  if echo "$line" | grep -qP "This (combats|prevents|ensures|mitigates|addresses)|\(Rule [0-9]+ also"; then
     WHY_PHRASES=$((WHY_PHRASES + 1))
   fi
-done <<< "$(echo "$CONTENT" | grep -P '^\| [0-9]+ \|')"
+done <<< "$RULE_LINES"
 
 if [ "$WHY_PHRASES" -eq 0 ]; then
   result_pass "A8: No WHY-not-HOW phrases detected in rules"

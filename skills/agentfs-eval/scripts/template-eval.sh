@@ -84,7 +84,21 @@ else
     "$TARGET" 2>&1)
   BEHAVIORAL_EXIT=$?
   echo "$BEHAVIORAL_OUTPUT"
-  BEHAVIORAL=$(echo "$BEHAVIORAL_OUTPUT" | grep "Results:" | grep -oP '[0-9]+/[0-9]+' || echo "—")
+
+  if echo "$BEHAVIORAL_OUTPUT" | grep -q "Results: skipped"; then
+    # Behavioral was skipped (cached) — retrieve last recorded score
+    SCORE_FILE="$HOME/.agents/skills/agentfs-eval/references/template-scores.md"
+    BEHAVIORAL=$(grep -F "| $MODEL |" "$SCORE_FILE" 2>/dev/null \
+      | head -1 \
+      | awk -F'|' '{print $6}' \
+      | tr -d ' ' || echo "—")
+    # If retrieved value is empty or "—", leave as "—"
+    if [ -z "$BEHAVIORAL" ] || [ "$BEHAVIORAL" = "—" ]; then
+      BEHAVIORAL="—"
+    fi
+  else
+    BEHAVIORAL=$(echo "$BEHAVIORAL_OUTPUT" | grep "Results:" | grep -oP '[0-9]+/[0-9]+' || echo "—")
+  fi
 fi
 
 echo ""

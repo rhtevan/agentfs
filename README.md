@@ -281,24 +281,24 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v6.0.9 enforces 10 operational rules via Type/Stimulus/Action
-triples in a flat table within AGENTS.md. Behavioral norms (no validation
-phrases, no assumed inputs, risk naming) live in SOUL.md Principles —
-the self-discipline layer. AGENTS.md rules handle external enforcement
-only: routing, hooks, process obligations.
+AgentFS v7.1.0 enforces 10 operational rules as prioritized subsections
+(`### N. Name [PRIORITY]`) with When/Do pairs in AGENTS.md. Behavioral
+norms (no validation phrases, no assumed inputs, risk naming) live in
+SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
+external enforcement only: routing, hooks, process obligations.
 
-| # | Type | Stimulus | Action |
-|---|------|----------|--------|
-| 1 | Event | Session start | AGENTS.md wins conflicts. Read `USER.md` if it exists. |
-| 2 | Signal | User signal phrase detected | Route per Signal Dispatch table. `hey` is the dispatch prefix. First tool call MUST be `search_nodes` for unmatched signals. Query construction: literal signal keywords only, no expansion; progressive narrowing on miss (drop rightmost first). |
-| 3 | Event | First `.agents/` read | Browse that scope's `index.md` first. |
-| 4 | Event | Before destructive `.agents/` op | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
-| 5 | Event | Creating a skill | Default USER scope; PROJECT only when explicit. |
-| 6 | Event | Writing to `memories/` | PROJECT scope only. Classify: experience→MEMORY, rule→propose guardrail, preference→USER. Graduate mature patterns to OKF. |
-| 7 | Event | Post-write | `post-write.sh` for each modified `.agents/` file. Do not respond until complete. |
-| 8 | Event | Before multi-step task | Pre-flight: state plan, add process obligations, execute in order, complete before responding. |
-| 9 | Always | Every response | State what changed on reversal. Quote conflicting rules. `[OVERRIDE]` for exceptions. |
-| 10 | Always | Session continuity | Session canary + periodic SOUL Principles re-read + self-repair if canary lost. |
+| # | Name | Priority | When | Do |
+|---|------|----------|------|----|
+| 1 | Signal Dispatch | CRITICAL | User message starts with `hey` | Route per Signal Dispatch table. First tool call MUST be `search_nodes`. Literal keywords only, progressive narrowing on miss. |
+| 2 | Pre-Flight | HIGH | Before multi-step task (≥3 tool calls or ≥2 files) | State plan, add process obligations, execute in order, complete before responding. |
+| 3 | Post-Write | HIGH | Writes touched `.agents/` or `~/.agents/` | Run `post-write.sh` for each modified file. Do not respond until complete. |
+| 4 | Session Start | NORMAL | Session begins | AGENTS.md wins conflicts. Read `USER.md` if it exists. |
+| 5 | Session Canary | NORMAL | Session continuity check | Emit canary on turn 1; re-verify at turn 5, then every 10 turns. Re-read memories on re-verification. |
+| 6 | Conflict Resolution | NORMAL | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
+| 7 | Checkpoint | NORMAL | Before destructive `.agents/` op | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 8 | Index-First Reading | LOW | First read of any `.agents/` file | Browse that scope's `index.md` first. |
+| 9 | Memory Scope | LOW | Writing to `memories/` | PROJECT scope only. Experience→MEMORY, rule→propose guardrail, preference→USER. Graduate mature patterns to OKF. |
+| 10 | Skill Scope | LOW | Creating a skill | Default USER scope; PROJECT only when explicit. |
 
 **Signal Dispatch** is a separate table in AGENTS.md. All signals are
 unified under the `hey` prefix. Deterministic enforcement is provided

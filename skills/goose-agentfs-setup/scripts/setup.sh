@@ -478,7 +478,7 @@ MEMORY_MARKER_END="## End Memory Routing Override"
 MEMORY_INSTRUCTIONS='## Memory Routing Override (AgentFS)
 
 This section defines Goose-specific memory signal routing. It OVERRIDES the
-agent-agnostic decision table in AGENTS.md Guardrail #2 when a matching tool
+agent-agnostic decision table in the Signal Dispatch rule in AGENTS.md when a matching tool
 exists in the current session.
 
 When any of these tools are detected in your available tools list —
@@ -489,7 +489,7 @@ When any of these tools are detected in your available tools list —
 `~/.agents/skills/goose-agentfs-setup/references/memory-routing.md`
 
 When NONE of these tools exist, fall through directly to AGENTS.md
-Guardrail #2 (Memory Scope & Signal Routing) with these defaults:
+Signal Dispatch rule with these defaults:
 - Default agent: `./.agents/memories/MEMORY.md`
 - Named profile: `./.agents/profiles/<name>/memories/MEMORY.md`
 

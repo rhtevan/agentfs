@@ -63,9 +63,9 @@ fi
 MATCH_PATTERN="| ${VERSION} | ${MODEL} |"
 
 if grep -qF "$MATCH_PATTERN" "$SCORE_FILE" 2>/dev/null; then
-  # Update existing row
+  # Update existing row — never overwrite a valid score (N/M) with "—"
   python3 -c "
-import sys
+import sys, re
 
 lines = open('$SCORE_FILE').readlines()
 out = []
@@ -75,12 +75,17 @@ for line in lines:
         # parts: ['', Date, Version, Model, TemplateScore, Behavioral, Notes, '']
         if len(parts) >= 8:
             parts[1] = '$TODAY'
-            if '$TEMPLATE_SCORE':
-                parts[4] = '$TEMPLATE_SCORE'
-            if '$BEHAVIORAL':
-                parts[5] = '$BEHAVIORAL'
-            if '$NOTES':
-                parts[6] = '$NOTES'
+            new_tscore = '$TEMPLATE_SCORE'
+            new_behavioral = '$BEHAVIORAL'
+            new_notes = '$NOTES'
+            # Only update template score if new value is not blank/dash
+            # or existing value is blank/dash
+            if new_tscore and (new_tscore != '—' or parts[4] in ('', '—')):
+                parts[4] = new_tscore
+            if new_behavioral and (new_behavioral != '—' or parts[5] in ('', '—')):
+                parts[5] = new_behavioral
+            if new_notes:
+                parts[6] = new_notes
             line = '| ' + ' | '.join(parts[1:-1]) + ' |\n'
     out.append(line)
 open('$SCORE_FILE', 'w').writelines(out)

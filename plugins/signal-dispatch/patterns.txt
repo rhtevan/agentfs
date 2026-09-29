@@ -1,0 +1,21 @@
+# Signal Dispatch — Path A table-matched patterns
+# Format: keyword-prefix|action-description
+# This file is the single source of truth. Read by:
+#   - detect-hey.sh (runtime keyword matching)
+#   - seed-agents-md.sh (Signal Dispatch table generation)
+# Lines starting with # are comments. Empty lines ignored.
+
+remember|Write to .agents/memories/MEMORY.md
+note |Write to .agents/memories/MEMORY.md
+keep in mind|Write to .agents/memories/MEMORY.md
+forget|Edit MEMORY.md, remove entry
+remove|Edit MEMORY.md, remove entry
+what do you remember|Read .agents/memories/MEMORY.md
+check your notes|Read .agents/memories/MEMORY.md
+i prefer|Write to .agents/memories/USER.md
+i like|Write to .agents/memories/USER.md
+my style is|Write to .agents/memories/USER.md
+always|Propose as AGENTS.md guardrail (human approval required)
+never|Propose as AGENTS.md guardrail (human approval required)
+this is a rule|Propose as AGENTS.md guardrail (human approval required)
+harvest|Based on context, load_skill("skill-harvest") and/or load_skill("okf-bundle-harvest"). May invoke both if session contains harvestable procedures AND concepts. If user specifies skill or knowledge explicitly, follow that.

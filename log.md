@@ -2,6 +2,47 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 17:00
+- Update guardrail reference to v7 rule name (skills/goose-agentfs-setup/scripts/setup.sh)
+- Update guardrail reference to v7 rule name (skills/goose-agentfs-setup/references/memory-routing.md)
+- Update post-edit scope detection (skills/agentfs-setup/scripts/post-edit.sh)
+- Fix merge-changelog-entry formatting (skills/agentfs-setup/scripts/merge-changelog-entry.sh)
+
+## 2026-09-29 16:59
+- Version bump to 7.1.1 (skills/agentfs-setup/SKILL.md)
+- Add Category 10: post-write coverage check — L3→L2 graduation for Rule 3 enforcement (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
+## 2026-09-29 16:26
+- Version bump to 3.2.1 — guardrail ref text update (skills/okf-bundle-gen/SKILL.md)
+- Version bump to 1.5.1 — guardrail ref text update (skills/goose-agentfs-setup/SKILL.md)
+
+## 2026-09-29 16:25
+- Updated Structural Rules section from v6.0.9 table format to v7.1.0 heading format (README.md)
+
+## 2026-09-29 16:16
+- v7.1.0 — Rule priority reorder: Pre-Flight and Post-Write to HIGH, Session/Conflict to NORMAL (skills/agentfs-setup/SKILL.md)
+- v7.1.0 — Updated fidelity assertions for new rule ordering and priority tags (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
+- v7.1.0 — Reordered rules by frequency: Pre-Flight and Post-Write promoted to HIGH (position 2-3), Session Start/Canary/Conflict Resolution moved to NORMAL (position 4-6). Post-Write Hook renamed to Post-Write. (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-29 14:47
+- Fix: never overwrite valid N/M behavioral score with dash (skills/agentfs-eval/scripts/merge-score-entry.sh)
+- Fix: preserve behavioral score on skip instead of overwriting with dash (skills/agentfs-eval/scripts/template-eval.sh)
+
+## 2026-09-29 14:44
+- Version bump to 1.7.0 for v7 compat (skills/agentfs-eval/SKILL.md)
+- Updated A3 and A8 assertions for v7.0.0 heading-format rules (skills/agentfs-eval/scripts/template-check.sh)
+- Updated A3 and A8 assertions for v7.0.0 heading-format rules (skills/agentfs-eval/scripts/template-check.sh)
+
+## 2026-09-29 14:23
+- v7.0.0 — Major version bump for context landscape optimization (skills/agentfs-setup/SKILL.md)
+- v7.0.0 — Rewritten for v7 structure (prose rules, named headers, dispatch hierarchy) (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
+- v7.0.0 — 8 principles (removed signal dispatch, revised ledger→data integrity), reordered by operational impact (skills/agentfs-setup/scripts/seed-soul.sh)
+- v7.0.0 — Prose rules with priority tags, generated Signal Dispatch table from patterns.txt, named rule references (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- v2.0.0 — Plugin version bump, updated description (plugins/signal-dispatch/plugin.json)
+- v2.0.0 — Named rule references (Signal Dispatch rule) replacing numbered (plugins/signal-dispatch/scripts/enforce-hey.sh)
+- v2.0.0 — Reads patterns.txt dynamically instead of hardcoded case block (plugins/signal-dispatch/scripts/detect-hey.sh)
+- v2.0.0 — Single source of truth for Signal Dispatch table-matched patterns (plugins/signal-dispatch/patterns.txt)
+
 ## 2026-09-28 14:45
 - Rule 2 prose polish: -16 words, removed redundant clauses, tightened fallback chain (skills/agentfs-setup/scripts/seed-agents-md.sh)
 

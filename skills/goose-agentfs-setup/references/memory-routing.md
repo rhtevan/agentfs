@@ -14,7 +14,7 @@ extensions are currently enabled. Resolve dynamically at runtime:
 3. If the tool DOES NOT exist (extension disabled), skip that row and
    try the next priority
 4. If NO Goose-specific tool matches, fall through to AGENTS.md
-   Guardrail #2 (Memory Scope & Signal Routing)
+   Signal Dispatch rule
 
 Tool existence = extension enabled. Goose only injects tools into the
 session when their parent extension is active.

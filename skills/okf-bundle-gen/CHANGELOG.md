@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-29 16:21 | v3.2.1 — Update guardrail reference text to v7 rule names |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-07-20 17:33 | v3.2 — Added Phase 7c: USER scope log.md entry. Fixes omission where changes to `~/.agents/knowledge/` were logged in the bundle's own log.md but not in the USER-scope root `~/.agents/log.md` per Guardrail #5 (Filesystem Integrity). Phase 7 heading updated from "both levels" to "all three levels". |
 | 2026-07-09 01:38 | v3.1 — Removed Phase 9 (SOUL.md pattern link injection) and update-soul-links.sh dependency; knowledge discovery now handled via global .goosehints progressive loading instead of SOUL.md markers |

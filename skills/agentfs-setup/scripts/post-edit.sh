@@ -3,8 +3,8 @@
 #
 # Run after editing any file under .agents/ (either scope).
 # Handles structural integrity (indexes, anchors) AND detects
-# unlogged modifications (log drift) to catch missed Rule 13
-# obligations.
+# unlogged modifications (log drift) to catch missed Post-Write Hook
+# rule obligations.
 #
 # Usage: bash post-edit.sh [--user] [--project] [--all]
 #   --user     Check USER scope (~/.agents/) only

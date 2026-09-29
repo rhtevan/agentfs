@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.5.0"
+  version: "1.5.1"
   tags: [goose, agentfs, configuration, compatibility]
 user-invocable: true
 disable-model-invocation: false
@@ -184,7 +184,7 @@ preserving other content.
 When multiple memory systems are active (Goose Memory, Chat Recall, Cognee,
 AgentFS), natural-language signals like "remember this" create ambiguity.
 This skill implements **Layer 2** of the two-layer decision table architecture
-defined in AGENTS.md Guardrail #2.
+defined in the Signal Dispatch rule in AGENTS.md.
 
 The memory routing override installs a **compact stub** in Goose's persistent
 instructions (`~/.config/goose/instructions.md`) that:
@@ -193,7 +193,7 @@ instructions (`~/.config/goose/instructions.md`) that:
 - When any memory tool is detected, directs the agent to load the full
   routing table from `references/memory-routing.md` (on-demand)
 - When no Goose memory tool exists, falls through directly to AGENTS.md
-  Guardrail #2 with MEMORY.md defaults
+  Signal Dispatch rule with MEMORY.md defaults
 
 The full routing table in `references/memory-routing.md` contains:
 

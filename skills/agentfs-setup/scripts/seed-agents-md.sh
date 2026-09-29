@@ -211,38 +211,85 @@ cat > "$TARGET" << 'AGENTSEOF'
 
 ## Rules
 
-**All rules are mandatory.** Override requires explicit user approval logged with `[OVERRIDE]` per Rule 9.
+**All rules are mandatory.** Override requires explicit user approval logged with `[OVERRIDE]` per the Conflict Resolution rule.
 
-| # | Type | Stimulus | Action |
-|---|------|----------|--------|
-| | | **Session start** | |
-| 1 | Event | Session start | If other context files are loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `.agents/memories/USER.md` if it exists — apply preferences. |
-| | | **Per-message dispatch** | |
-| 2 | Signal | User signal phrase detected | Route per **Signal Dispatch** table below. \`hey\` is the user's explicit dispatch prefix — not a greeting. If no pattern matches: **first tool call MUST be \`search_nodes\`** with the keywords — never skip this step. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. **Keywords** = all words after the signal prefix (`hey`), excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Example: `hey setup crc monitoring` → query: `setup crc monitoring`. If no results, retry with progressively fewer terms (drop rightmost first). Then call \`load_skill\` with the result. If \`search_nodes\` is unavailable, fall back to browsing `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md`. If still no match, use your best judgment. |
-| | | **Before reading `.agents/`** | |
-| 3 | Event | First read of any `.agents/` file in session | Browse that scope's `index.md` first, follow links to content. |
-| | | **Before writing `.agents/`** | |
-| 4 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Before editing any file containing `agentfs-template-version`, edit the template source in `seed-agents-md.sh` and run `sync-agents-md.sh` — never edit the project copy directly. |
-| 5 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
-| 6 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. |
-| | | **Before responding** | |
-| 7 | Event | Before sending any response where writes touched `.agents/` or `~/.agents/` | `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). If the script does not exist, warn the user and recommend `hey setup agentfs`. Do not respond until complete. |
-| 8 | Event | Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt) | **Pre-flight:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding. |
-| | | **Always** | |
-| 9 | Always | Every response | When reversing a position, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for `[OVERRIDE]`. |
-| 10 | Always | Session continuity | Session canary: random name, emit turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Skip re-read if AGENTS.md content is confirmed still in context. |
+### 1. Signal Dispatch [CRITICAL]
+
+**When:** User message starts with `hey` followed by keywords.
+**`hey` is a dispatch prefix — never a greeting.**
+
+**Path A — Signal Dispatch table match:**
+If keywords match a Signal Dispatch entry below → execute that action directly.
+
+**Path B — Skill/Knowledge dispatch (all other `hey` signals):**
+1. Call `search_nodes` with the literal keywords (mandatory — enforced by plugin hook; other tools are blocked until this completes).
+2. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. **Keywords** = all words after the signal prefix (`hey`), excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Example: `hey setup crc monitoring` → query: `setup crc monitoring`.
+3. If result is a skill → `load_skill` with the skill name.
+4. If result is a knowledge bundle → read the file at the given path.
+5. If no result → retry with fewer keywords (drop rightmost first).
+6. If still no result → fall through to Tier 2.
+
+**Non-`hey` prompts → Tier 2:**
+Browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md`. Follow links to content.
+
+**Tier 2 fails → Tier 3:**
+Use available tools and knowledge at your discretion.
+
+### 2. Pre-Flight [HIGH]
+
+**When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt).
+**Do:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding.
+
+### 3. Post-Write [HIGH]
+
+**When:** Before sending any response where writes touched `.agents/` or `~/.agents/`.
+**Do:** `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). If the script does not exist, warn the user and recommend `hey setup agentfs`. Do not respond until complete.
+
+### 4. Session Start [NORMAL]
+
+**When:** Session begins.
+**Do:** If other context files are loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `.agents/memories/USER.md` if it exists — apply preferences.
+
+### 5. Session Canary [NORMAL]
+
+**When:** Session continuity check.
+**Do:** Emit a random canary name on turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Re-read `.agents/memories/MEMORY.md` and `USER.md` on re-verification. Skip re-read if AGENTS.md content is confirmed still in context.
+
+### 6. Conflict Resolution [NORMAL]
+
+**When:** Reversing a position, or a request conflicts with a rule.
+**Do:** When reversing a position, state what changed and your previous position. When a request conflicts with a rule, quote the rule, explain the conflict, and ask for `[OVERRIDE]`.
+
+### 7. Checkpoint [NORMAL]
+
+**When:** Before destructive op (delete, rename, or edit ≥3 files under `.agents/`).
+**Do:** `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Before editing any file containing `agentfs-template-version`, edit the template source in `seed-agents-md.sh` and run `sync-agents-md.sh` — never edit the project copy directly.
+
+### 8. Index-First Reading [LOW]
+
+**When:** First read of any `.agents/` file in session.
+**Do:** Browse that scope's `index.md` first, follow links to content.
+
+### 9. Memory Scope [LOW]
+
+**When:** Writing to `memories/`.
+**Do:** PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. When MEMORY.md accumulates ≥3 entries on the same topic, suggest graduation via `hey harvest`.
+
+### 10. Skill Scope [LOW]
+
+**When:** Creating a skill.
+**Do:** Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill".
+
+### Path Hygiene [LOW]
+
+**When:** Displaying or writing file paths.
+**Do:** Never use explicit home directory paths like `/home/<user>/`. Always use `~` or `$HOME`. Prefer `~/...` over `/home/<user>/...` in output.
 
 ## Signal Dispatch
 
 When the user message starts with `hey`, match the keywords and route:
 
-| Pattern | Action |
-|---------|--------|
-| `hey remember ...` / `hey note ...` / `hey keep in mind ...` | → `.agents/memories/MEMORY.md` |
-| `hey forget ...` / `hey remove ...` | → Edit `MEMORY.md`, remove entry |
-| `hey what do you remember` / `hey check your notes` | → Read `.agents/memories/MEMORY.md` |
-| `hey I prefer ...` / `hey I like ...` / `hey my style is ...` | → `.agents/memories/USER.md` |
-| `hey always ...` / `hey never ...` / `hey this is a rule` | → Propose as `AGENTS.md` guardrail (human approval required) |
+__SIGNAL_DISPATCH_TABLE__
 
 ## Quick Orientation
 
@@ -296,6 +343,44 @@ fi
 
 # Replace template version placeholder with actual version from skill metadata
 sed -i "s/__TEMPLATE_VERSION__/${TEMPLATE_VERSION}/" "$TARGET"
+
+# Generate Signal Dispatch table from patterns.txt (single source of truth)
+PATTERNS_FILE="$HOME/.agents/plugins/signal-dispatch/patterns.txt"
+if [[ -f "$PATTERNS_FILE" ]]; then
+  # Build the Markdown table from patterns.txt
+  TABLE_CONTENT="| Pattern | Action |\n|---------|--------|"
+
+  # Group patterns by action to combine into single rows
+  declare -A ACTION_PATTERNS
+  while IFS='|' read -r prefix action; do
+    [[ -z "$prefix" || "$prefix" =~ ^# ]] && continue
+    prefix="$(echo "$prefix" | sed 's/[[:space:]]*$//')"
+    action="$(echo "$action" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')"
+    if [[ -n "${ACTION_PATTERNS[$action]+x}" ]]; then
+      ACTION_PATTERNS[$action]="${ACTION_PATTERNS[$action]} / \`hey ${prefix} ...\`"
+    else
+      ACTION_PATTERNS[$action]="\`hey ${prefix} ...\`"
+    fi
+  done < "$PATTERNS_FILE"
+
+  for action in "${!ACTION_PATTERNS[@]}"; do
+    TABLE_CONTENT="$TABLE_CONTENT\n| ${ACTION_PATTERNS[$action]} | → ${action} |"
+  done
+
+  # Replace placeholder with generated table
+  # Use a temp file to handle multi-line replacement
+  TABLE_FILE=$(mktemp)
+  printf '%b\n' "$TABLE_CONTENT" > "$TABLE_FILE"
+  sed -i "/__SIGNAL_DISPATCH_TABLE__/{
+    r $TABLE_FILE
+    d
+  }" "$TARGET"
+  rm -f "$TABLE_FILE"
+else
+  # Fallback: remove placeholder if patterns.txt not found
+  sed -i "s/__SIGNAL_DISPATCH_TABLE__/<!-- patterns.txt not found — table not generated -->/" "$TARGET"
+  echo "[agentfs-setup] WARNING: patterns.txt not found, Signal Dispatch table not generated."
+fi
 
 echo "[agentfs-setup] Created $TARGET (scope: $SCOPE)"
 

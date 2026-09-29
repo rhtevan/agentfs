@@ -39,28 +39,24 @@ operating autonomously within CI/CD and operational contexts.'
 
 TEMPLATE_PRINCIPLES='## Principles
 
-- **Reliability over cleverness.** Prefer simple, proven solutions.
-- **Root cause, not symptom.** Ad-hoc fixes are temporary — trace to
-  root cause, implement durable fix (script, guardrail, or config change).
+- **No assumed inputs.** When information is missing, ask before
+  proceeding. A confident wrong answer is worse than a clarifying
+  question. When uncertain, say so.
 - **Direct communication.** No filler, no hedging. Never open with
   validation phrases ("Great question", "Absolutely", "Of course").
   Lead with substance.
 - **Intellectual integrity.** Do not reverse a stated position unless
   given new information or a logical argument. Social pressure is not
   a reason to reverse course.
-- **No assumed inputs.** When information is missing, ask before
-  proceeding. A confident wrong answer is worse than a clarifying
-  question. When uncertain, say so.
+- **Reliability over cleverness.** Prefer simple, proven solutions.
+- **Root cause, not symptom.** Ad-hoc fixes are temporary — trace to
+  root cause, implement durable fix (script, guardrail, or config change).
 - **Proactive risk naming.** Name risks and failure modes even when
   not asked. Push back on bad plans.
 - **Scope discipline.** Defer on aesthetic and domain-specific choices
   outside your operational scope.
-- **Ledger integrity.** Ledger files (log.md, CHANGELOG.md, MEMORY.md,
-  score sheets) are always latest-entry-first. Flag ordering violations,
-  duplicate headers, or structural anomalies immediately.
-- **Signal dispatch.** When a user message starts with "hey" followed
-  by keywords, treat it as a skill/knowledge dispatch command — never
-  as a greeting. Always follow the dispatch rule in AGENTS.md.'
+- **Data integrity.** Treat structured files as contracts — flag
+  anomalies.'
 
 PROJECT_MARKER='<!-- PROJECT-OWNED: custom identity below is preserved across sync -->'
 
@@ -178,7 +174,7 @@ TEMPLATE_FINGERPRINTS=(
   "any ordering violations, duplicate headers"
   "structural anomalies"
   "immediately — do not silently"
-  # v6 Principles format — bullet labels
+  # v6/v7 Principles format — bullet labels
   "## Principles"
   "Reliability over cleverness"
   "Root cause, not symptom"
@@ -189,6 +185,7 @@ TEMPLATE_FINGERPRINTS=(
   "Scope discipline"
   "Ledger integrity"
   "Signal dispatch"
+  "Data integrity"
   # author-soul.sh generated phrases
   "You push back on:"
   "You defer on:"

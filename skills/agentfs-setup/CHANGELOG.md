@@ -2,6 +2,9 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-29 16:59 | v7.1.1 — Add Category 10: post-write coverage check — L3→L2 graduation for Rule 3 enforcement |
+| 2026-09-29 16:16 | v7.1.0 — v7.1.0 — Reordered rules by frequency: Pre-Flight and Post-Write promoted to HIGH (position 2-3), Session Start/Canary/Conflict Resolution moved to NORMAL (position 4-6). Post-Write Hook renamed to Post-Write. |
+| 2026-09-29 14:23 | v7.0.0 — v7.0.0 — Prose rules with priority tags, generated Signal Dispatch table from patterns.txt, named rule references |
 | 2026-09-28 14:45 | v6.0.9 — Rule 2 prose polish: -16 words, removed redundant clauses, tightened fallback chain |
 | 2026-09-28 14:27 | v6.0.8 — Added Scope Definitions to PROJECT template heredoc — fixes sync/verify misalignment |
 | 2026-09-28 14:02 | v6.0.7 — Tier 2 fixes: Rule 2 search_nodes fallback, Rules 4/7 script-not-found guards, Rule 10 adaptive canary cadence |

@@ -3,7 +3,7 @@ name: agentfs-eval
 description: >
   eval agentfs, agentfs health, agentfs status, agentfs score, maturity check
 metadata:
-  version: "1.6.2"
+  version: "1.7.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 

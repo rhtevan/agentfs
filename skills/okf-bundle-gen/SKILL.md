@@ -3,7 +3,7 @@ name: okf-bundle-gen
 description: >
   generate knowledge bundle, create knowledge bundle, okf generate
 metadata:
-  version: "3.2.0"
+  version: "3.2.1"
   tags: [agentfs, okf, knowledge, generation, session]
 ---
 
@@ -486,7 +486,7 @@ reverse chronological order.
 #### 7c. USER scope log.md
 
 The knowledge bundle resides under `~/.agents/` (USER scope). Per
-Guardrail #5 (Filesystem Integrity), any change within USER scope must
+the Post-Write Hook rule, any change within USER scope must
 be logged in the USER-scope root log at `~/.agents/log.md`.
 
 This is **separate** from the knowledge bundle's own `log.md` (Phase

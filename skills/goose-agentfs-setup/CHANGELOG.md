@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-29 16:21 | v1.5.1 — Update guardrail reference text to v7 rule names |
 | 2026-09-27 20:02 | v1.5.0 — v1.5.0: Added --plugin-check and --plugin-list commands for signal-dispatch plugin management |
 | 2026-07-14 19:17 | v1.4 — Moved full memory routing table to on-demand `references/memory-routing.md`; instructions.md stub now lists tool names to detect and loads full table only when memory tools are present; reduces auto-loaded context by ~57 lines per turn |
 | 2026-07-10 16:14 | v1.3 — Replaced flat signal→action table with priority-based decision table supporting Cognee (pri 1), Memory (pri 2), Chat Recall (pri 3); added runtime resolution rule (check tool existence in available tools list); static table adapts to dynamic extension enable/disable; added ambiguity resolution and routing announcement rules; aligns with AGENTS.md Guardrail #9 two-layer architecture |

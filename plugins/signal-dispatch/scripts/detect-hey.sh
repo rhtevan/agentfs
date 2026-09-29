@@ -2,6 +2,10 @@
 # signal-dispatch: flag a "hey" dispatch as pending for this session.
 # Called by UserPromptSubmit hook when prompt matches ^[Hh]ey .
 # Also saves the keywords (everything after "hey ") for the block reason.
+#
+# Reads table-matched patterns from patterns.txt (single source of truth).
+# If keywords match a pattern → Path A (no flag, model handles directly).
+# If no match → Path B (flag set, enforce search_nodes via Signal Dispatch rule).
 set -euo pipefail
 
 payload="$(cat)"
@@ -15,21 +19,29 @@ mkdir -p "$dispatch_dir"
 keywords="$(echo "$message" | sed -E 's/^[Hh]ey[[:space:]]+//')"
 keywords_lower="$(echo "$keywords" | tr '[:upper:]' '[:lower:]')"
 
-# Check if keywords match a Signal Dispatch table pattern.
-# Table-matched signals have explicit routing (memory writes, preference
-# saves, rule proposals) — they do NOT need search_nodes enforcement.
-# Only unmatched signals (skill dispatch fallthrough) get the flag.
+# Load table-matched patterns from patterns.txt
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PATTERNS_FILE="$SCRIPT_DIR/../patterns.txt"
+
 table_match=false
-case "$keywords_lower" in
-  remember*|note\ *|keep\ in\ mind*)   table_match=true ;;
-  forget*|remove*)                       table_match=true ;;
-  what\ do\ you\ remember*|check\ your\ notes*) table_match=true ;;
-  i\ prefer*|i\ like*|my\ style*)       table_match=true ;;
-  always*|never*|this\ is\ a\ rule*)    table_match=true ;;
-esac
+if [[ -f "$PATTERNS_FILE" ]]; then
+  while IFS='|' read -r prefix _action; do
+    # Skip comments and empty lines
+    [[ -z "$prefix" || "$prefix" =~ ^# ]] && continue
+    # Trim whitespace
+    prefix="$(echo "$prefix" | sed 's/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]')"
+    # Match if keywords start with this prefix
+    if [[ "$keywords_lower" == "$prefix"* ]]; then
+      table_match=true
+      break
+    fi
+  done < "$PATTERNS_FILE"
+else
+  echo "[signal-dispatch] WARNING: patterns.txt not found at $PATTERNS_FILE" >&2
+fi
 
 if [ "$table_match" = false ]; then
-  # Unmatched signal — enforce search_nodes first via Rule 2 fallthrough
+  # Unmatched signal — enforce search_nodes first via Signal Dispatch rule
   echo "pending" > "${dispatch_dir}/${session_id}"
   echo "$keywords" > "${dispatch_dir}/${session_id}.keywords"
 fi
