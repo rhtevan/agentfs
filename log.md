@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-28 14:45
+- Rule 2 prose polish: -16 words, removed redundant clauses, tightened fallback chain (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-28 14:27
+- Added Scope Definitions to PROJECT template heredoc — fixes sync/verify misalignment (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-28 14:02
+- Tier 2 fixes: Rule 2 search_nodes fallback, Rules 4/7 script-not-found guards, Rule 10 adaptive canary cadence (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-09-28 13:48
+- Rule 4: added template ownership guard — edit seed-agents-md.sh not project copy for template-owned content
+
+## 2026-09-28 13:43
+- Tier 1 clarity: added keyword definition+example to Rule 2, added multi-step threshold to Rule 8 in project template (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Tier 1 clarity: added keyword definition+example to Rule 2, added multi-step threshold to Rule 8 in project template (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-09-28 11:33
 - Skill Check overhaul v2.0.0: resolve-target.sh, spec/tests, error contract (skills/agentfs-git-push/SKILL.md)
 

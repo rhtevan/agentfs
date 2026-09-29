@@ -2,6 +2,11 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-28 14:45 | v6.0.9 — Rule 2 prose polish: -16 words, removed redundant clauses, tightened fallback chain |
+| 2026-09-28 14:27 | v6.0.8 — Added Scope Definitions to PROJECT template heredoc — fixes sync/verify misalignment |
+| 2026-09-28 14:02 | v6.0.7 — Tier 2 fixes: Rule 2 search_nodes fallback, Rules 4/7 script-not-found guards, Rule 10 adaptive canary cadence |
+| 2026-09-28 13:48 | v6.0.6 — Rule 4: added template ownership guard — edit seed-agents-md.sh not project copy for template-owned content |
+| 2026-09-28 13:43 | v6.0.5 — Tier 1 clarity: added keyword definition+example to Rule 2, added multi-step threshold to Rule 8 in project template |
 | 2026-09-28 11:05 | v6.0.4 — Rule 2: Added query construction constraint — use literal signal keywords only, no expansion/padding; progressive narrowing on miss (drop rightmost first) |
 | 2026-09-28 10:51 | v6.0.3 — Vendor-neutral SOUL.md fallback: added plain-text instruction for non-Goose agents. Moved context lookup fallback from top-of-file to Quick Orientation section. Applied same SOUL.md pattern to lite template. |
 | 2026-09-27 23:47 | v6.0.2 — Rule 2: mandatory search_nodes first — 'first tool call MUST be search_nodes', closes smart-model shortcut |

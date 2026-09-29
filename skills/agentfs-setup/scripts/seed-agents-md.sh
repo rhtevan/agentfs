@@ -218,19 +218,19 @@ cat > "$TARGET" << 'AGENTSEOF'
 | | | **Session start** | |
 | 1 | Event | Session start | If other context files are loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `.agents/memories/USER.md` if it exists — apply preferences. |
 | | | **Per-message dispatch** | |
-| 2 | Signal | User signal phrase detected | Route per **Signal Dispatch** table below. \`hey\` is the user's explicit dispatch prefix — not a greeting. If no pattern matches: **first tool call MUST be \`search_nodes\`** with the keywords — never skip this step, even if you think you know the skill. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. If no results, retry with progressively fewer terms (drop rightmost first) before concluding no match. Then call \`load_skill\` with the result. If \`search_nodes\` still returns nothing, use your best judgment. |
+| 2 | Signal | User signal phrase detected | Route per **Signal Dispatch** table below. \`hey\` is the user's explicit dispatch prefix — not a greeting. If no pattern matches: **first tool call MUST be \`search_nodes\`** with the keywords — never skip this step. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. **Keywords** = all words after the signal prefix (`hey`), excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Example: `hey setup crc monitoring` → query: `setup crc monitoring`. If no results, retry with progressively fewer terms (drop rightmost first). Then call \`load_skill\` with the result. If \`search_nodes\` is unavailable, fall back to browsing `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md`. If still no match, use your best judgment. |
 | | | **Before reading `.agents/`** | |
 | 3 | Event | First read of any `.agents/` file in session | Browse that scope's `index.md` first, follow links to content. |
 | | | **Before writing `.agents/`** | |
-| 4 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 4 | Event | Before destructive op (delete, rename, or edit ≥3 files under `.agents/`) | `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Before editing any file containing `agentfs-template-version`, edit the template source in `seed-agents-md.sh` and run `sync-agents-md.sh` — never edit the project copy directly. |
 | 5 | Event | Creating a skill | Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill". |
 | 6 | Event | Writing to `memories/` | PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. |
 | | | **Before responding** | |
-| 7 | Event | Before sending any response where writes touched `.agents/` or `~/.agents/` | `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). Do not respond until complete. |
-| 8 | Event | Before any multi-step task | **Pre-flight:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding. |
+| 7 | Event | Before sending any response where writes touched `.agents/` or `~/.agents/` | `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). If the script does not exist, warn the user and recommend `hey setup agentfs`. Do not respond until complete. |
+| 8 | Event | Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt) | **Pre-flight:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding. |
 | | | **Always** | |
 | 9 | Always | Every response | When reversing a position, state what changed and previous position. When request conflicts with a rule, quote it, explain, ask for `[OVERRIDE]`. |
-| 10 | Always | Session continuity | Session canary: random name, emit turn 1. Every ~5 turns: emit canary + re-read AGENTS.md Rules and SOUL.md Principles already in your context + verify recent compliance. |
+| 10 | Always | Session continuity | Session canary: random name, emit turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Skip re-read if AGENTS.md content is confirmed still in context. |
 
 ## Signal Dispatch
 
@@ -255,6 +255,29 @@ When the user message starts with `hey`, match the keywords and route:
 | Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
 
 **Context lookup fallback:** When `search_nodes` is unavailable, browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md` (USER), or `./.agents/index.md` (PROJECT) to discover skills, knowledge, and directory structure.
+
+## Scope Definitions
+
+AgentFS operates in two scopes. These definitions are canonical —
+all guardrails, skills, and documentation reference them.
+
+| Scope | Root Path | Purpose |
+|-------|-----------|----------|
+| **USER** | `~/.agents/` | Machine-wide shared library: skills and knowledge visible across all projects and agents |
+| **PROJECT** | `./.agents/` | Per-repository agent workspace: identity, profiles, memories, and project-scoped skills |
+
+### What Lives Where
+
+| Resource | USER (`~/.agents/`) | PROJECT (`./.agents/`) |
+|----------|:-------------------:|:----------------------:|
+| `skills/` | ✅ shared | ✅ project-specific |
+| `knowledge/` | ✅ shared | ❌ never |
+| `memories/` | ❌ never | ✅ per-agent |
+| `profiles/` | ❌ never | ✅ multi-agent |
+| `SOUL.md` | ❌ never | ✅ agent identity |
+| `AGENTS.md` | ❌ never | ✅ (at repo root `./`) |
+| `index.md` | ✅ | ✅ |
+| `log.md` | ✅ | ✅ |
 
 <!-- PROJECT-OWNED sections below. Everything above is template-owned
      and will be overwritten by agentfs-setup --sync. -->

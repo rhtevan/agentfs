@@ -281,7 +281,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v6.0.4 enforces 10 operational rules via Type/Stimulus/Action
+AgentFS v6.0.9 enforces 10 operational rules via Type/Stimulus/Action
 triples in a flat table within AGENTS.md. Behavioral norms (no validation
 phrases, no assumed inputs, risk naming) live in SOUL.md Principles —
 the self-discipline layer. AGENTS.md rules handle external enforcement
@@ -539,7 +539,7 @@ Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 17 structural rules; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 10 structural rules; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 
