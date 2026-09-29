@@ -486,7 +486,7 @@ reverse chronological order.
 #### 7c. USER scope log.md
 
 The knowledge bundle resides under `~/.agents/` (USER scope). Per
-the Post-Write Hook rule, any change within USER scope must
+the Post-Write rule, any change within USER scope must
 be logged in the USER-scope root log at `~/.agents/log.md`.
 
 This is **separate** from the knowledge bundle's own `log.md` (Phase

@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 17:07
+- v7.1.1 — Renamed Post-Write Hook → Post-Write rule reference (skills/agentfs-setup/scripts/merge-changelog-entry.sh)
+- v7.1.1 — Renamed Post-Write Hook → Post-Write rule reference (skills/agentfs-setup/scripts/post-edit.sh)
+- v7.1.1 — Renamed Post-Write Hook → Post-Write rule reference (skills/okf-bundle-gen/SKILL.md)
+
 ## 2026-09-29 17:00
 - Update guardrail reference to v7 rule name (skills/goose-agentfs-setup/scripts/setup.sh)
 - Update guardrail reference to v7 rule name (skills/goose-agentfs-setup/references/memory-routing.md)

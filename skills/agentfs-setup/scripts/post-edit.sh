@@ -3,7 +3,7 @@
 #
 # Run after editing any file under .agents/ (either scope).
 # Handles structural integrity (indexes, anchors) AND detects
-# unlogged modifications (log drift) to catch missed Post-Write Hook
+# unlogged modifications (log drift) to catch missed Post-Write
 # rule obligations.
 #
 # Usage: bash post-edit.sh [--user] [--project] [--all]
