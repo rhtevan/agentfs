@@ -275,14 +275,15 @@ Current bundles:
 - **OCP Containerfile Best Practices** — Containerfile authoring for OpenShift: UID models (restricted-v2/v3), GID 0 pattern, UBI base images, layer optimization, certification requirements, S2I compatibility
 - **Skupper vLLM Deployment** — Lessons learned from deploying Granite models on multi-GPU cloud instances via Skupper V2 VAN
 - **Goose Desktop Operations** — GOOSE_TOOLSHIM incident postmortem, custom provider JSON schema, Desktop hang diagnostics
+- **Context Engineering** — Principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks
 - **KGM-Based Skill Dispatch** — Design decisions, evidence, and architecture for using KGM as the primary skill dispatch mechanism
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.2.1 enforces 8 operational rules as numbered subsections
-(`### N. Name [PRIORITY]`) with When/Do pairs in AGENTS.md. Behavioral
+AgentFS v7.2.2 enforces 7 operational rules as numbered subsections
+(`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
 external enforcement only: routing, hooks, process obligations.
@@ -290,17 +291,19 @@ external enforcement only: routing, hooks, process obligations.
 | # | Name | When | Do |
 |---|------|------|----|
 | 1 | Signal Dispatch | User message starts with `hey` | Route per Signal Dispatch table (Path A) or search_nodes (Path B). Progressive narrowing on miss. |
-| 2 | Pre-Flight | Before multi-step task (≥3 tool calls or ≥2 files) | State plan, add process obligations, execute in order, complete before responding. |
+| 2 | Pre-Flight | Before multi-step task (≥3 tool calls or ≥2 files); also before `git push` | State plan, add process obligations, show `git diff --stat` if pushing, execute in order. |
 | 3 | Post-Write | Writes touched `.agents/` or `~/.agents/` | Run `post-write.sh` for each modified file. Do not respond until complete. |
-| 4 | Session Canary | Session begins or continuity check | AGENTS.md authoritative. Read USER.md. Emit canary on turn 1; re-verify at turn 5, then every 10. |
+| 4 | Session Canary | Session begins or continuity check | AGENTS.md authoritative. Read USER.md. Emit canary on turn 1; re-verify at turn 5, then every 10. Lightweight self-violation check at re-verification. |
 | 5 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
-| 6 | Checkpoint | Before destructive `.agents/` op | `checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. |
+| 6 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
 | 7 | Scope Rules | Writing to `memories/` or creating a skill | Memories PROJECT-only. Skills default USER. Graduate mature patterns to OKF via `hey harvest`. |
-| 8 | Path Hygiene | Displaying or writing file paths | Use `~` or `$HOME`, never `/home/<user>/`. |
 
 **Signal Dispatch** is a separate table in AGENTS.md. All signals are
 unified under the `hey` prefix. Deterministic enforcement is provided
 by the `signal-dispatch` plugin via Goose `PreToolUse` hooks.
+
+Path hygiene (never use `/home/<user>/` in output) is enforced by
+`pre-push-scan.sh` Category 2 rather than a dedicated rule.
 
 The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
 See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.
@@ -537,7 +540,7 @@ Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 8 structural rules; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 7 structural rules; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 
@@ -550,7 +553,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.2.1 -->
+<!-- agentfs-template-version: 7.2.2 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

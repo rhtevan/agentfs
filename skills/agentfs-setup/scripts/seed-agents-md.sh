@@ -257,8 +257,8 @@ Use available tools and knowledge at your discretion.
 
 ### 6. Checkpoint
 
-**When:** Before destructive op (delete, rename, or edit ≥3 files under `.agents/`).
-**Do:** `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Before editing any file containing `agentfs-template-version`, edit the template source in `seed-agents-md.sh` and run `sync-agents-md.sh` — never edit the project copy directly.
+**When:** Before destructive op (delete, rename, or edit ≥3 files under `.agents/`). Also before any edit to `seed-agents-md.sh`.
+**Do:** ① `checkpoint.sh create <files>`. ② If editing `seed-agents-md.sh`, bump `version:` in `skills/agentfs-setup/SKILL.md` before committing. ③ Execute changes. ④ If template was edited, run `sync-agents-md.sh` to propagate. ⑤ `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Never edit a project `AGENTS.md` directly — edit the template source in `seed-agents-md.sh`.
 
 ### 7. Scope Rules
 

@@ -268,6 +268,22 @@ else
   DETAILS+="| Memory files staged | ✅ None |\n"
 fi
 
+# ── Category 12: Seed Template Version Bump ────────────────────────
+# If seed-agents-md.sh was modified, SKILL.md version must also change.
+SEED_VERSION_GAP=""
+if echo "$CHANGED_FILES" | grep -qF 'seed-agents-md.sh'; then
+  if ! echo "$CHANGED_FILES" | grep -qE 'agentfs-setup/SKILL\.md$'; then
+    SEED_VERSION_GAP="seed-agents-md.sh modified but agentfs-setup/SKILL.md version not bumped"
+  fi
+fi
+
+if [[ -n "$SEED_VERSION_GAP" ]]; then
+  FINDINGS=$((FINDINGS + 1))
+  DETAILS+="| Seed version bump | ⚠️  GAP — $SEED_VERSION_GAP |\n"
+else
+  DETAILS+="| Seed version bump | ✅ Clean |\n"
+fi
+
 # ── Output Report ──────────────────────────────────────────────────
 echo ""
 echo "╔══════════════════════════════════════════════╗"

@@ -2,7 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
-| 2026-09-29 21:42 | v7.2.1 — v7.2.1 — git push gate in Pre-Flight, versioning policy in design-spec |
+| 2026-09-29 22:34 | v7.2.2 — Checkpoint rule: explicit version-bump step for seed edits; pre-push-scan Category 12: seed-version-bump guard |
+| 2026-09-29 21:42 | v7.2.1 — git push gate in Pre-Flight, versioning policy in design-spec |
 | 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |
 | 2026-09-29 17:55 | v7.1.2 — v7.1.2 — Added load_skill failure handling to Signal Dispatch Path B step 3 |
 | 2026-09-29 16:59 | v7.1.1 — Add Category 10: post-write coverage check — L3→L2 graduation for Rule 3 enforcement |

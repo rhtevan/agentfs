@@ -95,22 +95,21 @@ assert_contains "Rule 4: Session Canary" '^### 4\. Session Canary$'
 assert_contains "Rule 5: Conflict Resolution" '^### 5\. Conflict Resolution$'
 assert_contains "Rule 6: Checkpoint" '^### 6\. Checkpoint$'
 assert_contains "Rule 7: Scope Rules" '^### 7\. Scope Rules$'
-assert_contains "Rule 8: Path Hygiene" '^### 8\. Path Hygiene$'
-
 # Removed rules must not be present
 assert_not_contains "No Session Start rule" '^### [0-9]+\. Session Start'
 assert_not_contains "No Index-First Reading rule" '^### [0-9]+\. Index-First Reading'
 assert_not_contains "No Memory Scope rule" '^### [0-9]+\. Memory Scope'
 assert_not_contains "No Skill Scope rule" '^### [0-9]+\. Skill Scope'
+assert_not_contains "No Path Hygiene rule" '^### [0-9]+\. Path Hygiene'
 
 # Rule count (### N. heading format)
 RULE_COUNT=$(grep -cE '^### [0-9]+\.' "$TARGET" || true)
 echo ""
-if [[ "$RULE_COUNT" -eq 8 ]]; then
+if [[ "$RULE_COUNT" -eq 7 ]]; then
   echo "  ✅ Numbered rule count: $RULE_COUNT"
   PASSED=$((PASSED + 1))
 else
-  echo "  ❌ Numbered rule count: expected 8, got $RULE_COUNT"
+  echo "  ❌ Numbered rule count: expected 7, got $RULE_COUNT"
   FAILED=$((FAILED + 1))
 fi
 
@@ -182,10 +181,10 @@ assert_contains "Project skill signal words" 'project skill.*for this project.*l
 assert_contains "Quote conflicting rule" '[Qq]uote.*rule'
 # Checkpoint rule
 assert_contains "checkpoint create" 'checkpoint\.sh create'
+assert_contains "Checkpoint: version bump step" 'bump.*version.*SKILL\.md'
+assert_contains "Checkpoint: seed-agents-md trigger" 'edit.*seed-agents-md'
 # Pre-Flight git push gate
 assert_contains "Git push gate in Pre-Flight" 'git push.*confirmation'
-# Path Hygiene rule
-assert_contains "No explicit home paths" 'home.*user'
 
 # ── Scope Definitions ─────────────────────────────────────────────
 echo "=== Scope Definitions ==="
