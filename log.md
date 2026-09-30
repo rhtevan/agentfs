@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 22:09
+- Removed Path Hygiene from violation check — rule removed from AGENTS.md (skills/agentfs-violation-chk/SKILL.md)
+
+## 2026-09-29 22:02
+- Created agentfs-violation-chk skill — full behavioral self-audit for session rule/principle compliance (skills/agentfs-violation-chk/SKILL.md)
+- Enhanced Session Canary rule with lightweight self-violation check at re-verification points (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-09-29 21:46
 - Step 6: explicit instruction to render tool output in response message (skills/agentfs-git-push/SKILL.md)
 - v7.2.1 — Step 6: explicit instruction to render tool output in response message (skills/agentfs-git-push/SKILL.md)

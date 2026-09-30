@@ -248,7 +248,7 @@ Use available tools and knowledge at your discretion.
 ### 4. Session Canary
 
 **When:** Session begins or continuity check.
-**Do:** On session start, treat `AGENTS.md` as authoritative over other context files. Read `.agents/memories/USER.md` if it exists — apply preferences. Emit a random canary name on turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Re-read `.agents/memories/MEMORY.md` and `USER.md` on re-verification. Skip re-read if AGENTS.md content is confirmed still in context.
+**Do:** On session start, treat `AGENTS.md` as authoritative over other context files. Read `.agents/memories/USER.md` if it exists — apply preferences. Emit a random canary name on turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Re-read `.agents/memories/MEMORY.md` and `USER.md` on re-verification. Skip re-read if AGENTS.md content is confirmed still in context. At each re-verification, perform a lightweight self-violation check: silently review recent behavior against all rules and principles — report only if a violation is found. For a full behavioral audit, use `hey check violations`.
 
 ### 5. Conflict Resolution
 
@@ -264,11 +264,6 @@ Use available tools and knowledge at your discretion.
 
 **When:** Writing to `memories/` or creating a skill.
 **Do:** Memories are PROJECT scope only. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. When MEMORY.md accumulates ≥3 entries on the same topic, suggest graduation via `hey harvest`. Skills default to USER `~/.agents/skills/`; PROJECT only when user explicitly says "project skill" / "for this project" / "local skill".
-
-### 8. Path Hygiene
-
-**When:** Displaying or writing file paths.
-**Do:** Never use explicit home directory paths like `/home/<user>/`. Always use `~` or `$HOME`. Prefer `~/...` over `/home/<user>/...` in output.
 
 ## Signal Dispatch
 
