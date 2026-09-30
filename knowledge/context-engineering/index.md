@@ -1,8 +1,6 @@
 # Context Engineering
 
-> 5 concepts | Principles and patterns for engineering the instruction context
-> that reaches LLMs in agent frameworks. Derived from empirical analysis
-> of Goose + AgentFS across strong and weak models.
+5 concepts covering principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks. Derived from empirical analysis of Goose + AgentFS across strong and weak models.
 
 | Concept | Type | Description |
 |---------|------|-------------|
