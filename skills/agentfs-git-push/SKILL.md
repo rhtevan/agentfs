@@ -117,8 +117,10 @@ perform a semantic PII review of the staged memory content. Look for:
 ### Step 6 — Report
 
 Present the complete scan report in a **single turn**, rendered as
-Markdown (no code fence wrapping the tables — tables must display
-natively). Include:
+Markdown in the response message (no code fence wrapping the tables —
+tables must display natively). Tool call output is NOT visible to
+the user — you MUST copy the scan results into your response text.
+Include:
 
 - Scan findings table (with `✅ Known FP` / `⚠️ FOUND` status)
 - README audit results (if Step 4 was triggered)

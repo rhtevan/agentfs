@@ -303,6 +303,14 @@ not advisory — unlike the soft README staleness check in Guardrail #10.
 format. Rules are ordered by operational frequency (most-triggered
 first). No severity annotations — ordering IS priority.
 
+**Template versioning policy:** Follows semantic versioning:
+
+| Bump | When | Examples |
+|------|------|----------|
+| **MAJOR** (X.0.0) | Breaking change — rule format, section restructure, dispatch architecture | v6→v7: table→prose |
+| **MINOR** (x.Y.0) | Rules added, removed, merged, reordered. New sections. Behavioral change. | v7.2.0: 10→8 rules |
+| **PATCH** (x.y.Z) | Clarification, wording fix, resilience. No rule count/order change. | v7.2.1: git push gate |
+
 **AGENTS.md v7.2 rule structure:** 8 numbered rules (reduced from
 10 in v7.0, 17 in v5.x, consolidated from v6.0's 10). Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live

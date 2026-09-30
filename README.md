@@ -281,7 +281,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.2.0 enforces 8 operational rules as numbered subsections
+AgentFS v7.2.1 enforces 8 operational rules as numbered subsections
 (`### N. Name [PRIORITY]`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -537,7 +537,7 @@ Rules exist at three levels:
 
 | Level | Location | Scope | Purpose |
 |-------|----------|-------|----------|
-| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 10 structural rules; projects are aligned to this template |
+| **AgentFS template** | `seed-agents-md.sh` in the `agentfs-setup` skill | Cross-project | Canonical source of the 8 structural rules; projects are aligned to this template |
 | **AGENTS.md** | `./AGENTS.md` in each project | PROJECT | Rendered instance of the template rules, plus any project-specific additions |
 | **Agent config** | e.g. `~/.config/goose/instructions.md` | USER (agent-specific) | Agent-level instincts — path hygiene, git push safety, memory routing overrides |
 
@@ -550,7 +550,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.2.0 -->
+<!-- agentfs-template-version: 7.2.1 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

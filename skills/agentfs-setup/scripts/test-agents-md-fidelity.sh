@@ -182,6 +182,8 @@ assert_contains "Project skill signal words" 'project skill.*for this project.*l
 assert_contains "Quote conflicting rule" '[Qq]uote.*rule'
 # Checkpoint rule
 assert_contains "checkpoint create" 'checkpoint\.sh create'
+# Pre-Flight git push gate
+assert_contains "Git push gate in Pre-Flight" 'git push.*confirmation'
 # Path Hygiene rule
 assert_contains "No explicit home paths" 'home.*user'
 

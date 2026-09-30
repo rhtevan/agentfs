@@ -237,8 +237,8 @@ Use available tools and knowledge at your discretion.
 
 ### 2. Pre-Flight
 
-**When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt).
-**Do:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding.
+**When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt). Also before any `git push`.
+**Do:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ If plan includes `git push`, show `git diff --stat` and wait for user confirmation before pushing. ④ Execute steps in order. ⑤ Complete all steps before responding.
 
 ### 3. Post-Write
 

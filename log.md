@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 21:46
+- Step 6: explicit instruction to render tool output in response message (skills/agentfs-git-push/SKILL.md)
+- v7.2.1 — Step 6: explicit instruction to render tool output in response message (skills/agentfs-git-push/SKILL.md)
+
+## 2026-09-29 21:42
+- v7.2.1 — git push gate in Pre-Flight, versioning policy in design-spec (skills/agentfs-setup/SKILL.md)
+- v7.2.1 — git push gate in Pre-Flight, versioning policy in design-spec (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
+- v7.2.1 — git push gate in Pre-Flight, versioning policy in design-spec (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- v7.2.1 — git push gate in Pre-Flight, versioning policy in design-spec (skills/agentfs-setup/references/design-spec.md)
+
 ## 2026-09-29 21:27
 - v7.2.0 — rules consolidated 10→8, severity tags removed (knowledge/context-engineering/rule-ordering-by-frequency.md)
 - v7.2.0 — rules consolidated 10→8, severity tags removed (README.md)
