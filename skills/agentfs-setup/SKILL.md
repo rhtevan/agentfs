@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "7.1.2"
+  version: "7.2.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -267,23 +267,17 @@ overwriting existing content.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with fourteen rules
-as Trigger/Action pairs:
+The `seed-agents-md.sh` script creates `AGENTS.md` with 8 numbered rules
+in When/Do prose format, ordered by operational frequency:
 
-1. **Signal-First Dispatch** — scan skill descriptions before generic interpretation
-2. **Progressive Disclosure** — browse `index.md` before opening files
-3. **Cross-Agent Context Discovery** — read CLAUDE.md, .cursorrules, etc.
-4. **Skill Placement** — default to PROJECT, promote to USER when cross-project demand is proven
-5. **Filesystem Integrity** — log, changelog, index, link checks
-6. **Git Push Safety** — `load_skill(name: "agentfs-git-push")`
-7. **Checkpoints** — checkpoint before destructive ops
-8. **Context Enrichment** — consult knowledge index before acting on policy/domain
-9. **Memory Scope** — PROJECT-only; experiences not rules; graduation to OKF
-10. **Communication Style** — no sycophancy, lead with substance, name risks
-11. **Conflict Resolution** — don't reverse without new info, quote rules, log overrides
-12. **Anti-Daydreaming** — ephemeral session canary name; never persisted
-13. **Anti-Action-Sycophancy** — no action on assumed inputs; ask before acting on missing info; flag low confidence at top
-14. **Pre-Flight Checklist** — write action plan before multi-step changes; review against rules; execute in order; do not skip process obligations
+1. **Signal Dispatch** — route `hey`-prefixed messages per dispatch table
+2. **Pre-Flight** — state plan before multi-step tasks
+3. **Post-Write** — run post-write.sh after `.agents/` writes
+4. **Session Canary** — session continuity check; read USER.md on start
+5. **Conflict Resolution** — state what changed on reversal; `[OVERRIDE]` for rule conflicts
+6. **Checkpoint** — checkpoint before destructive `.agents/` ops
+7. **Scope Rules** — memories PROJECT-only; skills default USER; graduation to OKF
+8. **Path Hygiene** — use `~` not `/home/<user>/` in output
 
 ## Layer Reference
 

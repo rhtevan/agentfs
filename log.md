@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-09-29 21:27
+- v7.2.0 — rules consolidated 10→8, severity tags removed (knowledge/context-engineering/rule-ordering-by-frequency.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (README.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-git-push/SKILL.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/skill-harvest/SKILL.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/okf-bundle-harvest/SKILL.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-eval/SKILL.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-eval/scripts/template-check.sh)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-setup/SKILL.md)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-setup/scripts/pre-push-scan.sh)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- v7.2.0 — rules consolidated 10→8, severity tags removed (skills/agentfs-setup/references/design-spec.md)
+
 ## 2026-09-29 19:05
 - New concept in context-engineering bundle (knowledge/context-engineering/rule-ordering-by-frequency.md)
 - New concept in context-engineering bundle (knowledge/context-engineering/jit-reminder-recency-pattern.md)

@@ -213,7 +213,7 @@ cat > "$TARGET" << 'AGENTSEOF'
 
 **All rules are mandatory.** Override requires explicit user approval logged with `[OVERRIDE]` per the Conflict Resolution rule.
 
-### 1. Signal Dispatch [CRITICAL]
+### 1. Signal Dispatch
 
 **When:** User message starts with `hey` followed by keywords.
 **`hey` is a dispatch prefix — never a greeting.**
@@ -235,52 +235,37 @@ Browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md`. Follow li
 **Tier 2 fails → Tier 3:**
 Use available tools and knowledge at your discretion.
 
-### 2. Pre-Flight [HIGH]
+### 2. Pre-Flight
 
 **When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt).
 **Do:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ Execute steps in order. ④ Complete all steps before responding.
 
-### 3. Post-Write [HIGH]
+### 3. Post-Write
 
 **When:** Before sending any response where writes touched `.agents/` or `~/.agents/`.
 **Do:** `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). If the script does not exist, warn the user and recommend `hey setup agentfs`. Do not respond until complete.
 
-### 4. Session Start [NORMAL]
+### 4. Session Canary
 
-**When:** Session begins.
-**Do:** If other context files are loaded (e.g., `.goosehints`), treat as supplementary — `AGENTS.md` wins on conflict. Read `.agents/memories/USER.md` if it exists — apply preferences.
+**When:** Session begins or continuity check.
+**Do:** On session start, treat `AGENTS.md` as authoritative over other context files. Read `.agents/memories/USER.md` if it exists — apply preferences. Emit a random canary name on turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Re-read `.agents/memories/MEMORY.md` and `USER.md` on re-verification. Skip re-read if AGENTS.md content is confirmed still in context.
 
-### 5. Session Canary [NORMAL]
-
-**When:** Session continuity check.
-**Do:** Emit a random canary name on turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Re-read `.agents/memories/MEMORY.md` and `USER.md` on re-verification. Skip re-read if AGENTS.md content is confirmed still in context.
-
-### 6. Conflict Resolution [NORMAL]
+### 5. Conflict Resolution
 
 **When:** Reversing a position, or a request conflicts with a rule.
 **Do:** When reversing a position, state what changed and your previous position. When a request conflicts with a rule, quote the rule, explain the conflict, and ask for `[OVERRIDE]`.
 
-### 7. Checkpoint [NORMAL]
+### 6. Checkpoint
 
 **When:** Before destructive op (delete, rename, or edit ≥3 files under `.agents/`).
 **Do:** `bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>` → execute → `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Before editing any file containing `agentfs-template-version`, edit the template source in `seed-agents-md.sh` and run `sync-agents-md.sh` — never edit the project copy directly.
 
-### 8. Index-First Reading [LOW]
+### 7. Scope Rules
 
-**When:** First read of any `.agents/` file in session.
-**Do:** Browse that scope's `index.md` first, follow links to content.
+**When:** Writing to `memories/` or creating a skill.
+**Do:** Memories are PROJECT scope only. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. When MEMORY.md accumulates ≥3 entries on the same topic, suggest graduation via `hey harvest`. Skills default to USER `~/.agents/skills/`; PROJECT only when user explicitly says "project skill" / "for this project" / "local skill".
 
-### 9. Memory Scope [LOW]
-
-**When:** Writing to `memories/`.
-**Do:** PROJECT scope only. Experiences → `MEMORY.md`. Rules → propose `AGENTS.md` guardrail. Preferences → `USER.md`. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. When MEMORY.md accumulates ≥3 entries on the same topic, suggest graduation via `hey harvest`.
-
-### 10. Skill Scope [LOW]
-
-**When:** Creating a skill.
-**Do:** Default to USER `~/.agents/skills/`. PROJECT only when user explicitly says "project skill" / "for this project" / "local skill".
-
-### Path Hygiene [LOW]
+### 8. Path Hygiene
 
 **When:** Displaying or writing file paths.
 **Do:** Never use explicit home directory paths like `/home/<user>/`. Always use `~` or `$HOME`. Prefer `~/...` over `/home/<user>/...` in output.

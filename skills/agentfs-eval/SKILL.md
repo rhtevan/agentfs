@@ -211,9 +211,9 @@ Validates that the AGENTS.md prose is structurally sound and behaviorally effect
 |----|-----------|
 | A1 | **Token budget** — template-owned content ≤ 2000 tokens |
 | A2 | **Section order** — Scopes before Rules |
-| A3 | **Rule completeness** — all 18 rules present |
+| A3 | **Rule completeness** — all 8 numbered rules present |
 | A4 | **Context lookup fallback** — fallback note present for when `search_nodes` unavailable |
-| A5 | **Skill discovery in Rule 8** — names `search_nodes` and `load_skill` |
+| A5 | **Skill discovery in Signal Dispatch rule** — names `search_nodes` and `load_skill` |
 | A7 | **Redundancy** — skill lookup procedure not defined in 3+ places |
 | A8 | **WHY vs HOW** — no explanatory prose in rule cells |
 | A9 | **Version consistency** — template version matches skill version |
@@ -229,7 +229,7 @@ Replays fixed user inputs and asserts the model's first tool call.
 | ID | Input | Expected Tool | Catches |
 |----|-------|--------------|---------|
 | B1 | "skupper status" | `load_skill` | Model using shell/extensionmanager for skill discovery |
-| B2 | "hey git" | `load_skill` | Rule 7 signal not triggering |
+| B2 | "hey git" | `load_skill` | Signal Dispatch not triggering |
 | B3 | "check crc status" | `load_skill` | Model going to extensionmanager |
 
 Run against each provider/model to build a compatibility matrix.

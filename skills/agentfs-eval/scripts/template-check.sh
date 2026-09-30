@@ -84,20 +84,20 @@ if [ -n "$DISPATCH_LINE" ] && [ -n "$RULES_LINE" ]; then
 fi
 
 # ── A3: Rule Completeness ─────────────────────────────────────────────
-# v7.0.0: 10 numbered rules as ### headings (### N. Name [PRIORITY])
+# v7.2.0: 8 numbered rules as ### headings (### N. Name) — no severity tags
 # v6.x: 10 rules as table rows (| N | Event|Signal|Always |)
 # Detect format and validate accordingly.
-EXPECTED_RULES=10
+EXPECTED_RULES=8
 
-# Try v7+ heading format first
-HEADING_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^### [0-9]+\. .+ \[' || true)
+# Try v7.2+ heading format first (no severity tags)
+HEADING_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^### [0-9]+\. ' || true)
 # Fall back to v6 table format
 TABLE_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^\| [0-9]+ \| (Event|Signal|Always) \|' || true)
 
 if [ "$HEADING_RULE_COUNT" -gt 0 ]; then
-  # v7+ format: ### N. Name [PRIORITY]
+  # v7.2+ format: ### N. Name (no severity tag)
   for i in $(seq 1 $EXPECTED_RULES); do
-    if ! echo "$CONTENT" | grep -qP "^### $i\. .+ \["; then
+    if ! echo "$CONTENT" | grep -qP "^### $i\. "; then
       result_fail "A3: Rule $i missing from rules headings"
     fi
   done

@@ -298,21 +298,27 @@ or template structure changes, the README (`~/.agents/README.md`) MUST
 be updated in the same commit or session. This is a hard requirement,
 not advisory — unlike the soft README staleness check in Guardrail #10.
 
-**AGENTS.md v6.0.0 rule structure:** 10 rules (reduced from 17 in v5.x),
-organized by lifecycle phase. Behavioral norms (no validation phrases,
-no assumed inputs, risk naming) moved to SOUL.md Principles.
+**Rule format (v7.2+):** Every rule MUST be (1) numbered with
+`### N. Name` heading, (2) written in `**When:**` / `**Do:**` prose
+format. Rules are ordered by operational frequency (most-triggered
+first). No severity annotations — ordering IS priority.
 
-AGENTS.md rules enforce operational concerns only:
-1. ⚖️ **Context Priority** — AGENTS.md wins conflicts; load USER.md
-2. 🔄 **Signal Dispatch** — route `hey`-prefixed messages per dispatch table
-3. 🔄 **Progressive Disclosure** — browse `index.md` before opening files
-4. ⛔ **Checkpoints** — checkpoint before destructive `.agents/` ops
-5. ⚖️ **Skill Placement** — default USER scope; PROJECT only when explicit
-6. ⚖️ **Memory Scope** — memories PROJECT-only; graduation path to OKF
-7. ⛔ **Post-Write Hook** — run `post-write.sh` after `.agents/` writes
-8. ⛔ **Pre-Flight** — enumerate steps and obligations before multi-step tasks
-9. ⚖️ **Override Protocol** — state what changed on reversal; `[OVERRIDE]` for rule conflicts
-10. 🔄 **Anti-Daydreaming** — session canary; periodic SOUL Principles re-read
+**AGENTS.md v7.2 rule structure:** 8 numbered rules (reduced from
+10 in v7.0, 17 in v5.x, consolidated from v6.0's 10). Behavioral
+norms (no validation phrases, no assumed inputs, risk naming) live
+in SOUL.md Principles. Rules enforce operational concerns only:
+
+1. **Signal Dispatch** — route `hey`-prefixed messages per dispatch table
+2. **Pre-Flight** — enumerate steps and obligations before multi-step tasks
+3. **Post-Write** — run `post-write.sh` after `.agents/` writes
+4. **Session Canary** — session continuity check; read USER.md on start
+5. **Conflict Resolution** — state what changed on reversal; `[OVERRIDE]` for rule conflicts
+6. **Checkpoint** — checkpoint before destructive `.agents/` ops
+7. **Scope Rules** — memories PROJECT-only; skills default USER; graduation to OKF
+8. **Path Hygiene** — use `~` not `/home/<user>/` in output
+
+**AGENTS.md v6.0.0 rule structure (historical):** 10 rules,
+organized by lifecycle phase.
 
 The underlying design guardrails remain:
 - 🔄 **Idempotency** — every skill and workflow must be idempotent

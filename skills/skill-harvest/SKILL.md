@@ -22,8 +22,8 @@ disable-model-invocation: false
 Harvest procedural knowledge from project-scoped `MEMORY.md` files and
 distill them into reusable skills under `~/.agents/skills/`.
 
-This skill completes the **graduation path** defined in AgentFS
-Guardrail #2 (Memory Scope & Signal Routing), targeting **procedural memory** — the counterpart to
+This skill completes the **graduation path** defined in the
+Scope Rules rule in AGENTS.md, targeting **procedural memory** — the counterpart to
 `okf-bundle-harvest` which handles declarative/semantic knowledge.
 
 > When episodic memories accumulate into repeatable action sequences,

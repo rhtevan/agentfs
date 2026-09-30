@@ -31,26 +31,30 @@ skipped. The model prioritized task execution over procedural
 guardrails that were buried behind higher-priority rules it
 encountered less frequently.
 
-## The Fix (v7.1.0)
+## The Fix (v7.1.0 → v7.2.0)
 
-Reordered by operational frequency with priority tags:
+Reordered by operational frequency. Severity tags removed in v7.2.0
+after empirical evidence showed no measurable effect on model
+adherence — ordering alone is the mechanism.
 
-| Position | Rule | Priority | Frequency |
-|:--------:|------|----------|-----------|
-| 1 | Signal Dispatch | CRITICAL | Every `hey` message |
-| 2 | Pre-Flight | HIGH | Every multi-step task |
-| 3 | Post-Write | HIGH | Every `.agents/` write |
-| 4 | Session Start | NORMAL | Once per session |
-| 5 | Session Canary | NORMAL | Periodic |
-| 6 | Conflict Resolution | NORMAL | Occasional |
-| 7–10 | Checkpoint, Index, Memory, Skill | LOW–NORMAL | Infrequent |
+| Position | Rule | Frequency |
+|:--------:|------|-----------|
+| 1 | Signal Dispatch | Every `hey` message |
+| 2 | Pre-Flight | Every multi-step task |
+| 3 | Post-Write | Every `.agents/` write |
+| 4 | Session Canary | Session start + periodic |
+| 5 | Conflict Resolution | Occasional |
+| 6 | Checkpoint | Infrequent |
+| 7 | Scope Rules | Infrequent |
+| 8 | Path Hygiene | Infrequent |
 
 ## The Principle
 
 **Order rules so that the most frequently triggered rules are
 encountered first during the model's initial scan of the instruction
-block.** Priority tags serve as additional attention anchors — the
-model scans for `[CRITICAL]` and `[HIGH]` markers.
+block.** Position in token stream is the primary attention mechanism.
+Severity annotations were removed in v7.2.0 — no controlled evidence
+they influence model behavior beyond what ordering already provides.
 
 ## Harvested From
 
@@ -61,7 +65,7 @@ model scans for `[CRITICAL]` and `[HIGH]` markers.
 ## Implications
 
 - Rules the model encounters first get better adherence
-- Priority tags (CRITICAL/HIGH/NORMAL/LOW) serve as attention anchors
+- Ordering IS priority — no separate severity annotations needed
 - Use named rule references, not numbered — names are stable when
   order changes
 - Lifecycle grouping is useful for human documentation, not for

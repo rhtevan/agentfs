@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# test-agents-md-fidelity.sh — Validate AGENTS.md structure and content (v7.0.0+).
+# test-agents-md-fidelity.sh — Validate AGENTS.md structure and content (v7.2.0+).
 #
 # Usage: bash test-agents-md-fidelity.sh [path-to-agents-md]
 #   Defaults to ./AGENTS.md in current directory.
 #
 # Validates:
-#   - v7 section structure (prose rules with priority tags)
-#   - All rules present with named headers
+#   - v7.2 section structure (numbered prose rules, no severity tags)
+#   - All 8 rules present with named headers in When/Do format
 #   - Signal Dispatch table completeness
 #   - Script existence and references
 #   - Behavioral keywords and fidelity
 #   - Scope definitions
 #   - Project-owned sections (Agent Profiles, SPECKIT)
-#   - No stale numbered rule references
+#   - No stale numbered rule references or severity tags
 
 set -euo pipefail
 
@@ -65,8 +65,8 @@ assert_script_exists() {
 
 SCRIPTS_DIR="$HOME/.agents/skills/agentfs-setup/scripts"
 
-# ── v7 Section Structure ──────────────────────────────────────────
-echo "=== Section Structure (v7) ==="
+# ── v7.2 Section Structure ────────────────────────────────────────
+echo "=== Section Structure (v7.2) ==="
 assert_contains "Template version marker" 'agentfs-template-version:.*7\.'
 assert_contains "Quick Orientation heading" '^## Quick Orientation'
 assert_contains "Signal Dispatch heading" '^## Signal Dispatch'
@@ -78,41 +78,44 @@ assert_contains "SPECKIT START marker" '<!-- SPECKIT START -->'
 assert_contains "SPECKIT END marker" '<!-- SPECKIT END -->'
 assert_contains "PROJECT-OWNED marker" 'PROJECT-OWNED'
 
-# ── v5/v6 Sections REMOVED ────────────────────────────────────────
+# ── v5/v6/v7.0 Sections REMOVED ──────────────────────────────────
 echo "=== Legacy Sections Removed ==="
 assert_not_contains "No flat rules table" '^\| # \| Type \| Stimulus'
 assert_not_contains "No Guardrail Quick Reference" '^## Guardrail Quick Reference'
 assert_not_contains "No Structural Guardrails heading" '^## AgentFS Structural Guardrails'
+assert_not_contains "No severity tags in rule headings" '### [0-9]+\. .* \[(CRITICAL|HIGH|NORMAL|LOW)\]'
+assert_not_contains "No unnumbered rule headings under Rules" '^### [A-Z][a-z].* \[(CRITICAL|HIGH|NORMAL|LOW)\]'
 
-# ── Named Rules in Prose Format ────────────────────────────────────
-echo "=== Named Rules (prose format with priority tags) ==="
-assert_contains "Signal Dispatch rule [CRITICAL]" '### 1\. Signal Dispatch \[CRITICAL\]'
-assert_contains "Pre-Flight rule [HIGH]" '### 2\. Pre-Flight \[HIGH\]'
-assert_contains "Post-Write rule [HIGH]" '### 3\. Post-Write \[HIGH\]'
-assert_contains "Session Start rule [NORMAL]" '### 4\. Session Start \[NORMAL\]'
-assert_contains "Session Canary rule [NORMAL]" '### 5\. Session Canary \[NORMAL\]'
-assert_contains "Conflict Resolution rule [NORMAL]" '### 6\. Conflict Resolution \[NORMAL\]'
-assert_contains "Checkpoint rule [NORMAL]" '### 7\. Checkpoint \[NORMAL\]'
-assert_contains "Index-First Reading rule [LOW]" '### 8\. Index-First Reading \[LOW\]'
-assert_contains "Memory Scope rule [LOW]" '### 9\. Memory Scope \[LOW\]'
-assert_contains "Skill Scope rule [LOW]" '### 10\. Skill Scope \[LOW\]'
-assert_contains "Path Hygiene rule [LOW]" '### Path Hygiene \[LOW\]'
+# ── Named Rules (numbered, When/Do prose, no severity) ────────────
+echo "=== Named Rules (numbered, When/Do prose) ==="
+assert_contains "Rule 1: Signal Dispatch" '^### 1\. Signal Dispatch$'
+assert_contains "Rule 2: Pre-Flight" '^### 2\. Pre-Flight$'
+assert_contains "Rule 3: Post-Write" '^### 3\. Post-Write$'
+assert_contains "Rule 4: Session Canary" '^### 4\. Session Canary$'
+assert_contains "Rule 5: Conflict Resolution" '^### 5\. Conflict Resolution$'
+assert_contains "Rule 6: Checkpoint" '^### 6\. Checkpoint$'
+assert_contains "Rule 7: Scope Rules" '^### 7\. Scope Rules$'
+assert_contains "Rule 8: Path Hygiene" '^### 8\. Path Hygiene$'
+
+# Removed rules must not be present
+assert_not_contains "No Session Start rule" '^### [0-9]+\. Session Start'
+assert_not_contains "No Index-First Reading rule" '^### [0-9]+\. Index-First Reading'
+assert_not_contains "No Memory Scope rule" '^### [0-9]+\. Memory Scope'
+assert_not_contains "No Skill Scope rule" '^### [0-9]+\. Skill Scope'
 
 # Rule count (### N. heading format)
 RULE_COUNT=$(grep -cE '^### [0-9]+\.' "$TARGET" || true)
 echo ""
-if [[ "$RULE_COUNT" -ge 10 ]]; then
+if [[ "$RULE_COUNT" -eq 8 ]]; then
   echo "  ✅ Numbered rule count: $RULE_COUNT"
   PASSED=$((PASSED + 1))
 else
-  echo "  ❌ Numbered rule count: expected ≥10, got $RULE_COUNT"
+  echo "  ❌ Numbered rule count: expected 8, got $RULE_COUNT"
   FAILED=$((FAILED + 1))
 fi
 
 # ── No Stale Numbered References ──────────────────────────────────
 echo "=== No Stale Numbered References ==="
-# Check that no "Rule N" or "Guardrail #N" appears outside of
-# rule headings (### N.) and the override preamble
 STALE_REFS=$(grep -nE '(per|follow|see|via) Rule [0-9]|Guardrail #[0-9]' "$TARGET" || true)
 if [[ -z "$STALE_REFS" ]]; then
   echo "  ✅ No stale numbered rule references"
@@ -165,20 +168,18 @@ assert_contains "Keyword: Conflict Resolution" 'Conflict Resolution'
 
 # ── Behavioral Fidelity ───────────────────────────────────────────
 echo "=== Behavioral Fidelity ==="
-# Memory Scope rule
+# Session Canary rule (absorbs Session Start)
+assert_contains "AGENTS.md wins conflicts" 'authoritative.*other context'
+assert_contains "Read USER.md on start" 'USER\.md.*preferences'
+assert_contains "Re-read memories on re-verify" 'MEMORY\.md.*USER\.md.*re-verification'
+# Scope Rules
 assert_contains "Graduation to OKF" '[Gg]raduat'
 assert_contains "PROJECT scope for memories" 'PROJECT scope only'
-assert_contains "Preferences to USER.md" 'Preferences.*USER\.md'
 assert_contains "Graduation via harvest" 'hey harvest'
-# Session Start rule
-assert_contains "AGENTS.md wins conflicts" 'wins.*conflict'
-# Skill Scope rule
-assert_contains "Default to USER" 'Default to USER'
-assert_contains "Project signal words" 'project skill.*for this project.*local skill'
+assert_contains "Default skills to USER" '[Dd]efault.* USER'
+assert_contains "Project skill signal words" 'project skill.*for this project.*local skill'
 # Conflict Resolution rule
 assert_contains "Quote conflicting rule" '[Qq]uote.*rule'
-# Session Canary rule
-assert_contains "Re-read memories on re-verify" 'MEMORY\.md.*USER\.md.*re-verification'
 # Checkpoint rule
 assert_contains "checkpoint create" 'checkpoint\.sh create'
 # Path Hygiene rule

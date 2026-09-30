@@ -207,7 +207,7 @@ fi
 # corresponding log.md entry for today. post-write.sh leaves a trace
 # in log.md that includes the filename — absence means it was skipped.
 # This is an L3→L2 graduation: deterministic enforcement of Rule 3
-# (Post-Write [HIGH]) which the model may skip mid-workflow.
+# (Post-Write rule) which the model may skip mid-workflow.
 PW_GAPS=""
 # Self-referential / auto-generated files that post-write.sh skips
 PW_SKIP_PATTERN='(log\.md|CHANGELOG\.md|index\.md|\.kgm-|\.session-marker|\.checkpoint|\.pre-push-allowlist|\.gitignore|template-scores\.md|patterns\.txt|plugin\.json)'

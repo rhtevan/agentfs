@@ -15,7 +15,7 @@ Prevent accidental commit of secrets, PII, hardcoded paths, and
 stale README content to git repositories. The workflow enforces a
 two-phase safety model: deterministic scan (script) followed by a
 mandatory human confirmation gate. This skill absorbs the full Git
-Push Safety workflow previously inline in AGENTS.md Guardrail #10
+Push Safety workflow previously inline in AGENTS.md (delegated to this skill)
 (v4.x), ensuring the agent cannot skip, reorder, or combine steps.
 
 ## Prerequisites

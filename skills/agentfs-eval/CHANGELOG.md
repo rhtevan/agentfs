@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |
 | 2026-09-29 14:44 | v1.7.0 — Updated A3 and A8 assertions for v7.0.0 heading-format rules |
 | 2026-09-27 23:47 | v1.6.2 — Tighten behavioral tests: expected first tool is search_nodes only (not search_nodes OR load_skill), load_skill moved to anti-pattern list |
 | 2026-09-27 23:35 | v1.6.1 — Fix B2 expected tool order: search_nodes before load_skill, matching Rule 2 fallthrough sequence |
