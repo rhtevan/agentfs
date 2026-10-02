@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# merge-score-entry.sh — Append or update a row in the AgentFS score sheet.
+# merge-score-entry.sh — Append a row to the AgentFS score sheet.
 #
 # Usage:
 #   bash merge-score-entry.sh <VERSION> <MODEL> [--template-score N] [--behavioral N/M] [--notes "text"]
@@ -15,8 +15,8 @@
 #
 # Behaviour:
 #   - Score sheet: ~/.agents/skills/agentfs-eval/references/template-scores.md
-#   - If a row for this VERSION + MODEL exists, updates it in-place
-#   - Otherwise inserts a new row after the separator (reverse chronological)
+#   - Always inserts a new row (append-only — never overwrites history)
+#   - Newest entries at top (reverse chronological)
 #   - Creates the score sheet with correct structure if missing
 #
 # Exit codes:
@@ -59,61 +59,26 @@ HEADER
   echo "[merge-score] Created $SCORE_FILE"
 fi
 
-# ── Check for existing row with this VERSION + MODEL ─────────────────
-MATCH_PATTERN="| ${VERSION} | ${MODEL} |"
+# ── Always append a new row (newest first) ───────────────────────────
+T_SCORE="${TEMPLATE_SCORE:-—}"
+B_SCORE="${BEHAVIORAL:-—}"
+NEW_ROW="| ${TODAY} | ${VERSION} | ${MODEL} | ${T_SCORE} | ${B_SCORE} | ${NOTES} |"
 
-if grep -qF "$MATCH_PATTERN" "$SCORE_FILE" 2>/dev/null; then
-  # Update existing row — never overwrite a valid score (N/M) with "—"
-  python3 -c "
-import sys, re
-
-lines = open('$SCORE_FILE').readlines()
-out = []
-for line in lines:
-    if '| $VERSION | $MODEL |' in line:
-        parts = [p.strip() for p in line.split('|')]
-        # parts: ['', Date, Version, Model, TemplateScore, Behavioral, Notes, '']
-        if len(parts) >= 8:
-            parts[1] = '$TODAY'
-            new_tscore = '$TEMPLATE_SCORE'
-            new_behavioral = '$BEHAVIORAL'
-            new_notes = '$NOTES'
-            # Only update template score if new value is not blank/dash
-            # or existing value is blank/dash
-            if new_tscore and (new_tscore != '—' or parts[4] in ('', '—')):
-                parts[4] = new_tscore
-            if new_behavioral and (new_behavioral != '—' or parts[5] in ('', '—')):
-                parts[5] = new_behavioral
-            if new_notes:
-                parts[6] = new_notes
-            line = '| ' + ' | '.join(parts[1:-1]) + ' |\n'
-    out.append(line)
-open('$SCORE_FILE', 'w').writelines(out)
-" 2>/dev/null
-  echo "[merge-score] ✓ Updated: v${VERSION} / ${MODEL} in $SCORE_FILE"
-else
-  # Insert new row after separator (newest first)
-  T_SCORE="${TEMPLATE_SCORE:-—}"
-  B_SCORE="${BEHAVIORAL:-—}"
-  NEW_ROW="| ${TODAY} | ${VERSION} | ${MODEL} | ${T_SCORE} | ${B_SCORE} | ${NOTES} |"
-
-  awk -v new_row="$NEW_ROW" '
-    /^\|[-]+\|[-]+\|/ && !inserted {
-      print
-      print new_row
-      inserted = 1
-      next
-    }
-    { print }
-  ' "$SCORE_FILE" > "$SCORE_FILE.tmp"
-  mv "$SCORE_FILE.tmp" "$SCORE_FILE"
-  echo "[merge-score] ✓ Added: v${VERSION} / ${MODEL} to $SCORE_FILE"
-fi
+awk -v new_row="$NEW_ROW" '
+  /^\|[-]+\|[-]+\|/ && !inserted {
+    print
+    print new_row
+    inserted = 1
+    next
+  }
+  { print }
+' "$SCORE_FILE" > "$SCORE_FILE.tmp"
+mv "$SCORE_FILE.tmp" "$SCORE_FILE"
+echo "[merge-score] ✓ Added: v${VERSION} / ${MODEL} to $SCORE_FILE"
 
 # ── Post-write integrity check ──────────────────────────────────────
-# Ensure header row was not lost during insert/update
+# Ensure header row was not lost during insert
 if ! grep -q "^| Date | Version | Model |" "$SCORE_FILE"; then
-  # Re-insert header above the separator
   sed -i '/^|[-]\+|[-]\+|/i | Date | Version | Model | Template Score | Behavioral | Notes |' "$SCORE_FILE"
   echo "[merge-score] ⚠️  Repaired missing header row" >&2
 fi

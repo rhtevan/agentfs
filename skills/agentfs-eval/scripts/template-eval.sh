@@ -62,8 +62,8 @@ echo ""
 
 # ── Step 1: Deterministic template check ─────────────────────────────
 echo "── Template Quality Check ──"
-TEMPLATE_OUTPUT=$(bash "$SCRIPT_DIR/template-check.sh" "$TARGET" 2>&1)
-TEMPLATE_EXIT=$?
+TEMPLATE_EXIT=0
+TEMPLATE_OUTPUT=$(bash "$SCRIPT_DIR/template-check.sh" "$TARGET" 2>&1) || TEMPLATE_EXIT=$?
 echo "$TEMPLATE_OUTPUT"
 
 # Extract score from captured output
@@ -109,7 +109,8 @@ VERSION_TAG=$(grep -oP 'agentfs-template-version: \K[0-9.]+' "$TARGET/AGENTS.md"
 bash "$SCRIPT_DIR/merge-score-entry.sh" \
   "$VERSION_TAG" "$MODEL" \
   --template-score "$TEMPLATE_SCORE" \
-  --behavioral "$BEHAVIORAL"
+  --behavioral "$BEHAVIORAL" \
+  --notes "Behavioral: ${PROVIDER}/${MODEL}"
 
 echo ""
 echo "── Score History ──"

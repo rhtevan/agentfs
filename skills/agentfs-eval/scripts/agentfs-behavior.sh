@@ -196,8 +196,8 @@ if ! $GIT_AVAILABLE || ! $USER_GIT_AVAILABLE; then
 else
   # Check if any PROJECT git commits happened at the same time as USER git commits
   # This is a simplified heuristic: look for commits within ±2 minutes of each other
-  PROJECT_COMMIT_TIMES=$(git -C "$TARGET" log --format='%at' -- .agents/ 2>/dev/null | head -50)
-  USER_COMMIT_TIMES=$(git -C "$USER_AGENTS" log --format='%at' 2>/dev/null | head -50)
+  PROJECT_COMMIT_TIMES=$(git -C "$TARGET" log --max-count=50 --format='%at' -- .agents/ 2>/dev/null || true)
+  USER_COMMIT_TIMES=$(git -C "$USER_AGENTS" log --max-count=50 --format='%at' 2>/dev/null || true)
 
   if [ -z "$PROJECT_COMMIT_TIMES" ] || [ -z "$USER_COMMIT_TIMES" ]; then
     result_na "B3: Scope Leakage — N/A (insufficient commit history)"

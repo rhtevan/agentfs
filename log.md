@@ -2,6 +2,34 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-02 16:22
+- v7.3.0: Rule 2 cross-references Rule 3 (Post-Write) and Rule 6 (Checkpoint). Rule 4 noise removal — clearer obligations. Rule 1 step 2 trimmed redundancy. Quick Orientation and Scope Definitions signal-to-noise improvements. Harvest dispatch row trimmed. (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-02 15:19
+- Bug fixes: S04 SIGPIPE, S07 regex false positives, S08 backtick stripping, S12 fence count, find || true for missing scripts/ dir (skills/skill-eval/scripts/skill-check.sh)
+
+## 2026-10-02 15:06
+- Removed R4 (skill-accuracy) — skill evaluation moved to skill-eval. agentfs-eval now focuses on workspace health only. (skills/agentfs-eval/SKILL.md)
+- New skill: skill-eval v1.0.0 — deterministic checks S01-S22 (P1-P7), LLM rubrics S23-S26. Refactored out of agentfs-eval R4. (skills/skill-eval/SKILL.md)
+
+## 2026-10-02 13:35
+- Added concrete tool call example to Signal Dispatch Rule 1 Path B: shows knowledgegraphmemory__search_nodes(query:...) for weaker model reliability (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-02 13:33
+- Added --notes to merge-score-entry call (single recorder for both template + behavioral) (skills/agentfs-eval/scripts/template-eval.sh)
+- Removed duplicate merge-score-entry call — template-eval.sh is the single score recorder (skills/agentfs-eval/scripts/template-behavioral.sh)
+- Changed to append-only: never overwrites historical score entries. Removed update-in-place logic. (skills/agentfs-eval/scripts/merge-score-entry.sh)
+
+## 2026-10-02 13:12
+- Fixed B3 SIGPIPE crash: replaced 'git log | head -50' with 'git log --max-count=50' to avoid pipe break with set -euo pipefail (skills/agentfs-eval/scripts/agentfs-behavior.sh)
+
+## 2026-10-02 12:44
+- Fixed set -e crash: template-check.sh non-zero exit killed template-eval.sh before score extraction. Used || TEMPLATE_EXIT=$? pattern to survive failures and still record scores.
+
+## 2026-10-02 12:35
+- Fixed A3 EXPECTED_RULES 8→7: Rule 8 (Path Hygiene) was removed in v7.0.0 but check script was not updated (skills/agentfs-eval/scripts/template-check.sh)
+- Fixed A3 EXPECTED_RULES 8→7: Rule 8 (Path Hygiene) was removed in v7.0.0 but check script was not updated (skills/agentfs-eval/scripts/template-check.sh)
+
 ## 2026-09-30 14:24
 - Fixed context-engineering/index.md: removed blockquote markers from summary that broke GitHub Pages rendering (knowledge/index.md)
 

@@ -266,15 +266,8 @@ echo ""
 echo "Results: $PASS/$TOTAL pass, $FAIL fail"
 echo "Provider: ${PROVIDER}${MODEL:+ / $MODEL}"
 
-# Auto-append to score sheet via deterministic script
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-VERSION_TAG=$(grep -oP 'agentfs-template-version: \K[0-9.]+' "$TARGET/AGENTS.md" 2>/dev/null || echo "unknown")
-MODEL_SHORT="${MODEL:-$(grep -oP 'model: \K\S+' "$HOME/.config/goose/config.yaml" 2>/dev/null | head -1)}"
-BEHAVIORAL="${PASS}/${TOTAL}"
-
-bash "$SCRIPT_DIR/merge-score-entry.sh" "$VERSION_TAG" "$MODEL_SHORT" \
-  --behavioral "$BEHAVIORAL" \
-  --notes "Behavioral: ${PROVIDER}/${MODEL_SHORT}"
+# Score recording is handled by template-eval.sh (single recorder).
+# This script only reports results; it does not write to the score sheet.
 
 echo ""
 echo "⚠️  Results are final. DO NOT re-run — behavioral scores reflect model capability."

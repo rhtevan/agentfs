@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-02 15:06 | v1.8.0 — Removed R4 (skill-accuracy) — skill evaluation moved to skill-eval. agentfs-eval now focuses on workspace health only. |
+| 2026-10-02 12:35 | v1.7.1 — Fixed A3 EXPECTED_RULES 8→7: Rule 8 (Path Hygiene) was removed in v7.0.0 but check script was not updated |
 | 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |
 | 2026-09-29 14:44 | v1.7.0 — Updated A3 and A8 assertions for v7.0.0 heading-format rules |
 | 2026-09-27 23:47 | v1.6.2 — Tighten behavioral tests: expected first tool is search_nodes only (not search_nodes OR load_skill), load_skill moved to anti-pattern list |

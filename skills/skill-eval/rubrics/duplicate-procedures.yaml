@@ -1,0 +1,33 @@
+# S24: Duplicate or conflicting procedures
+#
+# Checks P3 (Traceable) — no redundant or conflicting instructions.
+
+id: duplicate-procedures
+version: 1
+principle: P3
+check_id: S24
+severity: warn
+target: "SKILL.md full content"
+
+prompt_template: |
+  You are a technical reviewer. Read the following skill document
+  and answer ONLY the question below.
+
+  SKILL DOCUMENT:
+  "{entry}"
+
+  QUESTION: Does this document contain duplicate or conflicting
+  procedures — the same operation described in two different places,
+  or two procedures that contradict each other?
+
+  A) No — each procedure appears once and there are no contradictions
+  B) Yes — at least one procedure is duplicated or two procedures
+     conflict with each other
+
+  Answer with ONLY the letter (A or B).
+
+pass_answers: ["A"]
+fail_answers: ["B"]
+fail_routing:
+  B: "Duplicate or conflicting procedures found — consolidate to a single source of truth"
+vote_count: 1

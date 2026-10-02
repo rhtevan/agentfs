@@ -3,7 +3,7 @@ name: agentfs-eval
 description: >
   eval agentfs, agentfs health, agentfs status, agentfs score, maturity check
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -243,7 +243,7 @@ Constrained LLM classification. Rubrics in `rubrics/` directory.
 | R1 | `memory-classification.yaml` | Each entry in `MEMORY.md` | "Is this an experience (A), a rule (B), or a preference (C)?" |
 | R2 | `reference-verification.yaml` | `MEMORY.md` entries mentioning files/functions | LLM extracts references → script checks if they exist |
 | R3 | `sycophancy-detection.yaml` | `log.md` entries + `AGENTS.md` guardrails | "Does this logged action contradict any guardrail?" |
-| R4 | `skill-accuracy.yaml` | `SKILL.md` files with shell code blocks | `shellcheck` + `which` on commands, then LLM checks logical flow |
+
 
 ### Anti-Bias Design
 
@@ -283,7 +283,7 @@ This skill is designed to enforce three non-negotiable principles:
 - **Hallucination**: Structural checks catch invented files/links (S1, S7);
   reference verification catches invented references (R2)
 - **Stochasticity**: Structured formats reduce output variance (S4);
-  majority vote reduces classification noise (R1–R4)
+  majority vote reduces classification noise (R1–R3)
 - **Sycophancy**: Anti-sycophancy detection catches guardrail violations (R3);
   rule-in-memory heuristic catches mis-routed content (B5, R1)
 
@@ -298,7 +298,7 @@ This skill is designed to enforce three non-negotiable principles:
 - `rubrics/memory-classification.yaml` → `load_skill(name: "agentfs-eval/rubrics/memory-classification.yaml")`
 - `rubrics/reference-verification.yaml` → `load_skill(name: "agentfs-eval/rubrics/reference-verification.yaml")`
 - `rubrics/sycophancy-detection.yaml` → `load_skill(name: "agentfs-eval/rubrics/sycophancy-detection.yaml")`
-- `rubrics/skill-accuracy.yaml` → `load_skill(name: "agentfs-eval/rubrics/skill-accuracy.yaml")`
+
 - `templates/report.md` → `load_skill(name: "agentfs-eval/templates/report.md")`
 - `references/design-decisions.md` → `load_skill(name: "agentfs-eval/references/design-decisions.md")`
 - `references/template-scores.md` → `load_skill(name: "agentfs-eval/references/template-scores.md")`
@@ -308,6 +308,7 @@ This skill is designed to enforce three non-negotiable principles:
 - **`agentfs-setup`** — Scaffolds the `.agents/` directory that eval assesses
 - **`agentfs-profile`** — Creates profiles whose structure eval verifies
 - **`skill-index`** — Maintains the `skills/index.md` that eval checks
+- **`skill-eval`** — Evaluates individual skill quality (P1–P7 principles). `agentfs-eval` does NOT inspect skill internals — that responsibility belongs to `skill-eval`.
 
 
 ## Changelog

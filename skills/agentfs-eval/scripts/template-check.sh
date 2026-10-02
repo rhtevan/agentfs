@@ -84,10 +84,11 @@ if [ -n "$DISPATCH_LINE" ] && [ -n "$RULES_LINE" ]; then
 fi
 
 # ── A3: Rule Completeness ─────────────────────────────────────────────
-# v7.2.0: 8 numbered rules as ### headings (### N. Name) — no severity tags
+# v7.2.3: 7 numbered rules as ### headings (### N. Name) — no severity tags
+#   Rule 8 (Path Hygiene) removed in v7.0.0 — redundant with pre-push-scan
 # v6.x: 10 rules as table rows (| N | Event|Signal|Always |)
 # Detect format and validate accordingly.
-EXPECTED_RULES=8
+EXPECTED_RULES=7
 
 # Try v7.2+ heading format first (no severity tags)
 HEADING_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^### [0-9]+\. ' || true)

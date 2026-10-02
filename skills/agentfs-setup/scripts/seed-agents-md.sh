@@ -91,8 +91,7 @@ if [[ -f "$TARGET" ]]; then
         sed -i '/## AgentFS Structural Guardrails/i \
 ## Scope Definitions\
 \
-AgentFS operates in two scopes. These definitions are canonical —\
-all guardrails, skills, and documentation reference them.\
+AgentFS operates in two scopes.\
 \
 | Scope | Root Path | Purpose |\
 |-------|-----------|----------|\
@@ -223,7 +222,8 @@ If keywords match a Signal Dispatch entry below → execute that action directly
 
 **Path B — Skill/Knowledge dispatch (all other `hey` signals):**
 1. Call `search_nodes` with the literal keywords (mandatory — enforced by plugin hook; other tools are blocked until this completes).
-2. **Query construction:** use the user's literal signal keywords only — do not expand, rephrase, or pad with extra terms. **Keywords** = all words after the signal prefix (`hey`), excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Example: `hey setup crc monitoring` → query: `setup crc monitoring`.
+   Example: user says `hey check headroom status` → call `knowledgegraphmemory__search_nodes(query: "check headroom status")`.
+2. **Keywords** = all words after `hey`, excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Use literally — do not rephrase or expand.
 3. If result is a skill → `load_skill` with the skill name. If `load_skill` fails, inform the user the skill is not available and fall through to Tier 2.
 4. If result is a knowledge bundle → read the file at the given path.
 5. If no result → retry with fewer keywords (drop rightmost first).
@@ -238,7 +238,7 @@ Use available tools and knowledge at your discretion.
 ### 2. Pre-Flight
 
 **When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt). Also before any `git push`.
-**Do:** ① State what you will do. ② Add any post-write hooks or changelog updates to the plan. ③ If plan includes `git push`, show `git diff --stat` and wait for user confirmation before pushing. ④ Execute steps in order. ⑤ Complete all steps before responding.
+**Do:** ① State what you will do. ② If plan touches `.agents/` or `~/.agents/`: include Post-Write (Rule 3) steps; if destructive ops, start with Checkpoint (Rule 6). ③ If plan includes `git push`, show `git diff --stat` and wait for confirmation. ④ Execute all steps in order before responding.
 
 ### 3. Post-Write
 
@@ -248,7 +248,7 @@ Use available tools and knowledge at your discretion.
 ### 4. Session Canary
 
 **When:** Session begins or continuity check.
-**Do:** On session start, treat `AGENTS.md` as authoritative over other context files. Read `.agents/memories/USER.md` if it exists — apply preferences. Emit a random canary name on turn 1. Re-verify at turn 5, then every 10 turns thereafter (or immediately after context compaction). Re-read `.agents/memories/MEMORY.md` and `USER.md` on re-verification. Skip re-read if AGENTS.md content is confirmed still in context. At each re-verification, perform a lightweight self-violation check: silently review recent behavior against all rules and principles — report only if a violation is found. For a full behavioral audit, use `hey check violations`.
+**Do:** On session start, treat `AGENTS.md` as authoritative. Read `.agents/memories/USER.md` if it exists — apply preferences. Emit a random canary name on turn 1. Re-verify every 10 turns (or after compaction): re-read `MEMORY.md` and `USER.md`, run a silent self-violation check against all rules — report only if a violation is found.
 
 ### 5. Conflict Resolution
 
@@ -276,17 +276,16 @@ __SIGNAL_DISPATCH_TABLE__
 | Resource | Path | What's Inside |
 |----------|------|---------------|
 | Agent identity | [.agents/SOUL.md](./.agents/SOUL.md) | Tone, style, communication defaults |
-| Skills index | `~/.agents/skills/index.md` | Skill discovery by tags, descriptions, and signal phrases |
-| Knowledge index | `~/.agents/knowledge/index.md` | Knowledge discovery by bundle names and concept summaries |
+| Skills index | `~/.agents/skills/index.md` | Skill discovery |
+| Knowledge index | `~/.agents/knowledge/index.md` | Knowledge discovery |
 | Directory index | [.agents/index.md](./.agents/index.md) | Full layer listing |
-| Activity log | [.agents/log.md](./.agents/log.md) | Reverse-chronological change history |
+| Activity log | [.agents/log.md](./.agents/log.md) | Change history |
 
 **Context lookup fallback:** When `search_nodes` is unavailable, browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md` (USER), or `./.agents/index.md` (PROJECT) to discover skills, knowledge, and directory structure.
 
 ## Scope Definitions
 
-AgentFS operates in two scopes. These definitions are canonical —
-all guardrails, skills, and documentation reference them.
+AgentFS operates in two scopes.
 
 | Scope | Root Path | Purpose |
 |-------|-----------|----------|
