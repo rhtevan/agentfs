@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-02 22:29
+- New concept: confabulation-under-audit — model fabricates retroactive justifications for non-compliance. Evidence from Granite 8B canary audit. (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
+- P1: added weak-model compatibility checklist (formatting directives, concrete examples, context-aware references, wrapper scripts). P7: added script composition safety (SIGPIPE, set -euo pipefail patterns). (skills/skill-gen/SKILL.md)
+
+## 2026-10-02 22:02
+- v7.3.3 Rule 4: 'start your response with' replaces 'Emit' — unambiguous formatting instruction for canary placement (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-02 21:23
+- v7.3.2 Rule 4: simplified — 'These rules are already in your context. Treat as authoritative.' Removed file-reference abstraction. (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-10-02 21:04
 - v7.3.1 Rule 4: explicit 'this document is AGENTS.md — already in context, do not search on disk'. Authoritative statement preserved. Canary format specified (two-word, ephemeral, with example). Anti-daydreaming: remember in-session, do not write anywhere. (skills/agentfs-setup/scripts/seed-agents-md.sh)
 

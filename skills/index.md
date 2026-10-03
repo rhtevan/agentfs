@@ -4,7 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-02 21:04 |
+| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, edit skill, check skill, skill check, audit skill, advanced skill | 2026-10-02 22:29 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-02 22:02 |
 | [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit | check skill, eval skill, audit skill quality, check all skills, skill evaluation | 2026-10-02 15:08 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check | 2026-10-02 15:06 |
 | [agentfs-violation-chk](./agentfs-violation-chk/SKILL.md) | agentfs, audit, compliance, guardrails, behavioral | check violations, violation audit, self audit, behavioral compliance, hey check violations | 2026-09-29 22:09 |
@@ -17,7 +18,6 @@
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-09-25 10:05 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-09-24 23:10 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-09-24 20:46 |
-| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, edit skill, check skill, skill check, audit skill, advanced skill | 2026-09-24 16:05 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report | 2026-09-18 11:54 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-09-16 12:11 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-09-16 11:56 |

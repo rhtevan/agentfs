@@ -282,7 +282,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.3.1 enforces 7 operational rules as numbered subsections
+AgentFS v7.3.3 enforces 7 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -293,7 +293,7 @@ external enforcement only: routing, hooks, process obligations.
 | 1 | Signal Dispatch | User message starts with `hey` | Route per Signal Dispatch table (Path A) or search_nodes (Path B). Progressive narrowing on miss. |
 | 2 | Pre-Flight | Before multi-step task (≥3 tool calls or ≥2 files); also before `git push` | State plan. If touching `.agents/`: include Post-Write (Rule 3); if destructive ops: start with Checkpoint (Rule 6). Show `git diff --stat` if pushing. Execute in order. |
 | 3 | Post-Write | Writes touched `.agents/` or `~/.agents/` | Run `post-write.sh` for each modified file. Do not respond until complete. |
-| 4 | Session Canary | Session begins or continuity check | AGENTS.md already in context (do not search on disk), authoritative over all other context. Read USER.md. Emit ephemeral two-word canary on turn 1. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
+| 4 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
 | 5 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
 | 6 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
 | 7 | Scope Rules | Writing to `memories/` or creating a skill | Memories PROJECT-only. Skills default USER. Graduate mature patterns to OKF via `hey harvest`. |
@@ -553,7 +553,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.3.1 -->
+<!-- agentfs-template-version: 7.3.3 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

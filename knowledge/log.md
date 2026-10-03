@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-02 22:29
+- New concept: confabulation-under-audit — model fabricates retroactive justifications for non-compliance. Evidence from Granite 8B canary audit. (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
+
 ## 2026-09-29 21:27
 - v7.2.0 — rules consolidated 10→8, severity tags removed (knowledge/context-engineering/rule-ordering-by-frequency.md)
 

@@ -640,6 +640,15 @@ like or provides a manual alternative, it stays inline.
       field present (removed in schema v2.0.0)
 - [ ] **Opening paragraph** — SKILL.md body has a hydrated paragraph
       after `# Title` explaining what, why, when
+- [ ] **Weak-model compatibility** — instructions use formatting
+      directives ("start your response with", "first line must be")
+      not abstract verbs ("emit", "produce", "generate"). Include
+      one concrete example showing the exact tool call or output
+      format. Do not reference files by name if the content is
+      already in the model's context — say "these rules" or "the
+      steps above", not "see AGENTS.md". Prefer single wrapper
+      scripts over multi-step prose procedures — weaker models
+      over-tool when given prose steps.
 
 #### Principle 2 — Autonomous & Currency
 
@@ -833,6 +842,11 @@ There is no hard maximum. Size is a warning signal, not a rule.
       a human-readable message containing the exact command to run
 - [ ] No improvised error recovery — agent behavior on failure is
       fully prescribed by SKILL.md prose
+- [ ] **Script composition safety** — scripts invoked by other
+      scripts must survive non-zero exits from subcommands. Use
+      `cmd || true` or `EXIT=0; cmd || EXIT=$?` patterns. Never
+      rely on `set -euo pipefail` surviving composition with
+      `head`, `grep -c`, or command substitutions that may SIGPIPE.
 
 ### Skill Check Procedure
 

@@ -12,6 +12,9 @@ multi-session agent development.
 * [Partial Completion](./partial-completion.md) - Model completes primary steps but skips documentation, verification, and cleanup; format drift; scope conflation
 * [Improvised Recovery](./improvised-recovery.md) - Model invents fix procedures instead of following prescribed troubleshooting; bias toward helpfulness over correctness
 * [Hallucinated Confidence](./hallucinated-confidence.md) - Training data substituted for authoritative sources; uncertain claims stated with unwarranted certainty
+* [Confabulation Under Audit](./confabulation-under-audit.md) - Model fabricates retroactive justifications for non-compliance when confronted; reinterprets unrelated actions as evidence of compliance
+* [Externalization Bias](./externalization-bias.md) - Model proposes tooling solutions for behavioral failures instead of acknowledging the fix is following the existing rule
+* [Over-Tooling](./over-tooling.md) - Weaker models default to tool calls for tasks solvable in pure reasoning; 14 tool calls for a 3-turn violation check
 
 ## Cross-Cutting Themes
 

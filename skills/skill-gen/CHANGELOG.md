@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-02 22:29 | v2.1.0 — P1: added weak-model compatibility checklist (formatting directives, concrete examples, context-aware references, wrapper scripts). P7: added script composition safety (SIGPIPE, set -euo pipefail patterns). |
 | 2026-09-24 16:05 | v3.6.0 — Add corollary to Code-First principle: lower cognitive bar for model callers — zero-arg wrappers, auto-detect context, avoid similar script names |
 | 2026-09-10 13:56 | vv3.5.0 — Reversed default scope from USER to PROJECT. Scope governs discovery and context loading, not operational target. Added criteria table for scope decision. PROJECT avoids signal phrase bloat in unrelated sessions; promote to USER when cross-project demand is proven. |
 | 2026-09-10 12:59 | vv3.4.0 — Added Principle 6 (Context Economy): soft 300-line threshold with two-step audit, references/ directory conventions, standard reference file names. Added Principle 7 (Error Contract): semantic exit codes (0/1/2/3), privilege gate pattern (exit 3), script diagnostic output conventions, SKILL.md error handling obligations (idempotency table, recovery paths, troubleshooting table), prescribed agent behavior per exit code. Made Skill Check mandatory in Post-Creation Checklist after every creation/update. Expanded Business Process Modeling with privilege gate markup pattern. Updated skill-schema.md v2.3.0: added references/ directory convention, exit code convention, standard file names. |

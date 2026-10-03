@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-02 22:29
+- New concept: confabulation-under-audit — model fabricates retroactive justifications for non-compliance. Evidence from Granite 8B canary audit. (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
+
 ## 2026-09-10 21:32
 
 - Added Pre-Flight Checklist as primary mitigation; restructured effectiveness section with preventive/detective/corrective layers
