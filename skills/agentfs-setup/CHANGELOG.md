@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-02 21:04 | v7.3.1 — v7.3.1 Rule 4: explicit 'this document is AGENTS.md — already in context, do not search on disk'. Authoritative statement preserved. Canary format specified (two-word, ephemeral, with example). Anti-daydreaming: remember in-session, do not write anywhere. |
 | 2026-10-02 16:22 | v7.3.0 — v7.3.0: Rule 2 cross-references Rule 3 (Post-Write) and Rule 6 (Checkpoint). Rule 4 noise removal — clearer obligations. Rule 1 step 2 trimmed redundancy. Quick Orientation and Scope Definitions signal-to-noise improvements. Harvest dispatch row trimmed. |
 | 2026-10-02 13:35 | v7.2.3 — Added concrete tool call example to Signal Dispatch Rule 1 Path B: shows knowledgegraphmemory__search_nodes(query:...) for weaker model reliability |
 | 2026-09-29 22:34 | v7.2.2 — Checkpoint rule: explicit version-bump step for seed edits; pre-push-scan Category 12: seed-version-bump guard |

@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-02 21:04
+- v7.3.1 Rule 4: explicit 'this document is AGENTS.md — already in context, do not search on disk'. Authoritative statement preserved. Canary format specified (two-word, ephemeral, with example). Anti-daydreaming: remember in-session, do not write anywhere. (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-10-02 16:22
 - v7.3.0: Rule 2 cross-references Rule 3 (Post-Write) and Rule 6 (Checkpoint). Rule 4 noise removal — clearer obligations. Rule 1 step 2 trimmed redundancy. Quick Orientation and Scope Definitions signal-to-noise improvements. Harvest dispatch row trimmed. (skills/agentfs-setup/scripts/seed-agents-md.sh)
 
