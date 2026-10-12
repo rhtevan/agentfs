@@ -3,7 +3,7 @@ name: goose-desktop-env-fix
 description: >
   fix goose desktop, goose shell environment, goose env fix
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---
 
@@ -37,7 +37,17 @@ that hardcodes `PATH` via `Exec=env PATH=...`, preventing
 
 ## Root Causes
 
-1. **Bash sourcing rules** — non-interactive shells don't source `~/.bashrc`
+1. **GPU process crash on Wayland** — Chromium's GPU sandbox fails
+   with `error_code=1002` on certain hardware (e.g., ThinkPad P1 Gen 7)
+   when using `--ozone-platform=wayland` with Vulkan. The GPU process
+   crashes repeatedly (6-9 attempts) then fatally exits with
+   `GPU process isn't usable. Goodbye.` On restart, Electron re-probes
+   GPU capabilities, adding ~20s to startup. This has never worked on
+   affected hardware — the failure is present since the earliest logs.
+   **Fix:** Add `--ozone-platform=x11` to the Exec line in the
+   `.desktop` file. Electron falls back to XWayland for rendering,
+   which is stable and performant for a text-based app.
+2. **Bash sourcing rules** — non-interactive shells don't source `~/.bashrc`
 2. **Nix double-source guard** — `nix-daemon.sh` sets
    `__ETC_PROFILE_NIX_SOURCED=1` and skips if already set. The GNOME
    session sets this during login, but the Goose `.desktop` file
@@ -171,13 +181,19 @@ process. Add it to the existing `Exec=env ...` line:
 ```ini
 [Desktop Entry]
 Name=Goose
-Exec=env GOOSE_SHELL=$HOME/.local/bin/goose-shell PATH=$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin /usr/lib/Goose/Goose %U
+Exec=env GOOSE_SHELL=$HOME/.local/bin/goose-shell PATH=$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin /usr/lib/Goose/Goose --ozone-platform=x11 %U
 Icon=/usr/share/pixmaps/Goose.png
 Terminal=false
 Type=Application
 Categories=Development;
 MimeType=x-scheme-handler/goose;
 ```
+
+**Note on `--ozone-platform=x11`:** Required on systems where
+Chromium's GPU process fails under Wayland (see Root Cause 1). This
+flag forces Electron to use XWayland. Omit only if GPU process
+launches succeed in your environment (check `journalctl --user -t
+Goose.desktop | grep GPU`).
 
 **Note:** Replace `$HOME` with the actual home directory path (e.g.,
 `/home/username`) since `.desktop` files don't expand shell variables.
@@ -361,6 +377,9 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 - [ ] No `eval` errors in shell output
 - [ ] No runaway `devbox global shellenv` processes after Goose Desktop restart
       (`ps aux | grep 'devbox global shellenv' | grep -v grep | wc -l` should be 0)
+- [ ] No GPU process crash on startup
+      (`journalctl --user -t Goose.desktop --since "-5min" | grep -c "GPU process launch failed"` should be 0)
+- [ ] Goose Desktop starts in under 5 seconds (no 20s GPU re-probe delay)
 - [ ] `refresh-global` alias is available inside `devbox shell` sessions
       (run `devbox shell` then `type refresh-global`)
 

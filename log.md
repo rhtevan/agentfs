@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-12 14:42
+- v1.4.0: Added GPU/Wayland --ozone-platform=x11 fix (skills/goose-desktop-env-fix/SKILL.md)
+
 ## 2026-10-02 22:29
 - New concept: confabulation-under-audit — model fabricates retroactive justifications for non-compliance. Evidence from Granite 8B canary audit. (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
 - P1: added weak-model compatibility checklist (formatting directives, concrete examples, context-aware references, wrapper scripts). P7: added script composition safety (SIGPIPE, set -euo pipefail patterns). (skills/skill-gen/SKILL.md)

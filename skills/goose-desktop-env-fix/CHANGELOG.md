@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-12 14:41 | v1.4.0 — Added GPU/Wayland fix: `--ozone-platform=x11` in `.desktop` Exec line. Documented Chromium GPU process crash (error_code=1002) on Wayland as Root Cause 1. Updated desktop file template, verification checklist. |
 | 2026-08-24 14:24 | v1.3.0 — Added Gotchas section documenting hermit node wrapper PATH interference and per-skill workaround pattern for Node.js-based skills |
 
 
