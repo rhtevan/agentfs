@@ -4,12 +4,13 @@ description: >
   list hosted model, setup hosted model, start hosted model,
   stop hosted model, hosted model status, test hosted model,
   teardown hosted model, precheck hosted model,
-  set default profile, hosted model report, hosting machine report
-argument-hint: "list hosted model | hosted model status | start hosted model | set default profile on rhel-ai"
+  set default profile, hosted model report, hosting machine report,
+  score deployment, deployment fitting, fitting guide
+argument-hint: "list hosted model | hosted model status | start hosted model | set default profile on rhel-ai | score deployment"
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "7.6.0"
+  version: "7.7.0"
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
 disable-model-invocation: false
@@ -201,6 +202,7 @@ Speculative decoding is the primary software lever to overcome this.
 
 For benchmarks, see [references/benchmark-report.md](./references/benchmark-report.md).
 For VRAM budgets, see [references/memory-budget.md](./references/memory-budget.md).
+For deployment fitting scores, see [references/fitting-guide.md](./references/fitting-guide.md).
 
 ## Changelog
 

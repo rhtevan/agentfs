@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-14 16:28
+- v7.7.0: Added deployment fitting guide integration and scoring triggers (skills/hosted-model-ctl/SKILL.md)
+- New reference: Applied fitting guide with per-profile scores (skills/hosted-model-ctl/references/fitting-guide.md)
+- v7.7.0: Added deployment fitting guide integration and scoring triggers (skills/hosted-model-ctl/SKILL.md)
+- New reference: Applied fitting guide with per-profile scores (skills/hosted-model-ctl/references/fitting-guide.md)
+- New concept: Weighted scoring formula 0.30/0.30/0.30/0.10 with interpretation bands (knowledge/deployment-fitting-guide/weighted-scoring.md)
+- New concept: Class-specific baselines - Gen AI (Opus) vs Decision (Jev) (knowledge/deployment-fitting-guide/class-baselines.md)
+- New concept: 4x4 SUV positioning analogy for deployment traits (knowledge/deployment-fitting-guide/suv-model.md)
+- New concept: The 4 deployment traits - Quality, Speed, Context, Size with correlations (knowledge/deployment-fitting-guide/four-traits.md)
+
 ## 2026-10-12 14:42
 - v1.4.0: Added GPU/Wayland --ozone-platform=x11 fix (skills/goose-desktop-env-fix/SKILL.md)
 
