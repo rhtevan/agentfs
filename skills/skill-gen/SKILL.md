@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.6.0"
+  version: "3.7.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -483,6 +483,16 @@ this order:
 - [ ] **Changelog** — `CHANGELOG.md` exists with at least a v1.0 entry
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
+- [ ] **KGM registration** — if `knowledgegraphmemory` tools are
+      available, register the skill as a KGM entity so `hey` signal
+      dispatch can find it. Use `create_entities` with:
+      - `name`: `skill:<skill-name>` (e.g., `skill:my-new-skill`)
+      - `entityType`: `AgentSkill`
+      - `observations`: signals list from the `description` field,
+        and the `load_skill` action.
+      If the entity already exists, `create_entities` will skip it
+      (no harm). This step is best-effort — if KGM is unavailable,
+      log a warning and continue.
 - [ ] **Log update** — append entry to `~/.agents/log.md` (USER scope)
       or `./.agents/log.md` (PROJECT scope) with ISO 8601 timestamp.
       Use the comment line (`<!-- Append-only... -->`) as insertion

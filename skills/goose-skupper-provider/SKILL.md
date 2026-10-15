@@ -8,7 +8,7 @@ argument-hint: "setup goose skupper provider for rhel-ai | recreate skupper prov
 compatibility: "goose CLI or Desktop, skupper-model-provider running"
 metadata:
   author: agentfs
-  version: "5.4.0"
+  version: "5.5.0"
   tags: [goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false

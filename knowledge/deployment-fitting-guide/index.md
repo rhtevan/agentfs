@@ -23,9 +23,11 @@ draft model on 4 GPUs is one deployment, scored as one unit.
 | [suv-model.md](./suv-model.md) | The 4×4 SUV positioning analogy for understanding trait relationships |
 | [class-baselines.md](./class-baselines.md) | Class-specific baselines: Gen AI (Opus) vs Decision (Jev), selection criteria |
 | [weighted-scoring.md](./weighted-scoring.md) | Scoring formula, weight rationale, interpretation bands, worked examples |
+| [sizing-guidance.md](./sizing-guidance.md) | Rules of thumb for context window and parameter sizing, hardware interaction |
 
 ## Log
 
 | Date | Change |
 |------|--------|
+| 2026-10-15 | Added sizing-guidance.md: 8 rules of thumb for context and parameter sizing, L4 hardware data, measured deployment table |
 | 2026-10-14 | Initial bundle creation from deployment evaluation session |

@@ -81,6 +81,37 @@ Deployment Score = (Q × 0.30) + (S × 0.30) + (C × 0.30) + (Z × 0.10)
 - Context (1): 2K configured vs 200K
 - Size (100): 1.5 GB — minimal footprint
 
+### Qwen3 14B (benchmarked 2026-10-15)
+
+| Profile | Class | Q | S | C | Z | Score | Band |
+|---------|-------|:-:|:-:|:-:|:-:|:-----:|------|
+| **qw14b-32k** | Gen AI | 70 | 24 | 16 | 55 | **38.0** | Gap analysis |
+| **qw14b-40k** | Gen AI | 60 | 41 | 20 | 27 | **39.0** | Gap analysis |
+
+**qw14b-32k breakdown (measured on 2× L4, TP=2):**
+- Quality (70): Passes all 7 benchmark tests. Richer output than Granite 8B on
+  reasoning, code gen, and multi-step tasks. 14B model with strong benchmarks
+  (MMLU ~79%, GPQA ~79%) but not frontier-class.
+- Speed (24): 23.5 content tok/s vs 100 tok/s baseline. Half the bandwidth
+  (2× L4 = 600 GB/s) and reasoning overhead on short outputs. Agentic use
+  measured ~27 tok/s content (short responses have better content ratio).
+- Context (16): 32K configured / 200K baseline. Effective context estimated
+  ~32K for 14B dense standard attention.
+- Size (55): 44 GB (2× L4) / 24 GB baseline. Uses half the hardware of g8b-fp8-spec.
+
+**qw14b-40k breakdown (measured on 4× L4, TP=4):**
+- Quality (60): Passes all 7 benchmark tests. Structured skill execution strong
+  (75). Unstructured novel tasks weak (50) — hallucinated geolocation and weather
+  data without tool verification in agentic session. Blended: 60.
+- Speed (41): 41.2 content tok/s vs 100 tok/s baseline. 75% faster than 32k profile.
+- Context (20): 40K configured / 200K baseline. 40K is the model's hard limit
+  (`max_position_embeddings=40960`, no RoPE scaling). Original 64K target failed.
+- Size (27): 88 GB (4× L4) / 24 GB baseline. All GPUs consumed.
+
+**Strategic note:** qw14b-32k leaves GPU 2+3 free for a co-hosted Decision
+model. qw14b-40k is 75% faster but consumes all GPUs. Same model quality —
+speed vs GPU availability is the trade-off.
+
 ## Notes
 
 - Quality scores are estimates from operational experience, not formal

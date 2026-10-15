@@ -44,12 +44,25 @@
 
 | Model | Params | Native Ctx | BF16 Wt | FP8 Wt | Q4 Wt | KV@128K | Tool Calling | HF Repo |
 |-------|:------:|:----------:|:-------:|:------:|:-----:|:-------:|:------------:|----------|
-| Qwen3 4B | 4B | 128K | ~8 GB | ~4 GB | ~2.5 GB | ~5 GB | ✅ hermes | Qwen/Qwen3-4B |
-| Qwen3 8B | 8B | 128K | ~16 GB | ~8 GB | ~5 GB | ~8 GB | ✅ hermes | Qwen/Qwen3-8B |
+| Qwen3 4B | 4B | 40K | ~8 GB | ~4 GB | ~2.5 GB | ~5 GB | ✅ hermes | Qwen/Qwen3-4B |
+| Qwen3 8B | 8B | 40K | ~16 GB | ~8 GB | ~5 GB | ~8 GB | ✅ hermes | Qwen/Qwen3-8B |
+| **Qwen3 14B** | **14B** | **40K** | **~28 GB** | **~14 GB** | **~9 GB** | **~5 GB** | **✅ hermes** | **Qwen/Qwen3-14B-FP8** |
 | Qwen3 32B | 32B | 128K | ~64 GB | ~32 GB | ~18 GB | ~16 GB | ✅ hermes | Qwen/Qwen3-32B |
 | **Qwen3.8 27B** | 27B | 128K | ~54 GB | ~27 GB | ~15 GB | ~14 GB | ✅ hermes | Qwen/Qwen3.8-27B-FP8 |
 | Qwen3-Coder 30B-A3B | 30.5B (3.3B active) | 256K | ~61 GB | ~30 GB | ~17 GB | ~12 GB | ✅ hermes | Qwen/Qwen3-Coder-30B-A3B-Instruct |
 
+> **Qwen3-14B notes:** `max_position_embeddings=40960` (hard limit, no RoPE scaling).
+> Benchmarked on rhel-ai: 36.4 total / 23.5 content tok/s at TP=2 (2× L4, 32K);
+> 57.8 total / 41.2 content tok/s at TP=4 (4× L4, 40K). Draft model: Qwen3-4B-FP8.
+> EAGLE-3 speculator also available (`RedHatAI/Qwen3-14B-speculator.eagle3`).
+> Use `--tool-call-parser hermes --reasoning-parser qwen3`. All 7 benchmark tests pass.
+> Agentic session quality: strong on structured skill execution, weak on unstructured
+> novel tasks (hallucinated geolocation data without tool verification).
+>
+> **Qwen3 context note:** Qwen3 dense models (4B, 8B, 14B) have
+> `max_position_embeddings=40960` — they are 40K models, not 128K. Only Qwen3 32B
+> and Qwen3.6+/3.8 models have 128K+ native context with YaRN or hybrid attention.
+>
 > **Qwen3.8-27B notes:** Vision-language model (text+image+video). IFBench 79.5
 > (vs Opus 4.6 at 62.5), SWE-bench Pro 61.7. Arch: `Qwen2ForCausalLM` — supported
 > Arch: `Qwen2ForCausalLM` — supported by vLLM nightly. Use `--tool-call-parser qwen3_xml`

@@ -281,6 +281,16 @@ else
   sed -i "/^providers:/a\\  custom_skupper:\n    enabled: true\n    model: ${ESCAPED_MODEL}\n    configured: true" "$CONFIG_YAML"
   echo "  ✅ Added custom_skupper to config.yaml"
 fi
+
+# Ensure active_provider is set (teardown removes it)
+if ! grep -q '^active_provider: custom_skupper' "$CONFIG_YAML" 2>/dev/null; then
+  if grep -q '^active_provider:' "$CONFIG_YAML" 2>/dev/null; then
+    sed -i 's/^active_provider:.*/active_provider: custom_skupper/' "$CONFIG_YAML"
+  else
+    echo "active_provider: custom_skupper" >> "$CONFIG_YAML"
+  fi
+  echo "  ✅ Set active_provider to custom_skupper"
+fi
 echo
 
 # ── Step 6: Verify ────────────────────────────────────────────

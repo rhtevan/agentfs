@@ -2,6 +2,31 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 10:31
+- Added qw14b-32k and qw14b-40k profiles, GPU_DEVICES map, spec configs, renamed 64k to 40k (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-10-15 10:27
+- New concept: sizing rules of thumb for context and parameters (knowledge/deployment-fitting-guide/sizing-guidance.md)
+- Added Qwen3-14B row, corrected Qwen3 dense context to 40K, added deployment notes (skills/hosted-model-ctl/references/model-landscape.md)
+- qw14b-40k measured scores, renamed from 64k (skills/hosted-model-ctl/references/fitting-guide.md)
+- Section 15: qw14b-40k benchmark, context discovery, agentic observations (skills/hosted-model-ctl/references/benchmark-report.md)
+- Renamed qw14b-64k to qw14b-40k, added measured benchmark results (skills/hosted-model-ctl/references/deployment-profiles.md)
+- Version bump to 7.9.0 for qw14b-40k docs (skills/hosted-model-ctl/SKILL.md)
+
+## 2026-10-15 09:47
+- Fix: setup.sh now restores active_provider after teardown+setup (recreate). Teardown removes active_provider but setup never set it back, leaving Goose Desktop with no provider on restart.
+
+## 2026-10-14 22:41
+- Added KGM registration step to Post-Creation Checklist — agent registers skill entity in KGM after creation so hey signal dispatch can find it (skills/skill-gen/SKILL.md)
+
+## 2026-10-14 22:05
+- Port-based mutual exclusion: stop any model container on target port before deploying (skills/hosted-model-ctl/scripts/setup.sh)
+
+## 2026-10-14 21:57
+- Version bump to 7.8.0 for Qwen3 14B profiles (skills/hosted-model-ctl/SKILL.md)
+- Section 14: Qwen3 14B benchmark results, parser discovery, fitting score (skills/hosted-model-ctl/references/benchmark-report.md)
+- Added qw14b-32k and qw14b-64k profiles, GPU_DEVICES map, spec configs (skills/hosted-model-ctl/scripts/common.sh)
+
 ## 2026-10-14 16:28
 - v7.7.0: Added deployment fitting guide integration and scoring triggers (skills/hosted-model-ctl/SKILL.md)
 - New reference: Applied fitting guide with per-profile scores (skills/hosted-model-ctl/references/fitting-guide.md)
@@ -1909,3 +1934,5 @@ r# Directory Update Log
 
 ## 2026-06-26 14:00
 - Initialized .agents/ directory structure (mode: system).
+m).
+).

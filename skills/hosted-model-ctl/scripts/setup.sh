@@ -41,8 +41,22 @@ if ! host_reachable "$PROFILE_HOST"; then
   exit 1
 fi
 
-# Stop and remove existing container
-run_on_host "$PROFILE_HOST" "podman stop $CONTAINER 2>/dev/null; podman rm -f $CONTAINER 2>/dev/null" || true
+# Stop and remove any model container on this port (port-based mutual exclusion)
+# Fixes: switching between profiles with different container names on the same port.
+# Host-network containers don't use --publish, so we match by name prefix "model-".
+run_on_host "$PROFILE_HOST" "
+  for cid in \$(podman ps -q --filter name='^model-' 2>/dev/null); do
+    cname=\$(podman inspect --format '{{.Name}}' \$cid 2>/dev/null)
+    # Check if this container is using our port (grep the process args)
+    if podman inspect --format '{{.Config.Cmd}}' \$cid 2>/dev/null | grep -q -- '--port ${PORT}'; then
+      echo \"Stopping \$cname (port ${PORT})\"
+      podman stop \$cid 2>/dev/null
+      podman rm -f \$cid 2>/dev/null
+    fi
+  done
+" || true
+# Also stop by container name in case it exists but is not running
+run_on_host "$PROFILE_HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
 
 # Create HF cache directory
 case "$PROFILE_HOST" in
@@ -85,9 +99,20 @@ case "$ENGINE" in
       fi
     fi
 
+    # GPU device selection: subset or all
+    gpu_devices="${GPU_DEVICES[$PROFILE]:-}"
+    device_flag="--device nvidia.com/gpu=all"
+    env_flag=""
+    if [[ -n "$gpu_devices" ]]; then
+      device_flag="--device nvidia.com/gpu=all"
+      env_flag="-e CUDA_VISIBLE_DEVICES=$gpu_devices"
+      echo "  GPUs:        $gpu_devices (subset)"
+    fi
+
     run_on_host "$PROFILE_HOST" "podman run -d \
       --name $CONTAINER \
-      --device nvidia.com/gpu=all \
+      $device_flag \
+      $env_flag \
       --security-opt label=disable \
       --net host \
       --shm-size 10G \
@@ -176,6 +201,8 @@ case "$PROFILE" in
   g3b-16k)           WAIT=60 ;;
   g8b-spec-128k)     WAIT=600 ;;
   g8b-fp8-spec-128k) WAIT=600 ;;
+  qw14b-32k)         WAIT=900 ;;
+  qw14b-40k)         WAIT=900 ;;
   *)                 WAIT=300 ;;
 esac
 

@@ -238,6 +238,8 @@ only on sustained long generation (67 vs 60 tok/s). See Section 12.
 | Gemma 4 31B | rhel-ai | 4× L4 | FP8-block | 4 | 128K | — | 13.4 | ✅ Pass all |
 | Gemma 4 31B | rhel-ai | 4× L4 | FP8-block | 4 | 128K | ngram | 13.5 | ✅ Pass all |
 | Qwen3.8-27B | rhel-ai | 4× L4 | FP8 | 4 | 128K | — | 11.8 | ✅ Pass all |
+| **Qwen3 14B FP8 + 4B FP8 draft** | **rhel-ai** | **2× L4** | **FP8** | **2** | **32K** | **draft_model + CUDA graphs** | **36.4 total (23.5 content)** | **✅ Pass all** |
+| **Qwen3 14B FP8 + 4B FP8 draft** | **rhel-ai** | **4× L4** | **FP8** | **4** | **40K** | **draft_model + CUDA graphs** | **57.8 total (41.2 content)** | **✅ Pass all** |
 | Opus 4.6 | Cloud (GCP Vertex) | — | — | — | — | — | 17-67 | ✅ Reference |
 
 ---
@@ -512,3 +514,226 @@ is rhel-ai only (vLLM with proper parser support and sufficient VRAM).
 | Goose 1.48 (Skupper provider) | Pass | Thinking blocks displayed, tool calls work |
 | OpenShift LightSpeed (CRC) | Pass | OLSConfig model name updated |
 | Skupper VAN | Pass | Model-agnostic, no changes needed |
+
+---
+
+## 14. Qwen3 14B FP8 + 4B FP8 Draft — Profile `qw14b-32k` (2026-10-15)
+
+First non-Granite deployment profile. Tests 14B model with speculative decoding
+on a GPU subset (2× L4), leaving GPU 2+3 free for future Decision model co-hosting.
+
+### 14.1 Configuration
+
+| Setting | Value |
+|---------|-------|
+| **Target model** | `Qwen/Qwen3-14B-FP8` (FP8, ~14 GB) |
+| **Draft model** | `Qwen/Qwen3-4B-FP8` (FP8, ~4 GB) |
+| **Runtime** | vLLM nightly (v0.26.1rc1) |
+| **TP** | 2 (GPU 0 + GPU 1 only, via `CUDA_VISIBLE_DEVICES=0,1`) |
+| **Context** | 32,768 (32K) |
+| **Speculative decoding** | `draft_model`, 5 speculative tokens |
+| **CUDA graphs** | Enabled |
+| **Tool call parser** | `hermes` |
+| **Reasoning parser** | `qwen3` |
+| **Port** | 9000 |
+
+### 14.2 GPU Layout
+
+```
+GPU 0: 21,147 / 23,034 MiB (91.8%) — Qwen3 14B FP8 shard + draft shard
+GPU 1: 21,147 / 23,034 MiB (91.8%) — Qwen3 14B FP8 shard + draft shard
+GPU 2:      1 / 23,034 MiB (idle)  — FREE for Decision model
+GPU 3:      1 / 23,034 MiB (idle)  — FREE for Decision model
+```
+
+### 14.3 Parser Discovery
+
+Tool call parser required trial and error:
+- `qwen3` — not a valid parser name (vLLM error)
+- `qwen3_coder` — parsed tool calls but output was empty (model generated
+  tool call XML but parser didn't extract it for Qwen3 non-coder)
+- `hermes` — ✅ works. Qwen3 uses Hermes-style tool call format internally.
+
+Reasoning parser: `qwen3` separates `<think>...</think>` blocks into
+`reasoning_content` field. Without it, thinking tokens leak into content
+(same issue as Granite 4.2 without `nemotron_v3`).
+
+### 14.4 Quality Results (7 Tests, max_tokens=8192)
+
+| Test | Result | Content Tok | Reasoning Tok | Total Tok |
+|------|:------:|:-----------:|:-------------:|:---------:|
+| 1. Instruction Follow | ✅ 5 items, numbered, no intro | 68 | 147 | 215 |
+| 2. Reasoning | ✅ 8 GB correct, LaTeX steps | 165 | 434 | 599 |
+| 3. Tool Calling | ✅ Parsed (hermes), 2.4s | — | 69 | — |
+| 4. Code Gen | ✅ Docstring, ValueError, iterative | 466 | 1,469 | 1,935 |
+| 5. Multi-step | ✅ Node B, structured capacity analysis | 196 | 266 | 462 |
+| 6. Conciseness | ✅ 34 tok, one sentence | 34 | 227 | 261 |
+| 7. Speed (long gen) | 36.4 total / 23.5 content tok/s | 2,038 | 1,116 | 3,154 |
+
+**Verdict: ✅ Excellent quality.** All 7 tests pass. Output is richer and more
+structured than Granite 4.2 8B on tests 2, 4, and 5. Reasoning overhead is
+proportionally higher (~35% of total tokens on long generation vs Granite's ~5%).
+
+### 14.5 Speed Comparison
+
+| Metric | g8b-fp8-spec (Granite 4.2, 4×L4) | **qw14b-32k (Qwen3 14B, 2×L4)** |
+|--------|:---:|:---:|
+| Total tok/s (long gen) | ~50 | **36.4** |
+| Content tok/s (long gen) | ~47 | **23.5** |
+| Tool call latency | 0.56s | **2.4s** |
+| GPUs consumed | 4 | **2** |
+| VRAM per GPU | 21.6 / 21.95 GB | 21.1 / 23.0 GB |
+
+Speed is lower on both total and content tok/s. The primary cause is
+half the memory bandwidth (600 GB/s vs 1,200 GB/s) rather than model size.
+Tool call latency (2.4s) is 4.3× slower than Granite's 0.56s — the reasoning
+overhead on short outputs is significant.
+
+### 14.6 Reasoning Token Analysis
+
+| Test | Reasoning % of Total | Pattern |
+|------|:--------------------:|---------|
+| Short (conciseness) | 87% | High overhead — model thinks extensively before one sentence |
+| Tool call | ~80% | Reasoning before generating tool call XML |
+| Multi-step | 58% | Balanced — significant reasoning on complex task |
+| Long generation | 35% | Low overhead — content dominates on extended output |
+
+Same pattern as Granite 4.2: reasoning overhead is inversely proportional
+to output length. Short responses are disproportionately penalized.
+
+### 14.7 Fitting Score (Actual Measured)
+
+| Trait | g8b-fp8-spec (current) | **qw14b-32k (measured)** |
+|-------|:----:|:----:|
+| Quality | 60 | **70** |
+| Speed | 50 | **24** |
+| Context | 12 | **16** |
+| Size | 27 | **55** |
+| **Score** | **39.3** | **38.0** |
+| Band | Gap analysis | Gap analysis |
+
+Nearly identical scores. Quality and Size gains are offset by Speed loss.
+The framework correctly identifies these as equivalent trade-offs.
+
+### 14.8 Strategic Value
+
+The score doesn't capture the architectural option `qw14b-32k` enables:
+GPU 2+3 are free for a co-hosted Decision model. The aggregate system
+value (LLM on GPU 0-1 + SDM on GPU 2-3) may exceed a single LLM on all 4.
+
+### 14.9 Failed Parser Attempts
+
+| Parser | Result |
+|--------|--------|
+| `--tool-call-parser qwen3` | ❌ Not a valid parser name |
+| `--tool-call-parser qwen3_coder` | ❌ Tool calls generated but not extracted |
+| `--tool-call-parser hermes` | ✅ Works — Qwen3 uses Hermes tool call format |
+| No `--reasoning-parser` | ❌ `<think>` tags leak into content |
+| `--reasoning-parser qwen3` | ✅ Separates reasoning into `reasoning_content` |
+
+---
+
+## 15. Qwen3 14B FP8 + 4B FP8 Draft — Profile `qw14b-40k` (2026-10-15)
+
+Same model as `qw14b-32k` but on all 4× L4 GPUs with TP=4 and 40K context
+(the model's `max_position_embeddings` hard limit).
+
+### 15.1 Configuration
+
+| Setting | Value |
+|---------|-------|
+| **Target model** | `Qwen/Qwen3-14B-FP8` (FP8, ~14 GB) |
+| **Draft model** | `Qwen/Qwen3-4B-FP8` (FP8, ~4 GB) |
+| **Runtime** | vLLM nightly (v0.26.1rc1) |
+| **TP** | 4 (all GPUs) |
+| **Context** | 40,960 (40K — model hard limit) |
+| **Speculative decoding** | `draft_model`, 5 speculative tokens |
+| **CUDA graphs** | Enabled |
+| **Tool call parser** | `hermes` |
+| **Reasoning parser** | `qwen3` |
+| **Port** | 9000 |
+
+### 15.2 Context Window Discovery
+
+Original profile was `qw14b-64k` with 65,536 context. Deployment failed:
+
+```
+ValueError: User-specified max_model_len (65536) is greater than the
+derived max_model_len (max_position_embeddings=40960.0)
+```
+
+Qwen3-14B config.json: `max_position_embeddings: 40960`, no RoPE scaling.
+The model is a 40K model, not 128K. Profile renamed to `qw14b-40k`.
+
+This is consistent with the Qwen3 technical report — the 14B dense model
+uses standard attention without YaRN or other context extension techniques.
+Only Qwen3.6+ and Qwen3.8 models have 262K+ native context.
+
+### 15.3 GPU Layout
+
+```
+GPU 0: 21,523 / 23,034 MiB (93.4%) — Qwen3 14B FP8 shard + draft shard
+GPU 1: 21,523 / 23,034 MiB (93.4%)
+GPU 2: 21,523 / 23,034 MiB (93.4%)
+GPU 3: 21,523 / 23,034 MiB (93.4%)
+```
+
+### 15.4 Quality Results (7 Tests, max_tokens=8192)
+
+| Test | Result | Content Tok | Reasoning Tok | Total Tok |
+|------|:------:|:-----------:|:-------------:|:---------:|
+| 1. Instruction Follow | ✅ 5 items, numbered, no intro | 71 | 146 | 217 |
+| 2. Reasoning | ✅ 8 GB correct, LaTeX steps | 183 | 722 | 905 |
+| 3. Tool Calling | ✅ Parsed (hermes), 2.0s | — | — | — |
+| 4. Code Gen | ✅ Docstring, ValueError, iterative | 456 | 941 | 1,397 |
+| 5. Multi-step | ✅ Node B, structured capacity analysis | 333 | 478 | 811 |
+| 6. Conciseness | ✅ 29 tok, one sentence | 29 | 153 | 182 |
+| 7. Speed (long gen) | 57.8 total / 41.2 content tok/s | 2,076 | 836 | 2,912 |
+
+### 15.5 Speed Comparison (qw14b-32k vs qw14b-40k)
+
+| Metric | qw14b-32k (2×L4) | **qw14b-40k (4×L4)** | Improvement |
+|--------|:---:|:---:|:---:|
+| Total tok/s | 36.4 | **57.8** | +59% |
+| Content tok/s | 23.5 | **41.2** | +75% |
+| Tool call latency | 2,424ms | **2,010ms** | -17% |
+| Context | 32K | **40K** | +25% |
+| VRAM per GPU | 21.1 / 23.0 GB | 21.5 / 23.0 GB | Similar |
+
+Speed improvement is primarily from doubled memory bandwidth (1,200 GB/s
+vs 600 GB/s). TP=4 has more all-reduce communication overhead than TP=2,
+but the bandwidth gain more than compensates.
+
+### 15.6 Agentic Session Observations
+
+Deployed as default profile and tested in real agentic sessions:
+
+**Strengths:**
+- Signal dispatch compliance: correct search_nodes → load_skill flow
+- Structured skill execution: violation-chk report followed format exactly
+- Tool calling: hermes parser works reliably, reasoning separated
+- Honest on gaps: reported KGM empty results truthfully
+- Speed: ~27 tok/s content in agentic use (short responses), subjectively
+  better than Granite 8B
+
+**Weaknesses (14B model limitation):**
+- Hallucinated geolocation: fabricated IP → location mapping without calling
+  any API (said "Ashburn, Virginia" for IP 99.229.29.158 without verification)
+- Hallucinated weather: generated plausible weather data with no source
+- Poor tool chaining: knew shell tool existed, knew it needed an IP, but
+  failed to connect `curl ipinfo.io/IP` as a solution
+- Excessive reasoning overhead on trivial queries (87% on short responses)
+
+**Assessment:** Strong on structured tasks within skill framework. Weak on
+unstructured novel tasks requiring improvised tool chains. Characteristic
+14B limitation vs frontier models.
+
+### 15.7 Fitting Score (Actual Measured + Agentic Session Data)
+
+| Trait | Score | Rationale |
+|-------|:-----:|-----------|
+| Quality | 60 | Structured: 75 (skill execution). Unstructured: 50 (hallucination). Blended: 60 |
+| Speed | 41 | 41.2 content tok/s vs 100 baseline |
+| Context | 20 | 40K / 200K baseline |
+| Size | 27 | 88 GB (4× L4) / 24 GB baseline |
+| **Total** | **39.0** | Gap analysis |

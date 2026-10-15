@@ -119,18 +119,79 @@ Requires max_tokens >= 8192 for code generation to avoid budget exhaustion.
 task, or if CUDA graph compilation overhead is problematic for frequent
 restarts. Same architecture, safer precision.
 
+### `qw14b-32k` (full name: `qw14b-fp8-spec-32k`)
+
+| Setting | Value |
+|---------|-------|
+| **Target model** | `Qwen/Qwen3-14B-FP8` (FP8, ~14 GB) |
+| **Draft model** | `Qwen/Qwen3-4B-FP8` (FP8, ~4 GB) |
+| **Runtime** | vLLM nightly (`docker.io/vllm/vllm-openai:nightly`) |
+| **Container** | `model-qwen3-14b-32k` |
+| **Port** | 9000 |
+| **TP** | 2 (GPU 0 + GPU 1 only) |
+| **Context** | 32,768 (32K) |
+| **Speculative decoding** | `draft_model`, 5 speculative tokens |
+| **CUDA graphs** | Enabled (no `--enforce-eager`) |
+| **Speed** | **est. 25-35 tok/s** (pending benchmark) |
+| **Quality** | Pending benchmark |
+| **VRAM** | est. ~30 GB / 44 GB (2× L4, 68%) |
+| **GPU subset** | `CUDA_VISIBLE_DEVICES=0,1` — leaves GPU 2+3 free |
+| **Tool calling** | ✅ qwen3 parser |
+| **Cold start** | est. ~10 min (first-run model download + CUDA graph compilation) |
+
+**Why this profile:** Tests whether a 14B model with speculative decoding on
+2× L4 delivers usable quality+speed. If viable, GPU 2+3 become available for
+a parallel Decision model deployment (different port, concurrent operation).
+
+**Context rationale:** 32K = estimated effective context ceiling for 14B dense
+standard attention. Allocating 64K or 128K wastes VRAM on KV cache the model
+can't usefully attend to.
+
+### `qw14b-40k` (full name: `qw14b-fp8-spec-40k`)
+
+| Setting | Value |
+|---------|-------|
+| **Target model** | `Qwen/Qwen3-14B-FP8` (FP8, ~14 GB) |
+| **Draft model** | `Qwen/Qwen3-4B-FP8` (FP8, ~4 GB) |
+| **Runtime** | vLLM nightly (`docker.io/vllm/vllm-openai:nightly`) |
+| **Container** | `model-qwen3-14b-40k` |
+| **Port** | 9000 |
+| **TP** | 4 (all GPUs) |
+| **Context** | 40,960 (40K — model hard limit: `max_position_embeddings=40960`) |
+| **Speculative decoding** | `draft_model`, 5 speculative tokens |
+| **CUDA graphs** | Enabled (no `--enforce-eager`) |
+| **Speed** | **57.8 total / 41.2 content tok/s** |
+| **Quality** | ✅ Passes all 7 benchmark tests |
+| **VRAM** | ~21.5 GB / 23.0 GB per GPU (93.4%) |
+| **Tool calling** | ✅ qwen3 parser |
+| **Cold start** | ~3.5 min (CUDA graph compilation, model cached) |
+
+**Why this profile:** Same model as qw14b-32k but with 2× the memory bandwidth
+(1,200 GB/s vs 600 GB/s) and 40K context (model's `max_position_embeddings`
+hard limit). Trades GPU availability (all 4 consumed) for 75% faster content
+generation (41 vs 23.5 tok/s).
+
+**Context rationale:** 40K is the Qwen3-14B architectural limit
+(`max_position_embeddings=40960` in config.json, no RoPE scaling).
+The original 64K target failed at deploy time — vLLM refuses to exceed this.
+
 ---
 
 ## Mutual Exclusion
 
-All rhel-ai profiles share port 9000. Only one can be active at a time.
+All rhel-ai profiles share port 9000. Only one LLM profile can be active at a time.
 Deploying a new profile automatically stops and removes the current one.
 
 ```
 setup.sh g8b-fp8-spec-128k   → stops any running model on port 9000
 setup.sh g8b-spec-128k        → stops g8b-fp8-spec, starts g8b-spec
-setup.sh g8b-fp8-spec-128k   → stops g8b-spec, restarts g8b-fp8-spec
+setup.sh qw14b-32k            → stops g8b-spec, starts qw14b-32k (GPU 0-1 only)
+setup.sh qw14b-40k            → stops qw14b-32k, starts qw14b-40k (all GPUs)
 ```
+
+**GPU subset profiles:** `qw14b-32k` uses only GPU 0+1 via `CUDA_VISIBLE_DEVICES=0,1`.
+GPU 2+3 remain free for a future Decision model deployment on a separate port
+(parallel operation — not mutual exclusion with the LLM profile).
 
 rhtevan-work profiles share port 10000 with the same exclusion rule.
 
@@ -138,13 +199,15 @@ rhtevan-work profiles share port 10000 with the same exclusion rule.
 
 ## Speed Reference
 
-| Profile | Host | tok/s | vs Opus (~100) |
-|---------|------|:---:|:---:|
-| g350m-2k | rhtevan-work | 44 | 44% (no quality) |
-| **g3b-16k** | rhtevan-work | **37** | 37% |
-| g8b-spec-128k | rhel-ai | 19-25 | 20-25% |
-| **g8b-fp8-spec-128k** | rhel-ai | **~50 total (~47 content)** | ~47% |
+| Profile | Host | GPUs | tok/s | vs Opus (~100) |
+|---------|------|:---:|:---:|:---:|
+| g350m-2k | rhtevan-work | 1× A500 | 44 | 44% (no quality) |
+| **g3b-16k** | rhtevan-work | 1× A500 | **37** | 37% |
+| g8b-spec-128k | rhel-ai | 4× L4 | 19-25 | 20-25% |
+| **g8b-fp8-spec-128k** | rhel-ai | 4× L4 | **~50 total (~47 content)** | ~47% |
+| qw14b-32k | rhel-ai | 2× L4 | 36.4 total (23.5 content) | 24% |
+| **qw14b-40k** | rhel-ai | 4× L4 | **57.8 total (41.2 content)** | **41%** |
 
-| Opus 4.6 | Cloud | ~100 | 100% |
+| Opus 4.6 | Cloud | — | ~100 | 100% |
 
 For full benchmark details, see [benchmark-report.md](./benchmark-report.md).

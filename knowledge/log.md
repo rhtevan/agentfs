@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 10:27
+- New concept: sizing rules of thumb for context and parameters (knowledge/deployment-fitting-guide/sizing-guidance.md)
+
 ## 2026-10-14 16:28
 - New concept: Weighted scoring formula 0.30/0.30/0.30/0.10 with interpretation bands (knowledge/deployment-fitting-guide/weighted-scoring.md)
 - New concept: Class-specific baselines - Gen AI (Opus) vs Decision (Jev) (knowledge/deployment-fitting-guide/class-baselines.md)
