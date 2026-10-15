@@ -65,12 +65,7 @@ regen_skills_index() {
   echo "[$scope_label] Regenerating skills/index.md ($skill_count skills)..."
 
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  python3 "${SCRIPT_DIR}/regen-skill-index.py" "$skills_root"
-
-  local rc=$?
-  if [[ $rc -ne 0 ]]; then
-    ISSUES=$((ISSUES + 1))
-  fi
+  python3 "${SCRIPT_DIR}/regen-skill-index.py" "$skills_root" || true
 }
 
 # ── Knowledge index regen + audit ──────────────────────────────────

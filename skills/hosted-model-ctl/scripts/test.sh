@@ -70,7 +70,7 @@ response=$(run_on_host "$PROFILE_HOST" "curl -s --max-time 120 http://localhost:
   -H 'Content-Type: application/json' \
   -d '{\"model\": \"${model_id}\", \"max_tokens\": 200, \"messages\": [{\"role\": \"user\", \"content\": \"Say hello in one word.\"}]}' 2>/dev/null")
 content=$(echo "$response" | jq -r '.choices[0].message.content // ""' 2>/dev/null)
-reasoning=$(echo "$response" | jq -r '.choices[0].message.reasoning_content // ""' 2>/dev/null)
+reasoning=$(echo "$response" | jq -r '.choices[0].message.reasoning_content // .choices[0].message.reasoning // ""' 2>/dev/null)
 if [[ -n "$content" && "$content" != "null" && "$content" != "" ]]; then
   short_content=$(echo "$content" | head -c 80)
   run_test "Chat completion (\"$short_content\")" "PASS"

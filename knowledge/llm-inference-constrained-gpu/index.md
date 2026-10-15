@@ -22,9 +22,11 @@ models on an RTX A500 Laptop GPU.
 | [context-window-agentfs-requirements.md](./context-window-agentfs-requirements.md) | Minimum context window requirements for AgentFS compatibility |
 | [fedora-nvidia-container-gotchas.md](./fedora-nvidia-container-gotchas.md) | Fedora-specific NVIDIA + Podman pitfalls and workarounds |
 | [vllm-quantization-pitfalls.md](./vllm-quantization-pitfalls.md) | vLLM quantization failure modes and solutions |
+| [speculative-decoding-tradeoffs.md](./speculative-decoding-tradeoffs.md) | When speculative decoding hurts: bandwidth-bound GPUs, TP overhead, vLLM V1 scheduler issues |
 
 ## Log
 
 | Date | Change |
 |------|--------|
+| 2026-10-15 | Added speculative decoding tradeoffs concept (L4 benchmark evidence) |
 | 2026-08-04 | Initial bundle creation from deployment session on rhtevan-work |

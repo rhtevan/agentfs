@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 15:39
+- Fix vLLM 0.32 reasoning field: check both reasoning_content and reasoning in jq fallback chain (skills/hosted-model-ctl/scripts/test.sh)
+
+## 2026-10-15 15:37
+- Fix: regen-skill-index.py exit code 1 (version warnings) killed post-edit.sh via set -e before knowledge index regen could run. Added || true to suppress.
+
+## 2026-10-15 15:28
+- New concept: speculative decoding tradeoffs — when it hurts on bandwidth-bound GPUs (L4 benchmark evidence, vLLM V1 issues) (knowledge/llm-inference-constrained-gpu/speculative-decoding-tradeoffs.md)
+
+## 2026-10-15 15:00
+- Bump version to 7.9.4 for spec decode removal (skills/hosted-model-ctl/SKILL.md)
+- Update qw14b-40k: remove spec decode, speed 41.2→51.3 tok/s, add spec decode removal rationale, update fitting score 39→42 (skills/hosted-model-ctl/references/deployment-profiles.md)
+- Remove spec decode from qw14b-40k profile; engine vllm-spec→vllm, clear spec config, update speed estimate (skills/hosted-model-ctl/scripts/common.sh)
+
 ## 2026-10-15 11:29
 - Add deployment profiles to Quick Navigation table (README.md)
 - Add fitting score summary table with all 6 profiles at top of doc (skills/hosted-model-ctl/references/deployment-profiles.md)

@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 15:00 | v7.9.4 — Remove spec decode from qw14b-40k profile; engine vllm-spec→vllm, clear spec config, update speed estimate |
 | 2026-10-15 11:29 | v7.9.3 — Add fitting score summary table with all 6 profiles at top of doc |
 | 2026-10-15 11:16 | v7.9.2 — Add doc-alignment check: detects drift between deployment-profiles.md default marker and persistent state file; update builtin default for rhel-ai to qw14b-40k |
 | 2026-10-15 11:08 | v7.9.1 — Update default profile marker: g8b-fp8-spec-128k → qw14b-40k to match actual persistent default |

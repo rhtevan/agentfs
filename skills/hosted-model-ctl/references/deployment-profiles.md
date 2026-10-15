@@ -28,7 +28,7 @@ where Q=Quality, S=Speed, C=Context, Z=Size. Cloud baseline (Opus) = 100.
 | g8b-spec-128k | rhel-ai | 60 | 22 | 12 | 14 | **29.9** | Gap analysis | No FP8/CUDA graphs — use fp8 variant |
 | g8b-fp8-spec-128k | rhel-ai | 60 | 50 | 12 | 27 | **39.3** | Gap analysis | Best speed, but 8B context degrades past 16-32K |
 | qw14b-32k | rhel-ai | 70 | 24 | 16 | 55 | **38.0** | Gap analysis | Highest quality, leaves GPU 2-3 free |
-| **qw14b-40k** ✅ | rhel-ai | 60 | 41 | 20 | 27 | **39.0** | Gap analysis | Best balance — default profile |
+| **qw14b-40k** ✅ | rhel-ai | 60 | 51 | 20 | 27 | **42.0** | Gap analysis | Best balance — default profile |
 
 > **Reading the table:** All self-hosted profiles score in the "Gap analysis"
 > band (25–50) by design — the cloud baseline (Opus at 200K context, ~100 tok/s)
@@ -173,29 +173,40 @@ a parallel Decision model deployment (different port, concurrent operation).
 standard attention. Allocating 64K or 128K wastes VRAM on KV cache the model
 can't usefully attend to.
 
-### `qw14b-40k` (full name: `qw14b-fp8-spec-40k`) ✅ Default
+### `qw14b-40k` ✅ Default
 
 | Setting | Value |
 |---------|-------|
 | **Target model** | `Qwen/Qwen3-14B-FP8` (FP8, ~14 GB) |
-| **Draft model** | `Qwen/Qwen3-4B-FP8` (FP8, ~4 GB) |
-| **Runtime** | vLLM nightly (`docker.io/vllm/vllm-openai:nightly`) |
+| **Draft model** | None (spec decode disabled — see note below) |
+| **Runtime** | vLLM 0.32 nightly (`docker.io/vllm/vllm-openai:nightly`) |
 | **Container** | `model-qwen3-14b-40k` |
 | **Port** | 9000 |
 | **TP** | 4 (all GPUs) |
 | **Context** | 40,960 (40K — model hard limit: `max_position_embeddings=40960`) |
-| **Speculative decoding** | `draft_model`, 5 speculative tokens |
+| **Speculative decoding** | ❌ Disabled (see below) |
 | **CUDA graphs** | Enabled (no `--enforce-eager`) |
-| **Speed** | **57.8 total / 41.2 content tok/s** |
-| **Quality** | ✅ Passes all 7 benchmark tests |
-| **VRAM** | ~21.5 GB / 23.0 GB per GPU (93.4%) |
+| **Speed** | **51.3 tok/s** (content and thinking, consistent) |
+| **Quality** | ✅ Passes all 4 test.sh tests, correct on reasoning tasks |
+| **Decision endpoints** | ✅ `/v1/decisions`, `/v1/systemone` (NextTokenStrategy) |
+| **VRAM** | ~21.1 GB / 23.0 GB per GPU (91.7%) |
 | **Tool calling** | ✅ qwen3 parser |
-| **Cold start** | ~3.5 min (CUDA graph compilation, model cached) |
+| **Cold start** | ~2 min (no draft model compilation) |
+
+> **Why spec decode was removed (2026-10-15):** vLLM 0.32's V1 engine introduces
+> significant overhead for speculative decoding on L4 GPUs (sm_89). Benchmarking
+> showed spec decode *reduced* throughput by 36% (32.5 vs 51.3 tok/s) due to:
+> (1) scheduler throttling (`max_num_scheduled_tokens=2048` auto-cap, not fully
+> fixable with `--max-num-batched-tokens`), (2) draft model TP=4 communication
+> overhead on a 4B model (each GPU slice is tiny), (3) 56.7% overall acceptance
+> rate with positions 3-4 below 50%. Without spec decode, the base model on
+> vLLM 0.32 is actually 24% *faster* than vLLM 0.27 with spec decode (51.3 vs
+> 41.2 tok/s).
 
 **Why this profile:** Same model as qw14b-32k but with 2× the memory bandwidth
 (1,200 GB/s vs 600 GB/s) and 40K context (model's `max_position_embeddings`
-hard limit). Trades GPU availability (all 4 consumed) for 75% faster content
-generation (41 vs 23.5 tok/s).
+hard limit). Trades GPU availability (all 4 consumed) for 118% faster generation
+(51.3 vs 23.5 tok/s).
 
 **Context rationale:** 40K is the Qwen3-14B architectural limit
 (`max_position_embeddings=40960` in config.json, no RoPE scaling).
@@ -232,7 +243,7 @@ rhtevan-work profiles share port 10000 with the same exclusion rule.
 | g8b-spec-128k | rhel-ai | 4× L4 | 19-25 | 20-25% |
 | **g8b-fp8-spec-128k** | rhel-ai | 4× L4 | **~50 total (~47 content)** | ~47% |
 | qw14b-32k | rhel-ai | 2× L4 | 36.4 total (23.5 content) | 24% |
-| **qw14b-40k** | rhel-ai | 4× L4 | **57.8 total (41.2 content)** | **41%** |
+| **qw14b-40k** | rhel-ai | 4× L4 | **51.3** (no spec decode) | **51%** |
 
 | Opus 4.6 | Cloud | — | ~100 | 100% |
 
