@@ -15,6 +15,32 @@
 
 ---
 
+## Fitting Scores
+
+All profiles scored against the [Deployment Fitting Guide](../../../knowledge/deployment-fitting-guide/)
+framework. Score = (Q × 0.30) + (S × 0.30) + (C × 0.30) + (Z × 0.10),
+where Q=Quality, S=Speed, C=Context, Z=Size. Cloud baseline (Opus) = 100.
+
+| Profile | Host | Q | S | C | Z | **Score** | Band | Key Trade-off |
+|---------|------|:-:|:-:|:-:|:-:|:---------:|------|---------------|
+| g350m-2k | rhtevan-work | 5 | 44 | 1 | 100 | **25.0** | Gap analysis | Too small for real tasks |
+| g3b-16k | rhtevan-work | 30 | 37 | 7 | 100 | **32.2** | Gap analysis | Basic tasks only, fastest cold start |
+| g8b-spec-128k | rhel-ai | 60 | 22 | 12 | 14 | **29.9** | Gap analysis | No FP8/CUDA graphs — use fp8 variant |
+| g8b-fp8-spec-128k | rhel-ai | 60 | 50 | 12 | 27 | **39.3** | Gap analysis | Best speed, but 8B context degrades past 16-32K |
+| qw14b-32k | rhel-ai | 70 | 24 | 16 | 55 | **38.0** | Gap analysis | Highest quality, leaves GPU 2-3 free |
+| **qw14b-40k** ✅ | rhel-ai | 60 | 41 | 20 | 27 | **39.0** | Gap analysis | Best balance — default profile |
+
+> **Reading the table:** All self-hosted profiles score in the "Gap analysis"
+> band (25–50) by design — the cloud baseline (Opus at 200K context, ~100 tok/s)
+> is intentionally out of reach. The value of self-hosting is sovereignty,
+> offline capability, and cost — none of which the fitting score captures.
+> Compare profiles *against each other*, not against 100.
+
+For full score breakdowns, see [fitting-guide.md](./fitting-guide.md).
+For benchmark data, see [benchmark-report.md](./benchmark-report.md).
+
+---
+
 ## Profiles — rhtevan-work
 
 ### `g3b-16k` ✅ Default

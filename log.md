@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 11:29
+- Add deployment profiles to Quick Navigation table (README.md)
+- Add fitting score summary table with all 6 profiles at top of doc (skills/hosted-model-ctl/references/deployment-profiles.md)
+
 ## 2026-10-15 11:20
 - Add deployment-fitting-guide to knowledge bundles list (14 bundles now) (README.md)
 

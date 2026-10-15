@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 11:29 | v7.9.3 — Add fitting score summary table with all 6 profiles at top of doc |
 | 2026-10-15 11:16 | v7.9.2 — Add doc-alignment check: detects drift between deployment-profiles.md default marker and persistent state file; update builtin default for rhel-ai to qw14b-40k |
 | 2026-10-15 11:08 | v7.9.1 — Update default profile marker: g8b-fp8-spec-128k → qw14b-40k to match actual persistent default |
 | 2026-10-15 10:25 | v7.9.0 — **qw14b-40k benchmark + profile rename.** Renamed `qw14b-64k` → `qw14b-40k` after discovering Qwen3-14B hard limit `max_position_embeddings=40960`. Added Section 15 to benchmark-report.md: 57.8 total / 41.2 content tok/s on 4×L4, all 7 tests pass. Added agentic session observations (strong structured, weak unstructured — hallucinated geolocation). Updated fitting-guide.md with measured scores (Q=60, S=41, C=20, Z=27 → 39.0). Updated model-landscape.md: added Qwen3-14B row, corrected Qwen3 dense context from 128K to 40K. Updated deployment-profiles.md with measured results. |

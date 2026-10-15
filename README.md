@@ -19,6 +19,7 @@ AgentFS is a structured filesystem convention for AI agents (Goose, Hermes, Clau
 |----------|------|---------------|
 | Skills catalog | [skills/index.md](skills/index.md) | All available skills — signal phrases, tags, descriptions |
 | Knowledge bundles | [knowledge/index.md](knowledge/index.md) | Curated knowledge — concepts, patterns, postmortems |
+| Deployment profiles | [skills/hosted-model-ctl/references/deployment-profiles.md](skills/hosted-model-ctl/references/deployment-profiles.md) | Self-hosted model profiles — fitting scores, speed, hardware, trade-offs |
 | Activity log | [log.md](log.md) | Reverse-chronological change history |
 | Design spec | [skills/agentfs-setup/references/design-spec.md](skills/agentfs-setup/references/design-spec.md) | Architecture, scope model, layer definitions |
 
