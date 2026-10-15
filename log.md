@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 15:57
+- Remove spec decode from qw14b-32k profile: vllm-spec→vllm, clear spec config (skills/hosted-model-ctl/scripts/common.sh)
+- Add Section 16: vLLM 0.32 upgrade + spec decode removal benchmarks for both qw14b profiles. Update Section 9.3 and 10 recommendations. (skills/hosted-model-ctl/references/benchmark-report.md)
+- Update qw14b-32k: remove spec decode, speed 30.2 tok/s, fitting score 38→40.3, add decision endpoints (skills/hosted-model-ctl/references/deployment-profiles.md)
+
 ## 2026-10-15 15:39
 - Fix vLLM 0.32 reasoning field: check both reasoning_content and reasoning in jq fallback chain (skills/hosted-model-ctl/scripts/test.sh)
 

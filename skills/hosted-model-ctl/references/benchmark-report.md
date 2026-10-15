@@ -267,14 +267,19 @@ on $10,000 worth of L4 GPUs (13.4 tok/s). Both pass all 7 benchmark tests.
 The 31B model produces higher quality on complex tasks, but for routine agentic
 work (tool calling, simple reasoning, code gen), the 3B is indistinguishable.
 
-### 9.3 Speculative Decoding Works (With the Right Method)
+### 9.3 Speculative Decoding: Hardware-Dependent (Updated 2026-10-15)
 
-- **Draft model speculation: ✅** 1.5-2× speedup on Granite 8B with 3B draft
+- **Draft model speculation on Granite 8B + 3B (vLLM 0.26, 4×L4): ✅** 1.5-2× speedup
+- **Draft model speculation on Qwen3 14B + 4B (vLLM 0.32, 4×L4): ❌** 36% slowdown
+- **Draft model speculation on Qwen3 14B + 4B (vLLM 0.32, 2×L4): ❌** Expected worse
 - **N-gram speculation: ❌** No benefit for novel content generation
 - **Native MTP: ❌** Gemma 4 checkpoint lacks MTP heads
 
-Draft model speculation is the only viable software-level speedup, and it requires
-a same-family draft model with matching tokenizer.
+**Updated finding:** Spec decode benefit depends critically on GPU architecture
+and vLLM engine version. On L4 GPUs (bandwidth-constrained, no native FP8,
+PCIe interconnect), vLLM 0.32 V1 engine makes spec decode net-negative.
+Removing it from Qwen3 14B profiles yielded +24% throughput (51.3 vs 41.2).
+See Section 16 for full analysis.
 
 ### 9.4 TP Does Not Increase Token Speed
 
@@ -341,6 +346,27 @@ Deploy via `setup.sh <alias>` — stops current model on port 9000 first.
 - Benchmarking / quality validation baseline
 - Self-hosted Granite 8B is **faster for agentic tool-calling workflows**
   (0.34s vs 2.54s per tool call). See Section 12 for full comparison.
+
+### Updated Default: rhel-ai — Profile `qw14b-40k` ✅ (2026-10-15)
+
+| Setting | Value |
+|---------|-------|
+| **Model** | Qwen3-14B-FP8 |
+| **Runtime** | vLLM 0.32 nightly |
+| **TP** | 4 (all GPUs) |
+| **Context** | 40K |
+| **Speculative Decoding** | ❌ Disabled (net-negative on L4) |
+| **Speed** | **51.3 tok/s** |
+| **Why** | Higher quality than Granite 8B, faster than Granite 8B with spec decode (51 vs 47 content), decision endpoints via NextTokenStrategy |
+
+### Alternate: rhel-ai — Profile `qw14b-32k`
+
+| Setting | Value |
+|---------|-------|
+| **Model** | Qwen3-14B-FP8 |
+| **TP** | 2 (GPU 0-1 only) |
+| **Speed** | **30.2 tok/s** |
+| **When** | GPU 2-3 needed for co-hosted decision model or other workload |
 
 ---
 
@@ -737,3 +763,115 @@ unstructured novel tasks requiring improvised tool chains. Characteristic
 | Context | 20 | 40K / 200K baseline |
 | Size | 27 | 88 GB (4× L4) / 24 GB baseline |
 | **Total** | **39.0** | Gap analysis |
+
+---
+
+## 16. vLLM 0.32 Upgrade + Speculative Decoding Removal (2026-10-15)
+
+Upgraded vLLM from nightly v0.26.1 to v0.32.0rc1. During benchmarking,
+discovered that speculative decoding **reduces** throughput on L4 GPUs
+under the V1 engine. Both qw14b profiles switched from `vllm-spec` to
+`vllm` engine (spec decode disabled).
+
+### 16.1 Root Cause Analysis
+
+vLLM 0.32 introduces the V1 engine by default. Speculative decoding on
+bandwidth-constrained GPUs (L4, Ada sm_89) is net-negative due to:
+
+1. **Scheduler auto-throttle:** V1 caps `max_num_scheduled_tokens=2048`
+   when spec decode is active. `--max-num-batched-tokens 8192` changes
+   compile range but does not recover throughput.
+2. **Draft TP overhead:** 4B draft model at TP=4 → 1B/GPU, dominated by
+   NCCL all-reduce latency. At TP=2 → 2B/GPU, still excessive.
+3. **Acceptance rate:** 56.7% overall (pos 0: 79%, pos 4: 39%). Average
+   2.83 tokens accepted per draft cycle — overhead exceeds gain.
+4. **No native FP8:** L4 uses Marlin weight-only FP8 (dequant to FP16).
+   Draft model pays same penalty.
+
+### 16.2 Benchmark Results — qw14b-40k (4×L4)
+
+| Configuration | tok/s | vs old baseline |
+|---------------|:-----:|:---:|
+| vLLM 0.27 + spec decode (old) | 41.2 | — |
+| vLLM 0.32 + spec decode | 32.5 | -21% |
+| vLLM 0.32 + spec decode + `--max-num-batched-tokens 8192` | 32.5 | -21% |
+| **vLLM 0.32, no spec decode** | **51.3** | **+24%** |
+
+Six-run benchmark (3× no-thinking, 3× thinking):
+- No thinking: 51.3, 51.2, 51.4 tok/s
+- With thinking: 51.3, 51.3, 51.5 tok/s
+- Variance: <0.4% — rock solid
+
+### 16.3 Benchmark Results — qw14b-32k (2×L4)
+
+| Configuration | tok/s |
+|---------------|:-----:|
+| **vLLM 0.32, no spec decode** | **30.2** |
+
+Six-run benchmark (3× no-thinking, 3× thinking):
+- No thinking: 30.3, 30.3, 30.2 tok/s
+- With thinking: 30.2, 30.1, 30.1 tok/s
+- Variance: <0.7% — consistent
+
+GPU layout:
+```
+GPU 0: 21,893 / 23,034 MiB (95.1%) — Qwen3 14B FP8 shard
+GPU 1: 21,893 / 23,034 MiB (95.1%) — Qwen3 14B FP8 shard
+GPU 2:      1 / 23,034 MiB (idle)  — FREE
+GPU 3:      1 / 23,034 MiB (idle)  — FREE
+```
+
+### 16.4 Agentic Session Performance (qw14b-40k, no spec decode)
+
+Measured from Goose `Test qw14b-40k` session via Skupper VAN:
+
+| Interaction | Time (no spec) | Time (with spec, prev) | Improvement |
+|-------------|:-:|:-:|:-:|
+| hello → canary response | 5s | 30s | **83% faster** |
+| Identity question | 14s | 11s | Similar |
+| Violation check (e2e, 4 LLM calls) | 32s | 57s | **44% faster** |
+
+### 16.5 Decision Endpoint Verification
+
+NextTokenStrategy decision endpoints work on both profiles without
+spec decode. No extra flags needed — vLLM 0.32 enables them by default.
+
+| Test | Result |
+|------|:------:|
+| `/v1/decisions` predicate | ✅ probability=1.0 (sky is blue) |
+| `/v1/decisions` choice | ✅ "blue" with confidence=1.0 |
+| 3-question batched | ✅ All correct, 1079ms |
+
+### 16.6 Updated Fitting Scores
+
+| Profile | Q | S | C | Z | **Score** | Change |
+|---------|:-:|:-:|:-:|:-:|:---------:|:------:|
+| qw14b-32k | 70 | 30 | 16 | 55 | **40.3** | was 38.0 (S: 24→30) |
+| qw14b-40k ✅ | 60 | 51 | 20 | 27 | **42.0** | was 39.0 (S: 41→51) |
+
+Both profiles improved their fitting scores. qw14b-40k is now the
+highest-scoring profile at 42.0.
+
+### 16.7 Updated Speed Comparison (All Profiles)
+
+| Profile | Host | GPUs | tok/s | Cloud % |
+|---------|------|:----:|:-----:|:-------:|
+| g350m-2k | rhtevan-work | 1× A500 | 44 | 44% |
+| g3b-16k | rhtevan-work | 1× A500 | 37 | 37% |
+| g8b-spec-128k | rhel-ai | 4× L4 | 19-25 | 20-25% |
+| g8b-fp8-spec-128k | rhel-ai | 4× L4 | ~50 | ~50% |
+| qw14b-32k | rhel-ai | 2× L4 | **30.2** | **30%** |
+| **qw14b-40k** ✅ | rhel-ai | 4× L4 | **51.3** | **51%** |
+
+### 16.8 Key Lesson
+
+Speculative decoding is a compute-for-bandwidth trade. It only helps when:
+1. Excess compute headroom exists (GPU utilization < 50% during decode)
+2. TP communication overhead is low (NVLink, or TP=1)
+3. Native FP8 compute is available (Hopper+)
+4. Draft model doesn't compete for memory bandwidth
+
+L4 GPUs fail all four conditions. Removing spec decode yielded the
+largest single performance improvement in the project's history.
+Full analysis captured in knowledge bundle:
+[speculative-decoding-tradeoffs.md](../../../../knowledge/llm-inference-constrained-gpu/speculative-decoding-tradeoffs.md)

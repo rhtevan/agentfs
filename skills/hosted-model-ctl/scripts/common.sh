@@ -24,7 +24,7 @@ declare -A DEPLOY_PROFILES=(
   # ── rhel-ai (4× NVIDIA L4, 88 GB GDDR6, 1200 GB/s) ──
   [g8b-spec-128k]="rhel-ai|model-granite-8b-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.2-8b|4|131072|9000|--enforce-eager --dtype bfloat16 --enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3|{SPEC_G8B_BF16}|Granite 4.2 8B BF16 + 3B BF16 draft TP=4 @128K|19-25 tok/s"
   [g8b-fp8-spec-128k]="rhel-ai|model-granite-8b-fp8-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.2-8b-fp8|4|131072|9000|--enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3|{SPEC_G8B_FP8}|Granite 4.2 8B FP8 + 3B FP8 draft TP=4 @128K + CUDA graphs|58-79 tok/s"
-  [qw14b-32k]="rhel-ai|model-qwen3-14b-32k|docker.io/vllm/vllm-openai:nightly|vllm-spec|Qwen/Qwen3-14B-FP8|2|32768|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3|{SPEC_QW14B_FP8_TP2}|Qwen3 14B FP8 + 4B FP8 draft TP=2 @32K (GPU 0-1)|est. 25-35 tok/s"
+  [qw14b-32k]="rhel-ai|model-qwen3-14b-32k|docker.io/vllm/vllm-openai:nightly|vllm|Qwen/Qwen3-14B-FP8|2|32768|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3||Qwen3 14B FP8 TP=2 @32K (GPU 0-1, no spec decode)|est. 25+ tok/s"
   [qw14b-40k]="rhel-ai|model-qwen3-14b-40k|docker.io/vllm/vllm-openai:nightly|vllm|Qwen/Qwen3-14B-FP8|4|40960|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3||Qwen3 14B FP8 TP=4 @40K (no spec decode)|est. 50+ tok/s"
 )
 

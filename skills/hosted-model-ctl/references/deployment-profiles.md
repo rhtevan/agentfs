@@ -27,7 +27,7 @@ where Q=Quality, S=Speed, C=Context, Z=Size. Cloud baseline (Opus) = 100.
 | g3b-16k | rhtevan-work | 30 | 37 | 7 | 100 | **32.2** | Gap analysis | Basic tasks only, fastest cold start |
 | g8b-spec-128k | rhel-ai | 60 | 22 | 12 | 14 | **29.9** | Gap analysis | No FP8/CUDA graphs — use fp8 variant |
 | g8b-fp8-spec-128k | rhel-ai | 60 | 50 | 12 | 27 | **39.3** | Gap analysis | Best speed, but 8B context degrades past 16-32K |
-| qw14b-32k | rhel-ai | 70 | 24 | 16 | 55 | **38.0** | Gap analysis | Highest quality, leaves GPU 2-3 free |
+| qw14b-32k | rhel-ai | 70 | 30 | 16 | 55 | **40.3** | Gap analysis | Highest quality, leaves GPU 2-3 free |
 | **qw14b-40k** ✅ | rhel-ai | 60 | 51 | 20 | 27 | **42.0** | Gap analysis | Best balance — default profile |
 
 > **Reading the table:** All self-hosted profiles score in the "Gap analysis"
@@ -145,29 +145,30 @@ Requires max_tokens >= 8192 for code generation to avoid budget exhaustion.
 task, or if CUDA graph compilation overhead is problematic for frequent
 restarts. Same architecture, safer precision.
 
-### `qw14b-32k` (full name: `qw14b-fp8-spec-32k`)
+### `qw14b-32k`
 
 | Setting | Value |
 |---------|-------|
 | **Target model** | `Qwen/Qwen3-14B-FP8` (FP8, ~14 GB) |
-| **Draft model** | `Qwen/Qwen3-4B-FP8` (FP8, ~4 GB) |
-| **Runtime** | vLLM nightly (`docker.io/vllm/vllm-openai:nightly`) |
+| **Draft model** | None (spec decode disabled — see qw14b-40k note) |
+| **Runtime** | vLLM 0.32 nightly (`docker.io/vllm/vllm-openai:nightly`) |
 | **Container** | `model-qwen3-14b-32k` |
 | **Port** | 9000 |
 | **TP** | 2 (GPU 0 + GPU 1 only) |
 | **Context** | 32,768 (32K) |
-| **Speculative decoding** | `draft_model`, 5 speculative tokens |
+| **Speculative decoding** | ❌ Disabled |
 | **CUDA graphs** | Enabled (no `--enforce-eager`) |
-| **Speed** | **est. 25-35 tok/s** (pending benchmark) |
-| **Quality** | Pending benchmark |
-| **VRAM** | est. ~30 GB / 44 GB (2× L4, 68%) |
+| **Speed** | **30.2 tok/s** (consistent across 6 benchmark runs) |
+| **Quality** | ✅ Passes all 4 test.sh tests |
+| **Decision endpoints** | ✅ `/v1/decisions`, `/v1/systemone` (NextTokenStrategy) |
+| **VRAM** | ~21.9 GB / 23.0 GB per GPU (95.1%) |
 | **GPU subset** | `CUDA_VISIBLE_DEVICES=0,1` — leaves GPU 2+3 free |
 | **Tool calling** | ✅ qwen3 parser |
-| **Cold start** | est. ~10 min (first-run model download + CUDA graph compilation) |
+| **Cold start** | ~2 min (model cached, no draft compilation) |
 
-**Why this profile:** Tests whether a 14B model with speculative decoding on
-2× L4 delivers usable quality+speed. If viable, GPU 2+3 become available for
-a parallel Decision model deployment (different port, concurrent operation).
+**Why this profile:** Same 14B model on half the GPUs (2× L4, 600 GB/s).
+30.2 tok/s is usable for agentic workloads. GPU 2+3 remain free for a
+parallel decision model or other workload.
 
 **Context rationale:** 32K = estimated effective context ceiling for 14B dense
 standard attention. Allocating 64K or 128K wastes VRAM on KV cache the model
@@ -242,7 +243,7 @@ rhtevan-work profiles share port 10000 with the same exclusion rule.
 | **g3b-16k** | rhtevan-work | 1× A500 | **37** | 37% |
 | g8b-spec-128k | rhel-ai | 4× L4 | 19-25 | 20-25% |
 | **g8b-fp8-spec-128k** | rhel-ai | 4× L4 | **~50 total (~47 content)** | ~47% |
-| qw14b-32k | rhel-ai | 2× L4 | 36.4 total (23.5 content) | 24% |
+| qw14b-32k | rhel-ai | 2× L4 | **30.2** (no spec decode) | **30%** |
 | **qw14b-40k** | rhel-ai | 4× L4 | **51.3** (no spec decode) | **51%** |
 
 | Opus 4.6 | Cloud | — | ~100 | 100% |
