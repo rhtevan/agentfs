@@ -276,6 +276,7 @@ Current bundles:
 - **Skupper vLLM Deployment** — Lessons learned from deploying Granite models on multi-GPU cloud instances via Skupper V2 VAN
 - **Goose Desktop Operations** — GOOSE_TOOLSHIM incident postmortem, custom provider JSON schema, Desktop hang diagnostics
 - **Context Engineering** — Principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks
+- **Deployment Fitting Guide** — Rules of thumb for context window and parameter sizing, hardware interaction data, multi-dimensional deployment scoring framework
 - **KGM-Based Skill Dispatch** — Design decisions, evidence, and architecture for using KGM as the primary skill dispatch mechanism
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.

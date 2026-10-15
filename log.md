@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 11:20
+- Add deployment-fitting-guide to knowledge bundles list (14 bundles now) (README.md)
+
+## 2026-10-15 11:19
+- Add doc-alignment check call at end of list output (skills/hosted-model-ctl/scripts/list.sh)
+- Add doc-alignment check call at end of list output (skills/hosted-model-ctl/scripts/list.sh)
+
+## 2026-10-15 11:16
+- Add doc-alignment check: detects drift between deployment-profiles.md default marker and persistent state file; update builtin default for rhel-ai to qw14b-40k (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-10-15 11:08
+- Update default profile marker: g8b-fp8-spec-128k → qw14b-40k to match actual persistent default (skills/hosted-model-ctl/references/deployment-profiles.md)
+- Update default profile marker: g8b-fp8-spec-128k → qw14b-40k to match actual persistent default (skills/hosted-model-ctl/references/deployment-profiles.md)
+
 ## 2026-10-15 10:31
 - Added qw14b-32k and qw14b-40k profiles, GPU_DEVICES map, spec configs, renamed 64k to 40k (skills/hosted-model-ctl/scripts/common.sh)
 

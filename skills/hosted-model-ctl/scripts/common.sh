@@ -48,7 +48,7 @@ declare -A GPU_DEVICES=(
 
 # Default profiles per host (fallback if no persistent override)
 _BUILTIN_DEFAULT_RHTEVAN="g3b-16k"
-_BUILTIN_DEFAULT_RHELAI="g8b-fp8-spec-128k"
+_BUILTIN_DEFAULT_RHELAI="qw14b-40k"
 
 # Persistent defaults override builtins
 _read_persistent_default() {
@@ -206,4 +206,46 @@ wait_for_model() {
   done
   echo "❌ Timeout waiting for model on ${host}:${port}" >&2
   return 1
+}
+
+# Check that deployment-profiles.md ✅ Default markers match persistent state
+check_doc_alignment() {
+  local doc
+  doc="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../references/deployment-profiles.md"
+  [[ -f "$doc" ]] || return 0  # no doc to check
+
+  local drift=0
+  for host in rhtevan-work rhel-ai; do
+    local state_default
+    state_default=$(get_default_profile "$host")
+    [[ -z "$state_default" ]] && continue
+
+    # Find which profile has ✅ Default under the host's section
+    # Section header: ## Profiles — <host>
+    # Profile header: ### `profile-name` ... ✅ Default
+    local in_section=false
+    local doc_default=""
+    while IFS= read -r line; do
+      if [[ "$line" =~ ^##\ Profiles\ —\  ]]; then
+        if [[ "$line" == *"$host"* ]]; then
+          in_section=true
+        else
+          $in_section && break  # left our section
+        fi
+      fi
+      if $in_section && [[ "$line" =~ ^###\ \` ]] && [[ "$line" == *"✅ Default"* ]]; then
+        # Extract profile name from ### `profile-name`
+        doc_default=$(echo "$line" | sed "s/^### \`//" | sed "s/\`.*//" )
+      fi
+    done < "$doc"
+
+    if [[ -n "$doc_default" && "$doc_default" != "$state_default" ]]; then
+      echo "  ⚠️  Doc drift ($host): deployment-profiles.md says default is '$doc_default', state file says '$state_default'"
+      drift=1
+    elif [[ -z "$doc_default" ]]; then
+      echo "  ⚠️  Doc drift ($host): no ✅ Default marker found in deployment-profiles.md (state default: $state_default)"
+      drift=1
+    fi
+  done
+  return $drift
 }

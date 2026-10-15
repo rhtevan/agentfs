@@ -61,3 +61,6 @@ for host in rhtevan-work rhel-ai; do
   done
   echo
 done
+
+# Doc alignment check
+check_doc_alignment || true

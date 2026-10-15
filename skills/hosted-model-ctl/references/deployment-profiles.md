@@ -65,7 +65,7 @@ testing where output quality doesn't matter.
 
 ## Profiles — rhel-ai
 
-### `g8b-fp8-spec-128k` ✅ Default
+### `g8b-fp8-spec-128k`
 
 | Setting | Value |
 |---------|-------|
@@ -86,7 +86,7 @@ testing where output quality doesn't matter.
 | **Reasoning parser** | nemotron_v3 (built-in chain-of-thought) |
 | **Cold start** | ~5 min (includes CUDA graph compilation) |
 
-**Why default:** Three optimizations stack multiplicatively:
+**Why this profile:** Three optimizations stack multiplicatively:
 1. FP8 quantization — halves weight reads
 2. CUDA graphs — eliminates Python/framework overhead
 3. Speculative decoding — multiple tokens verified per weight read
@@ -147,7 +147,7 @@ a parallel Decision model deployment (different port, concurrent operation).
 standard attention. Allocating 64K or 128K wastes VRAM on KV cache the model
 can't usefully attend to.
 
-### `qw14b-40k` (full name: `qw14b-fp8-spec-40k`)
+### `qw14b-40k` (full name: `qw14b-fp8-spec-40k`) ✅ Default
 
 | Setting | Value |
 |---------|-------|
