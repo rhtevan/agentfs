@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-16 15:17
+- Version references updated 7.3.6 → 7.3.7 (README.md)
+- Version bump 7.3.6 → 7.3.7 for CNL compliance pass (skills/agentfs-setup/SKILL.md)
+- CNL compliance pass: all rules rewritten with numbered Do: lists, split compound instructions, active imperative voice, single vocabulary (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-10-15 22:58
 - New concept: generation prior conflict — pretraining priors override system prompt rules (knowledge/context-engineering/generation-prior-conflict.md)
 - New concept: CNL authoring rules for weak models — ASD-STE100 principles applied to agent instructions (knowledge/context-engineering/cnl-authoring-for-weak-models.md)

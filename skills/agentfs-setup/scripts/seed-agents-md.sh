@@ -178,20 +178,20 @@ Then proceed normally with the user's request.
    this file. "forget this" → remove from MEMORY.md.
 
 2. **Log every change.** After editing any file under `.agents/`,
-   append a dated entry to `.agents/log.md` before doing anything
-   else. Format: `## YYYY-MM-DD HH:MM` heading, `- ` bullet.
+   append a dated entry to `.agents/log.md`. Do this before any
+   other action. Format: `## YYYY-MM-DD HH:MM` heading, `- ` bullet.
 
 3. **No sycophancy.** Do not open with "Great question" or similar.
    Lead with substance. Do not reverse a position without new
    information. Name at least one risk when evaluating a plan.
 
 4. **Confirm before destructive ops.** Before deleting files or
-   bulk renaming under `.agents/`, list what will change and wait
-   for user confirmation.
+   bulk renaming under `.agents/`, list what will change. Wait
+   for user confirmation before proceeding.
 
-5. **Git safety.** Before committing, stage all changes, run
-   `git diff --stat`, and show the output. Wait for user
-   confirmation before `git commit` and `git push`.
+5. **Git safety.** Before committing, stage all changes. Run
+   `git diff --stat`. Show the output to the user. Wait for
+   user confirmation before `git commit` and `git push`.
 AGENTSEOF
 
 # ── PROJECT scope template ────────────────────────────────────────────
@@ -215,7 +215,9 @@ cat > "$TARGET" << 'AGENTSEOF'
 ### 1. Signal Dispatch
 
 **When:** User message starts with `hey` followed by keywords.
-**`hey` is a dispatch prefix — never a greeting.**
+`hey` is a dispatch prefix — never a greeting.
+
+**Do:**
 
 **Path A — Signal Dispatch table match:**
 If keywords match a Signal Dispatch entry below → execute that action directly.
@@ -238,12 +240,22 @@ Use available tools and knowledge at your discretion.
 ### 2. Pre-Flight
 
 **When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt). Also before any `git push`.
-**Do:** ① State what you will do. ② If plan touches `.agents/` or `~/.agents/`: include Post-Write (Rule 3) steps; if destructive ops, start with Checkpoint (Rule 6). ③ If plan includes `git push`, show `git diff --stat` and wait for confirmation. ④ Execute all steps in order before responding.
+
+**Do:**
+1. State what you will do.
+2. If the plan touches `.agents/` or `~/.agents/`: include Post-Write (Rule 3) steps in the plan.
+3. If the plan includes destructive ops on `.agents/`: start with Checkpoint (Rule 6).
+4. If the plan includes `git push`: show `git diff --stat`. Wait for user confirmation.
+5. Execute all steps in order before responding.
 
 ### 3. Post-Write
 
 **When:** Before sending any response where writes touched `.agents/` or `~/.agents/`.
-**Do:** `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file (skip `log.md`, `CHANGELOG.md`, auto-generated `index.md`). If the script does not exist, warn the user and recommend `hey setup agentfs`. Do not respond until complete.
+
+**Do:**
+1. Run `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file. Skip `log.md`, `CHANGELOG.md`, and auto-generated `index.md`.
+2. If the script does not exist: warn the user. Recommend `hey setup agentfs`.
+3. Do not send the response until all post-write runs complete.
 
 ### 4. Session Canary
 
@@ -261,17 +273,33 @@ Use available tools and knowledge at your discretion.
 ### 5. Conflict Resolution
 
 **When:** Reversing a position, or a request conflicts with a rule.
-**Do:** When reversing a position, state what changed and your previous position. When a request conflicts with a rule, quote the rule, explain the conflict, and ask for `[OVERRIDE]`.
+
+**Do:**
+1. When reversing a position: state what changed. State your previous position.
+2. When a request conflicts with a rule: quote the rule. Explain the conflict. Ask the user for `[OVERRIDE]` approval.
 
 ### 6. Checkpoint
 
 **When:** Before destructive op (delete, rename, or edit ≥3 files under `.agents/`). Also before any edit to `seed-agents-md.sh`.
-**Do:** ① `checkpoint.sh create <files>`. ② If editing `seed-agents-md.sh`, bump `version:` in `skills/agentfs-setup/SKILL.md` before committing. ③ Execute changes. ④ If template was edited, run `sync-agents-md.sh` to propagate. ⑤ `checkpoint.sh clear`. If the script does not exist, warn the user and do not proceed until `hey setup agentfs` is run. Never edit a project `AGENTS.md` directly — edit the template source in `seed-agents-md.sh`.
+
+**Do:**
+1. Run `checkpoint.sh create <files>`.
+2. If editing `seed-agents-md.sh`: bump `version:` in `skills/agentfs-setup/SKILL.md` before committing.
+3. Execute the changes.
+4. If the template was edited: run `sync-agents-md.sh` to propagate.
+5. Run `checkpoint.sh clear`.
+6. If `checkpoint.sh` does not exist: warn the user. Do not proceed until `hey setup agentfs` is run.
+7. Never edit a project `AGENTS.md` directly. Edit the template source in `seed-agents-md.sh`.
 
 ### 7. Scope Rules
 
 **When:** Writing to `memories/` or creating a skill.
-**Do:** Memories are PROJECT scope only. Mature patterns → graduate to OKF bundle under `~/.agents/knowledge/`. When MEMORY.md accumulates ≥3 entries on the same topic, suggest graduation via `hey harvest`. Skills default to USER `~/.agents/skills/`; PROJECT only when user explicitly says "project skill" / "for this project" / "local skill".
+
+**Do:**
+1. Write memories to PROJECT scope only (`.agents/memories/`).
+2. When MEMORY.md accumulates ≥3 entries on the same topic: suggest graduation to a knowledge bundle via `hey harvest`.
+3. Graduate repeated patterns to an OKF bundle under `~/.agents/knowledge/`.
+4. Place skills in USER scope (`~/.agents/skills/`) by default. Use PROJECT scope only when the user explicitly says "project skill", "for this project", or "local skill".
 
 ## Signal Dispatch
 

@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-16 15:15 | v7.3.7 — CNL compliance pass: all 7 PROJECT rules + 3 LITE rules rewritten. Circled-number format (①②③) replaced with numbered lists. Compound instructions split. Passive voice converted to active imperative. Synonym mixing eliminated. |
 | 2026-10-15 21:50 | v7.3.6 — Session Canary rule: rewrite to CNL-style numbered Do: list — one instruction per sentence, active imperative voice |
 | 2026-10-15 21:44 | v7.3.5 — Extend rule format mandate: Do: block with 2+ actions must use numbered list, no multi-action prose paragraphs |
 | 2026-10-15 15:37 | v7.3.4 — Fix: regen-skill-index.py exit code 1 (version warnings) killed post-edit.sh via set -e before knowledge index regen could run. Added || true to suppress. |

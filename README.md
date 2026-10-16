@@ -284,7 +284,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.3.6 enforces 7 operational rules as numbered subsections
+AgentFS v7.3.7 enforces 7 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -555,7 +555,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.3.6 -->
+<!-- agentfs-template-version: 7.3.7 -->
 ```
 
 AGENTS.md is divided into two ownership zones:
