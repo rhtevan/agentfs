@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 21:45 | v7.2.0 — Sync frontmatter version to match CHANGELOG latest (1.2.0 → 7.2.0) |
 | 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-07-09 19:41 | v1.2 — Added system/environment-specific as a non-graduation criterion |

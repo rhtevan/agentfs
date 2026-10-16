@@ -3,7 +3,7 @@ name: agentfs-git-push
 description: >
   git push safety, pre-push scan, hey git workflow, hey git, git
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
   tags: [agentfs, git, safety, pre-push, guardrail]
 user-invocable: true
 disable-model-invocation: false

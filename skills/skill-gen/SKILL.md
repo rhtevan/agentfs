@@ -7,7 +7,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.7.0"
+  version: "3.7.1"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -659,6 +659,18 @@ like or provides a manual alternative, it stays inline.
       steps above", not "see AGENTS.md". Prefer single wrapper
       scripts over multi-step prose procedures — weaker models
       over-tool when given prose steps.
+- [ ] **One instruction per sentence** — each sentence in a
+      procedural step states exactly one action. Split sentences
+      that contain "and", "then", or "also" into separate lines.
+      No compound instructions.
+- [ ] **Active imperative voice** — all action steps use active
+      imperative mood ("Call `search_nodes`", "Write the canary",
+      "Read the file"). No passive voice ("the canary should be
+      emitted"), no modal hedging ("you may want to call").
+- [ ] **Single vocabulary** — one term per concept throughout the
+      skill. Do not mix synonyms (e.g., "rules/guardrails",
+      "emit/produce/generate", "session/conversation"). Pick one
+      word per concept and use it everywhere in this skill.
 
 #### Principle 2 — Autonomous & Currency
 

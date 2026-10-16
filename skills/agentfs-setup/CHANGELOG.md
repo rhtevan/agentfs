@@ -2,6 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 21:50 | v7.3.6 — Session Canary rule: rewrite to CNL-style numbered Do: list — one instruction per sentence, active imperative voice |
+| 2026-10-15 21:44 | v7.3.5 — Extend rule format mandate: Do: block with 2+ actions must use numbered list, no multi-action prose paragraphs |
 | 2026-10-15 15:37 | v7.3.4 — Fix: regen-skill-index.py exit code 1 (version warnings) killed post-edit.sh via set -e before knowledge index regen could run. Added || true to suppress. |
 | 2026-10-02 22:02 | v7.3.3 — v7.3.3 Rule 4: 'start your response with' replaces 'Emit' — unambiguous formatting instruction for canary placement |
 | 2026-10-02 21:23 | v7.3.2 — v7.3.2 Rule 4: simplified — 'These rules are already in your context. Treat as authoritative.' Removed file-reference abstraction. |

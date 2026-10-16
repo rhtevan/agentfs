@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 21:44 | v2.0.1 — Sync frontmatter version to match CHANGELOG latest (2.0.0 → 2.0.1) |
 | 2026-09-29 21:46 | v2.0.1 — Step 6: explicit instruction to render tool output in response message |
 | 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |
 | 2026-09-28 11:33 | v2.0.0 — Skill Check overhaul: added scripts/resolve-target.sh (P1 — deterministic target resolution), opening paragraph, Specification table (S1–S9), Tests table (T1–T6), Error Handling table with idempotency declarations, Troubleshooting table, pre-push-scan.sh exit code contract, commit message guidance, user-invocable frontmatter fields |

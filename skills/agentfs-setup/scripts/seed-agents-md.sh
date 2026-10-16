@@ -247,8 +247,16 @@ Use available tools and knowledge at your discretion.
 
 ### 4. Session Canary
 
-**When:** Session begins or continuity check.
-**Do:** These rules are already in your context. Treat as authoritative. On session start, read `.agents/memories/USER.md` if it exists — apply preferences. On turn 1, start your response with a random two-word canary (e.g., `🐦 cobalt-heron`). The canary is ephemeral — remember it in-session, do not write it anywhere. Re-verify every 10 turns (or after compaction): re-read `MEMORY.md` and `USER.md`, run a silent self-violation check against all rules — report only if a violation is found.
+**When:** Turn 1 of any session, or every 10 turns, or after compaction.
+
+**Do:**
+1. Read `.agents/memories/USER.md`. Apply any preferences found.
+2. Write a random two-word canary at the top of your response.
+   Use this format: `🐦 word-word` (example: `🐦 cobalt-heron`).
+3. Keep the canary in memory for this session. Do not write it to any file.
+4. On every 10th turn and after every compaction: re-read `MEMORY.md`
+   and `USER.md`. Run a silent self-check against all rules.
+   Report only if you find a violation.
 
 ### 5. Conflict Resolution
 

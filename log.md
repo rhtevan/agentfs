@@ -2,6 +2,29 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 22:58
+- New concept: generation prior conflict — pretraining priors override system prompt rules (knowledge/context-engineering/generation-prior-conflict.md)
+- New concept: CNL authoring rules for weak models — ASD-STE100 principles applied to agent instructions (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+- New concept: assistant prefix continuation framing — empirical finding on Qwen3-14B (knowledge/context-engineering/assistant-prefix-continuation.md)
+
+## 2026-10-15 22:57
+- New concept: Goose message role mapping — how goose maps to OpenAI API roles, monolithic system prompt structure (knowledge/context-engineering/goose-message-role-mapping.md)
+
+## 2026-10-15 21:50
+- Session Canary rule: rewrite to CNL-style numbered Do: list — one instruction per sentence, active imperative voice (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-15 21:45
+- Sync frontmatter version to match CHANGELOG latest (1.1.0 → 7.2.0) (skills/skill-harvest/SKILL.md)
+- Sync frontmatter version to match CHANGELOG latest (1.2.0 → 7.2.0) (skills/okf-bundle-harvest/SKILL.md)
+
+## 2026-10-15 21:44
+- Sync frontmatter version to match CHANGELOG latest (2.0.0 → 2.0.1) (skills/agentfs-git-push/SKILL.md)
+- Extend rule format mandate: Do: block with 2+ actions must use numbered list, no multi-action prose paragraphs (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-10-15 21:43
+- Add CNL authoring checklist items: one instruction per sentence, active imperative voice, single vocabulary (skills/skill-gen/SKILL.md)
+- Add CNL authoring checklist items: one instruction per sentence, active imperative voice, single vocabulary (skills/skill-gen/SKILL.md)
+
 ## 2026-10-15 20:32
 - Update orchestration: deterministic model delegation, name resolution instructions, remove agent semantic triggering (skills/skupper-model-provider/SKILL.md)
 - Add validate_host() and validate_profile() strict validation functions (skills/skupper-model-provider/scripts/common.sh)

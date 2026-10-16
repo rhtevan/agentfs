@@ -300,7 +300,9 @@ not advisory — unlike the soft README staleness check in Guardrail #10.
 
 **Rule format (v7.2+):** Every rule MUST be (1) numbered with
 `### N. Name` heading, (2) written in `**When:**` / `**Do:**` prose
-format. Rules are ordered by operational frequency (most-triggered
+format, (3) expressed as a numbered list inside `Do:` when the rule
+requires two or more distinct actions — no multi-action prose
+paragraphs. Rules are ordered by operational frequency (most-triggered
 first). No severity annotations — ordering IS priority.
 
 **Template versioning policy:** Follows semantic versioning:
