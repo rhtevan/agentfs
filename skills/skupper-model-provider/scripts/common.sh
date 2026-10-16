@@ -654,3 +654,32 @@ SuccessExitStatus=SIGTERM
 EOF
 systemctl --user daemon-reload"
 }
+
+# ── Name Validation ───────────────────────────────────────────
+# Strict exact-match validation. Agent does fuzzy matching before calling scripts.
+VALID_HOSTS=(rhel-ai rhtevan-work)
+
+validate_host() {
+  local input="$1"
+  for h in "${VALID_HOSTS[@]}"; do
+    [[ "$input" == "$h" ]] && return 0
+  done
+  echo "❌ Unknown host '$input'. Valid hosts: ${VALID_HOSTS[*]}" >&2
+  return 1
+}
+
+validate_profile() {
+  local input="$1"
+  local hmc_common
+  hmc_common="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../hosted-model-ctl/scripts/common.sh"
+  if [[ -f "$hmc_common" ]]; then
+    source "$hmc_common"
+    for p in "${ALL_PROFILES[@]}"; do
+      [[ "$input" == "$p" ]] && return 0
+    done
+    echo "❌ Unknown profile '$input'. Valid profiles: ${ALL_PROFILES[*]}" >&2
+  else
+    echo "❌ Cannot validate profile — hosted-model-ctl not found" >&2
+  fi
+  return 1
+}

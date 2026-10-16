@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 20:32 | v8.17.0 — Add --profile, --list-sites, deterministic model delegation via hosted-model-ctl |
 | 2026-10-15 19:54 | v8.16.0 — Add RHEL_AI_DECISION_PORT and RHEL_AI_DECISION_ROUTING_KEY |
 | 2026-09-25 10:04 | v8.15.0 — **Orphaned namespace detection.** `status.sh` now scans `~/.local/share/skupper/namespaces/` for unexpected Skupper namespaces (anything other than `model-provider-podman`). Reports orphan name, site name, and running container status. Prevents silent resource leaks from bare `skupper` CLI commands run without `-n`. Added Known Issue entry. |
 | 2026-09-18 11:52 | v8.14.0 — **Signal cleanup.** Replaced hardcoded host/profile names in description signals with generic `SITE` and `PROFILE` placeholders (`start skupper on SITE`, `start skupper with PROFILE`). Removed example-specific signals (`start skupper on rhel-ai`, `start skupper with g8b-fp8-spec-128k`). Pattern is now clear: `on` targets a site with its default profile, `with` targets a specific profile and infers the site. |

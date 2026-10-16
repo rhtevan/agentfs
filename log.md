@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 20:32
+- Update orchestration: deterministic model delegation, name resolution instructions, remove agent semantic triggering (skills/skupper-model-provider/SKILL.md)
+- Add validate_host() and validate_profile() strict validation functions (skills/skupper-model-provider/scripts/common.sh)
+- Add --profile, deterministic model stop before VAN teardown (skills/skupper-model-provider/scripts/down.sh)
+- Add --profile, --list-sites, deterministic model delegation via hosted-model-ctl (skills/skupper-model-provider/scripts/up.sh)
+- Add --names-only flag for script-consumable profile name listing (skills/hosted-model-ctl/scripts/list.sh)
+
 ## 2026-10-15 20:04
 - Display composite active profile with sub-model names (skills/hosted-model-ctl/scripts/list.sh)
 - Add composite profile handling — stop all sub-profiles, clear active (skills/hosted-model-ctl/scripts/stop.sh)

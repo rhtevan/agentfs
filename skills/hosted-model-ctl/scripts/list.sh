@@ -1,8 +1,28 @@
 #!/usr/bin/env bash
 # list.sh — List all deployment profiles and their status
-# Usage: bash list.sh
+# Usage: bash list.sh [--names-only [HOST]]
+#   --names-only         Print profile names only (for script consumption)
+#   --names-only HOST    Print profile names for a specific host
 
 source "$(dirname "$0")/common.sh"
+
+# ── --names-only mode ──────────────────────────────────────────
+if [[ "${1:-}" == "--names-only" ]]; then
+  filter_host="${2:-}"
+  for profile in "${ALL_PROFILES[@]}"; do
+    if [[ -n "${COMPOSITE_PROFILES[$profile]:-}" ]]; then
+      # Composite: resolve host from first sub-profile
+      read -ra _subs <<< "${COMPOSITE_PROFILES[$profile]}"
+      parse_profile "${_subs[0]}" 2>/dev/null || continue
+    else
+      parse_profile "$profile" 2>/dev/null || continue
+    fi
+    if [[ -z "$filter_host" || "$PROFILE_HOST" == "$filter_host" ]]; then
+      echo "$profile"
+    fi
+  done
+  exit 0
+fi
 
 echo "=== Hosted Model Deployment Profiles ==="
 echo

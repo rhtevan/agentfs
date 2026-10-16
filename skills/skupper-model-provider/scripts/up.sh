@@ -1,18 +1,43 @@
 #!/usr/bin/env bash
-# up.sh — Start Skupper VAN infrastructure (controllers + routers)
+# up.sh — Start Skupper VAN infrastructure + model containers
 # Usage:
-#   bash up.sh              — start ALL controllers + routers (all hosts + local)
-#   bash up.sh HOST          — start only HOST + local (if not already running)
-#   bash up.sh localhost     — start only local router + controller (providers untouched)
-#   bash up.sh all           — same as no args: start everything
-# Model containers are managed separately via hosted-model-ctl.
+#   bash up.sh                              — start ALL sites + default DPs per provider
+#   bash up.sh HOST                          — start HOST + local + default DP for HOST
+#   bash up.sh HOST --profile PROFILE        — start HOST + local + specific DP
+#   bash up.sh localhost                     — start only local router + controller
+#   bash up.sh all                           — same as no args
+#   bash up.sh --list-sites                  — print valid site names, exit
+#
+# Model containers are started via hosted-model-ctl after VAN is up.
+# Without --profile, the default profile for each provider host is used.
 #
 # Partial availability: unreachable hosts are skipped with warnings.
 # Exit code: 0 = full or partial success; 1 = all failed or setup missing.
 
 source "$(dirname "$0")/common.sh"
 
-TARGET_HOST="${1:-all}"
+# ── Parse arguments ───────────────────────────────────────────
+TARGET_HOST=""
+EXPLICIT_PROFILE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --profile) EXPLICIT_PROFILE="$2"; shift 2 ;;
+    --list-sites) echo "${VALID_HOSTS[*]}"; exit 0 ;;
+    *) TARGET_HOST="$1"; shift ;;
+  esac
+done
+TARGET_HOST="${TARGET_HOST:-all}"
+
+# Validate host name
+if [[ "$TARGET_HOST" != "all" && "$TARGET_HOST" != "localhost" && "$TARGET_HOST" != "local" && "$TARGET_HOST" != "crc" ]]; then
+  validate_host "$TARGET_HOST" || exit 1
+fi
+
+# Validate profile if given
+if [[ -n "$EXPLICIT_PROFILE" ]]; then
+  validate_profile "$EXPLICIT_PROFILE" || exit 1
+fi
 ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
 CRC_TARGET=false
 LOCAL_ONLY=false
@@ -461,4 +486,34 @@ else
   echo
   echo "✅ FULL UP — All targeted sites are running."
 fi
-echo "   Model containers are managed via hosted-model-ctl."
+
+# ── Model delegation ─────────────────────────────────────────
+# Start model containers on reachable provider hosts.
+HMC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../hosted-model-ctl/scripts"
+if [[ -f "$HMC_DIR/common.sh" ]]; then
+  source "$HMC_DIR/common.sh"
+  echo ""
+  echo "=== Model Containers ==="
+  for host in "${REACHABLE_HOSTS[@]}"; do
+    # Skip consumer-only hosts
+    [[ "$host" == "localhost" || "$host" == "crc" ]] && continue
+
+    if [[ -n "$EXPLICIT_PROFILE" ]]; then
+      profile="$EXPLICIT_PROFILE"
+    else
+      profile=$(get_default_profile "$host")
+    fi
+
+    if [[ -z "$profile" ]]; then
+      echo "  ⚠️  No default profile for $host — skipping model start"
+      continue
+    fi
+
+    echo "  Starting profile '$profile' on $host..."
+    bash "$HMC_DIR/start.sh" "$profile" || {
+      echo "  ⚠️  Failed to start '$profile' on $host"
+    }
+  done
+else
+  echo "   hosted-model-ctl not found — model containers not managed."
+fi

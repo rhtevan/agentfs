@@ -9,7 +9,7 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | stop s
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.16.0"
+  version: "8.17.0"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -126,18 +126,18 @@ triggered for **Provider** sites that are up and reachable.
 Both short (`start skupper`) and long (`start skupper model`) forms
 are accepted.
 
-| Signal pattern | Skupper action | hosted-model-ctl delegation |
-|----------------|----------------|-----------------------------|
-| `setup skupper` | `setup.sh` (infra) | Trigger → `setup.sh` (default profile per host) |
-| `teardown skupper` | `teardown.sh` (remove infra) | Trigger → `stop.sh all` (stop, do NOT remove) |
-| `start skupper` | `up.sh` (start VAN) | Trigger → `start.sh` (default profile per host) |
-| `stop skupper` | `down.sh` (stop VAN) | Trigger → `stop.sh all` |
-| `start skupper with PROFILE` | `up.sh HOST` (scoped) | Trigger → `start.sh PROFILE` |
-| `check skupper` / `skupper status` | `status.sh` (VAN status) | Trigger → `status.sh` (model status) |
-| `stop skupper on PROVIDER` | `down.sh HOST` (scoped) | Trigger → `stop.sh PROFILE` (resolve HOST → active or default profile first; `hosted-model-ctl` takes profile names, not host names) |
-| `start skupper on PROVIDER` | `up.sh HOST` (scoped) | Trigger → `start.sh PROFILE` (resolve HOST → active or default profile first; `hosted-model-ctl` takes profile names, not host names) |
-| `start skupper on CONSUMER` | `up.sh HOST` (scoped) | None (consumer — VAN only) |
-| `stop skupper on CONSUMER` | `down.sh HOST` (scoped) | None (consumer — VAN only) |
+| Signal pattern | Script invocation |
+|----------------|-------------------|
+| `setup skupper` | `setup.sh` (infra + model setup delegated) |
+| `teardown skupper` | `teardown.sh` (remove infra, models stopped by script) |
+| `start skupper` | `up.sh` (VAN + default DPs — all handled by script) |
+| `stop skupper` | `down.sh` (models stopped + VAN — all handled by script) |
+| `start skupper with PROFILE` | `up.sh <HOST> --profile <PROFILE>` (agent resolves profile → host) |
+| `start skupper on PROVIDER` | `up.sh <HOST>` (default DP started by script) |
+| `stop skupper on PROVIDER` | `down.sh <HOST>` (active DP stopped by script) |
+| `start skupper on CONSUMER` | `up.sh <HOST>` (VAN only — no model delegation) |
+| `stop skupper on CONSUMER` | `down.sh <HOST>` (VAN only — no model delegation) |
+| `check skupper` / `skupper status` | `status.sh` + `hosted-model-ctl list.sh` |
 
 The `on HOST` modifier works for **any** site name — provider or
 consumer. When the target is a consumer site (`crc`, `localhost`),
@@ -147,15 +147,24 @@ triggered.
 ### Scoping Rules
 
 - **Without `on HOST`** → action applies to ALL sites (providers + consumers)
-- **Without `with PROFILE`** → use default profiles from `hosted-model-ctl`
-  (`DEFAULT_PROFILE_RHTEVAN` and `DEFAULT_PROFILE_RHELAI` in its `common.sh`)
-- **With `on PROVIDER_HOST`** → scope VAN + model to that provider.
-  `hosted-model-ctl` scripts take **profile names, not host names** —
-  multiple profiles can share the same host (mutual exclusion on port).
-  Resolution order: active profile (`get_active_profile`) → default
-  profile (`get_default_profile`) → error.
+- **Without `with PROFILE`** → `up.sh` uses default profile per host (deterministic — no agent decision)
+- **With `on PROVIDER_HOST`** → scope VAN + model to that provider
 - **With `on CONSUMER_HOST`** (`crc`, `localhost`) → scope VAN only, no model delegation
-- **With `with PROFILE`** → resolve profile to its host, scope accordingly
+- **With `with PROFILE`** → agent resolves profile to its host, passes `--profile` to script
+
+### Name Resolution (Agent Responsibility)
+
+Before calling `up.sh` or `down.sh`, the agent resolves user's natural
+language to exact site and profile names:
+
+1. Run `up.sh --list-sites` → get valid site names
+2. If user specified a profile, run `hosted-model-ctl/scripts/list.sh --names-only <site>` → get valid profile names
+3. Match user's input against valid names (semantic matching — agent's strength)
+4. Call script with exact resolved names
+
+Scripts do **strict validation** — reject unknown names with the list
+of valid alternatives. If the agent's resolution was wrong, the script
+catches it and the agent can self-correct.
 
 ### Error Handling
 
@@ -229,7 +238,7 @@ Idempotent 6-phase process (after precheck passes):
 5. Apply auto-restart patches (all 3 hosts, router + controller)
 6. Verify all sites Ready
 
-After infrastructure setup, agent semantically triggers `hosted-model-ctl`
+After infrastructure setup, `setup.sh` triggers `hosted-model-ctl`
 to deploy default models on each host.
 
 ### Start VAN
@@ -251,7 +260,7 @@ bash ~/.agents/skills/skupper-model-provider/scripts/up.sh localhost   # local i
 + router only, waits for AMQP links to reconverge to active remote
 routers (up to 30s), reports listener status. No SSH, no model delegation.
 
-Agent then semantically triggers `hosted-model-ctl` to start model containers.
+`up.sh` starts model containers via `hosted-model-ctl` after VAN is up.
 
 ### Stop VAN
 
@@ -262,8 +271,8 @@ bash ~/.agents/skills/skupper-model-provider/scripts/down.sh crc         # CRC c
 bash ~/.agents/skills/skupper-model-provider/scripts/down.sh localhost   # local infra only (providers untouched)
 ```
 
-For provider hosts, the agent first semantically triggers
-`hosted-model-ctl` to stop model containers, then runs `down.sh`.
+For provider hosts, `down.sh` first stops model containers via
+`hosted-model-ctl`, then stops VAN infrastructure.
 For consumer hosts (`crc`), only VAN infrastructure is affected.
 `localhost` target stops local router + controller only, verifies
 remote providers are untouched. No SSH, no model delegation.
@@ -283,7 +292,7 @@ when the YAML claims Ready but the infrastructure is actually down.
 Links include a TCP probe to the remote inter-router port. Listeners
 check whether the local port is actually bound.
 
-Agent then semantically triggers `hosted-model-ctl` for model
+`status.sh` shows VAN status. Agent runs `hosted-model-ctl list.sh` for model
 container status and presents a **combined status report** with
 these sections (all as Markdown tables):
 
@@ -299,7 +308,7 @@ these sections (all as Markdown tables):
 bash ~/.agents/skills/skupper-model-provider/scripts/teardown.sh
 ```
 
-Agent first semantically triggers `hosted-model-ctl` to stop (not remove)
+`teardown.sh` stops models (via `hosted-model-ctl`) before removing
 model containers, then runs `teardown.sh` to remove Skupper infrastructure.
 Run `setup.sh` to rebuild.
 

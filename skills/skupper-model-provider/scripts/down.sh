@@ -1,18 +1,38 @@
 #!/usr/bin/env bash
-# down.sh — Stop Skupper VAN infrastructure (routers + controllers)
+# down.sh — Stop model containers + Skupper VAN infrastructure
 # Usage:
-#   bash down.sh              — stop ALL routers + controllers (all hosts + local)
-#   bash down.sh HOST          — stop only HOST; preserve local if other hosts still active
-#   bash down.sh localhost     — stop only local router + controller (providers untouched)
-#   bash down.sh all           — same as no args: stop everything
-# Model containers are managed separately via hosted-model-ctl.
+#   bash down.sh                         — stop all models + all VAN
+#   bash down.sh HOST                     — stop active DP on HOST + VAN for HOST
+#   bash down.sh HOST --profile PROFILE   — stop specific DP + VAN for HOST
+#   bash down.sh localhost                — stop only local router + controller
+#   bash down.sh all                      — same as no args
+#
+# Model containers are stopped BEFORE VAN infrastructure (reverse of up.sh).
 #
 # Partial availability: unreachable hosts are skipped with warnings.
 # Exit code: 0 = full or partial success; 1 = all failed.
 
 source "$(dirname "$0")/common.sh"
 
-TARGET="${1:-all}"
+# ── Parse arguments ───────────────────────────────────────────
+TARGET=""
+EXPLICIT_PROFILE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --profile) EXPLICIT_PROFILE="$2"; shift 2 ;;
+    *) TARGET="$1"; shift ;;
+  esac
+done
+TARGET="${TARGET:-all}"
+
+# Validate
+if [[ "$TARGET" != "all" && "$TARGET" != "localhost" && "$TARGET" != "local" && "$TARGET" != "crc" ]]; then
+  validate_host "$TARGET" || exit 1
+fi
+if [[ -n "$EXPLICIT_PROFILE" ]]; then
+  validate_profile "$EXPLICIT_PROFILE" || exit 1
+fi
 ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
 CRC_TARGET=false
 LOCAL_ONLY=false
@@ -38,6 +58,35 @@ else
     HOSTS=("$TARGET")
   fi
   SCOPED=true
+fi
+
+# ── Stop model containers first (before VAN) ─────────────────
+HMC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../hosted-model-ctl/scripts"
+if [[ "$LOCAL_ONLY" != "true" && -f "$HMC_DIR/common.sh" ]]; then
+  source "$HMC_DIR/common.sh"
+  echo "=== Model Containers — STOP ==="
+  for host in "${HOSTS[@]}"; do
+    # Skip consumer-only hosts
+    [[ "$host" == "localhost" || "$host" == "crc" ]] && continue
+    if ! host_reachable "$host"; then
+      echo "  ⚠️  $host unreachable — skipping model stop"
+      continue
+    fi
+
+    if [[ -n "$EXPLICIT_PROFILE" ]]; then
+      profile="$EXPLICIT_PROFILE"
+    else
+      profile=$(get_active_profile "$host")
+    fi
+
+    if [[ -n "$profile" ]]; then
+      echo "  Stopping profile '$profile' on $host..."
+      bash "$HMC_DIR/stop.sh" "$profile" || echo "  ⚠️  Failed to stop '$profile'"
+    else
+      echo "  ℹ️  No active profile on $host"
+    fi
+  done
+  echo ""
 fi
 
 echo "=== Skupper VAN — DOWN ==="
