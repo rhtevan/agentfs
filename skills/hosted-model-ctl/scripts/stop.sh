@@ -55,6 +55,27 @@ if [[ "$PROFILE" == "all" ]]; then
   exit 0
 fi
 
+# ── Composite profile handling ──────────────────────────────────
+if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
+  echo "=== Stop (composite): $PROFILE ==="
+  read -ra SUB_PROFILES <<< "${COMPOSITE_PROFILES[$PROFILE]}"
+  for sub in "${SUB_PROFILES[@]}"; do
+    echo ""
+    echo "── Sub-profile: $sub ──"
+    if [[ "$REMOVE" == "true" ]]; then
+      bash "$(dirname "$0")/stop.sh" "$sub" --remove
+    else
+      bash "$(dirname "$0")/stop.sh" "$sub"
+    fi
+  done
+  parse_profile "${SUB_PROFILES[0]}"
+  set_active_profile "$PROFILE_HOST" ""
+  clear_active_profile "$PROFILE_HOST"
+  echo ""
+  echo "✅ Composite profile '$PROFILE' stopped (${#SUB_PROFILES[@]} containers)"
+  exit 0
+fi
+
 # ── Stop single profile ──────────────────────────────────────
 parse_profile "$PROFILE"
 

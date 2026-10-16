@@ -875,3 +875,127 @@ L4 GPUs fail all four conditions. Removing spec decode yielded the
 largest single performance improvement in the project's history.
 Full analysis captured in knowledge bundle:
 [speculative-decoding-tradeoffs.md](../../../../knowledge/llm-inference-constrained-gpu/speculative-decoding-tradeoffs.md)
+
+---
+
+## 17. D3 Decision Model Deployment (2026-10-15)
+
+Deployed purpose-built Decision 3.0 models alongside the Qwen3-14B gen-ai
+model, creating the composite profile `qw14b+d3`.
+
+### 17.1 D3 Family and L4 Fit Analysis
+
+The D3 family (vllm-sr) uses the Qwen3.5 backbone with GDN hybrid attention
+(1 in 4 layers full attention, rest linear attention). All models have 262K
+`max_position_embeddings`. The GDN architecture makes KV cache ~4× cheaper
+than standard transformers.
+
+| Model | Params | FP8 Weights | Decision Index | Fits 1×L4? | Fits 2×L4? |
+|-------|:------:|:-----------:|:--------------:|:----------:|:----------:|
+| d3-edge | 0.6B | ~0.6 GB | ~35 | ✅ | — |
+| d3-lite | 1.2B | ~1.2 GB | ~38 | ✅ | — |
+| d3-nano | 2.5B | ~2.5 GB | ~42 | ✅ | — |
+| d3-mini | 4B | ~4 GB | ~48 | ✅ | — |
+| d3-flash | 9B | ~9 GB | 55.8 | ✅ | — |
+| d3 (27B) | 27B | ~13 GB/GPU | 66.26 (SOTA) | ❌ | ✅ (TP=2) |
+
+### 17.2 Side-by-Side Benchmark: NextToken vs D3-Flash vs D3-27B
+
+All tests via Skupper VAN from localhost. Gold answers human-judged.
+
+**Accuracy (19 questions across 4 test categories):**
+
+| Test | qw14b NextToken | D3-Flash 9B | D3-27B |
+|------|:---:|:---:|:---:|
+| T1 Trivial (4q) | 4/4 ✅ | 4/4 ✅ | 4/4 ✅ |
+| T2 Nuanced (4q) | 4/4 ✅ | 3/4 ⚠️ | 4/4 ✅ |
+| T3 Trick (3q) | 3/3 ✅ | 2/3 ❌ | 3/3 ✅ |
+| T4 Batch (8q) | 8/8 ✅ | 8/8 ✅ | 8/8 ✅ |
+| **Total** | **19/19** | **17/19** | **19/19** |
+
+D3-Flash errors: T2 risk_level "low" vs "moderate" (0.538 confidence),
+T3 has_eight "yes" (0.995 confidence — strongly wrong on trick question).
+
+**Latency (avg of 3 runs, via Skupper VAN):**
+
+| Test | qw14b NextToken | D3-Flash 9B | D3-27B |
+|------|:---:|:---:|:---:|
+| T1 (4q) | 157ms | 215ms | 484ms |
+| T2 (4q) | 186ms | 234ms | 533ms |
+| T3 (3q) | 160ms | 189ms | 381ms |
+| T4 (8q) | 199ms | 315ms | 792ms |
+
+### 17.3 CUDA Graph OOM Analysis
+
+Neither D3-27B nor D3-Flash can run with CUDA graphs on L4 GPUs.
+
+**Root cause:** The Qwen3.5 GDN architecture includes a vision encoder that
+requires an 18.4 GB fixed allocation during CUDA graph capture. This is the
+vision encoder profiling workspace — not KV cache, not compile workspace,
+and not tunable via any vLLM parameter.
+
+Attempted mitigations (all failed to enable CUDA graphs):
+- `--max-model-len 512` → same 18.4 GB allocation
+- `--gpu-memory-utilization 0.55` → same allocation
+- `--max-num-batched-tokens 512` → requires `max_model_len ≥ max_num_batched_tokens`
+- `--limit-mm-per-prompt '{"image":0,"video":0}'` → same allocation
+
+**`--kv-cache-dtype fp8` results:**
+- Dramatically faster: ~38ms per request (vs ~470ms)
+- **Crashed** after a few requests: `quantized KV cache is not supported
+  for encoder attention` — the FP8 KV cache is incompatible with the
+  Qwen3.5 vision encoder's attention layers
+
+### 17.4 Optimization Results
+
+| Config | 2q Latency | 4q Latency | Notes |
+|--------|:---:|:---:|-------|
+| Baseline (enforce-eager, 32K) | ~300ms | ~490ms | First deployment |
+| + context 8K | ~300ms | ~490ms | Marginal |
+| + `expandable_segments` | **~240ms** | **~470ms** | ~20% on short |
+| + gpu-mem 0.80 | ~270ms | ~470ms | No improvement |
+| + FP8 KV cache | ~38ms | ~36ms | 💥 Crashed (encoder incompatible) |
+
+**Final config:** `--enforce-eager --quantization fp8 --max-model-len 8192`
++ `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
+
+### 17.5 Composite Profile: qw14b+d3
+
+```
+GPU 0: qw14b-32k  (22.1 GB) — gen-ai + NextToken decisions, port 9000
+GPU 1: qw14b-32k  (22.1 GB) — gen-ai + NextToken decisions, port 9000
+GPU 2: d3-27b-8k  (20.8 GB) — D3 SOTA decisions, port 9001
+GPU 3: d3-27b-8k  (20.8 GB) — D3 SOTA decisions, port 9001
+```
+
+Both models coexist and serve simultaneously. Skupper VAN multiplexes
+both ports over the single AMQPS link between localhost and rhel-ai.
+
+### 17.6 Decision API Format Reference
+
+| Field | NextToken (qw14b, :9000) | D3 (:9001) |
+|-------|:---:|:---:|
+| Endpoint | `/v1/decisions` | `/v1/systemone` (or `/v1/decisions`) |
+| Input | `"input": "..."` | `"state": "..."` |
+| Questions | Array with `name` field | Dict keyed by name |
+| Yes/No | `"type": "predicate"` | `"type": "noul"` |
+| Choice | `"choices": [{"value": "..."}]` | `"criteria": {"key": "desc"}` |
+| Scale | Not supported | `"type": "score", "criteria": ["low", "med", "high"]` |
+
+### 17.7 Key Findings
+
+1. **NextToken on 14B ≥ D3-Flash 9B:** The logit-reading approach on a
+   larger generalist model (19/19) outperformed the purpose-built 9B SDM
+   (17/19) on both accuracy and speed.
+
+2. **D3-27B justifies the GPUs:** Perfect accuracy (19/19), better
+   calibration than NextToken (hedges appropriately on uncertain questions),
+   and supports score-type questions that NextToken cannot.
+
+3. **CUDA graphs are blocked on L4 for all D3 models:** Vision encoder
+   profiling requires 18.4 GB — an upstream Qwen3.5 architecture constraint.
+   FP8 KV cache was the only path to sub-100ms but is incompatible with
+   encoder attention.
+
+4. **`expandable_segments` helps:** ~20% improvement on short requests
+   by reducing PyTorch memory fragmentation.

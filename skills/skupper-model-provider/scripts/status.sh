@@ -224,6 +224,25 @@ for host in rhel-ai rhtevan-work; do
   printf "  %-22s %-6s %s %-11s  %s %-13s  %s\n" \
     "$listener_name" "$model_port" "$lk_icon" "$lk_status" "$live_icon" "$live_status" "$routing_key"
 done
+
+# Decision listener (if configured)
+if [[ -n "${RHEL_AI_DECISION_PORT:-}" ]]; then
+  listener_name="decision-rhel-ai"
+  lk_line=$(skupper --platform podman listener status -n "${NAMESPACE}" 2>&1 | grep "$listener_name" || echo "")
+  if [[ -n "$lk_line" ]]; then
+    lk_status=$(echo "$lk_line" | awk '{print $2}')
+  else
+    lk_status="Unknown"
+  fi
+  lk_icon=$(status_icon "$lk_status")
+  if check_local_port_listening "$RHEL_AI_DECISION_PORT"; then
+    live_status="Listening"; live_icon="✅"
+  else
+    live_status="Not listening"; live_icon="🔴"
+  fi
+  printf "  %-22s %-6s %s %-11s  %s %-13s  %s\n" \
+    "$listener_name" "$RHEL_AI_DECISION_PORT" "$lk_icon" "$lk_status" "$live_icon" "$live_status" "${RHEL_AI_DECISION_ROUTING_KEY:-decision-api-rhel-ai}"
+fi
 echo
 
 # ══════════════════════════════════════════════════════════════

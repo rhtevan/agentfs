@@ -15,6 +15,25 @@ if [[ -z "$PROFILE" ]]; then
   exit 1
 fi
 
+# ── Composite profile handling ──────────────────────────────────
+if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
+  echo "=== Setup (composite): $PROFILE ==="
+  read -ra SUB_PROFILES <<< "${COMPOSITE_PROFILES[$PROFILE]}"
+  # Resolve host from first sub-profile
+  parse_profile "${SUB_PROFILES[0]}"
+  COMPOSITE_HOST="$PROFILE_HOST"
+  for sub in "${SUB_PROFILES[@]}"; do
+    echo ""
+    echo "── Sub-profile: $sub ──"
+    bash "$(dirname "$0")/setup.sh" "$sub"
+  done
+  # Set active profile to the composite name (not sub-profile names)
+  set_active_profile "$COMPOSITE_HOST" "$PROFILE"
+  echo ""
+  echo "✅ Composite profile '$PROFILE' deployed (${#SUB_PROFILES[@]} containers)"
+  exit 0
+fi
+
 parse_profile "$PROFILE"
 
 echo "=== Setup: $PROFILE ==="
@@ -107,6 +126,13 @@ case "$ENGINE" in
       device_flag="--device nvidia.com/gpu=all"
       env_flag="-e CUDA_VISIBLE_DEVICES=$gpu_devices"
       echo "  GPUs:        $gpu_devices (subset)"
+    fi
+
+    # Per-profile environment variables (e.g., PYTORCH_CUDA_ALLOC_CONF)
+    container_env="${CONTAINER_ENV[$PROFILE]:-}"
+    if [[ -n "$container_env" ]]; then
+      env_flag="$env_flag -e $container_env"
+      echo "  Env:         $container_env"
     fi
 
     run_on_host "$PROFILE_HOST" "podman run -d \

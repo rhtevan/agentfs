@@ -15,6 +15,23 @@ if [[ -z "$PROFILE" ]]; then
   exit 1
 fi
 
+# ── Composite profile handling ──────────────────────────────────
+if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
+  echo "=== Start (composite): $PROFILE ==="
+  read -ra SUB_PROFILES <<< "${COMPOSITE_PROFILES[$PROFILE]}"
+  parse_profile "${SUB_PROFILES[0]}"
+  COMPOSITE_HOST="$PROFILE_HOST"
+  for sub in "${SUB_PROFILES[@]}"; do
+    echo ""
+    echo "── Sub-profile: $sub ──"
+    bash "$(dirname "$0")/start.sh" "$sub"
+  done
+  set_active_profile "$COMPOSITE_HOST" "$PROFILE"
+  echo ""
+  echo "✅ Composite profile '$PROFILE' started (${#SUB_PROFILES[@]} containers)"
+  exit 0
+fi
+
 parse_profile "$PROFILE"
 
 echo "=== Start: $PROFILE ==="

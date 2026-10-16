@@ -11,8 +11,17 @@ echo
 for host in rhtevan-work rhel-ai; do
   active=$(get_active_profile "$host")
   if [[ -n "$active" ]]; then
-    parse_profile "$active" 2>/dev/null || continue
-    echo "  $host: 🟢 $active ($PROFILE_DESC — $PROFILE_SPEED)"
+    if [[ -n "${COMPOSITE_PROFILES[$active]:-}" ]]; then
+      read -ra _subs <<< "${COMPOSITE_PROFILES[$active]}"
+      _desc=""
+      for _s in "${_subs[@]}"; do
+        parse_profile "$_s" 2>/dev/null && _desc="${_desc:+$_desc + }$MODEL_ID"
+      done
+      echo "  $host: 🟢 $active (composite: $_desc)"
+    else
+      parse_profile "$active" 2>/dev/null || continue
+      echo "  $host: 🟢 $active ($PROFILE_DESC — $PROFILE_SPEED)"
+    fi
   else
     default=$(get_default_profile "$host")
     echo "  $host: ⚪ no active profile (default: $default)"

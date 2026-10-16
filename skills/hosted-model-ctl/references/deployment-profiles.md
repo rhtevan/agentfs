@@ -29,6 +29,7 @@ where Q=Quality, S=Speed, C=Context, Z=Size. Cloud baseline (Opus) = 100.
 | g8b-fp8-spec-128k | rhel-ai | 60 | 50 | 12 | 27 | **39.3** | Gap analysis | Best speed, but 8B context degrades past 16-32K |
 | qw14b-32k | rhel-ai | 70 | 30 | 16 | 55 | **40.3** | Gap analysis | Highest quality, leaves GPU 2-3 free |
 | **qw14b-40k** ✅ | rhel-ai | 60 | 51 | 20 | 27 | **42.0** | Gap analysis | Best balance — default profile |
+| qw14b+d3 | rhel-ai | 70 | 30 | 16 | 27 | **38.6** | Gap analysis | Composite: gen-ai + SOTA decisions |
 
 > **Reading the table:** All self-hosted profiles score in the "Gap analysis"
 > band (25–50) by design — the cloud baseline (Opus at 200K context, ~100 tok/s)
@@ -213,11 +214,54 @@ hard limit). Trades GPU availability (all 4 consumed) for 118% faster generation
 (`max_position_embeddings=40960` in config.json, no RoPE scaling).
 The original 64K target failed at deploy time — vLLM refuses to exceed this.
 
+### `qw14b+d3` (full name: `qw14b-fp8-32k+d3-27b-fp8-8k`)
+
+Composite deployment profile — two containers, two ports, all 4 GPUs.
+
+| Component | Gen-AI (qw14b-32k) | Decision (d3-27b-8k) |
+|-----------|:---:|:---:|
+| **Model** | `Qwen/Qwen3-14B-FP8` | `vllm-sr/d3` (Decision 3.0, 27B) |
+| **Port** | 9000 | 9001 |
+| **TP** | 2 (GPU 0-1) | 2 (GPU 2-3) |
+| **Context** | 32K | 8K |
+| **Quantization** | FP8 (model checkpoint) | FP8 (on-the-fly) |
+| **CUDA graphs** | Enabled | ❌ Disabled (`--enforce-eager`) |
+| **Speed** | 30.2 tok/s | ~250-470ms per decision request |
+| **Decision API** | ✅ NextTokenStrategy (`/v1/decisions`) | ✅ Native (`/v1/systemone`) |
+| **Decision Index** | ~45-52 (estimated, logit reading) | 66.26 (SOTA) |
+| **VRAM** | 22.1 GB / 23.0 GB per GPU | 20.8 GB / 23.0 GB per GPU |
+| **Cold start** | ~2 min | ~2.5 min |
+| **Env vars** | — | `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` |
+
+```
+GPU 0: qw14b-32k  (22.1 GB) — gen-ai + NextToken decisions, port 9000
+GPU 1: qw14b-32k  (22.1 GB) — gen-ai + NextToken decisions, port 9000
+GPU 2: d3-27b-8k  (20.8 GB) — D3 SOTA decisions, port 9001
+GPU 3: d3-27b-8k  (20.8 GB) — D3 SOTA decisions, port 9001
+```
+
+**Why this profile:** Combines a capable gen-ai model with the highest-accuracy
+open decision model. The gen-ai side also serves decisions via NextTokenStrategy
+for low-latency use cases (~170ms). The D3 side provides SOTA accuracy (66.26
+Decision Index) for high-stakes decision workloads (~250-470ms). Both coexist
+on the same Skupper VAN link, multiplexed by routing key.
+
+> **Why `--enforce-eager` on D3:** The Qwen3.5 GDN architecture's vision encoder
+> requires 18.4 GB for CUDA graph capture workspace — a fixed allocation that
+> cannot be reduced via context, batch, or memory utilization tuning. On L4 GPUs
+> (23 GB), this exceeds available VRAM after model weights (13 GB). See
+> [speculative-decoding-tradeoffs.md](../../../../knowledge/llm-inference-constrained-gpu/speculative-decoding-tradeoffs.md)
+> and the D3 deployment knowledge concept for full analysis.
+
+> **Why 8K context on D3:** Reducing from 32K to 8K improved latency from ~490ms
+> to ~250ms on short requests. Decision inputs rarely exceed 8K tokens. The model
+> supports 262K natively (Qwen3.5 backbone).
+
 ---
 
 ## Mutual Exclusion
 
-All rhel-ai profiles share port 9000. Only one LLM profile can be active at a time.
+All rhel-ai profiles share port 9000. Only one profile can be active at a time.
 Deploying a new profile automatically stops and removes the current one.
 
 ```
@@ -245,6 +289,7 @@ rhtevan-work profiles share port 10000 with the same exclusion rule.
 | **g8b-fp8-spec-128k** | rhel-ai | 4× L4 | **~50 total (~47 content)** | ~47% |
 | qw14b-32k | rhel-ai | 2× L4 | **30.2** (no spec decode) | **30%** |
 | **qw14b-40k** | rhel-ai | 4× L4 | **51.3** (no spec decode) | **51%** |
+| qw14b+d3 | rhel-ai | 2+2 L4 | 30.2 gen + ~300ms decisions | 30% gen |
 
 | Opus 4.6 | Cloud | — | ~100 | 100% |
 

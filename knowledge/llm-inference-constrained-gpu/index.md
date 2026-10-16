@@ -23,10 +23,12 @@ models on an RTX A500 Laptop GPU.
 | [fedora-nvidia-container-gotchas.md](./fedora-nvidia-container-gotchas.md) | Fedora-specific NVIDIA + Podman pitfalls and workarounds |
 | [vllm-quantization-pitfalls.md](./vllm-quantization-pitfalls.md) | vLLM quantization failure modes and solutions |
 | [speculative-decoding-tradeoffs.md](./speculative-decoding-tradeoffs.md) | When speculative decoding hurts: bandwidth-bound GPUs, TP overhead, vLLM V1 scheduler issues |
+| [d3-decision-model-deployment.md](./d3-decision-model-deployment.md) | D3 Decision Model on L4: CUDA graph OOM (vision encoder), FP8 KV crash, optimization, NextToken vs SDM comparison |
 
 ## Log
 
 | Date | Change |
 |------|--------|
+| 2026-10-15 | Added D3 decision model deployment concept |
 | 2026-10-15 | Added speculative decoding tradeoffs concept (L4 benchmark evidence) |
 | 2026-08-04 | Initial bundle creation from deployment session on rhtevan-work |

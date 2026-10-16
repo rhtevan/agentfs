@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-15 19:53 | v7.9.6 — Add composite profile qw14b+d3, CONTAINER_ENV for expandable_segments, d3-27b-8k and d3f-9b-32k profiles |
 | 2026-10-15 15:57 | v7.9.5 — Update qw14b-32k: remove spec decode, speed 30.2 tok/s, fitting score 38→40.3, add decision endpoints |
 | 2026-10-15 15:00 | v7.9.4 — Remove spec decode from qw14b-40k profile; engine vllm-spec→vllm, clear spec config, update speed estimate |
 | 2026-10-15 11:29 | v7.9.3 — Add fitting score summary table with all 6 profiles at top of doc |

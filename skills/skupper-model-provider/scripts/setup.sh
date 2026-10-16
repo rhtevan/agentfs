@@ -104,6 +104,18 @@ spec:
   port: ${RHEL_AI_MODEL_PORT}
 EOF
 
+  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-decision-connector.yaml << EOF
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: decision-connector
+  namespace: ${NAMESPACE}
+spec:
+  routingKey: ${RHEL_AI_DECISION_ROUTING_KEY}
+  host: host.containers.internal
+  port: ${RHEL_AI_DECISION_PORT}
+EOF
+
   skupper --platform podman system start -n ${NAMESPACE}"
   sleep 8
 fi
@@ -248,6 +260,18 @@ spec:
   routingKey: ${RHEL_AI_ROUTING_KEY}
   host: ${LOCAL_LISTENER_HOST}
   port: ${RHEL_AI_MODEL_PORT}
+EOF
+
+  cat > "${LOCAL_NS_DIR}/input/resources/Listener-decision-rhel-ai.yaml" << EOF
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: decision-rhel-ai
+  namespace: ${NAMESPACE}
+spec:
+  routingKey: ${RHEL_AI_DECISION_ROUTING_KEY}
+  host: ${LOCAL_LISTENER_HOST}
+  port: ${RHEL_AI_DECISION_PORT}
 EOF
 
   cat > "${LOCAL_NS_DIR}/input/resources/Listener-model-rhtevan-work.yaml" << EOF

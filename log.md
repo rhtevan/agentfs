@@ -2,6 +2,26 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-15 20:04
+- Display composite active profile with sub-model names (skills/hosted-model-ctl/scripts/list.sh)
+- Add composite profile handling — stop all sub-profiles, clear active (skills/hosted-model-ctl/scripts/stop.sh)
+- Add composite profile handling — start all sub-profiles, set composite as active (skills/hosted-model-ctl/scripts/start.sh)
+
+## 2026-10-15 19:54
+- Add decision listener status display (skills/skupper-model-provider/scripts/status.sh)
+- Add decision connector on rhel-ai and decision listener on localhost for port 9001 (skills/skupper-model-provider/scripts/setup.sh)
+- Add RHEL_AI_DECISION_PORT and RHEL_AI_DECISION_ROUTING_KEY (skills/skupper-model-provider/topology.env)
+- New concept: D3 decision model deployment on L4 — CUDA graph OOM, FP8 KV crash, optimization, NextToken vs SDM (knowledge/llm-inference-constrained-gpu/d3-decision-model-deployment.md)
+- Add decision listener status display (skills/skupper-model-provider/scripts/status.sh)
+- Add decision connector on rhel-ai and decision listener on localhost for port 9001 (skills/skupper-model-provider/scripts/setup.sh)
+- Add RHEL_AI_DECISION_PORT and RHEL_AI_DECISION_ROUTING_KEY (skills/skupper-model-provider/topology.env)
+- Add Section 17: D3 decision model benchmarks, CUDA graph OOM, optimization, side-by-side comparison (skills/hosted-model-ctl/references/benchmark-report.md)
+- Add qw14b+d3 composite profile section, fitting score, speed comparison (skills/hosted-model-ctl/references/deployment-profiles.md)
+
+## 2026-10-15 19:53
+- Add composite profile deployment (+ prefix), per-profile env vars via CONTAINER_ENV (skills/hosted-model-ctl/scripts/setup.sh)
+- Add composite profile qw14b+d3, CONTAINER_ENV for expandable_segments, d3-27b-8k and d3f-9b-32k profiles (skills/hosted-model-ctl/scripts/common.sh)
+
 ## 2026-10-15 15:57
 - Remove spec decode from qw14b-32k profile: vllm-spec→vllm, clear spec config (skills/hosted-model-ctl/scripts/common.sh)
 - Add Section 16: vLLM 0.32 upgrade + spec decode removal benchmarks for both qw14b profiles. Update Section 9.3 and 10 recommendations. (skills/hosted-model-ctl/references/benchmark-report.md)

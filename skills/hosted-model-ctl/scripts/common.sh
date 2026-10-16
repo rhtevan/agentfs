@@ -26,6 +26,8 @@ declare -A DEPLOY_PROFILES=(
   [g8b-fp8-spec-128k]="rhel-ai|model-granite-8b-fp8-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.2-8b-fp8|4|131072|9000|--enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3|{SPEC_G8B_FP8}|Granite 4.2 8B FP8 + 3B FP8 draft TP=4 @128K + CUDA graphs|58-79 tok/s"
   [qw14b-32k]="rhel-ai|model-qwen3-14b-32k|docker.io/vllm/vllm-openai:nightly|vllm|Qwen/Qwen3-14B-FP8|2|32768|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3||Qwen3 14B FP8 TP=2 @32K (GPU 0-1, no spec decode)|est. 25+ tok/s"
   [qw14b-40k]="rhel-ai|model-qwen3-14b-40k|docker.io/vllm/vllm-openai:nightly|vllm|Qwen/Qwen3-14B-FP8|4|40960|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3||Qwen3 14B FP8 TP=4 @40K (no spec decode)|est. 50+ tok/s"
+  [d3-27b-8k]="rhel-ai|model-d3-27b-8k|docker.io/vllm/vllm-openai:nightly|vllm|vllm-sr/d3|2|8192|9001|--quantization fp8 --enforce-eager||D3 27B Decision Model FP8 TP=2 @8K (GPU 2-3)|~250-470ms/decision"
+  [d3f-9b-32k]="rhel-ai|model-d3f-9b-32k|docker.io/vllm/vllm-openai:nightly|vllm|vllm-sr/d3-flash|1|32768|9001|--quantization fp8 --enforce-eager||D3-Flash 9B Decision Model FP8 @32K (GPU 2)|~190-315ms/decision"
 )
 
 # ── Speculative Decoding Configs ──────────────────────────────
@@ -44,6 +46,8 @@ declare -A SPEC_CONFIGS=(
 # If not listed, all GPUs are used (default).
 declare -A GPU_DEVICES=(
   [qw14b-32k]="0,1"
+  [d3-27b-8k]="2,3"
+  [d3f-9b-32k]="2"
 )
 
 # Default profiles per host (fallback if no persistent override)
@@ -69,7 +73,23 @@ DEFAULT_PROFILE_RHTEVAN="$(_read_persistent_default rhtevan-work)"
 DEFAULT_PROFILE_RHELAI="$(_read_persistent_default rhel-ai)"
 
 # All profiles ordered for display
-ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k qw14b-32k qw14b-40k)
+# ── Composite Profiles ─────────────────────────────────────────
+# A composite profile deploys multiple containers simultaneously.
+# Format: COMPOSITE_PROFILES[short_name]="profile1 profile2 ..."
+# setup.sh deploys each sub-profile in order; stop.sh stops all.
+# Sub-profiles must use different ports (port-based mutual exclusion).
+declare -A COMPOSITE_PROFILES=(
+  [qw14b+d3]="qw14b-32k d3-27b-8k"
+)
+
+# ── Container Environment Variables ───────────────────────────
+# Extra environment variables passed via podman -e for specific profiles.
+# setup.sh reads these and adds -e flags to the podman run command.
+declare -A CONTAINER_ENV=(
+  [d3-27b-8k]="PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True"
+)
+
+ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k qw14b-32k qw14b-40k d3-27b-8k d3f-9b-32k qw14b+d3)
 
 # Profile state directory
 PROFILE_STATE_DIR="${HOME}/.hosted-model-ctl"
