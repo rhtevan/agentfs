@@ -9,7 +9,7 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | stop s
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts"
 metadata:
   author: agentfs
-  version: "8.17.0"
+  version: "8.17.1"
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -181,8 +181,9 @@ this protocol after the scripts complete:
 
 1. Parse `up.sh` / `down.sh` output for `✅ Up` vs `⏭️ Skipped` hosts
 2. Classify skipped hosts by role (Provider vs Consumer)
-3. For each **UP Provider** host:
-   - Trigger `hosted-model-ctl` → start/stop default or requested model
+3. **Do NOT manually trigger `hosted-model-ctl`** — `up.sh` and `down.sh` handle model
+   start/stop internally using `get_default_profile` / `get_active_profile`. The agent's
+   only job is to parse and report the script output.
 4. For each **SKIPPED Provider** host:
    - Report: `⏭️ <host> skipped (<reason>) — models not started/stopped`
 5. For **SKIPPED Consumer** hosts:
@@ -195,15 +196,22 @@ this protocol after the scripts complete:
 
 ### Startup Order
 
+`up.sh` orchestrates internally — agent does NOT pre-call `hosted-model-ctl` manually:
+
 1. Skupper controllers (systemd) — Consumer + Provider sites
 2. Skupper routers (systemd) — Consumer + Provider sites
-3. Model containers (via `hosted-model-ctl`) — **Provider sites only**
+3. Model containers — **Provider sites only** (`up.sh` delegates to `hosted-model-ctl` using `get_default_profile`)
 
 ### Shutdown Order (reverse)
 
-1. Model containers (via `hosted-model-ctl`) — **Provider sites only**
+`down.sh` orchestrates internally — agent does NOT pre-call `hosted-model-ctl` manually:
+
+1. Model containers — **Provider sites only** (`down.sh` delegates to `hosted-model-ctl` using `get_active_profile`)
 2. Skupper routers (systemd) — Consumer + Provider sites
 3. Skupper controllers (systemd) — Consumer + Provider sites
+
+**Agent rule: never hardcode a profile name when stopping. `down.sh` resolves the active profile
+deterministically from state files — always let the script do it.**
 
 ## Operations
 

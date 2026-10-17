@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-16 20:22
+- Fix agent orchestration: down.sh and up.sh own model lifecycle internally — agent must not pre-call hosted-model-ctl with hardcoded profile names (skills/skupper-model-provider/SKILL.md)
+- Fix agent orchestration: down.sh and up.sh own model lifecycle internally — agent must not pre-call hosted-model-ctl with hardcoded profile names (skills/skupper-model-provider/SKILL.md)
+
 ## 2026-10-16 20:14
 - Fix: strip ** bold markers from descriptions; sort by index.md mtime not newest-file mtime (skills/okf-bundle-index/scripts/rebuild-index.sh)
 

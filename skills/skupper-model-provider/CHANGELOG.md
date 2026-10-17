@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-16 20:22 | v8.17.1 — Fix agent orchestration: down.sh and up.sh own model lifecycle internally — agent must not pre-call hosted-model-ctl with hardcoded profile names |
 | 2026-10-15 20:32 | v8.17.0 — Add --profile, --list-sites, deterministic model delegation via hosted-model-ctl |
 | 2026-10-15 19:54 | v8.16.0 — Add RHEL_AI_DECISION_PORT and RHEL_AI_DECISION_ROUTING_KEY |
 | 2026-09-25 10:04 | v8.15.0 — **Orphaned namespace detection.** `status.sh` now scans `~/.local/share/skupper/namespaces/` for unexpected Skupper namespaces (anything other than `model-provider-podman`). Reports orphan name, site name, and running container status. Prevents silent resource leaks from bare `skupper` CLI commands run without `-n`. Added Known Issue entry. |
