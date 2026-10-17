@@ -26,7 +26,6 @@ if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
     echo "── Sub-profile: $sub ──"
     bash "$(dirname "$0")/start.sh" "$sub"
   done
-  set_active_profile "$COMPOSITE_HOST" "$PROFILE"
   echo ""
   echo "✅ Composite profile '$PROFILE' started (${#SUB_PROFILES[@]} containers)"
   exit 0
@@ -77,8 +76,6 @@ else
   run_on_host "$PROFILE_HOST" "podman start $CONTAINER"
   echo "✅ $CONTAINER started on $PROFILE_HOST"
 fi
-
-set_active_profile "$PROFILE_HOST" "$PROFILE"
 
 case "$PROFILE" in
   g350m-2k)          WAIT=180 ;;

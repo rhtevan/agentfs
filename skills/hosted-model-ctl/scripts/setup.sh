@@ -27,8 +27,6 @@ if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
     echo "── Sub-profile: $sub ──"
     bash "$(dirname "$0")/setup.sh" "$sub"
   done
-  # Set active profile to the composite name (not sub-profile names)
-  set_active_profile "$COMPOSITE_HOST" "$PROFILE"
   echo ""
   echo "✅ Composite profile '$PROFILE' deployed (${#SUB_PROFILES[@]} containers)"
   exit 0
@@ -217,9 +215,6 @@ case "$ENGINE" in
 esac
 
 echo "✅ Container $CONTAINER created on $PROFILE_HOST"
-
-# Set active profile
-set_active_profile "$PROFILE_HOST" "$PROFILE"
 
 # Determine wait time
 case "$PROFILE" in

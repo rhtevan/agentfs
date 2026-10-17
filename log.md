@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-16 21:05
+- Eliminate all state files: get_active_profile() uses live podman ps; DEFAULT_PROFILES map replaces builtin vars + state file; ALL_HOSTS derived from DEPLOY_PROFILES; remove set/clear_active_profile, PROFILE_STATE_DIR, _read_persistent_default (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-10-16 21:04
+- Eliminate active-profile state files: get_active_profile() now uses live podman ps lookup via SSH; remove set_active_profile/clear_active_profile; replace builtin default vars with DEFAULT_PROFILES map; derive ALL_HOSTS from DEPLOY_PROFILES; remove PROFILE_STATE_DIR (skills/hosted-model-ctl/scripts/common.sh)
+
 ## 2026-10-16 20:22
 - Fix agent orchestration: down.sh and up.sh own model lifecycle internally — agent must not pre-call hosted-model-ctl with hardcoded profile names (skills/skupper-model-provider/SKILL.md)
 - Fix agent orchestration: down.sh and up.sh own model lifecycle internally — agent must not pre-call hosted-model-ctl with hardcoded profile names (skills/skupper-model-provider/SKILL.md)

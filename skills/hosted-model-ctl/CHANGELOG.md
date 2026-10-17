@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-16 21:05 | vv7.10.0 — Eliminate all state files: get_active_profile() uses live podman ps; DEFAULT_PROFILES map replaces builtin vars + state file; ALL_HOSTS derived from DEPLOY_PROFILES; remove set/clear_active_profile, PROFILE_STATE_DIR, _read_persistent_default |
 | 2026-10-15 19:53 | v7.9.6 — Add composite profile qw14b+d3, CONTAINER_ENV for expandable_segments, d3-27b-8k and d3f-9b-32k profiles |
 | 2026-10-15 15:57 | v7.9.5 — Update qw14b-32k: remove spec decode, speed 30.2 tok/s, fitting score 38→40.3, add decision endpoints |
 | 2026-10-15 15:00 | v7.9.4 — Remove spec decode from qw14b-40k profile; engine vllm-spec→vllm, clear spec config, update speed estimate |

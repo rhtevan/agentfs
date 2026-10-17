@@ -3,24 +3,43 @@
 # Usage:
 #   bash set-default.sh PROFILE    — set PROFILE as default for its host
 #   bash set-default.sh --show     — show current defaults for all hosts
+#
+# Changes are persisted by editing DEFAULT_PROFILES in common.sh.
 
 source "$(dirname "$0")/common.sh"
 
+COMMON_SH="$(dirname "$0")/common.sh"
+
 if [[ "${1:-}" == "--show" || -z "${1:-}" ]]; then
   echo "=== Default Deployment Profiles ==="
-  for host in rhtevan-work rhel-ai; do
+  for host in "${ALL_HOSTS[@]}"; do
     current=$(get_default_profile "$host")
-    builtin_default=""
-    case "$host" in
-      rhtevan-work) builtin_default="$_BUILTIN_DEFAULT_RHTEVAN" ;;
-      rhel-ai)      builtin_default="$_BUILTIN_DEFAULT_RHELAI" ;;
-    esac
-    override=""
-    [[ -f "${PROFILE_STATE_DIR}/default-profile-${host}" ]] && override=" (overridden from ${builtin_default})"
-    echo "  ${host}: ${current}${override}"
+    echo "  ${host}: ${current:-<none>}"
   done
   exit 0
 fi
 
 PROFILE="$1"
-set_default_profile "$PROFILE"
+parse_profile "$PROFILE" 2>/dev/null || {
+  echo "❌ Unknown profile: $PROFILE" >&2
+  echo "Available: ${ALL_PROFILES[*]}" >&2
+  exit 1
+}
+HOST="$PROFILE_HOST"
+CURRENT=$(get_default_profile "$HOST")
+
+if [[ "$CURRENT" == "$PROFILE" ]]; then
+  echo "✅ Default for $HOST is already '$PROFILE' — no change"
+  exit 0
+fi
+
+# Edit DEFAULT_PROFILES in common.sh: replace the line for this host
+if grep -q "\\[$HOST\\]=" "$COMMON_SH"; then
+  sed -i "s|\\[$HOST\\]=.*|[$HOST]=\"$PROFILE\"|" "$COMMON_SH"
+else
+  # Host not in map yet — add it before the closing paren
+  sed -i "/^declare -A DEFAULT_PROFILES=(/a\\  [$HOST]=\"$PROFILE\"" "$COMMON_SH"
+fi
+
+echo "✅ Default profile for $HOST: ${CURRENT:-<none>} → $PROFILE"
+echo "   (Updated DEFAULT_PROFILES in common.sh)"

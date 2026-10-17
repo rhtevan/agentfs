@@ -50,27 +50,25 @@ declare -A GPU_DEVICES=(
   [d3f-9b-32k]="2"
 )
 
-# Default profiles per host (fallback if no persistent override)
-_BUILTIN_DEFAULT_RHTEVAN="g3b-16k"
-_BUILTIN_DEFAULT_RHELAI="qw14b-40k"
+# ── Default Profiles ──────────────────────────────────────────
+# One default profile per host. To change the default, edit this map.
+declare -A DEFAULT_PROFILES=(
+  [rhtevan-work]="g3b-16k"
+  [rhel-ai]="qw14b-40k"
+)
 
-# Persistent defaults override builtins
-_read_persistent_default() {
-  local host="$1"
-  local state_file="${HOME}/.hosted-model-ctl/default-profile-${host}"
-  if [[ -f "$state_file" ]]; then
-    cat "$state_file"
-  else
-    case "$host" in
-      rhtevan-work) echo "$_BUILTIN_DEFAULT_RHTEVAN" ;;
-      rhel-ai)      echo "$_BUILTIN_DEFAULT_RHELAI" ;;
-      *)            echo "" ;;
-    esac
+# ── All Hosts ─────────────────────────────────────────────────
+# Derived from DEPLOY_PROFILES — no separate list to maintain.
+declare -a ALL_HOSTS=()
+_seen_hosts=""
+for _p in "${!DEPLOY_PROFILES[@]}"; do
+  _h="${DEPLOY_PROFILES[$_p]%%|*}"
+  if [[ ! " $_seen_hosts " == *" $_h "* ]]; then
+    ALL_HOSTS+=("$_h")
+    _seen_hosts="$_seen_hosts $_h"
   fi
-}
-
-DEFAULT_PROFILE_RHTEVAN="$(_read_persistent_default rhtevan-work)"
-DEFAULT_PROFILE_RHELAI="$(_read_persistent_default rhel-ai)"
+done
+unset _p _h _seen_hosts
 
 # All profiles ordered for display
 # ── Composite Profiles ─────────────────────────────────────────
@@ -90,9 +88,6 @@ declare -A CONTAINER_ENV=(
 )
 
 ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k qw14b-32k qw14b-40k d3-27b-8k d3f-9b-32k qw14b+d3)
-
-# Profile state directory
-PROFILE_STATE_DIR="${HOME}/.hosted-model-ctl"
 
 # ── Helper Functions ──────────────────────────────────────────
 
@@ -119,46 +114,65 @@ resolve_spec_config() {
 }
 
 get_active_profile() {
+  # Live lookup: SSH to host, run `podman ps`, reverse-map running container → profile name.
+  # No state file — ground truth is always the actual container state on the host.
   local host="$1"
-  local state_file="${PROFILE_STATE_DIR}/active-profile-${host}"
-  [[ "$host" == "localhost" ]] && state_file="${PROFILE_STATE_DIR}/active-profile-rhtevan-work"
-  if [[ -f "$state_file" ]]; then
-    cat "$state_file"
-  else
+  [[ "$host" == "localhost" ]] && host="rhtevan-work"
+
+  if ! host_reachable "$host"; then
     echo ""
+    return 0
   fi
-}
 
-set_active_profile() {
-  local host="$1"
-  local profile="$2"
-  mkdir -p "${PROFILE_STATE_DIR}"
-  local state_file="${PROFILE_STATE_DIR}/active-profile-${host}"
-  [[ "$host" == "localhost" ]] && state_file="${PROFILE_STATE_DIR}/active-profile-rhtevan-work"
-  echo "$profile" > "$state_file"
-}
+  # Collect running container names from the host in one SSH call
+  local running_containers
+  running_containers=$(run_on_host "$host" \
+    "podman ps --format '{{.Names}}' 2>/dev/null" || echo "")
 
-clear_active_profile() {
-  local host="$1"
-  local state_file="${PROFILE_STATE_DIR}/active-profile-${host}"
-  [[ "$host" == "localhost" ]] && state_file="${PROFILE_STATE_DIR}/active-profile-rhtevan-work"
-  rm -f "$state_file"
+  if [[ -z "$running_containers" ]]; then
+    echo ""
+    return 0
+  fi
+
+  # Reverse-map: find the profile whose CONTAINER is in the running list
+  for profile in "${ALL_PROFILES[@]}"; do
+    # Skip composite profiles — they are matched via their sub-profiles
+    [[ -n "${COMPOSITE_PROFILES[$profile]:-}" ]] && continue
+    parse_profile "$profile" 2>/dev/null || continue
+    [[ "$PROFILE_HOST" != "$host" ]] && continue
+    if echo "$running_containers" | grep -qx "$CONTAINER"; then
+      echo "$profile"
+      return 0
+    fi
+  done
+
+  # Check composite profiles: active if ALL sub-profile containers are running
+  for profile in "${ALL_PROFILES[@]}"; do
+    [[ -z "${COMPOSITE_PROFILES[$profile]:-}" ]] && continue
+    read -ra _subs <<< "${COMPOSITE_PROFILES[$profile]}"
+    local all_up=true
+    local composite_host=""
+    for sub in "${_subs[@]}"; do
+      parse_profile "$sub" 2>/dev/null || { all_up=false; break; }
+      [[ -z "$composite_host" ]] && composite_host="$PROFILE_HOST"
+      [[ "$PROFILE_HOST" != "$host" ]] && { all_up=false; break; }
+      if ! echo "$running_containers" | grep -qx "$CONTAINER"; then
+        all_up=false
+        break
+      fi
+    done
+    if [[ "$all_up" == "true" && -n "$composite_host" ]]; then
+      echo "$profile"
+      return 0
+    fi
+  done
+
+  echo ""
 }
 
 get_default_profile() {
   local host="$1"
-  _read_persistent_default "$host"
-}
-
-set_default_profile() {
-  local profile="$1"
-  parse_profile "$profile" 2>/dev/null || { echo "❌ Unknown profile: $profile"; return 1; }
-  local host="$PROFILE_HOST"
-  local current
-  current=$(get_default_profile "$host")
-  mkdir -p "${PROFILE_STATE_DIR}"
-  echo "$profile" > "${PROFILE_STATE_DIR}/default-profile-${host}"
-  echo "✅ Default profile for $host: $current → $profile"
+  echo "${DEFAULT_PROFILES[$host]:-}"
 }
 
 list_profiles() {
@@ -168,7 +182,7 @@ list_profiles() {
   for profile in "${ALL_PROFILES[@]}"; do
     parse_profile "$profile" 2>/dev/null || continue
     local status=""
-    [[ "$profile" == "$DEFAULT_PROFILE_RHTEVAN" || "$profile" == "$DEFAULT_PROFILE_RHELAI" ]] && status="✅ default"
+    [[ "$profile" == "${DEFAULT_PROFILES[$PROFILE_HOST]:-}" ]] && status="✅ default"
     local active
     active=$(get_active_profile "$PROFILE_HOST")
     [[ "$active" == "$profile" ]] && status="🟢 active"
@@ -235,10 +249,10 @@ check_doc_alignment() {
   [[ -f "$doc" ]] || return 0  # no doc to check
 
   local drift=0
-  for host in rhtevan-work rhel-ai; do
-    local state_default
-    state_default=$(get_default_profile "$host")
-    [[ -z "$state_default" ]] && continue
+  for host in "${ALL_HOSTS[@]}"; do
+    local configured_default
+    configured_default=$(get_default_profile "$host")
+    [[ -z "$configured_default" ]] && continue
 
     # Find which profile has ✅ Default under the host's section
     # Section header: ## Profiles — <host>
@@ -259,11 +273,11 @@ check_doc_alignment() {
       fi
     done < "$doc"
 
-    if [[ -n "$doc_default" && "$doc_default" != "$state_default" ]]; then
-      echo "  ⚠️  Doc drift ($host): deployment-profiles.md says default is '$doc_default', state file says '$state_default'"
+    if [[ -n "$doc_default" && "$doc_default" != "$configured_default" ]]; then
+      echo "  ⚠️  Doc drift ($host): deployment-profiles.md says default is '$doc_default', common.sh says '$configured_default'"
       drift=1
     elif [[ -z "$doc_default" ]]; then
-      echo "  ⚠️  Doc drift ($host): no ✅ Default marker found in deployment-profiles.md (state default: $state_default)"
+      echo "  ⚠️  Doc drift ($host): no ✅ Default marker found in deployment-profiles.md (configured default: $configured_default)"
       drift=1
     fi
   done

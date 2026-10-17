@@ -44,9 +44,6 @@ if [[ "$PROFILE" == "all" ]]; then
       echo "  🗑️  $CONTAINER removed"
     fi
   done
-  for host in rhtevan-work rhel-ai; do
-    clear_active_profile "$host"
-  done
   if [[ "$REMOVE" == "true" ]]; then
     echo "✅ All reachable models stopped and removed"
   else
@@ -68,9 +65,6 @@ if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
       bash "$(dirname "$0")/stop.sh" "$sub"
     fi
   done
-  parse_profile "${SUB_PROFILES[0]}"
-  set_active_profile "$PROFILE_HOST" ""
-  clear_active_profile "$PROFILE_HOST"
   echo ""
   echo "✅ Composite profile '$PROFILE' stopped (${#SUB_PROFILES[@]} containers)"
   exit 0
@@ -101,5 +95,4 @@ if [[ "$REMOVE" == "true" ]]; then
   echo "🗑️  $CONTAINER removed"
 fi
 
-clear_active_profile "$PROFILE_HOST"
 echo "✅ Profile '$PROFILE' stopped on $PROFILE_HOST"
