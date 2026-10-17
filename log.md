@@ -2,6 +2,21 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-16 20:14
+- Fix: strip ** bold markers from descriptions; sort by index.md mtime not newest-file mtime (skills/okf-bundle-index/scripts/rebuild-index.sh)
+
+## 2026-10-16 20:12
+- Fix: allow **bold** markdown in description extraction — awk pattern excluded * which caught ** bold openers (skills/okf-bundle-index/scripts/rebuild-index.sh)
+- Fix: allow **bold** markdown in description extraction — awk pattern excluded * which caught ** bold openers (skills/okf-bundle-index/scripts/rebuild-index.sh)
+
+## 2026-10-16 20:07
+- Added v7.3.7 full template rewrite results (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+- Initial concept: sdm-integration-for-agentfs.md
+- Initial concept: benchmark-test-suite.md
+- Initial concept: operational-pattern-classification.md
+- Initial concept: mcasc-measurement-framework.md
+- Initial concept: mcasc-principles-for-agentfs.md
+
 ## 2026-10-16 15:17
 - Version references updated 7.3.6 → 7.3.7 (README.md)
 - Version bump 7.3.6 → 7.3.7 for CNL compliance pass (skills/agentfs-setup/SKILL.md)

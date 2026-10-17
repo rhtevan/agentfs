@@ -115,10 +115,25 @@ structural interventions (hooks, prefill, role separation).
 | context-eng | Session: AgentFS Evolution | ASD-STE100 assessment: full compliance adds 20-40% token overhead; selective application recommended |
 | goofing-around | Session: Test qw14b-40k | Baseline violation data showing the prose rule was parseable but not acted on |
 
+## v7.3.7 Full Template Rewrite (2026-10-16)
+
+All 7 PROJECT scope rules and 3 LITE scope rules in `seed-agents-md.sh`
+rewritten for CNL compliance:
+- Circled-number format (①②③) replaced with numbered lists
+- Compound instructions split (6 instances across rules 2, 3, 5, 7)
+- Passive voice converted to active imperative (rule 7)
+- Synonym mixing eliminated (rule 7: "mature" → "graduate")
+- Blank line between `**When:**` and `**Do:**` standardized (all 7 rules)
+- Signal Dispatch rule (rule 1) given `**Do:**` header and blank-line format
+
+Net result: ~15% more lines in rules section. All rules follow consistent
+`When: / Do:` + numbered list format. Template version 7.3.7.
+
 ## Implications
 
 - CNL is a necessary but insufficient condition for weak-model
-  compliance. Apply it first, then layer structural enforcement.
+  compliance. Apply it first, then layer structural enforcement
+  (MCASC principles — see `agentfs-engineering-evolution` bundle).
 - The `skill check` procedure (skill-gen Principle 1) now audits
   for these three rules mechanically.
 - Token cost tradeoff: CNL may increase total token count (more

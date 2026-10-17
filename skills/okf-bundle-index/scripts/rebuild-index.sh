@@ -103,12 +103,12 @@ for d in "$DIR"/*/; do
     sdesc="$(awk '
       /^#/ { found_title=1; next }
       found_title && !started && /^[[:space:]]*$/ { next }
-      found_title && !started && /^[^#*\[]/ { started=1; desc=$0; next }
+      found_title && !started && /^[^#\[]/ && !/^\* / { started=1; desc=$0; next }
       found_title && !started { exit }
       started && /^[[:space:]]*$/ { exit }
       started && /^[#*\[]/ { exit }
       started { desc=desc " " $0 }
-      END { print desc }
+      END { gsub(/\*\*/, "", desc); print desc }
     ' "$d/index.md" || true)"
     # Trim to a reasonable length for an index entry
     if [[ ${#sdesc} -gt 120 ]]; then
@@ -123,7 +123,12 @@ for d in "$DIR"/*/; do
     sb_entries["$dname"]="* [$stitle]($dname/index.md)"
   fi
   # Newest mtime across all files in the sub-bundle directory
-  sb_mtimes["$dname"]="$(find "$d" -type f -printf '%T@\n' 2>/dev/null | sort -rn | head -1)"
+  # Use index.md mtime for sort order (represents bundle creation/update, not incidental file touches)
+  if [[ -f "$d/index.md" ]]; then
+    sb_mtimes["$dname"]="$(stat -c '%Y' "$d/index.md" 2>/dev/null || stat -f '%m' "$d/index.md" 2>/dev/null || echo 0)"
+  else
+    sb_mtimes["$dname"]="$(find "$d" -type f -printf '%T@\n' 2>/dev/null | sort -rn | head -1)"
+  fi
 done
 
 # Sort sub-bundles newest first by mtime

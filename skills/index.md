@@ -4,7 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-16 15:17 |
+| [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-10-16 20:14 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-16 15:30 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | agentfs, okf, knowledge, memory, distillation, graduation | harvest knowledge, harvest concepts, graduate knowledge | 2026-10-15 21:45 |
 | [skill-harvest](./skill-harvest/SKILL.md) | agentfs, skills, memory, procedural, graduation, harvest | harvest skills, harvest procedures, graduate skills | 2026-10-15 21:45 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-10-15 21:44 |
@@ -40,7 +41,6 @@
 | [skill-merge](./skill-merge/SKILL.md) | agentfs, skills, merge, project, user | merge skills, copy skills to user, promote skills | 2026-08-26 22:24 |
 | [agentfs-ctx-chk](./agentfs-ctx-chk/SKILL.md) | agentfs, context, audit, optimization, guardrails | audit context, check context, context audit | 2026-08-26 21:34 |
 | [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-08-26 21:34 |
-| [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-08-26 12:36 |
 | [dsh-litellm-provider](./dsh-litellm-provider/SKILL.md) | dsh, deepseek-harness, litellm, custom-provider, configuration | configure dsh litellm, dsh litellm provider, dsh custom provider | 2026-08-24 16:59 |
 | [fedora-nm-boot-slow](./fedora-nm-boot-slow/SKILL.md) | fedora, network, boot, networkmanager, performance | slow boot network, nm-wait-online slow, network boot delay, diagnose boot network, fix nm-wait-online | 2026-08-20 10:30 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | configure hermes headroom, hermes headroom provider | 2026-08-17 11:16 |
