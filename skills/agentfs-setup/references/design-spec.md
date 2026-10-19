@@ -1,5 +1,51 @@
 # DotAgents Unified Design Specification
 
+## Design Goals
+
+Three evolution objectives that govern AgentFS design decisions:
+
+### G1. MCACS-Informed Skill Generation
+
+Incorporate MCACS (Modularity, Cohesion, Abstraction, Coupling,
+Separation of Concerns) systems engineering principles into the
+`skill-gen` skill. A frontier/engineering model uses `skill-gen` to
+produce quality skills operable by mid-range (14B-class) models
+combined with SDM (Semantic Decision Model).
+
+### G2. Operable Skill
+
+An Operable Skill combines deterministic scripts (bones) with CNL
+prose instructions (muscle). A controller (LLM + SDM) executes the
+Operable Skill and observes results with the help of a runtime
+harness.
+
+| Layer | Role | Provider |
+|-------|------|----------|
+| Bones (scripts) | Deterministic execution | `skill-gen` at authorship |
+| Muscle (CNL prose) | Orchestration logic | `skill-gen` at authorship |
+| Controller (LLM + SDM) | Executes the skill | Runtime |
+| Harness (runtime) | Execution and observation | Goose session/recipe |
+
+### G3. Skill Evolution
+
+A feedback loop where an adjuster model or human observes execution
+of Operable Skills, analyzes the gap using CECX observation scores
+(Correctness, Efficiency, Comprehension, Complexity), suggests an
+improvement plan, and upgrades the skill — all with the help of the
+runtime harness.
+
+```
+Author (frontier) → Operate (mid-range + SDM) → Evolve (adjuster)
+       ▲                                              │
+       └──────────── Upgrade Spec ────────────────────┘
+```
+
+**Cross-references:**
+- MCACS principles: `~/.agents/knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md`
+- CECX schema: `~/.agents/knowledge/agentfs-engineering-evolution/observation-schema-cecx.md`
+- Operable Skill architecture: `~/.agents/knowledge/agentfs-engineering-evolution/operable-skill-architecture.md`
+- SDM integration: `~/.agents/knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md`
+
 ## Core Philosophy
 
 Strict separation of **Identity**, **Capabilities**, **Semantic Context**,
@@ -820,6 +866,7 @@ signs of learned tool avoidance, trigger compaction to reset.
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-19 11:44 | Added Design Goals section (G1–G3): MCACS-informed skill generation, Operable Skill architecture, Skill Evolution feedback loop. Cross-references to knowledge bundle concepts. |
 | 2026-09-25 23:30 | v6.0.0 — **Breaking:** AGENTS.md template reduced from 17 to 10 rules. Behavioral norms (no validation phrases, no assumed inputs, risk naming) moved to SOUL.md Principles. Signal dispatch rules (6 rules) collapsed into 1 rule + Signal Dispatch table; all signals unified under `hey` prefix. Scope Definitions relocated from AGENTS.md to `.agents/index.md`. SOUL.md restructured: prose → hybrid (identity preamble + structured Principles with bold labels). Added `signal-dispatch` plugin (`~/.agents/plugins/signal-dispatch/`) for deterministic `hey` enforcement via Goose `PreToolUse` hooks. Added `~/.agents/scripts/` directory for AGENTS-specific scripts. Added `plugins/` and `scripts/` to scope tables. KI-1 status updated to Mitigated. SOUL/AGENTS separation clarified: SOUL = self-discipline, AGENTS = external enforcement. |
 | 2026-08-13 12:40 | v3.11 — SKILL.md Frontmatter Schema: `description` field redefined as signal phrases (Command/Query patterns); `metadata.signals` removed; added Signal Phrase Rules, Opening Paragraph requirement; updated Signal Routing architecture (signals now in `description`, skills index Description column as defense-in-depth) |
 | 2026-07-31 21:42 | v3.8 — Added Guardrail #8 Anti-Daydreaming (ephemeral session canary name for context-drift detection); renumbered Checkpoints → #9, Git Push Safety → #10; clarified Index Currency trigger to include metadata-only changes; updated all cross-references |

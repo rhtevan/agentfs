@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-19 11:50
+- Version refs 7.3.7 → 7.3.8 for design-spec Design Goals addition (README.md)
+
+## 2026-10-19 11:46
+- Version bump 7.3.7 → 7.3.8 for design-spec.md Design Goals addition (skills/agentfs-setup/SKILL.md)
+
+## 2026-10-19 11:45
+- Added Design Goals section (G1-G3): MCACS-informed skill generation, Operable Skill architecture, Skill Evolution feedback loop (skills/agentfs-setup/references/design-spec.md)
+- Added Design Goals section (G1-G3): MCACS-informed skill generation, Operable Skill architecture, Skill Evolution feedback loop (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-10-19 11:40
+- New concept: Operable Skill Architecture — four-layer anatomy and Author/Operate/Evolve lifecycle (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- New concept: CECX observation schema — four traits for scoring skill executions, aligned with QSCZ deployment fitting (knowledge/agentfs-engineering-evolution/observation-schema-cecx.md)
+
 ## 2026-10-19 10:05
 - Rename MCASC → MCACS (README.md)
 - Rename MCASC → MCACS (knowledge/context-engineering/cnl-authoring-for-weak-models.md)

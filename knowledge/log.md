@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-19 11:40
+- New concept: Operable Skill Architecture — four-layer anatomy and Author/Operate/Evolve lifecycle (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- New concept: CECX observation schema — four traits for scoring skill executions, aligned with QSCZ deployment fitting (knowledge/agentfs-engineering-evolution/observation-schema-cecx.md)
+
 ## 2026-10-19 10:05
 - Rename MCASC → MCACS (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 - Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md)
