@@ -2,7 +2,7 @@
 
 - **Type:** Pattern
 - **Status:** Active
-- **Source:** Session analysis — Semantic Decision Model as MCASC implementation
+- **Source:** Session analysis — Semantic Decision Model as MCACS implementation
 
 ## Summary
 
@@ -84,7 +84,7 @@ This solves the evaluation bootstrap problem: you don't need a frontier model
 to judge a mid-range model's output. SDM makes bounded, single-criterion
 judgments — a fundamentally simpler task than the original skill execution.
 
-## How SDM Implements MCASC
+## How SDM Implements MCACS
 
 | Principle | How SDM Implements It |
 |-----------|----------------------|

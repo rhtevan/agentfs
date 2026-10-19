@@ -133,7 +133,7 @@ Net result: ~15% more lines in rules section. All rules follow consistent
 
 - CNL is a necessary but insufficient condition for weak-model
   compliance. Apply it first, then layer structural enforcement
-  (MCASC principles — see `agentfs-engineering-evolution` bundle).
+  (MCACS principles — see `agentfs-engineering-evolution` bundle).
 - The `skill check` procedure (skill-gen Principle 1) now audits
   for these three rules mechanically.
 - Token cost tradeoff: CNL may increase total token count (more

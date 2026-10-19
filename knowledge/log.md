@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-19 10:05
+- Rename MCASC → MCACS (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/operational-pattern-classification.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/mcacs-measurement-framework.md)
+
+## 2026-10-19 09:52
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
+
 ## 2026-10-16 20:07
 - Added v7.3.7 full template rewrite results (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 - Initial concept: sdm-integration-for-agentfs.md

@@ -9,7 +9,7 @@
 Five distinct operational patterns classify how AgentFS skills demand the
 agent to work. Each pattern has different cognitive load, failure modes,
 and evolution strategies. Skills are classified by pattern to prioritize
-MCASC improvements.
+MCACS improvements.
 
 ## The Five Patterns
 
@@ -83,7 +83,7 @@ values.
 | Mixed / uncategorized | ~21 | 34% |
 
 Pattern C skills are 10% of the library but account for the highest-severity
-failures on weaker models. These are the priority targets for MCASC evolution.
+failures on weaker models. These are the priority targets for MCACS evolution.
 
 ## Rule-Level Operations
 

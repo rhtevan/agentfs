@@ -2,7 +2,7 @@
 
 - **Type:** Convention
 - **Status:** Active
-- **Source:** Session analysis — test design for MCASC evolution validation
+- **Source:** Session analysis — test design for MCACS evolution validation
 
 ## Summary
 
@@ -80,7 +80,7 @@ disrupt (e.g., litellm proxy). Use a dedicated test endpoint.
 
 ```
 1. Run T1–T8 on target model tier → Operator Success Rate
-2. Failing tests → attribute to MCASC principle (see Measurement Framework)
+2. Failing tests → attribute to MCACS principle (see Measurement Framework)
 3. Apply targeted fix (extract script, clean interface, split concern)
 4. Re-run T1–T8 → measure improvement
 5. Repeat until ≥90% on mid-range tier

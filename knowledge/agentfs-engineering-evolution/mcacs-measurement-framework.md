@@ -1,12 +1,12 @@
-# MCASC Measurement Framework
+# MCACS Measurement Framework
 
 - **Type:** Convention
 - **Status:** Active
-- **Source:** Session analysis — quantifying MCASC principles for AgentFS
+- **Source:** Session analysis — quantifying MCACS principles for AgentFS
 
 ## Summary
 
-Quantitative metrics for each MCASC principle, organized at three measurement
+Quantitative metrics for each MCACS principle, organized at three measurement
 levels (component, integration, system). The system-level metric — Operator
 Success Rate — is the ultimate measure of evolution success.
 

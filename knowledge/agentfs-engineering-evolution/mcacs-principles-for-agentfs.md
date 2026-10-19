@@ -1,4 +1,4 @@
-# MCASC Principles for AgentFS
+# MCACS Principles for AgentFS
 
 - **Type:** Framework
 - **Status:** Active
@@ -7,7 +7,7 @@
 ## Summary
 
 Five interdependent engineering principles — Modularity, Cohesion, Abstraction,
-Separation of Concerns, Coupling (MCASC) — applied as tools for evolving AgentFS
+Separation of Concerns, Coupling (MCACS) — applied as tools for evolving AgentFS
 from a frontier-model-dependent system to one operable by mid-range (14B-class) models.
 
 ## The Five Principles Mapped to AgentFS

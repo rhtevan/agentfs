@@ -279,7 +279,7 @@ Current bundles:
 - **Context Engineering** — Principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks
 - **Deployment Fitting Guide** — Rules of thumb for context window and parameter sizing, hardware interaction data, multi-dimensional deployment scoring framework
 - **KGM-Based Skill Dispatch** — Design decisions, evidence, and architecture for using KGM as the primary skill dispatch mechanism
-- **AgentFS Engineering Evolution** — MCASC systems engineering principles applied to evolve AgentFS for mid-range model operability, measurement framework, benchmark test suite, SDM integration
+- **AgentFS Engineering Evolution** — MCACS systems engineering principles applied to evolve AgentFS for mid-range model operability, measurement framework, benchmark test suite, SDM integration
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 

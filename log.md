@@ -2,6 +2,17 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-19 10:05
+- Rename MCASC → MCACS (README.md)
+- Rename MCASC → MCACS (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/operational-pattern-classification.md)
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/mcacs-measurement-framework.md)
+
+## 2026-10-19 09:52
+- Rename MCASC → MCACS (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
+
 ## 2026-10-16 21:05
 - Eliminate all state files: get_active_profile() uses live podman ps; DEFAULT_PROFILES map replaces builtin vars + state file; ALL_HOSTS derived from DEPLOY_PROFILES; remove set/clear_active_profile, PROFILE_STATE_DIR, _read_persistent_default (skills/hosted-model-ctl/scripts/common.sh)
 

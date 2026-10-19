@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-19 10:05
+- Rename MCASC → MCACS (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-10-16 20:07
 - Added v7.3.7 full template rewrite results (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 
