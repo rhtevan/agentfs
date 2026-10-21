@@ -1,6 +1,6 @@
 # Skills Index
 
-> 61 skills | Sorted by reverse chronological order (newest first).
+> 60 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
@@ -63,5 +63,4 @@
 | [headroom-proxy-status](./headroom-proxy-status/SKILL.md) | headroom, proxy, status, health, systemd, compression, context-optimization | headroom status, check headroom, headroom health | 2026-08-13 19:20 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | configure hermes litellm, hermes litellm provider | 2026-08-13 19:20 |
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health | 2026-08-13 19:20 |
-| [skupper-linux-two-site](./skupper-linux-two-site/SKILL.md) | skupper, linux, systemd, two-site, van, networking, skrouterd | setup skupper linux, skupper two site, skupper systemd | 2026-08-13 19:20 |
 | [spec-kit-setup](./spec-kit-setup/SKILL.md) | speckit, specify, cli, setup, installation | install spec-kit, setup specify, upgrade spec-kit | 2026-08-13 19:20 |

@@ -207,7 +207,6 @@ Skills cover topics like:
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB, NAD dynamic plugin), cluster lifecycle (start/stop/cleanup), cluster config, AAP demo |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation, KGM lifecycle (`goose-kgm`) |
 | **Model Serving** | Hosted model lifecycle (deploy, start, stop, test on NVIDIA GPUs via Podman), platform report (specs, accelerator, model recommendations by VRAM tier), Skupper model provider (remote GPU exposure via VAN) |
-| **Networking** | Skupper V2 Linux/systemd two-site VAN setup |
 | **Diagramming** | Architecture/workflow/sequence/data-flow diagrams (`agentfs-archify`), draw.io integration (`goose-nextai-drawio`) |
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, desktop WMClass fixes, DNS cache, NetworkManager boot delays, Goose CLI/desktop fixes, Obsidian Snap fix |
 | **Shell Tooling** | Bash tab-completion generation (`bash-completion-gen`) |

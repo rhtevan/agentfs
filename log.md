@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-21 16:25
+- Removed Networking category row — skupper-linux-two-site skill deleted, capability covered under Model Serving (README.md)
+
+## 2026-10-21 16:18
+
+- Removed skills/skupper-linux-two-site/ — superseded by skupper-model-provider; updated skills/index.md (61 → 60 skills)
+
 ## 2026-10-21 14:23
 - v9.0.0: Updated diagram with new site/link naming convention (skills/skupper-model-provider/topology.env.example)
 - v9.0.0: Extracted from SKILL.md — debugging procedures, cert chain checks (skills/skupper-model-provider/references/troubleshooting.md)
