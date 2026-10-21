@@ -165,8 +165,7 @@ printf "  %-26s %-12s %-5s  %-14s %-5s  %s\n" "LINK" "LAST-KNOWN" "" "LIVE" "" "
 printf "  %-26s %-12s %-5s  %-14s %-5s  %s\n" "──────────────────────────" "────────────" "" "──────────────" "" "─────────────────────────"
 
 for host in rhel-ai rhtevan-work; do
-  site_name="${SITE_NAMES[$host]}"
-  link_name="link-${site_name}"
+  link_name="${LINK_NAMES[local-${host}]}"
 
   # Last-Known from YAML
   IFS='|' read -r lk_status lk_message <<< "$(get_last_known_link_status "$link_name")"
@@ -281,19 +280,21 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
     echo "  Router:   ${crc_r_icon} ${crc_router_status}"
 
     # Link 1: hub link
+    crc_hub_link="${LINK_NAMES[crc-rhel-ai]}"
     crc_l_status=""
     crc_l_status=$(crc_link_status)
     crc_l_icon=""
     [[ "$crc_l_status" == "Ready" ]] && crc_l_icon="✅" || crc_l_icon="🔴"
-    echo "  Link:     ${crc_l_icon} link-hub-${CRC_LINK_TARGET} → ${crc_l_status}"
+    echo "  Link:     ${crc_l_icon} ${crc_hub_link} → ${crc_l_status}"
 
     # Link 2: local link
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_local_link="${LINK_NAMES[crc-local]}"
       crc_ll_status=""
       crc_ll_status=$(crc_local_link_status)
       crc_ll_icon=""
       [[ "$crc_ll_status" == "Ready" ]] && crc_ll_icon="✅" || crc_ll_icon="🔴"
-      echo "  Link:     ${crc_ll_icon} link-local-ezhang → ${crc_ll_status}"
+      echo "  Link:     ${crc_ll_icon} ${crc_local_link} → ${crc_ll_status}"
     fi
 
     # Listener 1: hub model
@@ -334,13 +335,23 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
       fi
     fi
 
-    # Operator
+    # Operator — match by name prefix (survives version upgrades)
     crc_csv_status=""
-    crc_csv_status=$(oc_crc get csv -n openshift-operators -o jsonpath='{.items[?(@.metadata.name=="skupper-operator.v2.2.1-rh-1")].status.phase}' 2>/dev/null || echo "not found")
+    crc_csv_version=""
+    crc_csv_line=$(oc_crc get csv -n openshift-operators -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' 2>/dev/null \
+      | grep '^skupper-operator\.' | head -1 || echo "")
+    if [[ -n "$crc_csv_line" ]]; then
+      crc_csv_version=$(echo "$crc_csv_line" | awk '{print $1}' | sed 's/^skupper-operator\.//')
+      crc_csv_status=$(echo "$crc_csv_line" | awk '{print $2}')
+    fi
     [[ -z "$crc_csv_status" ]] && crc_csv_status="not found"
     crc_csv_icon=""
     [[ "$crc_csv_status" == "Succeeded" ]] && crc_csv_icon="✅" || crc_csv_icon="🔴"
-    echo "  Operator: ${crc_csv_icon} ${crc_csv_status}"
+    if [[ -n "$crc_csv_version" ]]; then
+      echo "  Operator: ${crc_csv_icon} ${crc_csv_status} (${crc_csv_version})"
+    else
+      echo "  Operator: ${crc_csv_icon} ${crc_csv_status}"
+    fi
 
     # Network Observer
     if [[ "$CRC_OBSERVER_ENABLED" == "true" ]]; then

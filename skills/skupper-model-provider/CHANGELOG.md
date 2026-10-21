@@ -3,6 +3,9 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-21 12:41 | v9.0.0 — **Breaking:** Site rename (hub-rhel-ai→rhel-ai, hub-rhtevan-work→rhtevan-work), link naming convention (link-\<src\>-\<dst\>), no aliases. Upgraded all podman sites CLI 2.2.1→2.2.3, router 3.5.1→3.5.3, controller 2.2.1→2.2.3 to match CRC baseline. Created `upgrade.sh` (CRC baseline detection, CLI download, image pull, container recreation). Codified ad-hoc fixes: inter-router listener injection, SAN cert regeneration, CRC link secret staleness detection (CA fingerprint comparison). Restructured SKILL.md per P6 Context Economy (436→211 lines, extracted 4 reference files). v2.2.3 confirmed: controller now handles RouterAccess inter-router role and SANs natively — workaround code kept as fallback. Fixed: `writes-files` field, SKILL.md examples using wrong CLI targets, setup.sh RouterAccess creation order. |
+| 2026-10-21 11:44 | v8.18.0 — Phase 1: Restructure SKILL.md — extract architecture, agent-orchestration, known-issues, troubleshooting to references/. Reduced from 436 to 210 lines. Added upgrade signal, error handling table, troubleshooting table, references section. |
+| 2026-10-21 09:18 | v8.17.2 — Fix hardcoded CSV version in CRC operator check — match by name prefix to survive upgrades, also display version |
 | 2026-10-16 20:22 | v8.17.1 — Fix agent orchestration: down.sh and up.sh own model lifecycle internally — agent must not pre-call hosted-model-ctl with hardcoded profile names |
 | 2026-10-15 20:32 | v8.17.0 — Add --profile, --list-sites, deterministic model delegation via hosted-model-ctl |
 | 2026-10-15 19:54 | v8.16.0 — Add RHEL_AI_DECISION_PORT and RHEL_AI_DECISION_ROUTING_KEY |

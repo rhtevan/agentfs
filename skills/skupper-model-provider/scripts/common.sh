@@ -21,7 +21,10 @@ source "$TOPOLOGY_FILE"
 # ── Skupper Configuration ─────────────────────────────────────
 NAMESPACE="model-provider-podman"
 PLATFORM="podman"
-ROUTER_IMAGE="quay.io/skupper/skupper-router:3.5.1"
+# Router image version: detect from CRC baseline or override via SKUPPER_ROUTER_VERSION.
+# Default fallback used when CRC is unavailable and no override is set.
+SKUPPER_ROUTER_VERSION="${SKUPPER_ROUTER_VERSION:-3.5.3}"
+ROUTER_IMAGE="quay.io/skupper/skupper-router:${SKUPPER_ROUTER_VERSION}"
 ROUTER_CONTAINER="${NAMESPACE}-skupper-router"
 CONTROLLER_SUFFIX="skupper-controller"
 
@@ -46,13 +49,25 @@ CRC_RHTEVAN_ROUTING_KEY="${CRC_RHTEVAN_ROUTING_KEY:-model-api-rhtevan-work}"
 CRC_OBSERVER_ENABLED="${CRC_OBSERVER_ENABLED:-false}"
 
 # ── Site Names (built from topology.env) ──────────────────────
+# Site names match platform hostnames. No hub- prefix.
 declare -A SITE_NAMES=(
-  [rhtevan-work]="hub-rhtevan-work"
-  [rhel-ai]="hub-rhel-ai"
+  [rhtevan-work]="rhtevan-work"
+  [rhel-ai]="rhel-ai"
   [local]="${LOCAL_SITE_NAME}"
 )
 if [[ "$CRC_ENABLED" == "true" ]]; then
   SITE_NAMES[crc]="${CRC_SITE_NAME}"
+fi
+
+# ── Link Names (link-<source-site>-<destination-site>) ────────
+# Globally unique. Source site is always where the Link CR lives.
+declare -A LINK_NAMES=(
+  [local-rhel-ai]="link-${LOCAL_SITE_NAME}-rhel-ai"
+  [local-rhtevan-work]="link-${LOCAL_SITE_NAME}-rhtevan-work"
+)
+if [[ "$CRC_ENABLED" == "true" ]]; then
+  LINK_NAMES[crc-rhel-ai]="link-${CRC_SITE_NAME}-rhel-ai"
+  LINK_NAMES[crc-local]="link-${CRC_SITE_NAME}-${LOCAL_SITE_NAME}"
 fi
 
 # ── Site Profiles (built from topology.env) ───────────────────
@@ -235,13 +250,15 @@ crc_site_status() {
 }
 
 crc_link_status() {
-  oc_crc get link link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+  local link_name="${LINK_NAMES[crc-rhel-ai]}"
+  oc_crc get link "${link_name}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
 crc_local_link_status() {
   [[ -z "${CRC_LINK_LOCAL_TARGET}" ]] && echo "not configured" && return 0
-  oc_crc get link link-local-ezhang -n "${CRC_NAMESPACE}" \
+  local link_name="${LINK_NAMES[crc-local]}"
+  oc_crc get link "${link_name}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
@@ -256,13 +273,12 @@ crc_rhtevan_listener_status() {
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
-crc_link_name() {
-  local target="${CRC_LINK_TARGET}"
-  echo "link-hub-${SITE_NAMES[$target]}"
+crc_hub_link_name() {
+  echo "${LINK_NAMES[crc-rhel-ai]}"
 }
 
-crc_listener_name() {
-  echo "model-listener-${CRC_LINK_TARGET}"
+crc_local_link_name() {
+  echo "${LINK_NAMES[crc-local]}"
 }
 
 crc_observer_route_url() {
@@ -315,7 +331,7 @@ precheck_topology() {
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
       crc_local_link_section="
   │
-  └── link → ${CRC_LINK_LOCAL_TARGET}
+  └── ${LINK_NAMES[crc-local]} → ${CRC_LINK_LOCAL_TARGET}
         host:  host.crc.testing (192.168.127.254)
         port:  ${LOCAL_INTER_ROUTER_PORT} (AMQPS)
         Listener :${CRC_RHTEVAN_MODEL_PORT} ← ${CRC_RHTEVAN_ROUTING_KEY}
@@ -325,7 +341,7 @@ precheck_topology() {
     crc_section="
 
 CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
-  ├── link → hub-${CRC_LINK_TARGET}
+  ├── ${LINK_NAMES[crc-rhel-ai]} → ${CRC_LINK_TARGET}
   │     host:  ${crc_target_host_d}
   │     port:  ${crc_target_port_d} (AMQPS)
   │     Listener :${CRC_MODEL_PORT} ← ${CRC_ROUTING_KEY}
@@ -340,13 +356,13 @@ CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
 Skupper VAN — ${site_count} interior mesh
 
 LOCAL: ${LOCAL_SITE_NAME} (localhost, podman)
-  ├── link → hub-rhel-ai
+  ├── ${LINK_NAMES[local-rhel-ai]} → rhel-ai
   │     host:  ${ra_host}
   │     port:  ${ra_port} (AMQPS)
   │     SANs:  ${ra_sans_fmt}
   │     Listener :${ra_lport} ← ${ra_rkey}
   │
-  └── link → hub-rhtevan-work
+  └── ${LINK_NAMES[local-rhtevan-work]} → rhtevan-work
         host:  ${rw_host}
         port:  ${rw_port} (AMQPS)
         SANs:  ${rw_sans_fmt}
@@ -653,6 +669,218 @@ RestartSec=5
 SuccessExitStatus=SIGTERM
 EOF
 systemctl --user daemon-reload"
+}
+
+# ── Inter-router listener injection ───────────────────────────
+# Skupper v2.2.x non-kube controller ignores inter-router role in
+# RouterAccess input. Must inject directly into skrouterd.json.
+# Re-inject after every controller restart (controller overwrites config).
+inject_inter_router_listener() {
+  local ns_dir="$HOME/.local/share/skupper/namespaces/${NAMESPACE}"
+  local config="${ns_dir}/runtime/router/skrouterd.json"
+  local port="${LOCAL_INTER_ROUTER_PORT}"
+
+  if [[ ! -f "$config" ]]; then
+    echo "  ❌ skrouterd.json not found — cannot inject inter-router listener"
+    return 1
+  fi
+
+  # Check if inter-router listener already exists on the target port
+  if python3 -c "
+import json, sys
+with open('${config}') as f:
+    cfg = json.load(f)
+for item in cfg:
+    if isinstance(item, list) and len(item) == 2:
+        if item[0] == 'listener' and item[1].get('role') == 'inter-router' and str(item[1].get('port')) == '${port}':
+            sys.exit(0)
+sys.exit(1)
+" 2>/dev/null; then
+    echo "  ✅ Inter-router listener on :${port} already present"
+    return 0
+  fi
+
+  # Find the correct sslProfile name (controller may use different names)
+  local ssl_profile
+  ssl_profile=$(python3 -c "
+import json
+with open('${config}') as f:
+    cfg = json.load(f)
+# Prefer local-ezhang-ra, fall back to skupper-local-server
+for item in cfg:
+    if isinstance(item, list) and len(item) == 2 and item[0] == 'sslProfile':
+        name = item[1].get('name', '')
+        if name == '${LOCAL_RA_NAME}':
+            print(name)
+            exit()
+for item in cfg:
+    if isinstance(item, list) and len(item) == 2 and item[0] == 'sslProfile':
+        name = item[1].get('name', '')
+        if 'server' in name or 'local' in name:
+            print(name)
+            exit()
+print('skupper-local-server')
+" 2>/dev/null)
+
+  # Inject the listener entry (minimal fields for v2.2.3 compatibility)
+  python3 -c "
+import json
+with open('${config}') as f:
+    cfg = json.load(f)
+listener = ['listener', {
+    'name': 'inter-router-local',
+    'role': 'inter-router',
+    'host': '0.0.0.0',
+    'port': '${port}',
+    'sslProfile': '${ssl_profile}'
+}]
+cfg.append(listener)
+with open('${config}', 'w') as f:
+    json.dump(cfg, f, indent=2)
+" 2>/dev/null
+
+  if [[ $? -eq 0 ]]; then
+    echo "  ✅ Inter-router listener injected on :${port}"
+    return 0
+  else
+    echo "  ❌ Failed to inject inter-router listener"
+    return 1
+  fi
+}
+
+# ── Server cert SAN regeneration ──────────────────────────────
+# Skupper v2.2.x controller doesn't honor subjectAlternativeNames
+# in RouterAccess input. Must regenerate the server cert with openssl.
+regenerate_local_server_cert() {
+  local ns_dir="$HOME/.local/share/skupper/namespaces/${NAMESPACE}"
+  local cert_dir="${ns_dir}/runtime/certs/${LOCAL_RA_NAME}"
+
+  # Find CA: check issuers/ first (v2.2.3+), then certs/ (fallback)
+  local ca_dir=""
+  if [[ -f "${ns_dir}/runtime/issuers/skupper-local-ca/tls.key" ]]; then
+    ca_dir="${ns_dir}/runtime/issuers/skupper-local-ca"
+  elif [[ -f "${ns_dir}/runtime/certs/${LOCAL_RA_NAME}/ca.key" ]]; then
+    ca_dir="${ns_dir}/runtime/certs/${LOCAL_RA_NAME}"
+  fi
+
+  if [[ -z "$ca_dir" || ! -f "${ca_dir}/tls.key" ]]; then
+    # Try ca.key naming
+    if [[ -f "${ca_dir}/ca.key" ]]; then
+      : # ok
+    else
+      echo "  ❌ CA key not found for ${LOCAL_RA_NAME}"
+      return 1
+    fi
+  fi
+
+  # Normalize CA key/cert paths (issuers use tls.key/tls.crt, certs use ca.key/ca.crt)
+  local ca_key="${ca_dir}/tls.key"
+  local ca_cert="${ca_dir}/tls.crt"
+  [[ ! -f "$ca_key" ]] && ca_key="${ca_dir}/ca.key"
+  [[ ! -f "$ca_cert" ]] && ca_cert="${ca_dir}/ca.crt"
+
+  if [[ ! -f "$ca_key" || ! -f "$ca_cert" ]]; then
+    echo "  ❌ CA cert/key not found at ${ca_dir}"
+    return 1
+  fi
+
+  if [[ -z "${LOCAL_SANS}" ]]; then
+    echo "  ℹ️  No LOCAL_SANS configured — skipping cert regeneration"
+    return 0
+  fi
+
+  # Build SAN string for openssl
+  local san_str=""
+  local idx=1
+  IFS=',' read -ra entries <<< "${LOCAL_SANS}"
+  for entry in "${entries[@]}"; do
+    entry=$(echo "$entry" | xargs)
+    if [[ "$entry" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ || "$entry" =~ : ]]; then
+      san_str="${san_str},IP:${entry}"
+    else
+      san_str="${san_str},DNS:${entry}"
+    fi
+  done
+  san_str="${san_str#,}"  # Remove leading comma
+
+  # Check if current cert already has the required SANs
+  if [[ -f "${cert_dir}/tls.crt" ]]; then
+    local current_sans
+    current_sans=$(openssl x509 -in "${cert_dir}/tls.crt" -noout -ext subjectAltName 2>/dev/null | tail -1 | xargs || echo "")
+    local missing=false
+    for entry in "${entries[@]}"; do
+      entry=$(echo "$entry" | xargs)
+      if ! echo "$current_sans" | grep -qF "$entry"; then
+        missing=true
+        break
+      fi
+    done
+    if [[ "$missing" == "false" ]]; then
+      echo "  ✅ Server cert SANs already include all required entries"
+      return 0
+    fi
+  fi
+
+  # Delete old cert to force regeneration
+  rm -f "${cert_dir}/tls.crt" "${cert_dir}/tls.key" 2>/dev/null
+
+  # Generate new key + cert
+  openssl genrsa -out "${cert_dir}/tls.key" 2048 2>/dev/null
+  openssl req -new -key "${cert_dir}/tls.key" -subj "/CN=${LOCAL_RA_NAME}" \
+    -addext "subjectAltName=${san_str}" \
+    -out /tmp/skupper-local-csr.pem 2>/dev/null
+  openssl x509 -req -in /tmp/skupper-local-csr.pem \
+    -CA "${ca_cert}" -CAkey "${ca_key}" -CAcreateserial \
+    -days 3650 -copy_extensions copyall \
+    -out "${cert_dir}/tls.crt" 2>/dev/null
+  rm -f /tmp/skupper-local-csr.pem
+
+  # Copy CA cert
+  cp "${ca_cert}" "${cert_dir}/ca.crt" 2>/dev/null
+
+  # Fix permissions for router (uid 10000)
+  chmod -R o+r "${cert_dir}/" 2>/dev/null || true
+
+  echo "  ✅ Server cert regenerated with SANs: ${san_str}"
+  return 0
+}
+
+# ── CRC link secret staleness detection ───────────────────────
+# After a hub cert rotation, CRC secrets become stale. Compare CA
+# fingerprints to detect this.
+check_crc_link_staleness() {
+  local link_name="$1"
+  local local_cert_dir="$2"
+
+  if [[ ! -f "${local_cert_dir}/ca.crt" ]]; then
+    echo "stale:no-local-ca"
+    return 0
+  fi
+
+  # Get local CA fingerprint
+  local local_fp
+  local_fp=$(openssl x509 -in "${local_cert_dir}/ca.crt" -noout -fingerprint -sha256 2>/dev/null \
+    | sed 's/.*Fingerprint=//' || echo "")
+
+  # Get CRC secret CA fingerprint
+  local crc_ca_b64
+  crc_ca_b64=$(oc_crc get secret "${link_name}" -n "${CRC_NAMESPACE}" \
+    -o jsonpath='{.data.ca\.crt}' 2>/dev/null || echo "")
+
+  if [[ -z "$crc_ca_b64" ]]; then
+    echo "stale:no-crc-ca"
+    return 0
+  fi
+
+  local crc_fp
+  crc_fp=$(echo "$crc_ca_b64" | base64 -d | openssl x509 -noout -fingerprint -sha256 2>/dev/null \
+    | sed 's/.*Fingerprint=//' || echo "")
+
+  if [[ "$local_fp" == "$crc_fp" && -n "$local_fp" ]]; then
+    echo "fresh"
+  else
+    echo "stale:ca-mismatch:local=${local_fp}:crc=${crc_fp}"
+  fi
 }
 
 # ── Name Validation ───────────────────────────────────────────

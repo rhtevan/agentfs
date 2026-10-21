@@ -299,7 +299,7 @@ if [[ "$CRC_TARGET" == "true" ]]; then
     echo "  ⏭️  CRC skipped (not authenticated)"
   else
     # ── Delete hub link ──────────────────────────────────────
-    crc_link_name="link-hub-${CRC_LINK_TARGET}"
+    crc_link_name="${LINK_NAMES[crc-rhel-ai]}"
     link_status=""
     link_status=$(crc_link_status)
 
@@ -312,14 +312,15 @@ if [[ "$CRC_TARGET" == "true" ]]; then
 
     # ── Delete local link ─────────────────────────────────────
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_local_link="${LINK_NAMES[crc-local]}"
       local_link_status=""
       local_link_status=$(crc_local_link_status)
 
       if [[ "$local_link_status" == "not found" || "$local_link_status" == "not configured" ]]; then
-        echo "  ✅ Link link-local-ezhang already removed"
+        echo "  ✅ Link ${crc_local_link} already removed"
       else
-        oc_crc delete link link-local-ezhang -n "${CRC_NAMESPACE}" 2>/dev/null || true
-        echo "  ✅ Link link-local-ezhang deleted"
+        oc_crc delete link "${crc_local_link}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+        echo "  ✅ Link ${crc_local_link} deleted"
       fi
     fi
 

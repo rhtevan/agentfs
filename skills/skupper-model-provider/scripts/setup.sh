@@ -31,7 +31,7 @@ echo
 
 FAILED=0
 
-# ── Phase 1: Build hub-rhel-ai ────────────────────────────────
+# ── Phase 1: Build rhel-ai ─────────────────────────────────────
 echo "Phase 1: Build ${SITE_NAMES[rhel-ai]} site"
 
 RHELAI_NS=$(run_on_host rhel-ai "test -d ~/.local/share/skupper/namespaces/${NAMESPACE}/runtime/resources && echo yes || echo no")
@@ -144,14 +144,14 @@ fi
 # Verify
 MODE=$(run_on_host rhel-ai "podman logs ${ROUTER_CONTAINER} 2>&1 | grep -o 'Interior\|Standalone' | tail -1" || echo "unknown")
 if [[ "$MODE" == "Interior" ]]; then
-  echo "  ✅ hub-rhel-ai: Interior mode, ready"
+  echo "  ✅ rhel-ai: Interior mode, ready"
 else
-  echo "  ❌ hub-rhel-ai: $MODE mode — check logs"
+  echo "  ❌ rhel-ai: $MODE mode — check logs"
   FAILED=1
 fi
 echo
 
-# ── Phase 2: Build hub-rhtevan-work ───────────────────────────
+# ── Phase 2: Build rhtevan-work ───────────────────────────────
 echo "Phase 2: Build ${SITE_NAMES[rhtevan-work]} site"
 
 RTW_NS=$(run_on_host rhtevan-work "test -d ~/.local/share/skupper/namespaces/${NAMESPACE}/runtime/resources && echo yes || echo no")
@@ -222,9 +222,9 @@ fi
 
 MODE=$(run_on_host rhtevan-work "podman logs ${ROUTER_CONTAINER} 2>&1 | grep -o 'Interior\|Standalone' | tail -1" || echo "unknown")
 if [[ "$MODE" == "Interior" ]]; then
-  echo "  ✅ hub-rhtevan-work: Interior mode, ready"
+  echo "  ✅ rhtevan-work: Interior mode, ready"
 else
-  echo "  ❌ hub-rhtevan-work: $MODE mode — check logs"
+  echo "  ❌ rhtevan-work: $MODE mode — check logs"
   FAILED=1
 fi
 echo
@@ -286,6 +286,31 @@ spec:
   port: ${RHTEVAN_WORK_MODEL_PORT}
 EOF
 
+  # If CRC is enabled, add RouterAccess for inbound CRC connections
+  # Must be created BEFORE skupper system start so controller processes it.
+  if [[ "$CRC_ENABLED" == "true" && -n "${LOCAL_INTER_ROUTER_PORT}" ]]; then
+    LOCAL_SANS_YAML=$(sans_to_yaml "${LOCAL_SANS}")
+    cat > "${LOCAL_NS_DIR}/input/resources/RouterAccess-${LOCAL_RA_NAME}.yaml" << EOF
+apiVersion: skupper.io/v2alpha1
+kind: RouterAccess
+metadata:
+  name: ${LOCAL_RA_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  roles:
+    - name: inter-router
+      port: ${LOCAL_INTER_ROUTER_PORT}
+    - name: edge
+      port: 45672
+  subjectAlternativeNames:
+    - "0.0.0.0"
+    - "::"
+${LOCAL_SANS_YAML}
+  tlsCredentials: ${LOCAL_RA_NAME}
+EOF
+    echo "  ✅ RouterAccess ${LOCAL_RA_NAME} created"
+  fi
+
   skupper --platform podman system start -n "${NAMESPACE}"
   sleep 8
 fi
@@ -306,21 +331,57 @@ else
   echo "  ❌ ${SITE_NAMES[local]}: $MODE mode — check logs"
   FAILED=1
 fi
+
+# ── Phase 3b: Inter-router listener + cert SANs (fallback) ────
+# v2.2.3+ handles RouterAccess inter-router role and SANs natively.
+# This block verifies and applies fallback if the controller didn't.
+if [[ "$CRC_ENABLED" == "true" && -n "${LOCAL_INTER_ROUTER_PORT}" ]]; then
+  echo
+  echo "Phase 3b: Verify inter-router listener + cert SANs"
+
+  # Check if controller created the inter-router listener
+  IR_PORT_LISTENING=$(ss -tlnp 2>/dev/null | grep -c ":${LOCAL_INTER_ROUTER_PORT} " || true)
+  if [[ "${IR_PORT_LISTENING:-0}" -gt 0 ]]; then
+    echo "  ✅ Inter-router listener on :${LOCAL_INTER_ROUTER_PORT} active (controller handled it)"
+  else
+    echo "  ⚠️  Inter-router listener not active — applying fallback injection"
+    inject_inter_router_listener
+    podman restart "${ROUTER_CONTAINER}" 2>/dev/null || true
+    sleep 5
+    echo "  ✅ Fallback applied"
+  fi
+
+  # Check cert SANs
+  local_ra_cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/${LOCAL_RA_NAME}"
+  if [[ -f "${local_ra_cert_dir}/tls.crt" ]]; then
+    if openssl x509 -in "${local_ra_cert_dir}/tls.crt" -noout -ext subjectAltName 2>/dev/null | grep -q "host.crc.testing"; then
+      echo "  ✅ Server cert SANs include host.crc.testing (controller handled it)"
+    else
+      echo "  ⚠️  Server cert missing CRC SANs — applying fallback regeneration"
+      regenerate_local_server_cert
+      podman restart "${ROUTER_CONTAINER}" 2>/dev/null || true
+      sleep 3
+      echo "  ✅ Cert fallback applied"
+    fi
+  fi
+fi
 echo
 
 # ── Phase 4: Links ────────────────────────────────────────────
 echo "Phase 4: Establish links"
 
 # Link to rhel-ai (via port 8000, publicly accessible)
-if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-link-hub-rhel-ai.yaml" ]]; then
-  echo "  ✅ Link to rhel-ai already exists"
+LINK_RA_NAME="${LINK_NAMES[local-rhel-ai]}"
+if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-${LINK_RA_NAME}.yaml" ]]; then
+  echo "  ✅ Link to rhel-ai already exists (${LINK_RA_NAME})"
 else
-  echo "  → Building link to rhel-ai (port ${RHEL_AI_INTER_ROUTER_PORT})..."
-  CA_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhel-ai-public/ca.crt')
-  TLS_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhel-ai-public/tls.crt')
-  TLS_KEY=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhel-ai-public/tls.key')
+  echo "  → Building ${LINK_RA_NAME} (port ${RHEL_AI_INTER_ROUTER_PORT})..."
+  # Client cert dir: rhel-ai-public (matches RouterAccess name on rhel-ai)
+  CA_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhel-ai-public/ca.crt')
+  TLS_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhel-ai-public/tls.crt')
+  TLS_KEY=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhel-ai-public/tls.key')
 
-  LINK_TMPFILE=$(mktemp /tmp/link-hub-rhel-ai.XXXXXX.yaml)
+  LINK_TMPFILE=$(mktemp /tmp/${LINK_RA_NAME}.XXXXXX.yaml)
   chmod 600 "$LINK_TMPFILE"
   cat > "$LINK_TMPFILE" << EOF
 ---
@@ -331,12 +392,12 @@ data:
   tls.key: ${TLS_KEY}
 kind: Secret
 metadata:
-  name: link-hub-rhel-ai
+  name: ${LINK_RA_NAME}
 ---
 apiVersion: skupper.io/v2alpha1
 kind: Link
 metadata:
-  name: link-hub-rhel-ai
+  name: ${LINK_RA_NAME}
   namespace: ${NAMESPACE}
 spec:
   cost: 1
@@ -344,24 +405,26 @@ spec:
   - host: ${RHEL_AI_PUBLIC_HOST}
     name: inter-router
     port: "${RHEL_AI_INTER_ROUTER_PORT}"
-  tlsCredentials: link-hub-rhel-ai
+  tlsCredentials: ${LINK_RA_NAME}
 EOF
 
   skupper --platform podman system apply -n "${NAMESPACE}" -f "$LINK_TMPFILE"
   rm -f "$LINK_TMPFILE"
-  echo "  ✅ Link to rhel-ai created"
+  echo "  ✅ ${LINK_RA_NAME} created"
 fi
 
 # Link to rhtevan-work (LAN, port 55671)
-if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-link-hub-rhtevan-work.yaml" ]]; then
-  echo "  ✅ Link to rhtevan-work already exists"
+LINK_RW_NAME="${LINK_NAMES[local-rhtevan-work]}"
+if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-${LINK_RW_NAME}.yaml" ]]; then
+  echo "  ✅ Link to rhtevan-work already exists (${LINK_RW_NAME})"
 else
-  echo "  → Building link to rhtevan-work (port ${RHTEVAN_WORK_INTER_ROUTER_PORT})..."
-  CA_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhtevan-work/ca.crt')
-  TLS_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhtevan-work/tls.crt')
-  TLS_KEY=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-hub-rhtevan-work/tls.key')
+  echo "  → Building ${LINK_RW_NAME} (port ${RHTEVAN_WORK_INTER_ROUTER_PORT})..."
+  # Client cert dir: rhtevan-work (matches RouterAccess name on rhtevan-work)
+  CA_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhtevan-work/ca.crt')
+  TLS_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhtevan-work/tls.crt')
+  TLS_KEY=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhtevan-work/tls.key')
 
-  LINK_TMPFILE=$(mktemp /tmp/link-hub-rhtevan-work.XXXXXX.yaml)
+  LINK_TMPFILE=$(mktemp /tmp/${LINK_RW_NAME}.XXXXXX.yaml)
   chmod 600 "$LINK_TMPFILE"
   cat > "$LINK_TMPFILE" << EOF
 ---
@@ -372,12 +435,12 @@ data:
   tls.key: ${TLS_KEY}
 kind: Secret
 metadata:
-  name: link-hub-rhtevan-work
+  name: ${LINK_RW_NAME}
 ---
 apiVersion: skupper.io/v2alpha1
 kind: Link
 metadata:
-  name: link-hub-rhtevan-work
+  name: ${LINK_RW_NAME}
   namespace: ${NAMESPACE}
 spec:
   cost: 1
@@ -385,12 +448,12 @@ spec:
   - host: ${RHTEVAN_WORK_PUBLIC_HOST}
     name: inter-router
     port: "${RHTEVAN_WORK_INTER_ROUTER_PORT}"
-  tlsCredentials: link-hub-rhtevan-work
+  tlsCredentials: ${LINK_RW_NAME}
 EOF
 
   skupper --platform podman system apply -n "${NAMESPACE}" -f "$LINK_TMPFILE"
   rm -f "$LINK_TMPFILE"
-  echo "  ✅ Link to rhtevan-work created"
+  echo "  ✅ ${LINK_RW_NAME} created"
 fi
 
 sleep 10
@@ -476,12 +539,14 @@ SUBEOF
     fi
   fi
 
-  # 6c. Create TLS Secret (client certs from local link profile)
-  if oc_crc get secret link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" &>/dev/null; then
-    echo "  ✅ Secret link-hub-${CRC_LINK_TARGET} exists"
+  # 6c. Create TLS Secret for hub link (client certs from local link profile)
+  crc_hub_link="${LINK_NAMES[crc-rhel-ai]}"
+  local_link_ra="${LINK_NAMES[local-rhel-ai]}"
+  if oc_crc get secret "${crc_hub_link}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+    echo "  ✅ Secret ${crc_hub_link} exists"
   else
     echo "  → Creating TLS secret from local cert profile..."
-    cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/link-${SITE_NAMES[$CRC_LINK_TARGET]}-profile"
+    cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/${local_link_ra}-profile"
     if [[ ! -d "$cert_dir" ]]; then
       echo "  ❌ Cert profile not found: $cert_dir"
       echo "     Run setup without CRC first to establish local links."
@@ -489,14 +554,14 @@ SUBEOF
     else
       # Must use 'tls' type secret (not generic/Opaque) — the kube-adaptor
       # only auto-mounts kubernetes.io/tls secrets into the router pod.
-      oc_crc create secret tls link-hub-"${CRC_LINK_TARGET}" \
+      oc_crc create secret tls "${crc_hub_link}" \
         -n "${CRC_NAMESPACE}" \
         --cert="${cert_dir}/tls.crt" \
         --key="${cert_dir}/tls.key"
       # Add ca.crt (not part of 'create secret tls' command)
-      oc_crc patch secret link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+      oc_crc patch secret "${crc_hub_link}" -n "${CRC_NAMESPACE}" \
         --type=merge -p "{\"data\":{\"ca.crt\":\"$(base64 -w0 "${cert_dir}/ca.crt")\"}}"
-      echo "  ✅ Secret link-hub-${CRC_LINK_TARGET} created"
+      echo "  ✅ Secret ${crc_hub_link} created"
     fi
   fi
 
@@ -535,8 +600,8 @@ SITEEOF
     fi
   fi
 
-  # 6e. Create Link
-  crc_link_name="link-hub-${CRC_LINK_TARGET}"
+  # 6e. Create Link (hub)
+  crc_link_name="${LINK_NAMES[crc-rhel-ai]}"
   if oc_crc get link "${crc_link_name}" -n "${CRC_NAMESPACE}" &>/dev/null; then
     echo "  ✅ Link ${crc_link_name} exists"
   else
@@ -577,6 +642,91 @@ LINKEOF
     else
       echo "  ⚠️  Link ${crc_link_name} status: ${link_status} (may need time)"
       ((FAILED++))
+    fi
+  fi
+
+  # 6e-2. Create Link (local) + Secret for CRC→localhost relay
+  if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+    crc_local_link="${LINK_NAMES[crc-local]}"
+    local_ra_cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/client-${LOCAL_RA_NAME}"
+
+    # Create secret for local link
+    if oc_crc get secret "${crc_local_link}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+      echo "  ✅ Secret ${crc_local_link} exists"
+    else
+      echo "  → Creating TLS secret for local link..."
+      if [[ -d "$local_ra_cert_dir" ]]; then
+        oc_crc create secret tls "${crc_local_link}" \
+          -n "${CRC_NAMESPACE}" \
+          --cert="${local_ra_cert_dir}/tls.crt" \
+          --key="${local_ra_cert_dir}/tls.key"
+        oc_crc patch secret "${crc_local_link}" -n "${CRC_NAMESPACE}" \
+          --type=merge -p "{\"data\":{\"ca.crt\":\"$(base64 -w0 "${local_ra_cert_dir}/ca.crt")\"}}"
+        echo "  ✅ Secret ${crc_local_link} created"
+      else
+        echo "  ❌ Local RA cert profile not found: $local_ra_cert_dir"
+        ((FAILED++))
+      fi
+    fi
+
+    # Create link CR
+    if oc_crc get link "${crc_local_link}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+      echo "  ✅ Link ${crc_local_link} exists"
+    else
+      echo "  → Creating link ${crc_local_link}..."
+      cat << LINKEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: ${crc_local_link}
+  namespace: PLACEHOLDER_NS
+spec:
+  cost: 1
+  endpoints:
+    - name: inter-router
+      host: host.crc.testing
+      port: "${LOCAL_INTER_ROUTER_PORT}"
+  tlsCredentials: ${crc_local_link}
+LINKEOF
+
+      # Wait for local link
+      echo "  → Waiting for local link to connect..."
+      crc_ll_attempts=0
+      while [[ $crc_ll_attempts -lt 30 ]]; do
+        ll_status=$(oc_crc get link "${crc_local_link}" -n "${CRC_NAMESPACE}" \
+          -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+        if [[ "$ll_status" == "Ready" ]]; then break; fi
+        sleep 5
+        ((crc_ll_attempts++)) || true
+      done
+      ll_status=$(oc_crc get link "${crc_local_link}" -n "${CRC_NAMESPACE}" \
+        -o jsonpath='{.status.status}' 2>/dev/null || echo "")
+      if [[ "$ll_status" == "Ready" ]]; then
+        echo "  ✅ Link ${crc_local_link} connected"
+      else
+        echo "  ⚠️  Link ${crc_local_link} status: ${ll_status} (may need time)"
+        ((FAILED++))
+      fi
+    fi
+
+    # Create rhtevan-work listener on CRC (routed through local relay)
+    crc_rw_listener="model-listener-rhtevan-work"
+    if oc_crc get listener "${crc_rw_listener}" -n "${CRC_NAMESPACE}" &>/dev/null; then
+      echo "  ✅ Listener ${crc_rw_listener} exists"
+    else
+      echo "  → Creating listener ${crc_rw_listener}..."
+      cat << LISTEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: ${crc_rw_listener}
+  namespace: PLACEHOLDER_NS
+spec:
+  host: ${crc_rw_listener}
+  port: ${CRC_RHTEVAN_MODEL_PORT}
+  routingKey: ${CRC_RHTEVAN_ROUTING_KEY}
+LISTEOF
+      echo "  ✅ Listener ${crc_rw_listener} created"
     fi
   fi
 
@@ -717,6 +867,16 @@ fi
 # ── Phase 7: Verify ───────────────────────────────────────────
 echo "Phase 7: Verify"
 
+# Restart observer pod if it exists — router restarts break its AMQP flow connections
+if [[ "$CRC_ENABLED" == "true" && "$CRC_OBSERVER_ENABLED" == "true" ]]; then
+  if crc_reachable && oc_crc get pods -n "${CRC_NAMESPACE}" -l app.kubernetes.io/name=network-observer 2>/dev/null | grep -q Running; then
+    echo "  → Restarting Network Observer (refresh flow connections)..."
+    oc_crc delete pod -n "${CRC_NAMESPACE}" -l app.kubernetes.io/name=network-observer 2>/dev/null || true
+    sleep 15
+    echo "  ✅ Network Observer restarted"
+  fi
+fi
+
 echo "  Sites:"
 for host in rhel-ai rhtevan-work; do
   STATUS=$(run_on_host "$host" "skupper --platform podman site status -n ${NAMESPACE} 2>&1" | grep -oP 'Ready|Pending|Error' | head -1 || echo "unknown")
@@ -735,13 +895,22 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
   echo "  CRC:"
   local_site_status=$(oc_crc get site "${CRC_SITE_NAME}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
-  local_link_status=$(oc_crc get link link-hub-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+  local_hub_link_name="${LINK_NAMES[crc-rhel-ai]}"
+  local_link_status=$(oc_crc get link "${local_hub_link_name}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
   local_list_status=$(oc_crc get listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
   echo "    Site ${CRC_SITE_NAME}: ${local_site_status}"
-  echo "    Link link-hub-${CRC_LINK_TARGET}: ${local_link_status}"
+  echo "    Link ${local_hub_link_name}: ${local_link_status}"
   echo "    Listener model-listener-${CRC_LINK_TARGET}: ${local_list_status}"
+
+  if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+    local_ll_name="${LINK_NAMES[crc-local]}"
+    local_ll_status=$(oc_crc get link "${local_ll_name}" -n "${CRC_NAMESPACE}" \
+      -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
+    echo "    Link ${local_ll_name}: ${local_ll_status}"
+    echo "    Listener model-listener-rhtevan-work: $(crc_rhtevan_listener_status)"
+  fi
 fi
 
 echo

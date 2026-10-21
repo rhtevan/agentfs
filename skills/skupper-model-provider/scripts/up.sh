@@ -340,13 +340,42 @@ if [[ "$CRC_TARGET" == "true" ]]; then
       echo "     Run: bash setup.sh to create the CRC site"
     fi
 
+    # ── Guard: Inter-router listener + cert SANs ────────────
+    # Controller may have overwritten config on restart.
+    if [[ -n "${LOCAL_INTER_ROUTER_PORT}" && -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      echo "  → Checking inter-router listener guard..."
+      inject_inter_router_listener
+      regenerate_local_server_cert
+    fi
+
     # ── CRC Link 1: hub link (rhel-ai) ─────────────────────────
-    crc_link_name="link-hub-${CRC_LINK_TARGET}"
+    crc_link_name="${LINK_NAMES[crc-rhel-ai]}"
     link_status=""
     link_status=$(crc_link_status)
     NEED_POD_RESTART=false
+
     if [[ "$link_status" == "Ready" ]]; then
       echo "  ✅ Link ${crc_link_name}: Connected"
+    elif [[ "$link_status" == "Pending" ]]; then
+      # Staleness detection: compare CA fingerprints
+      local_link_ra="${LINK_NAMES[local-rhel-ai]}"
+      cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/${local_link_ra}-profile"
+      staleness=$(check_crc_link_staleness "${crc_link_name}" "${cert_dir}")
+      if [[ "$staleness" == stale:* ]]; then
+        echo "  ⚠️  Link ${crc_link_name}: Pending (stale secret — ${staleness})"
+        echo "  → Refreshing CRC secret with current certs..."
+        oc_crc delete secret "${crc_link_name}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+        oc_crc create secret tls "${crc_link_name}" \
+          -n "${CRC_NAMESPACE}" \
+          --cert="${cert_dir}/tls.crt" \
+          --key="${cert_dir}/tls.key"
+        oc_crc patch secret "${crc_link_name}" -n "${CRC_NAMESPACE}" \
+          --type=merge -p "{\"data\":{\"ca.crt\":\"$(base64 -w0 "${cert_dir}/ca.crt")\"}}"
+        NEED_POD_RESTART=true
+        echo "  ✅ Secret ${crc_link_name} refreshed"
+      else
+        echo "  ⚠️  Link ${crc_link_name}: Pending (secret is fresh — may need time)"
+      fi
     elif [[ "$link_status" == "not found" ]]; then
       echo "  → Recreating link ${crc_link_name}..."
       crc_hub_host=""
@@ -371,19 +400,39 @@ LINKEOF
       echo "  ⚠️  Link ${crc_link_name}: ${link_status}"
     fi
 
-    # ── CRC Link 2: local link (local-ezhang → rhtevan-work) ──
+    # ── CRC Link 2: local link (CRC → local-ezhang relay) ─────
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
+      crc_local_link="${LINK_NAMES[crc-local]}"
       local_link_status=""
       local_link_status=$(crc_local_link_status)
       if [[ "$local_link_status" == "Ready" ]]; then
-        echo "  ✅ Link link-local-ezhang: Connected"
+        echo "  ✅ Link ${crc_local_link}: Connected"
+      elif [[ "$local_link_status" == "Pending" ]]; then
+        # Staleness detection for local link
+        local_ra_cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/client-${LOCAL_RA_NAME}"
+        staleness=$(check_crc_link_staleness "${crc_local_link}" "${local_ra_cert_dir}")
+        if [[ "$staleness" == stale:* ]]; then
+          echo "  ⚠️  Link ${crc_local_link}: Pending (stale secret — ${staleness})"
+          echo "  → Refreshing CRC secret with current certs..."
+          oc_crc delete secret "${crc_local_link}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+          oc_crc create secret tls "${crc_local_link}" \
+            -n "${CRC_NAMESPACE}" \
+            --cert="${local_ra_cert_dir}/tls.crt" \
+            --key="${local_ra_cert_dir}/tls.key"
+          oc_crc patch secret "${crc_local_link}" -n "${CRC_NAMESPACE}" \
+            --type=merge -p "{\"data\":{\"ca.crt\":\"$(base64 -w0 "${local_ra_cert_dir}/ca.crt")\"}}"
+          NEED_POD_RESTART=true
+          echo "  ✅ Secret ${crc_local_link} refreshed"
+        else
+          echo "  ⚠️  Link ${crc_local_link}: Pending (secret is fresh — may need time)"
+        fi
       elif [[ "$local_link_status" == "not found" ]]; then
-        echo "  → Recreating link link-local-ezhang..."
+        echo "  → Recreating link ${crc_local_link}..."
         cat << LINKEOF | sed "s/PLACEHOLDER_NS/${CRC_NAMESPACE}/g" | oc_crc apply -f -
 apiVersion: skupper.io/v2alpha1
 kind: Link
 metadata:
-  name: link-local-ezhang
+  name: ${crc_local_link}
   namespace: PLACEHOLDER_NS
 spec:
   cost: 1
@@ -391,15 +440,15 @@ spec:
     - name: inter-router
       host: host.crc.testing
       port: "${LOCAL_INTER_ROUTER_PORT}"
-  tlsCredentials: link-local-ezhang
+  tlsCredentials: ${crc_local_link}
 LINKEOF
         NEED_POD_RESTART=true
       else
-        echo "  ⚠️  Link link-local-ezhang: ${local_link_status}"
+        echo "  ⚠️  Link ${crc_local_link}: ${local_link_status}"
       fi
     fi
 
-    # Restart router pod if any links were recreated
+    # Restart router pod if any links were recreated/refreshed
     if [[ "$NEED_POD_RESTART" == "true" ]]; then
       oc_crc delete pod -n "${CRC_NAMESPACE}" -l skupper.io/component=router 2>/dev/null || true
       sleep 15
@@ -430,9 +479,9 @@ LINKEOF
         done
         local_link_status=$(crc_local_link_status)
         if [[ "$local_link_status" == "Ready" ]]; then
-          echo "  ✅ Link link-local-ezhang: Connected"
+          echo "  ✅ Link ${crc_local_link}: Connected"
         else
-          echo "  ⚠️  Link link-local-ezhang: ${local_link_status} (may need time)"
+          echo "  ⚠️  Link ${crc_local_link}: ${local_link_status} (may need time)"
         fi
       fi
     fi
