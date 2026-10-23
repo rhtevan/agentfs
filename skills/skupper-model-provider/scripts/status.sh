@@ -200,7 +200,7 @@ printf "  %-22s %-6s %-12s %-5s  %-14s %-5s  %s\n" "─────────�
 
 for host in rhel-ai rhtevan-work; do
   IFS='|' read -r _ _ routing_key model_port _ <<< "${SITE_PROFILES[$host]}"
-  listener_name="model-${host}"
+  listener_name="listener-${routing_key}"
 
   # Last-Known from skupper CLI (fast, local only)
   lk_line=$(skupper --platform podman listener status -n "${NAMESPACE}" 2>&1 | grep "$listener_name" || echo "")
@@ -226,7 +226,7 @@ done
 
 # Decision listener (if configured)
 if [[ -n "${RHEL_AI_DECISION_PORT:-}" ]]; then
-  listener_name="decision-rhel-ai"
+  listener_name="listener-${RHEL_AI_DECISION_ROUTING_KEY}"
   lk_line=$(skupper --platform podman listener status -n "${NAMESPACE}" 2>&1 | grep "$listener_name" || echo "")
   if [[ -n "$lk_line" ]]; then
     lk_status=$(echo "$lk_line" | awk '{print $2}')
@@ -302,7 +302,8 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
     crc_li_status=$(crc_listener_status)
     crc_li_icon=""
     [[ "$crc_li_status" == "Ready" ]] && crc_li_icon="✅" || crc_li_icon="🔴"
-    echo "  Listener: ${crc_li_icon} model-listener-${CRC_LINK_TARGET}:${CRC_MODEL_PORT} → ${crc_li_status}"
+    crc_li_name="listener-${CRC_ROUTING_KEY}"
+    echo "  Listener: ${crc_li_icon} ${crc_li_name}:${CRC_MODEL_PORT} → ${crc_li_status}"
 
     # Listener 2: rhtevan-work model
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
@@ -310,28 +311,29 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
       crc_rli_status=$(crc_rhtevan_listener_status)
       crc_rli_icon=""
       [[ "$crc_rli_status" == "Ready" ]] && crc_rli_icon="✅" || crc_rli_icon="🔴"
-      echo "  Listener: ${crc_rli_icon} model-listener-rhtevan-work:${CRC_RHTEVAN_MODEL_PORT} → ${crc_rli_status}"
+      crc_rli_name="listener-${CRC_RHTEVAN_ROUTING_KEY}"
+      echo "  Listener: ${crc_rli_icon} ${crc_rli_name}:${CRC_RHTEVAN_MODEL_PORT} → ${crc_rli_status}"
     fi
 
     # Service 1: hub model
     crc_svc=""
-    crc_svc=$(oc_crc get svc "model-listener-${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+    crc_svc=$(oc_crc get svc "${crc_li_name}" -n "${CRC_NAMESPACE}" \
       -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "not found")
     if [[ "$crc_svc" != "not found" && -n "$crc_svc" ]]; then
-      echo "  Service:  ✅ model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT} (${crc_svc})"
+      echo "  Service:  ✅ ${crc_li_name}.${CRC_NAMESPACE}:${CRC_MODEL_PORT} (${crc_svc})"
     else
-      echo "  Service:  🔴 model-listener-${CRC_LINK_TARGET} not found"
+      echo "  Service:  🔴 ${crc_li_name} not found"
     fi
 
     # Service 2: rhtevan-work model
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
       crc_rw_svc=""
-      crc_rw_svc=$(oc_crc get svc model-listener-rhtevan-work -n "${CRC_NAMESPACE}" \
+      crc_rw_svc=$(oc_crc get svc "${crc_rli_name}" -n "${CRC_NAMESPACE}" \
         -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "not found")
       if [[ "$crc_rw_svc" != "not found" && -n "$crc_rw_svc" ]]; then
-        echo "  Service:  ✅ model-listener-rhtevan-work.${CRC_NAMESPACE}:${CRC_RHTEVAN_MODEL_PORT} (${crc_rw_svc})"
+        echo "  Service:  ✅ ${crc_rli_name}.${CRC_NAMESPACE}:${CRC_RHTEVAN_MODEL_PORT} (${crc_rw_svc})"
       else
-        echo "  Service:  🔴 model-listener-rhtevan-work not found"
+        echo "  Service:  🔴 ${crc_rli_name} not found"
       fi
     fi
 

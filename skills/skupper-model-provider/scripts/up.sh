@@ -490,18 +490,18 @@ LINKEOF
     list_status=""
     list_status=$(crc_listener_status)
     if [[ "$list_status" == "Ready" ]]; then
-      echo "  ✅ Listener model-listener-${CRC_LINK_TARGET}: Matched"
+      echo "  ✅ Listener listener-${CRC_ROUTING_KEY}: Matched"
     else
-      echo "  ⚠️  Listener model-listener-${CRC_LINK_TARGET}: ${list_status}"
+      echo "  ⚠️  Listener listener-${CRC_ROUTING_KEY}: ${list_status}"
     fi
 
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
       rhtevan_list_status=""
       rhtevan_list_status=$(crc_rhtevan_listener_status)
       if [[ "$rhtevan_list_status" == "Ready" ]]; then
-        echo "  ✅ Listener model-listener-rhtevan-work: Matched"
+        echo "  ✅ Listener listener-${CRC_RHTEVAN_ROUTING_KEY}: Matched"
       else
-        echo "  ⚠️  Listener model-listener-rhtevan-work: ${rhtevan_list_status}"
+        echo "  ⚠️  Listener listener-${CRC_RHTEVAN_ROUTING_KEY}: ${rhtevan_list_status}"
       fi
     fi
   fi

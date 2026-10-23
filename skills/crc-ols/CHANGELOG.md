@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-23 14:02 | vv6.1.1 — Update Skupper provider detection pattern and docs for naming convention alignment (listener- prefix) |
 | 2026-09-01 18:07 | v3.3.0 — Updated skupper-model-rhel provider model name from granite-4.1-8b-fp8 to granite-4.2-8b-fp8 (Granite 4.2 upgrade). Patched OLSConfig on CRC. Updated SKILL.md examples. |
 | 2026-08-27 19:33 | v3.2.0 — Added Skupper provider liveness check to list.sh — probes /v1/models endpoint via CRC router pod and detects model name mismatches or unreachable backends. Added spec S7 and tests T5/T6. |
 | 2026-08-27 19:22 | v3.1.0 — Added model validation in switch-provider.sh (prevents runtime 404 from model name mismatch). Added 'switch ols model' signal for within-provider model switching. Added defaultModel mismatch gotcha. |

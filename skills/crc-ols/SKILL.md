@@ -324,7 +324,7 @@ bash ~/.agents/skills/crc-ols/scripts/list.sh --context crc-admin
 Shows all configured providers with type, URL, secret, models, the
 active default provider+model, and overall OLS status.
 
-For Skupper-backed providers (URLs containing `model-listener`), the
+For Skupper-backed providers (URLs containing `listener-`), the
 script also probes the live `/v1/models` endpoint via the CRC router
 pod and compares against the configured model names. Possible results:
 
@@ -392,7 +392,7 @@ removes it via JSON patch, and optionally deletes the credentials secret.
 Models served by `hosted-model-ctl` on remote GPU hosts can be exposed to the CRC cluster through the Skupper VAN (managed by `skupper-model-provider`). These appear as in-cluster OpenAI-compatible endpoints.
 
 **How it works:**
-1. `skupper-model-provider` creates a Listener + Service inside the CRC namespace (e.g., `model-listener-rhel-ai.model-provider-crc:9000`)
+1. `skupper-model-provider` creates a Listener + Service inside the CRC namespace (e.g., `listener-model-api-rhel-ai.model-provider-crc:9000`)
 2. Traffic is routed over the Skupper link to the remote host's model container
 3. OLS connects to this in-cluster service as an `openai` type provider
 
@@ -418,7 +418,7 @@ oc patch olsconfig cluster --type=json -p '[
     "value": {
       "name": "skupper-model-rhel",
       "type": "openai",
-      "url": "http://model-listener-rhel-ai.model-provider-crc:9000/v1",
+      "url": "http://listener-model-api-rhel-ai.model-provider-crc:9000/v1",
       "credentialsSecretRef": {"name": "skupper-model-rhel-llmcreds"},
       "credentialKey": "apitoken",
       "models": [{"name": "ibm-granite/granite-4.2-8b-fp8"}]

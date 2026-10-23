@@ -21,13 +21,13 @@ CRC: crc-ezhang (kubernetes, CRC_NAMESPACE)
   │     host:  RHEL_AI_PUBLIC_HOST
   │     port:  RHEL_AI_INTER_ROUTER_PORT (AMQPS)
   │     Listener :CRC_MODEL_PORT ← CRC_ROUTING_KEY
-  │     Service: model-listener-rhel-ai.CRC_NAMESPACE:CRC_MODEL_PORT
+  │     Service: listener-CRC_ROUTING_KEY.CRC_NAMESPACE:CRC_MODEL_PORT
   │
   └── link → local-ezhang
         host:  host.crc.testing (192.168.127.254)
         port:  LOCAL_INTER_ROUTER_PORT (AMQPS)
         Listener :CRC_RHTEVAN_MODEL_PORT ← RHTEVAN_WORK_ROUTING_KEY
-        Service: model-listener-rhtevan-work.CRC_NAMESPACE:CRC_RHTEVAN_MODEL_PORT
+        Service: listener-CRC_RHTEVAN_ROUTING_KEY.CRC_NAMESPACE:CRC_RHTEVAN_MODEL_PORT
 ```
 
 All site-specific values (IPs, hostnames, ports, SANs) are read from
@@ -60,6 +60,7 @@ accept either a host name (`rhel-ai`) or a profile name
 ## Links
 
 Naming convention: `link-<source-site>-<destination-site>`
+(see [naming-convention.md](naming-convention.md) for all components)
 
 | Link Name | From → To | Port |
 |-----------|-----------|:----:|

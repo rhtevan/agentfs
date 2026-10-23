@@ -91,12 +91,12 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
   if crc_reachable; then
     # Delete Skupper resources
     crc_hub_link="${LINK_NAMES[crc-rhel-ai]}"
-    oc_crc delete listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
+    oc_crc delete listener "listener-${CRC_ROUTING_KEY}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
     oc_crc delete link "${crc_hub_link}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
     oc_crc delete secret "${crc_hub_link}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
       crc_local_link="${LINK_NAMES[crc-local]}"
-      oc_crc delete listener model-listener-rhtevan-work -n "${CRC_NAMESPACE}" 2>/dev/null || true
+      oc_crc delete listener "listener-${CRC_RHTEVAN_ROUTING_KEY}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
       oc_crc delete link "${crc_local_link}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
       oc_crc delete secret "${crc_local_link}" -n "${CRC_NAMESPACE}" 2>/dev/null || true
     fi

@@ -200,6 +200,7 @@ For the full known issues table, see
 
 ## References
 
+- [Naming Convention](references/naming-convention.md) — resource naming rules for all Skupper components
 - [Architecture](references/architecture.md) — VAN topology, site config, routing tables, link naming
 - [Agent Orchestration](references/agent-orchestration.md) — signal routing, scoping rules, partial availability, startup/shutdown order
 - [Known Issues](references/known-issues.md) — full workarounds table

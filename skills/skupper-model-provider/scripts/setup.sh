@@ -56,11 +56,11 @@ spec:
   defaultIssuer: self-signed
 EOF
 
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/RouterAccess-${SITE_NAMES[rhel-ai]}.yaml << EOF
+  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/RouterAccess-ra-${SITE_NAMES[rhel-ai]}.yaml << EOF
 apiVersion: skupper.io/v2alpha1
 kind: RouterAccess
 metadata:
-  name: ${SITE_NAMES[rhel-ai]}
+  name: ra-${SITE_NAMES[rhel-ai]}
   namespace: ${NAMESPACE}
 spec:
   roles:
@@ -72,31 +72,14 @@ spec:
     - \"0.0.0.0\"
     - \"::\"
 ${RHEL_AI_SAN_YAML}
-  tlsCredentials: ${SITE_NAMES[rhel-ai]}
+  tlsCredentials: ra-${SITE_NAMES[rhel-ai]}
 EOF
 
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/RouterAccess-${SITE_NAMES[rhel-ai]}-public.yaml << EOF
-apiVersion: skupper.io/v2alpha1
-kind: RouterAccess
-metadata:
-  name: ${SITE_NAMES[rhel-ai]}-public
-  namespace: ${NAMESPACE}
-spec:
-  roles:
-    - name: inter-router
-      port: 8000
-  subjectAlternativeNames:
-    - \"0.0.0.0\"
-    - \"::\"
-${RHEL_AI_SAN_YAML}
-  tlsCredentials: ${SITE_NAMES[rhel-ai]}-public
-EOF
-
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-model-connector.yaml << EOF
+  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-connector-${RHEL_AI_ROUTING_KEY}.yaml << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Connector
 metadata:
-  name: model-connector
+  name: connector-${RHEL_AI_ROUTING_KEY}
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHEL_AI_ROUTING_KEY}
@@ -104,11 +87,11 @@ spec:
   port: ${RHEL_AI_MODEL_PORT}
 EOF
 
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-decision-connector.yaml << EOF
+  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-connector-${RHEL_AI_DECISION_ROUTING_KEY}.yaml << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Connector
 metadata:
-  name: decision-connector
+  name: connector-${RHEL_AI_DECISION_ROUTING_KEY}
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHEL_AI_DECISION_ROUTING_KEY}
@@ -176,11 +159,11 @@ spec:
   defaultIssuer: self-signed
 EOF
 
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/RouterAccess-${SITE_NAMES[rhtevan-work]}.yaml << EOF
+  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/RouterAccess-ra-${SITE_NAMES[rhtevan-work]}.yaml << EOF
 apiVersion: skupper.io/v2alpha1
 kind: RouterAccess
 metadata:
-  name: ${SITE_NAMES[rhtevan-work]}
+  name: ra-${SITE_NAMES[rhtevan-work]}
   namespace: ${NAMESPACE}
 spec:
   roles:
@@ -192,14 +175,14 @@ spec:
     - \"0.0.0.0\"
     - \"::\"
 ${RHTEVAN_WORK_SAN_YAML}
-  tlsCredentials: ${SITE_NAMES[rhtevan-work]}
+  tlsCredentials: ra-${SITE_NAMES[rhtevan-work]}
 EOF
 
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-model-connector.yaml << EOF
+  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-connector-${RHTEVAN_WORK_ROUTING_KEY}.yaml << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Connector
 metadata:
-  name: model-connector
+  name: connector-${RHTEVAN_WORK_ROUTING_KEY}
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHTEVAN_WORK_ROUTING_KEY}
@@ -250,11 +233,11 @@ spec:
   defaultIssuer: self-signed
 EOF
 
-  cat > "${LOCAL_NS_DIR}/input/resources/Listener-model-rhel-ai.yaml" << EOF
+  cat > "${LOCAL_NS_DIR}/input/resources/Listener-listener-${RHEL_AI_ROUTING_KEY}.yaml" << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Listener
 metadata:
-  name: model-rhel-ai
+  name: listener-${RHEL_AI_ROUTING_KEY}
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHEL_AI_ROUTING_KEY}
@@ -262,11 +245,11 @@ spec:
   port: ${RHEL_AI_MODEL_PORT}
 EOF
 
-  cat > "${LOCAL_NS_DIR}/input/resources/Listener-decision-rhel-ai.yaml" << EOF
+  cat > "${LOCAL_NS_DIR}/input/resources/Listener-listener-${RHEL_AI_DECISION_ROUTING_KEY}.yaml" << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Listener
 metadata:
-  name: decision-rhel-ai
+  name: listener-${RHEL_AI_DECISION_ROUTING_KEY}
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHEL_AI_DECISION_ROUTING_KEY}
@@ -274,11 +257,11 @@ spec:
   port: ${RHEL_AI_DECISION_PORT}
 EOF
 
-  cat > "${LOCAL_NS_DIR}/input/resources/Listener-model-rhtevan-work.yaml" << EOF
+  cat > "${LOCAL_NS_DIR}/input/resources/Listener-listener-${RHTEVAN_WORK_ROUTING_KEY}.yaml" << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Listener
 metadata:
-  name: model-rhtevan-work
+  name: listener-${RHTEVAN_WORK_ROUTING_KEY}
   namespace: ${NAMESPACE}
 spec:
   routingKey: ${RHTEVAN_WORK_ROUTING_KEY}
@@ -376,10 +359,10 @@ if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-${LINK_RA_NAME}.yaml" ]]; then
   echo "  ✅ Link to rhel-ai already exists (${LINK_RA_NAME})"
 else
   echo "  → Building ${LINK_RA_NAME} (port ${RHEL_AI_INTER_ROUTER_PORT})..."
-  # Client cert dir: rhel-ai-public (matches RouterAccess name on rhel-ai)
-  CA_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhel-ai-public/ca.crt')
-  TLS_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhel-ai-public/tls.crt')
-  TLS_KEY=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhel-ai-public/tls.key')
+  # Client cert dir: ra-rhel-ai (matches consolidated RouterAccess name on rhel-ai)
+  CA_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-ra-rhel-ai/ca.crt')
+  TLS_CRT=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-ra-rhel-ai/tls.crt')
+  TLS_KEY=$(ssh "${SSH_HOSTS[rhel-ai]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-ra-rhel-ai/tls.key')
 
   LINK_TMPFILE=$(mktemp /tmp/${LINK_RA_NAME}.XXXXXX.yaml)
   chmod 600 "$LINK_TMPFILE"
@@ -419,10 +402,10 @@ if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-${LINK_RW_NAME}.yaml" ]]; then
   echo "  ✅ Link to rhtevan-work already exists (${LINK_RW_NAME})"
 else
   echo "  → Building ${LINK_RW_NAME} (port ${RHTEVAN_WORK_INTER_ROUTER_PORT})..."
-  # Client cert dir: rhtevan-work (matches RouterAccess name on rhtevan-work)
-  CA_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhtevan-work/ca.crt')
-  TLS_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhtevan-work/tls.crt')
-  TLS_KEY=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-rhtevan-work/tls.key')
+  # Client cert dir: ra-rhtevan-work (matches RouterAccess name on rhtevan-work)
+  CA_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-ra-rhtevan-work/ca.crt')
+  TLS_CRT=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-ra-rhtevan-work/tls.crt')
+  TLS_KEY=$(ssh "${SSH_HOSTS[rhtevan-work]}" 'base64 -w0 ~/.local/share/skupper/namespaces/model-provider-podman/runtime/certs/client-ra-rhtevan-work/tls.key')
 
   LINK_TMPFILE=$(mktemp /tmp/${LINK_RW_NAME}.XXXXXX.yaml)
   chmod 600 "$LINK_TMPFILE"
@@ -710,7 +693,7 @@ LINKEOF
     fi
 
     # Create rhtevan-work listener on CRC (routed through local relay)
-    crc_rw_listener="model-listener-rhtevan-work"
+    crc_rw_listener="listener-${CRC_RHTEVAN_ROUTING_KEY}"
     if oc_crc get listener "${crc_rw_listener}" -n "${CRC_NAMESPACE}" &>/dev/null; then
       echo "  ✅ Listener ${crc_rw_listener} exists"
     else
@@ -731,7 +714,7 @@ LISTEOF
   fi
 
   # 6f. Create Listener
-  crc_listener_name="model-listener-${CRC_LINK_TARGET}"
+  crc_listener_name="listener-${CRC_ROUTING_KEY}"
   if oc_crc get listener "${crc_listener_name}" -n "${CRC_NAMESPACE}" &>/dev/null; then
     echo "  ✅ Listener ${crc_listener_name} exists"
   else
@@ -898,18 +881,20 @@ if [[ "$CRC_ENABLED" == "true" ]]; then
   local_hub_link_name="${LINK_NAMES[crc-rhel-ai]}"
   local_link_status=$(oc_crc get link "${local_hub_link_name}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
-  local_list_status=$(oc_crc get listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+  local_list_name="listener-${CRC_ROUTING_KEY}"
+  local_list_status=$(oc_crc get listener "${local_list_name}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
   echo "    Site ${CRC_SITE_NAME}: ${local_site_status}"
   echo "    Link ${local_hub_link_name}: ${local_link_status}"
-  echo "    Listener model-listener-${CRC_LINK_TARGET}: ${local_list_status}"
+  echo "    Listener ${local_list_name}: ${local_list_status}"
 
   if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
     local_ll_name="${LINK_NAMES[crc-local]}"
     local_ll_status=$(oc_crc get link "${local_ll_name}" -n "${CRC_NAMESPACE}" \
       -o jsonpath='{.status.status}' 2>/dev/null || echo "not found")
+    local_rw_list_name="listener-${CRC_RHTEVAN_ROUTING_KEY}"
     echo "    Link ${local_ll_name}: ${local_ll_status}"
-    echo "    Listener model-listener-rhtevan-work: $(crc_rhtevan_listener_status)"
+    echo "    Listener ${local_rw_list_name}: $(crc_rhtevan_listener_status)"
   fi
 fi
 

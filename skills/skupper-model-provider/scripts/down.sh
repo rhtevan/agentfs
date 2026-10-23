@@ -333,12 +333,12 @@ if [[ "$CRC_TARGET" == "true" ]]; then
 
     list_status=""
     list_status=$(crc_listener_status)
-    echo "  ✅ Listener model-listener-${CRC_LINK_TARGET}: ${list_status} (preserved)"
+    echo "  ✅ Listener listener-${CRC_ROUTING_KEY}: ${list_status} (preserved)"
 
     if [[ -n "${CRC_LINK_LOCAL_TARGET}" ]]; then
       rhtevan_list_status=""
       rhtevan_list_status=$(crc_rhtevan_listener_status)
-      echo "  ✅ Listener model-listener-rhtevan-work: ${rhtevan_list_status} (preserved)"
+      echo "  ✅ Listener listener-${CRC_RHTEVAN_ROUTING_KEY}: ${rhtevan_list_status} (preserved)"
     fi
   fi
   echo

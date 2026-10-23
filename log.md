@@ -2,6 +2,36 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-23 14:03
+- Modified: ~/.agents/skills/skupper-model-provider/docs/van-topology.architecture.html — regenerated via archify deliver
+- Modified: ~/.agents/skills/skupper-model-provider/docs/van-topology.architecture.json — updated site names, model, CRC listener labels
+
+## 2026-10-23 14:02
+- Modified: ~/.agents/skills/crc-ols/scripts/list.sh — naming convention alignment
+- Modified: ~/.agents/skills/skupper-model-provider/scripts/test-model.sh — naming convention alignment
+- Modified: ~/.agents/skills/skupper-model-provider/scripts/teardown.sh — naming convention alignment
+- Modified: ~/.agents/skills/skupper-model-provider/scripts/down.sh — naming convention alignment
+- Modified: ~/.agents/skills/skupper-model-provider/scripts/up.sh — naming convention alignment
+- Modified: ~/.agents/skills/skupper-model-provider/scripts/setup.sh — naming convention alignment
+- Modified: ~/.agents/skills/skupper-model-provider/scripts/common.sh — naming convention alignment
+
+## 2026-10-23 13:49
+- Comprehensive known issue report: connector status Not Matched on rhel-ai — root cause traced to missing ConfigMap from tmpfs workaround (skills/skupper-model-provider/references/known-issues.md)
+
+## 2026-10-23 12:33
+- Add connector status Not Matched bug (GitHub #2428, partial fix in v2.2.3) (skills/skupper-model-provider/references/known-issues.md)
+
+## 2026-10-23 12:13
+- v9.1.0 — Naming convention alignment: all Skupper resources renamed per references/naming-convention.md. Consolidated rhel-ai RouterAccess (2→1). Updated connectors, listeners, RouterAccess, CRC listeners, OLS URLs, and all script references. (skills/skupper-model-provider/scripts/status.sh)
+
+## 2026-10-23 11:40
+- New: Skupper VAN naming convention covering all resource types (skills/skupper-model-provider/references/naming-convention.md)
+- Add cross-reference to naming convention (skills/skupper-model-provider/references/architecture.md)
+- Add naming convention to references list (skills/skupper-model-provider/SKILL.md)
+- Add naming convention to references list (skills/skupper-model-provider/SKILL.md)
+- Add cross-reference to naming convention (skills/skupper-model-provider/references/architecture.md)
+- New: Skupper VAN naming convention covering all resource types (skills/skupper-model-provider/references/naming-convention.md)
+
 ## 2026-10-22 22:00
 - Fixed race condition: added flock serialization and mktemp unique temp files to prevent log history wipe during concurrent post-write calls (skills/agentfs-setup/scripts/merge-log-entry.sh)
 

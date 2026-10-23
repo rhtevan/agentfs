@@ -116,7 +116,7 @@ fi
 if [[ "$FROM_CRC" == "true" && "$CRC_ENABLED" == "true" ]]; then
   echo
   echo "=== CRC Tests ==="
-  crc_listener_name="model-listener-${REMOTE_HOST}"
+  crc_listener_name="listener-${ROUTING_KEY}"
   crc_svc="${crc_listener_name}.${CRC_NAMESPACE}"
 
   # T7: CRC Listener status

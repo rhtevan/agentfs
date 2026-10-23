@@ -32,7 +32,7 @@ CONTROLLER_SUFFIX="skupper-controller"
 LOCAL_LISTENER_HOST="${LOCAL_LISTENER_HOST:-localhost}"
 # ── Local RouterAccess (built from topology.env) ─────────────
 LOCAL_INTER_ROUTER_PORT="${LOCAL_INTER_ROUTER_PORT:-55672}"
-LOCAL_RA_NAME="${LOCAL_RA_NAME:-local-ezhang-ra}"
+LOCAL_RA_NAME="${LOCAL_RA_NAME:-ra-local-ezhang}"
 LOCAL_SANS="${LOCAL_SANS:-}"
 
 # ── CRC Configuration (built from topology.env) ──────────────
@@ -263,13 +263,13 @@ crc_local_link_status() {
 }
 
 crc_listener_status() {
-  oc_crc get listener model-listener-"${CRC_LINK_TARGET}" -n "${CRC_NAMESPACE}" \
+  oc_crc get listener listener-"${CRC_ROUTING_KEY}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
 crc_rhtevan_listener_status() {
   [[ -z "${CRC_LINK_LOCAL_TARGET}" ]] && echo "not configured" && return 0
-  oc_crc get listener model-listener-rhtevan-work -n "${CRC_NAMESPACE}" \
+  oc_crc get listener listener-"${CRC_RHTEVAN_ROUTING_KEY}" -n "${CRC_NAMESPACE}" \
     -o jsonpath='{.status.status}' 2>/dev/null || echo "not found"
 }
 
@@ -335,7 +335,7 @@ precheck_topology() {
         host:  host.crc.testing (192.168.127.254)
         port:  ${LOCAL_INTER_ROUTER_PORT} (AMQPS)
         Listener :${CRC_RHTEVAN_MODEL_PORT} ← ${CRC_RHTEVAN_ROUTING_KEY}
-        Service: model-listener-rhtevan-work.${CRC_NAMESPACE}:${CRC_RHTEVAN_MODEL_PORT}"
+        Service: listener-${CRC_RHTEVAN_ROUTING_KEY}.${CRC_NAMESPACE}:${CRC_RHTEVAN_MODEL_PORT}"
     fi
 
     crc_section="
@@ -345,7 +345,7 @@ CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
   │     host:  ${crc_target_host_d}
   │     port:  ${crc_target_port_d} (AMQPS)
   │     Listener :${CRC_MODEL_PORT} ← ${CRC_ROUTING_KEY}
-  │     Service: model-listener-${CRC_LINK_TARGET}.${CRC_NAMESPACE}:${CRC_MODEL_PORT}${crc_local_link_section}"
+  │     Service: listener-${CRC_ROUTING_KEY}.${CRC_NAMESPACE}:${CRC_MODEL_PORT}${crc_local_link_section}"
     local site_count="4-site"
   else
     local site_count="3-site"
@@ -706,7 +706,7 @@ sys.exit(1)
 import json
 with open('${config}') as f:
     cfg = json.load(f)
-# Prefer local-ezhang-ra, fall back to skupper-local-server
+# Prefer ra-local-ezhang, fall back to skupper-local-server
 for item in cfg:
     if isinstance(item, list) and len(item) == 2 and item[0] == 'sslProfile':
         name = item[1].get('name', '')

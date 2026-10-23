@@ -36,7 +36,7 @@ oc ${OC_CONTEXT} get olsconfig cluster -o jsonpath='{.status.overallStatus}'
 echo ""
 
 # === Skupper provider liveness check ===
-# For providers whose URL contains "model-listener" (Skupper routes),
+# For providers whose URL contains "listener-" (Skupper routes),
 # probe the /v1/models endpoint to verify the configured model is actually served.
 echo ""
 echo "=== Skupper Provider Liveness ==="
@@ -51,8 +51,8 @@ for i in $(seq 0 $((PROVIDER_COUNT - 1))); do
   URL=$(oc ${OC_CONTEXT} get olsconfig cluster \
     -o jsonpath="{.spec.llm.providers[$i].url}" 2>/dev/null)
   [[ -z "$URL" ]] && continue
-  # Only check Skupper providers (in-cluster model-listener services)
-  echo "$URL" | grep -q "model-listener" || continue
+  # Only check Skupper providers (in-cluster listener- services)
+  echo "$URL" | grep -q "listener-" || continue
 
   FOUND_SKUPPER=true
   # shellcheck disable=SC2086
@@ -62,7 +62,7 @@ for i in $(seq 0 $((PROVIDER_COUNT - 1))); do
   CONFIGURED_MODELS=$(oc ${OC_CONTEXT} get olsconfig cluster \
     -o jsonpath="{range .spec.llm.providers[$i].models[*]}{.name}{'\n'}{end}")
 
-  # Extract host:port from URL (e.g., http://model-listener-rhel-ai.model-provider-crc:9000/v1)
+  # Extract host:port from URL (e.g., http://listener-model-api-rhel-ai.model-provider-crc:9000/v1)
   ENDPOINT=$(echo "$URL" | sed 's|/v1$||; s|^http://||')
 
   # Probe the model endpoint from inside the router pod
