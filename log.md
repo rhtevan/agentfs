@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-22 21:11
+- Bumped version to 7.4.0; updated Structural Guardrails section to reflect re-engineered Pre-Flight rule (skills/agentfs-setup/SKILL.md)
+- Bumped version to 7.4.0; updated Structural Guardrails section to reflect re-engineered Pre-Flight rule (skills/agentfs-setup/SKILL.md)
+- Re-engineered Pre-Flight rule: two-tier specification-driven planning with Design Spec validation gate; added explicit rule scan instruction to Rules preamble; added condensed spec-driven rule to LITE template (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-10-22 20:20
 - Updated implementation plan: Phase 0 complete with test results, learnings, bugs fixed. Phases 1-4 detailed with specific file paths, changes, and session resumption guide. (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 

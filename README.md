@@ -284,7 +284,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.3.8 enforces 7 operational rules as numbered subsections
+AgentFS v7.4.0 enforces 7 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -293,7 +293,7 @@ external enforcement only: routing, hooks, process obligations.
 | # | Name | When | Do |
 |---|------|------|----|
 | 1 | Signal Dispatch | User message starts with `hey` | Route per Signal Dispatch table (Path A) or search_nodes (Path B). Progressive narrowing on miss. |
-| 2 | Pre-Flight | Before multi-step task (≥3 tool calls or ≥2 files); also before `git push` | State plan. If touching `.agents/`: include Post-Write (Rule 3); if destructive ops: start with Checkpoint (Rule 6). Show `git diff --stat` if pushing. Execute in order. |
+| 2 | Pre-Flight | Before any task that modifies ≥2 files, has step dependencies, or includes `git push` | Two tiers: **Tier 1 (Standard)** — state plan, fold in constraints, execute. **Tier 2 (Specification-Driven)** — define Design Spec (validation gate) first, then Action Spec (numbered items with expected outcomes), fold in constraints, execute incrementally, run gate before claiming done. Tier 2 applies when steps have dependencies, task is multi-phase, or user explicitly requests structured execution. |
 | 3 | Post-Write | Writes touched `.agents/` or `~/.agents/` | Run `post-write.sh` for each modified file. Do not respond until complete. |
 | 4 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
 | 5 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |

@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-22 21:11 | v7.4.0 — Re-engineered Pre-Flight rule: two-tier specification-driven planning with Design Spec validation gate; added explicit rule scan instruction to Rules preamble; added condensed spec-driven rule to LITE template |
 | 2026-10-22 17:42 | v7.3.8 — Refined G3 to Observable Skill & Skill Evolution, added three-schema table, Observable Skill design cross-reference |
 | 2026-10-19 11:45 | v7.3.8 — Added Design Goals section (G1-G3): MCACS-informed skill generation, Operable Skill architecture, Skill Evolution feedback loop |
 | 2026-10-16 15:15 | v7.3.7 — CNL compliance pass: all 7 PROJECT rules + 3 LITE rules rewritten. Circled-number format (①②③) replaced with numbered lists. Compound instructions split. Passive voice converted to active imperative. Synonym mixing eliminated. |

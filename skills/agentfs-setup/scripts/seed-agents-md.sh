@@ -192,6 +192,12 @@ Then proceed normally with the user's request.
 5. **Git safety.** Before committing, stage all changes. Run
    `git diff --stat`. Show the output to the user. Wait for
    user confirmation before `git commit` and `git push`.
+
+6. **Plan before complex work.** For tasks where steps depend on
+   each other or span multiple phases: define pass/fail criteria
+   (Design Spec) first, then list numbered action items (Action
+   Spec). Execute in order. Run the criteria check at the end —
+   do not claim done until all pass.
 AGENTSEOF
 
 # ── PROJECT scope template ────────────────────────────────────────────
@@ -211,6 +217,10 @@ cat > "$TARGET" << 'AGENTSEOF'
 ## Rules
 
 **All rules are mandatory.** Override requires explicit user approval logged with `[OVERRIDE]` per the Conflict Resolution rule.
+
+**On every turn:** Before acting on the user's request, scan each
+rule's **When** clause against the current request. If matched,
+follow the **Do** block before proceeding.
 
 ### 1. Signal Dispatch
 
@@ -239,14 +249,46 @@ Use available tools and knowledge at your discretion.
 
 ### 2. Pre-Flight
 
-**When:** Before any multi-step task (≥3 tool calls or touching ≥2 files; single-file read+edit pairs are exempt). Also before any `git push`.
+**When:** Before any task that modifies ≥2 files, has step
+dependencies, or includes `git push`. Single-file read+edit
+pairs are exempt.
 
 **Do:**
-1. State what you will do.
-2. If the plan touches `.agents/` or `~/.agents/`: include Post-Write (Rule 3) steps in the plan.
-3. If the plan includes destructive ops on `.agents/`: start with Checkpoint (Rule 6).
-4. If the plan includes `git push`: show `git diff --stat`. Wait for user confirmation.
-5. Execute all steps in order before responding.
+
+Assess task complexity, then follow the matching tier:
+
+**Tier 1 — Standard** (steps are independent, single phase):
+1. State the plan: what files change, in what order, what outcome.
+2. Fold in constraints: Post-Write if touching `.agents/`,
+   Checkpoint if destructive, `git diff --stat` + confirmation
+   if `git push`.
+3. Execute. Confirm the stated outcome before responding.
+
+**Tier 2 — Specification-Driven** (steps have dependencies,
+multi-phase, or user explicitly requests structured execution):
+
+1. **Design Spec.** Define what "done" looks like — verifiable
+   pass/fail criteria (test commands, file assertions, observable
+   behaviors):
+   > **Validation Gate**
+   > - [ ] [criterion] — [how to verify]
+
+2. **Action Spec.** Decompose into numbered action items, each
+   with an expected outcome. Group under phase headings when
+   multiple phases exist:
+   > **Phase 1 — [name]**
+   > 1. [action] → [expected outcome]
+   > 2. [action] → [expected outcome]
+
+3. **Constraints.** Fold in applicable rules: Post-Write,
+   Checkpoint, `git push` confirmation.
+
+4. **Execute.** Work through items in order. Confirm each
+   expected outcome. If an item fails, stop and report.
+
+5. **Gate.** Execute the Validation Gate from step 1.
+   Report pass/fail per criterion. Do not claim completion
+   until all pass.
 
 ### 3. Post-Write
 

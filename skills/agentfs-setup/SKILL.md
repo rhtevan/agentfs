@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, update agentfs, verify agentfs
 metadata:
-  version: "7.3.8"
+  version: "7.4.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -267,17 +267,16 @@ overwriting existing content.
 
 ## Structural Guardrails (in AGENTS.md)
 
-The `seed-agents-md.sh` script creates `AGENTS.md` with 8 numbered rules
+The `seed-agents-md.sh` script creates `AGENTS.md` with 7 numbered rules
 in When/Do prose format, ordered by operational frequency:
 
 1. **Signal Dispatch** — route `hey`-prefixed messages per dispatch table
-2. **Pre-Flight** — state plan before multi-step tasks
+2. **Pre-Flight** — specification-driven planning with two tiers: Standard (independent steps) and Specification-Driven (dependent steps, multi-phase); includes Design Spec validation gate
 3. **Post-Write** — run post-write.sh after `.agents/` writes
 4. **Session Canary** — session continuity check; read USER.md on start
 5. **Conflict Resolution** — state what changed on reversal; `[OVERRIDE]` for rule conflicts
 6. **Checkpoint** — checkpoint before destructive `.agents/` ops
 7. **Scope Rules** — memories PROJECT-only; skills default USER; graduation to OKF
-8. **Path Hygiene** — use `~` not `/home/<user>/` in output
 
 ## Layer Reference
 
