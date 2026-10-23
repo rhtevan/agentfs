@@ -34,6 +34,20 @@ EOF
   exit 0
 fi
 
+# ── Serialize access with flock ────────────────────────────────────
+# Prevents race condition when multiple post-write calls target
+# the same log file in rapid succession.
+LOCK_FILE="${LOG_FILE}.lock"
+exec 9>"$LOCK_FILE"
+flock 9
+
+# Use unique temp file to prevent collisions
+TMPFILE="$(mktemp "${LOG_FILE}.XXXXXX")"
+trap 'rm -f "$TMPFILE" "$LOCK_FILE"' EXIT
+
+# Re-read NOW inside lock — parallel callers may span a minute boundary
+NOW="$(date '+%Y-%m-%d %H:%M')"
+
 # Check if current timestamp heading already exists
 if grep -q "^## ${NOW}" "$LOG_FILE"; then
   # Heading exists — insert new entries directly after heading (no blank line)
@@ -47,8 +61,8 @@ if grep -q "^## ${NOW}" "$LOG_FILE"; then
     # Skip blank line immediately after heading (entries go right after)
     found && /^[[:space:]]*$/ { found = 0; next }
     { found = 0; print }
-  ' "$LOG_FILE" > "$LOG_FILE.tmp"
-  mv "$LOG_FILE.tmp" "$LOG_FILE"
+  ' "$LOG_FILE" > "$TMPFILE"
+  mv "$TMPFILE" "$LOG_FILE"
   echo "Appended entries under existing ## ${NOW} heading."
 else
   # Heading does not exist — insert new section after the
@@ -72,7 +86,7 @@ else
       skip && /^[[:space:]]*$/ { next }
       { skip=0; print }
     ' "$LOG_FILE"
-  } > "$LOG_FILE.tmp"
-  mv "$LOG_FILE.tmp" "$LOG_FILE"
+  } > "$TMPFILE"
+  mv "$TMPFILE" "$LOG_FILE"
   echo "Inserted new ## ${NOW} section at top of log."
 fi

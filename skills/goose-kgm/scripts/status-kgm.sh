@@ -51,3 +51,9 @@ else
   echo "JSONL file:   ❌ not found ($JSONL_PATH)"
   echo "  Run: bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh"
 fi
+
+# ── Symlink Health ─────────────────────────────────────────────────
+echo
+echo "--- Symlink Health ---"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+bash "$SCRIPT_DIR/ensure-kgm-symlink.sh"

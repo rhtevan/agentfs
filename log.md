@@ -2,6 +2,19 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-22 22:00
+- Fixed race condition: added flock serialization and mktemp unique temp files to prevent log history wipe during concurrent post-write calls (skills/agentfs-setup/scripts/merge-log-entry.sh)
+
+## 2026-10-22 21:56
+- Fixed merge-log-entry.sh race condition: added flock serialization and mktemp unique temp files. Prevents log history wipe when multiple post-write calls target the same log concurrently. (skills/agentfs-setup/scripts/merge-log-entry.sh)
+
+## 2026-10-22 21:48
+- New script: ensure-kgm-symlink.sh — self-healing symlink enforcement for MCP server memory.jsonl (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+- Refactored setup-kgm.sh to use ensure-kgm-symlink.sh shared script (skills/goose-kgm/scripts/setup-kgm.sh)
+- Added ensure-kgm-symlink.sh call after reindex to self-heal broken symlinks (skills/goose-kgm/scripts/reindex-kgm.sh)
+- Added symlink health check section to status-kgm.sh (skills/goose-kgm/scripts/status-kgm.sh)
+- Bumped goose-kgm to v1.5.0 (skills/goose-kgm/SKILL.md)
+
 ## 2026-10-22 21:11
 - Bumped version to 7.4.0; updated Structural Guardrails section to reflect re-engineered Pre-Flight rule (skills/agentfs-setup/SKILL.md)
 - Bumped version to 7.4.0; updated Structural Guardrails section to reflect re-engineered Pre-Flight rule (skills/agentfs-setup/SKILL.md)

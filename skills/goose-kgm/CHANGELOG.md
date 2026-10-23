@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-22 21:48 | v1.5.0 — New script: self-healing symlink enforcement for MCP server memory.jsonl |
 | 2026-09-24 20:46 | v1.4.0 — Document AgentSkill entity type, staleness guard, anti-pattern moved from AGENTS.md |
 | 2026-09-24 19:24 | v1.3.0 — Separate knowledge/skills KGM indexes, merge into combined .kgm-index.jsonl |
 | 2026-09-24 19:11 | v1.2.0 — setup-kgm.sh: symlink server-memory default memory.jsonl to managed .kgm-index.jsonl (workaround for envs not passed to MCP process) |

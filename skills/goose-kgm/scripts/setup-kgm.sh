@@ -58,20 +58,10 @@ PYEOF
 mkdir -p "$JSONL_DIR"
 
 # ── Symlink: server-memory default path → our managed index ───────
-# Goose may not pass MEMORY_FILE_PATH env to the MCP process.
-# Symlink the server's default memory.jsonl to our managed file.
-NPX_CACHE_DIR="$HOME/.config/goose/mcp-hermit/.hermit/node/cache/_npx"
-if [[ -d "$NPX_CACHE_DIR" ]]; then
-  SERVER_MEM=$(find "$NPX_CACHE_DIR" -path "*/server-memory/dist/memory.jsonl" -type f 2>/dev/null | head -1)
-  if [[ -n "$SERVER_MEM" ]] && [[ ! -L "$SERVER_MEM" ]]; then
-    cp "$SERVER_MEM" "${SERVER_MEM}.bak"
-    rm "$SERVER_MEM"
-    ln -s "$JSONL_DIR/.kgm-index.jsonl" "$SERVER_MEM"
-    echo "✅ Symlinked $SERVER_MEM → $JSONL_DIR/.kgm-index.jsonl"
-  elif [[ -L "$SERVER_MEM" ]]; then
-    echo "✅ Symlink already exists: $SERVER_MEM"
-  fi
-fi
+# Goose does not pass MEMORY_FILE_PATH env to the MCP process.
+# Symlink the server's default memory.jsonl to our managed JSONL.
+# Search all known npx cache locations.
+bash "$(cd "$(dirname "$0")" && pwd)/ensure-kgm-symlink.sh"
 
 # ── Ensure .kgm-index.jsonl is gitignored ──────────────────────────
 if [[ -f "$GITIGNORE" ]]; then

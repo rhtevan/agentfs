@@ -163,3 +163,9 @@ if [[ -f "$SKILLS_JSONL" ]]; then
 fi
 TOTAL=$(wc -l < "$JSONL_COMBINED")
 echo "✅ Combined index: $JSONL_COMBINED ($TOTAL lines)"
+
+# ── Ensure symlink is intact ──────────────────────────────────────
+# Goose does not pass MEMORY_FILE_PATH to MCP process. The server
+# reads its default dist/memory.jsonl. If the symlink to our JSONL
+# is broken (e.g. npx reinstall), the server reads stale data.
+bash "$SCRIPT_DIR/ensure-kgm-symlink.sh"

@@ -4,7 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-22 21:11 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-22 22:00 |
+| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-10-22 21:48 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-10-22 19:56 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-10-21 14:13 |
 | [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-10-16 20:14 |
@@ -21,7 +22,6 @@
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-09-29 16:25 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-09-28 10:11 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-09-24 23:10 |
-| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-09-24 20:46 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-09-16 12:11 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-09-16 11:56 |
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | goose, headroom, custom-provider, context-optimization, compression, configuration | configure goose headroom, goose headroom provider | 2026-09-09 21:27 |

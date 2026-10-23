@@ -3,7 +3,7 @@ name: goose-kgm
 description: >
   setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   tags: [goose, kgm, knowledge-graph, mcp, knowledge]
 ---
 
