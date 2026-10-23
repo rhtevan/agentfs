@@ -104,7 +104,8 @@ Key observations:
   handled correctly
 - D3-27B provides better **calibration** — it hedges more appropriately
   on uncertain questions (0.73 vs 0.95 confidence on ambiguous scenarios)
-- D3-27B supports **score-type questions** that NextToken cannot
+- D3-27B uses a different API schema (`/v1/systemone`) with richer
+  score-type response structure (label + confidence on ordinal scales)
 
 ## Deployment Recipe
 

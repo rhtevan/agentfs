@@ -18,10 +18,12 @@ Three ultimate goals for this Context/AgentFS Evolution:
    A controller (LLM + SDM) executes the Operable Skill and observes
    results with the help of a runtime harness.
 
-3. **Skill Evolution.** Realize the concept of a feedback loop where
-   an adjuster model or human observes execution of Operable Skills,
-   analyzes the gap using CECX scores, suggests an improvement plan,
-   and upgrades the skill — all with the help of the runtime harness.
+3. **Observable Skill & Skill Evolution.** Realize the concept of
+   an Observable Skill that carries its own evaluation criteria
+   (observation schema) scored by SDM post-execution. An adjuster
+   model or human reads CECX observation scores, analyzes the gap,
+   suggests an improvement plan, and upgrades the skill — all with
+   the help of the runtime harness.
 
 ## Concepts
 
@@ -34,6 +36,8 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [SDM Integration for AgentFS](./sdm-integration-for-agentfs.md) | Pattern | Semantic Decision Model as skill runtime (Pattern 1) and evaluation engine (Pattern 2) |
 | [Observation Schema — CECX](./observation-schema-cecx.md) | Convention | Four measurable traits (Correctness, Efficiency, Comprehension, Complexity) for scoring skill executions, modeled after QSCZ deployment fitting |
 | [Operable Skill Architecture](./operable-skill-architecture.md) | Pattern | Four-layer skill anatomy (bones/muscle/controller/harness) and Author→Operate→Evolve lifecycle |
+| [Observable Skill Design](./observable-skill-design.md) | Pattern | Agent-agnostic audit trail, two-phase observation, three schema types, score persistence, SDM integration |
+| [Implementation Plan](./implementation-plan.md) | Convention | Phased plan: Phase 0 (SDM foundation), Phase 1 (skill-gen), Phase 2 (first conversion), Phase 3 (benchmarking), Phase 4 (maturity) |
 
 ## Source
 

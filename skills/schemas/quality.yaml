@@ -1,0 +1,78 @@
+schema-version: "1.0"
+schema-type: quality
+description: >
+  MCACS quality standard for AgentFS skills. Evaluates skill design
+  against Modularity, Cohesion, Abstraction, Coupling, and Separation
+  of Concerns principles. Used by skill-check and skill-evolve.
+
+dimensions:
+  - name: script_coverage
+    question: >
+      What percentage of the action steps in SKILL.md are backed by
+      executable scripts in the scripts/ directory, versus prose-only
+      instructions that require the agent to compose shell commands?
+    evidence_source: skill.md + scripts/
+    metric: ratio
+    target: ">= 0.80"
+    weight: 1.0
+    mcacs: Modularity
+
+  - name: inference_hop_count
+    question: >
+      How many reasoning steps must the agent perform between loading
+      the skill and reaching the first deterministic script checkpoint?
+      Count each step where the agent must interpret prose, make a
+      decision, or compose a command without script support.
+    evidence_source: skill.md workflow section
+    metric: count
+    target: "<= 2"
+    weight: 1.0
+    mcacs: Modularity
+
+  - name: concern_count
+    question: >
+      How many distinct responsibility types are mixed in SKILL.md?
+      Count from: data gathering, scope resolution, semantic analysis,
+      user interaction, file mutation, formatting/reporting.
+    evidence_source: skill.md
+    metric: count
+    target: "<= 2"
+    weight: 1.0
+    mcacs: Cohesion
+
+  - name: accidental_complexity
+    question: >
+      What percentage of SKILL.md lines are dedicated to HOW (shell
+      commands, file paths, implementation details) versus WHAT
+      (decisions, judgments, orchestration logic)? Accidental complexity
+      is the HOW that should be in scripts, not prose.
+    evidence_source: skill.md
+    metric: ratio
+    target: "<= 0.20"
+    weight: 1.0
+    mcacs: Separation of Concerns
+
+  - name: model_portability
+    question: >
+      How many model-capability assumptions exist in SKILL.md? Count
+      each instance of: multi-hop reasoning chains without script
+      checkpoints, inline code block extraction the agent must perform,
+      implicit scope reasoning, and instructions requiring frontier-
+      class understanding to parse correctly.
+    evidence_source: skill.md
+    metric: count
+    target: "<= 2"
+    weight: 1.0
+    mcacs: Coupling
+
+  - name: interface_opacity
+    question: >
+      Does SKILL.md reference script internals such as variable names,
+      intermediate temporary files, internal function names, or
+      implementation details? Or does it only reference script inputs
+      (arguments) and outputs (exit codes, stdout)?
+    evidence_source: skill.md
+    metric: boolean
+    target: "true"
+    weight: 1.0
+    mcacs: Abstraction

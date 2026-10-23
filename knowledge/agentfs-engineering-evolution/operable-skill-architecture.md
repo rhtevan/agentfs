@@ -183,6 +183,29 @@ model. A well-engineered skill (high Script Coverage, low Inference
 Hops, clear CNL) is executable by a model that could never have
 written it.
 
+## Observable Property
+
+An Operable Skill is also an Observable Skill. Observability is not a
+separate architecture — it is a property of the Operable Skill that
+enables the evolution feedback loop.
+
+An Observable Skill:
+- Carries an `observation.yaml` defining per-skill execution evaluation
+  criteria (authored at creation time by the frontier model).
+- Scripts self-report execution traces via `trace_step()` — agent-agnostic,
+  zero LLM involvement.
+- Evaluation runs post-execution via `sdm-evaluate.sh` — zero impact on
+  user experience.
+- Scores persist in `observations/index.json` for consumption by
+  `skill-evolve`.
+
+Two universal schemas (`quality.yaml`, `operable.yaml`) live at
+`~/.agents/skills/schemas/` and apply to all skills. The per-skill
+`observation.yaml` defines execution-specific dimensions.
+
+See [Observable Skill Design](./observable-skill-design.md) for full
+design decisions, schema format, evaluation flow, and persistence model.
+
 ## Relationship to Existing Concepts
 
 - **MCACS Principles:** Design constraints applied during authorship.

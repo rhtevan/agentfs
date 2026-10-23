@@ -990,7 +990,8 @@ both ports over the single AMQPS link between localhost and rhel-ai.
 
 2. **D3-27B justifies the GPUs:** Perfect accuracy (19/19), better
    calibration than NextToken (hedges appropriately on uncertain questions),
-   and supports score-type questions that NextToken cannot.
+   and uses a richer System One API schema with structured score responses.
+   Note: NextToken also supports score-type questions via `levels` field.
 
 3. **CUDA graphs are blocked on L4 for all D3 models:** Vision encoder
    profiling requires 18.4 GB — an upstream Qwen3.5 architecture constraint.

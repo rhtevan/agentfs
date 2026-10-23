@@ -2,6 +2,30 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-22 20:20
+- Updated implementation plan: Phase 0 complete with test results, learnings, bugs fixed. Phases 1-4 detailed with specific file paths, changes, and session resumption guide. (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-22 20:07
+- Phase 0.5/0.6: Created sdm-endpoint.md in skills/schemas/
+- Phase 0.5/0.6: Created README.md in skills/schemas/
+- Phase 0.5/0.6: Created operable.yaml in skills/schemas/
+- Phase 0.5/0.6: Created quality.yaml in skills/schemas/
+- Phase 0.5: Universal MCACS quality schema — 6 dimensions mapped to MCACS principles (skills/schemas/quality.yaml)
+- Phase 0.4: Multi-dimension evaluator — processes quality/operable/observation schemas via SDM (scripts/sdm-evaluate.sh)
+- Phase 0.3: Agent-agnostic trace capture library — trace_init, trace_step, trace_end (scripts/trace-lib.sh)
+- Phase 0.2: SDM call script — single/batch decision calls via NextToken API (scripts/sdm-call.sh)
+
+## 2026-10-22 19:56
+- Corrected Section 17.7: NextToken supports score-type questions (skills/hosted-model-ctl/references/benchmark-report.md)
+- Corrected score-type claim: NextToken also supports score questions (knowledge/llm-inference-constrained-gpu/d3-decision-model-deployment.md)
+- Corrected Section 17.7: NextToken supports score-type questions (skills/hosted-model-ctl/references/benchmark-report.md)
+
+## 2026-10-22 17:42
+- Refined G3 to Observable Skill & Skill Evolution, added three-schema table, Observable Skill design cross-reference (skills/agentfs-setup/references/design-spec.md)
+- Added Observable Property section with observation.yaml, trace_step, two-phase evaluation, schema locations (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- New concept: Implementation Plan — 5-phase plan from SDM foundation through maturity (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- New concept: Observable Skill Design — agent-agnostic audit trail, two-phase observation, three schema types, score persistence (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
 ## 2026-10-21 16:25
 - Removed Networking category row — skupper-linux-two-site skill deleted, capability covered under Model Serving (README.md)
 

@@ -26,18 +26,27 @@ harness.
 | Controller (LLM + SDM) | Executes the skill | Runtime |
 | Harness (runtime) | Execution and observation | Goose session/recipe |
 
-### G3. Skill Evolution
+### G3. Observable Skill & Skill Evolution
 
-A feedback loop where an adjuster model or human observes execution
-of Operable Skills, analyzes the gap using CECX observation scores
-(Correctness, Efficiency, Comprehension, Complexity), suggests an
-improvement plan, and upgrades the skill — all with the help of the
-runtime harness.
+An Observable Skill carries its own evaluation criteria (observation
+schema) scored by SDM post-execution. Scripts self-report execution
+traces (agent-agnostic). Evaluation adds zero latency to the user
+experience. An adjuster model or human reads CECX observation scores,
+analyzes the gap, suggests an improvement plan, and upgrades the
+skill — all with the help of the runtime harness.
+
+Three evaluation schemas support different phases:
+
+| Schema | Scope | Location | Phase |
+|--------|-------|----------|-------|
+| Quality (MCACS) | Universal | `skills/schemas/quality.yaml` | Build-time audit |
+| Operable | Universal | `skills/schemas/operable.yaml` | Build-time audit |
+| Observation | Per-skill | `<skill>/observation.yaml` | Run-time evaluation |
 
 ```
-Author (frontier) → Operate (mid-range + SDM) → Evolve (adjuster)
-       ▲                                              │
-       └──────────── Upgrade Spec ────────────────────┘
+Author (frontier) → Operate (mid-range + SDM) → Observe (SDM) → Evolve (adjuster)
+       ▲                                                              │
+       └──────────────────── Upgrade Spec ────────────────────────────┘
 ```
 
 **Cross-references:**
@@ -45,6 +54,7 @@ Author (frontier) → Operate (mid-range + SDM) → Evolve (adjuster)
 - CECX schema: `~/.agents/knowledge/agentfs-engineering-evolution/observation-schema-cecx.md`
 - Operable Skill architecture: `~/.agents/knowledge/agentfs-engineering-evolution/operable-skill-architecture.md`
 - SDM integration: `~/.agents/knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md`
+- Observable Skill design: `~/.agents/knowledge/agentfs-engineering-evolution/observable-skill-design.md`
 
 ## Core Philosophy
 

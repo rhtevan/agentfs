@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-22 20:20
+- Updated implementation plan: Phase 0 complete with test results, learnings, bugs fixed. Phases 1-4 detailed with specific file paths, changes, and session resumption guide. (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-22 17:42
+- Added Observable Property section with observation.yaml, trace_step, two-phase evaluation, schema locations (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- New concept: Implementation Plan — 5-phase plan from SDM foundation through maturity (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- New concept: Observable Skill Design — agent-agnostic audit trail, two-phase observation, three schema types, score persistence (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
 ## 2026-10-19 11:40
 - New concept: Operable Skill Architecture — four-layer anatomy and Author/Operate/Evolve lifecycle (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
 - New concept: CECX observation schema — four traits for scoring skill executions, aligned with QSCZ deployment fitting (knowledge/agentfs-engineering-evolution/observation-schema-cecx.md)
