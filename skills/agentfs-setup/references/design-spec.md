@@ -28,25 +28,26 @@ harness.
 
 ### G3. Observable Skill & Skill Evolution
 
-An Observable Skill carries its own evaluation criteria (observation
-schema) scored by SDM post-execution. Scripts self-report execution
-traces (agent-agnostic). Evaluation adds zero latency to the user
-experience. An adjuster model or human reads CECX observation scores,
-analyzes the gap, suggests an improvement plan, and upgrades the
-skill — all with the help of the runtime harness.
-
-Three evaluation schemas support different phases:
+All three QOO evaluation schemas (Quality, Operable, Observation) are
+universal at `skills/schemas/`. Scripts self-report execution traces
+to `~/.agents/.traces/` (agent-agnostic). Evaluation is async and
+on-demand — the operating model never evaluates itself. `skill-evolve`
+or manual command triggers evaluation against accumulated traces.
+Scores persist per-skill in `scores.yaml` (committed). The frontier
+model computes semantic metrics in `qoo-profile.yaml` at authorship.
 
 | Schema | Scope | Location | Phase |
 |--------|-------|----------|-------|
 | Quality (MCACS) | Universal | `skills/schemas/quality.yaml` | Build-time audit |
 | Operable | Universal | `skills/schemas/operable.yaml` | Build-time audit |
-| Observation | Per-skill | `<skill>/observation.yaml` | Run-time evaluation |
+| Observation | Universal | `skills/schemas/observation.yaml` | Run-time evaluation |
 
 ```
-Author (frontier) → Operate (mid-range + SDM) → Observe (SDM) → Evolve (adjuster)
-       ▲                                                              │
-       └──────────────────── Upgrade Spec ────────────────────────────┘
+Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)
+       ▲                                              │
+       │                              evaluate-pending.sh (on demand)
+       │                                              │
+       └── skill-evolve (frontier) ◄── scores.yaml ◄─┘
 ```
 
 **Cross-references:**

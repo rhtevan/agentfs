@@ -2,14 +2,14 @@
 title: Implementation Plan
 parent: agentfs-engineering-evolution
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-10-23
 tags: [implementation, plan, phases, SDM, skill-gen, evolution]
 ---
 
 # Implementation Plan
 
 - **Type:** Convention
-- **Status:** Active — Phase 0 complete, Phases 1–4 pending
+- **Status:** Active — Phase 0 partially complete (0.7-0.11 remaining), Phases 1–4 pending
 - **Source:** Session analysis — phased implementation of Goals G1–G3
 
 ## Context
@@ -22,7 +22,7 @@ them at ≥90% success rate.
 Three design goals (in `design-spec.md`):
 - **G1. Quality Skill** — MCACS-informed skill generation via `skill-gen`
 - **G2. Operable Skill** — bones (scripts) + muscle (CNL) + controller (LLM+SDM) + harness
-- **G3. Observable Skill & Evolution** — per-skill evaluation schemas scored by SDM, feedback loop
+- **G3. Observable Skill & Evolution** — universal QOO schemas scored by SDM, async on-demand evaluation, feedback loop
 
 Key technology: **SDM (Semantic Decision Model)** via NextToken API
 (`/v1/decisions`) on the same port as the LLM (localhost:9000).
@@ -33,9 +33,9 @@ Key technology: **SDM (Semantic Decision Model)** via NextToken API
 - `yq` and `jq` installed for YAML/JSON processing
 - Goose CLI available for harness/recipe execution
 
-## Phase 0 — SDM Foundation ✅ COMPLETE
+## Phase 0 — SDM Foundation ⚠️ REMAINING ITEMS
 
-### Status: All items delivered and tested.
+### Status: Core infrastructure delivered. Evidence preparation and universal observation schema pending.
 
 ### Deliverables
 
@@ -116,61 +116,86 @@ Key technology: **SDM (Semantic Decision Model)** via NextToken API
 Full API reference: `~/.agents/skills/schemas/sdm-endpoint.md`
 Request/response patterns: `~/.agents/knowledge/llm-inference-constrained-gpu/decision-api-request-patterns.md`
 
-## Phase 1 — skill-gen Reengineering
+### Remaining Phase 0 Items
 
-### Status: Not started. No dependency on Phase 2.
+| Item | File | Status | Why Needed |
+|------|------|--------|-----------|
+| 0.7 observation.yaml | `skills/schemas/observation.yaml` | ❌ | Universal execution correctness dimensions (not per-skill) |
+| 0.8 gather-skill-state.sh | `scripts/gather-skill-state.sh` | ❌ | Deterministic Tier 1 facts for quality/operable evaluation (context window fix) |
+| 0.9 evaluate-pending.sh | `scripts/evaluate-pending.sh` | ❌ | Batch evaluator for accumulated traces |
+| 0.10 sdm-evaluate.sh update | `scripts/sdm-evaluate.sh` | ⚠️ | Use gather-skill-state.sh output instead of raw file dump |
+| 0.11 .traces/ convention | `~/.agents/.traces/` | ❌ | Directory + .gitignore for trace accumulation |
 
-### 1.1 Add MCACS Gates to P1 Checklist
+**Design corrections since initial Phase 0:**
 
-**What:** Add 6 quantitative checks to `skill-gen/SKILL.md`
-Post-Creation Checklist, referencing `quality.yaml` dimensions.
+1. **All three schemas are universal.** Observation schema is NOT
+   per-skill. Moved from `<skill>/observation.yaml` to
+   `skills/schemas/observation.yaml`.
+2. **SDM context window constraint.** Raw SKILL.md text is too large
+   and imprecise as evidence. Gather-skill-state.sh computes
+   deterministic Tier 1 facts. Frontier model computes semantic
+   Tier 2 metrics in `qoo-profile.yaml` at authorship.
+3. **Async-only evaluation.** Mode A (inline tail-call) removed.
+   Operating model never evaluates. Evaluation is on-demand via
+   `evaluate-pending.sh`, triggered by `skill-evolve`, manual
+   command, or benchmark harness.
+4. **Score persistence is `scores.yaml`**, not `observations/index.json`.
+   Per-skill, committed (not gitignored), separate from CHANGELOG.
+5. **No per-skill `observations/` directory.** Raw traces go to
+   `~/.agents/.traces/` (gitignored, common). Scores go to
+   `<skill>/scores.yaml` (committed, per-skill).
+
+## Phase 1 — skill-gen Reengineering (QOO Factory)
+
+### Status: Not started. Depends on Phase 0 completion.
+
+### 1.1 Add QOO Step to Creation Workflow
+
+**What:** Add a "Compute QOO Profile" step to `skill-gen` creation
+workflow. The frontier model analyzes the skill it just created and
+writes `qoo-profile.yaml` with semantic metrics.
+
+**Where:** `~/.agents/skills/skill-gen/SKILL.md` — after skill
+creation, before Post-Creation Checklist
+
+**`qoo-profile.yaml` metrics to compute:**
+- action_steps, scripted_steps, script_coverage_pct
+- concern_count, concerns list
+- accidental_lines, accidental_pct
+- model_assumptions, model_assumption_count
+- cnl_violations, cnl_compliance_pct
+
+The frontier model has the full SKILL.md in context — it authored it.
+Computing these metrics is trivial for a frontier model.
+
+### 1.2 Add MCACS Gates to P1 Checklist
+
+**What:** Add QOO evaluation to Post-Creation Checklist.
 
 **Where:** `~/.agents/skills/skill-gen/SKILL.md` — section
 "Step 6 — AgentFS Post-Creation Checklist" (line ~436)
 
 **Specific changes:**
-- Add checklist items for each `quality.yaml` dimension:
-  Script Coverage ≥80%, Inference Hop Count ≤2, Concern Count ≤2,
-  Accidental Complexity ≤20%, Model Portability ≤2, Interface Opacity.
-- Add instruction: "Run `sdm-evaluate.sh <skill-dir> quality.yaml`
-  to compute quality score. Target: ≥75 (Tunable band)."
-- Reference `~/.agents/skills/schemas/quality.yaml` as the standard.
-
-**Existing P1 already has** (don't duplicate):
-- CNL rules (one instruction/sentence, active imperative, single vocab)
-- Weak-model compatibility items
-- Code-first preference (P1 principle)
-- Context Economy (P6 — line count check)
-
-### 1.2 Add Operable Skill Scaffolding
-
-**What:** Update `skill-gen` creation workflow to produce Operable
-Skill artifacts by default.
-
-**Where:** `~/.agents/skills/skill-gen/SKILL.md` — Simple Mode
-(Step 1–6) and Advanced Mode (Step 1–4)
-
-**Specific changes:**
-- Output artifact set expands to include `observation.yaml`
-- `skill-gen` generates `observation.yaml` template based on the
-  skill's workflow steps — each step becomes an observation dimension
-- Scripts must source `trace-lib.sh` and call `trace_step()`
-- Add instruction: "Run `sdm-evaluate.sh <skill-dir> operable.yaml`
-  to verify structural compliance. Target: all boolean dimensions pass."
+- Scripts must source `~/.agents/scripts/trace-lib.sh` and call
+  `trace_step()` for each action
+- Add instruction: "Run `gather-skill-state.sh` + merge with
+  `qoo-profile.yaml` → call `sdm-evaluate.sh` with quality.yaml
+  and operable.yaml. Target: ≥75 (Tunable band)."
+- Reference `~/.agents/skills/schemas/` as the QOO standards
 
 ### 1.3 Add MCACS Audit to Skill Check
 
-**What:** Add MCACS quality and Operable compliance audit to the
-Skill Check procedure.
+**What:** Add QOO scoring to the Skill Check procedure.
 
 **Where:** `~/.agents/skills/skill-gen/SKILL.md` — section
 "Skill Check Procedure" (line ~873)
 
 **Specific changes:**
-- Add step: "Run `sdm-evaluate.sh <skill-dir> quality.yaml`"
-- Add step: "Run `sdm-evaluate.sh <skill-dir> operable.yaml`"
-- Report MCACS quality score and Operable compliance alongside P1–P7
-- Flag dimensions below target as 🟡 (warning) or 🔴 (critical)
+- Recompute `qoo-profile.yaml` (frontier model re-analyzes skill)
+- Run `gather-skill-state.sh` for deterministic facts
+- Run `sdm-evaluate.sh` with quality.yaml and operable.yaml
+- Report QOO scores alongside P1–P7 findings
+- Update `scores.yaml` with new evaluation
 
 ## Phase 2 — First Operable Skill Conversion
 
@@ -222,18 +247,11 @@ For each dimension:
 Aggregate results → alignment report
 ```
 
-### 2.3 Author observation.yaml
+### 2.3 Compute qoo-profile.yaml
 
-**What:** Create `~/.agents/skills/agentfs-readme-audit/observation.yaml`
-with execution correctness dimensions.
-
-**Dimensions:**
-- scope_resolution: Did agent resolve correct scope?
-- data_gathering: Did agent run gather-state.sh (not fabricate data)?
-- readme_read: Did agent read actual README content?
-- dimension_coverage: Did report cover all required dimensions?
-- verdict_accuracy: Does verdict match actual state?
-- no_hallucination: Did agent reference only real files and counts?
+**What:** Frontier model analyzes the converted readme-audit and
+writes `qoo-profile.yaml` with semantic metrics. This is the first
+real QOO profile ever created — validates the pattern.
 
 ### 2.4 Rewrite SKILL.md as CNL Muscle
 
@@ -262,10 +280,11 @@ Read the output. It contains pre-computed metrics for all dimensions.
 **Process:**
 1. Start a goose session with 14B model
 2. Invoke `hey check readme`
-3. Capture execution trace via `AGENTFS_TRACE`
-4. Score with `sdm-evaluate.sh` using `observation.yaml`
+3. Trace captured automatically via `AGENTFS_TRACE` in `~/.agents/.traces/`
+4. Run `evaluate-pending.sh` to score trace against universal
+   `observation.yaml`
 5. Compare CECX score against frontier baseline
-6. Record first `observations/index.json`
+6. First `scores.yaml` written to `readme-audit/`
 
 **Target:** ≥75 (Tunable band) — improvement from current ~38 (Redesign).
 
@@ -337,35 +356,31 @@ Validates the pattern is repeatable.
 ## Dependency Graph
 
 ```
-Phase 0 ✅ COMPLETE
+Phase 0 (SDM + QOO infrastructure)
+  │  ✅ 0.1-0.6 core (sdm-call, trace-lib, sdm-evaluate, schemas)
+  │  ❌ 0.7-0.11 remaining (observation.yaml, gather, evaluate-pending)
   │
-  ├─► Phase 1 (skill-gen) ──────────────────┐
-  │     1.1 MCACS gates                     │
-  │     1.2 Operable scaffolding            │
-  │     1.3 MCACS audit in Skill Check      │
-  │                                         │
-  ├─► Phase 2 (first conversion) ───────────┤
-  │     2.1 gather-state.sh                 │
-  │     2.2 SDM dimension evaluation        │
-  │     2.3 observation.yaml                ├─► Phase 3 (benchmarking)
-  │     2.4 Rewrite SKILL.md as CNL         │     3.1 Test harness
-  │     2.5 Validate on 14B                 │     3.2 Frontier baselines
-  │                                         │     3.3 14B benchmark
-  │   (Phase 1 ∥ Phase 2 — parallel)        │     3.4 Evolution cycle
-  │                                         │
-  │                                         └─► Phase 4 (maturity)
-  │                                               4.1 skill-evolve
-  │                                               4.2 Top-10 audit
-  │                                               4.3 8B benchmark
-  │                                               4.4 Second conversion
+  ├──► Phase 1 (skill-gen QOO factory) ────┐
+  │      1.1 QOO profile step              │
+  │      1.2 MCACS gates + checklist       │
+  │      1.3 QOO audit in Skill Check      │
+  │                                        │
+  ├──► Phase 2 (first conversion) ─────────┤
+  │      2.1 gather-state.sh               │
+  │      2.2 SDM dimension evaluation      ├──► Phase 3 ──► Phase 4
+  │      2.3 qoo-profile.yaml              │
+  │      2.4 Rewrite SKILL.md as CNL       │
+  │      2.5 Validate on 14B               │
+  │                                        │
+  │    (Phase 1 ∥ Phase 2 — parallel)      │
 ```
 
 ## Success Criteria
 
 | Phase | Metric | Target | Current |
 |:-----:|--------|--------|---------|
-| 0 | SDM callable, pipeline works | ✅ | ✅ Done |
-| 1 | skill-gen produces Operable Skills with observation.yaml | New skills include scripts/, observation.yaml | Not started |
+| 0 | SDM callable + QOO evidence pipeline | All 0.x items complete | 0.1-0.6 ✅, 0.7-0.11 ❌ |
+| 1 | skill-gen produces QOO skills | New skills include scripts/, qoo-profile.yaml, trace_step() | Not started |
 | 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | 37.8 (Redesign) |
 | 3 | T1–T8 pass rate on 14B | ≥90% | Not measured |
 | 4 | Repeatable evolution cycle | skill-evolve produces actionable upgrade spec | Not started |

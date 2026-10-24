@@ -190,21 +190,18 @@ separate architecture — it is a property of the Operable Skill that
 enables the evolution feedback loop.
 
 An Observable Skill:
-- Carries an `observation.yaml` defining per-skill execution evaluation
-  criteria (authored at creation time by the frontier model).
 - Scripts self-report execution traces via `trace_step()` — agent-agnostic,
-  zero LLM involvement.
-- Evaluation runs post-execution via `sdm-evaluate.sh` — zero impact on
-  user experience.
-- Scores persist in `observations/index.json` for consumption by
-  `skill-evolve`.
-
-Two universal schemas (`quality.yaml`, `operable.yaml`) live at
-`~/.agents/skills/schemas/` and apply to all skills. The per-skill
-`observation.yaml` defines execution-specific dimensions.
+  zero LLM involvement. Traces go to `~/.agents/.traces/`.
+- All three evaluation schemas (Quality, Operable, Observation) are
+  **universal** at `~/.agents/skills/schemas/`. No per-skill schemas.
+- The frontier model computes `qoo-profile.yaml` at authorship —
+  semantic metrics that require content understanding.
+- Evaluation runs **async on demand** — never during skill execution.
+  Triggered by `skill-evolve`, manual command, or benchmark harness.
+- Scores persist per-skill in `scores.yaml` (committed, not gitignored).
 
 See [Observable Skill Design](./observable-skill-design.md) for full
-design decisions, schema format, evaluation flow, and persistence model.
+design decisions, evidence tiers, evaluation flow, and persistence.
 
 ## Relationship to Existing Concepts
 

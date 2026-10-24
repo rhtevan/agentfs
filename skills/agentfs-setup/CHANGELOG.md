@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-23 22:09 | v7.3.8 — G3 revised: universal QOO schemas, async on-demand evaluation, scores.yaml, qoo-profile.yaml, updated flow diagram |
 | 2026-10-22 22:00 | v7.4.1 — Fixed race condition: added flock serialization and mktemp unique temp files to prevent log history wipe during concurrent post-write calls |
 | 2026-10-22 21:11 | v7.4.0 — Re-engineered Pre-Flight rule: two-tier specification-driven planning with Design Spec validation gate; added explicit rule scan instruction to Rules preamble; added condensed spec-driven rule to LITE template |
 | 2026-10-22 17:42 | v7.3.8 — Refined G3 to Observable Skill & Skill Evolution, added three-schema table, Observable Skill design cross-reference |

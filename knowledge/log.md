@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-23 22:09
+- Revised: Phase 0 remaining items (0.7-0.11), QOO terminology, corrected Phase 1 items, qoo-profile.yaml in Phase 2, scores.yaml persistence, updated dependency graph (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated Observable Property: universal schemas, async evaluation, scores.yaml, no per-skill schemas (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- Revised: universal observation schema, async-only evaluation, qoo-profile.yaml, scores.yaml persistence, two-tier evidence, QOO terminology (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
 ## 2026-10-22 20:20
 - Updated implementation plan: Phase 0 complete with test results, learnings, bugs fixed. Phases 1-4 detailed with specific file paths, changes, and session resumption guide. (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 
