@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-26 15:41
+- Added item 0.12 token cost tracking (complete) to Phase 0 deliverables (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Added trace_tokens() function and token totals in trace_end() for showback/ROI metrics (scripts/trace-lib.sh)
+
+## 2026-10-26 15:40
+- New reference concept: analysis of Red Hat AI Tokenomics article alignment with QOO architecture — direct echoes, new ideas (gateway, showback, volume multiplier), convergence insight (knowledge/agentfs-engineering-evolution/tokenomics-alignment.md)
+
 ## 2026-10-26 10:33
 - Wire select-sa.sh into Phase 2: GCP credential setup uses deterministic SA selection instead of manual path (skills/crc-ols/SKILL.md)
 - Add select-sa.sh: non-interactive SA selection that rejects default compute SA; update workflow Step 1 to use it (skills/litellm-vertex-ai-proxy/SKILL.md)

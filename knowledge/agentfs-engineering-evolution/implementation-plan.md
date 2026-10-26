@@ -125,6 +125,7 @@ Request/response patterns: `~/.agents/knowledge/llm-inference-constrained-gpu/de
 | 0.9 evaluate-pending.sh | `scripts/evaluate-pending.sh` | ❌ | Batch evaluator for accumulated traces |
 | 0.10 sdm-evaluate.sh update | `scripts/sdm-evaluate.sh` | ⚠️ | Use gather-skill-state.sh output instead of raw file dump |
 | 0.11 .traces/ convention | `~/.agents/.traces/` | ❌ | Directory + .gitignore for trace accumulation |
+| 0.12 Token cost tracking | `~/.agents/scripts/trace-lib.sh` | ✅ | trace_tokens() function + token totals in trace_end() for showback/ROI |
 
 **Design corrections since initial Phase 0:**
 

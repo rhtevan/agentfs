@@ -38,6 +38,7 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [Operable Skill Architecture](./operable-skill-architecture.md) | Pattern | Four-layer skill anatomy (bones/muscle/controller/harness) and Author→Operate→Evolve lifecycle |
 | [Observable Skill Design](./observable-skill-design.md) | Pattern | Agent-agnostic audit trail, two-phase observation, three schema types, score persistence, SDM integration |
 | [Implementation Plan](./implementation-plan.md) | Convention | Phased plan: Phase 0 (SDM foundation), Phase 1 (skill-gen), Phase 2 (first conversion), Phase 3 (benchmarking), Phase 4 (maturity) |
+| [Tokenomics Alignment](./tokenomics-alignment.md) | Reference | AI tokenomics convergence with QOO — multi-tier model routing, showback/ROI metrics, token cost tracking |
 
 ## Source
 
