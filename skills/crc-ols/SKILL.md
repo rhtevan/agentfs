@@ -6,7 +6,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER"
 metadata:
   author: agentfs
-  version: "3.3.0"
+  version: "3.3.2"
   tags: [openshift, crc, lightspeed, ols, llm, provider-management]
 user-invocable: true
 disable-model-invocation: false
@@ -123,17 +123,33 @@ oc get csv -n openshift-lightspeed
 See [Provider Types Reference](#provider-types-reference) below for the credential format required by each provider type.
 
 **Example — Google Vertex AI Anthropic:**
+
+First, select the correct SA key (rejects the default compute SA automatically):
+```bash
+SA_KEY=$(bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/select-sa.sh \
+  --project YOUR_GCP_PROJECT)
+```
+
+Then create the secret using the selected key:
 ```bash
 oc create secret generic llmcreds \
-  --from-file=gcp-service-account.json=/path/to/your-sa-key.json \
+  --from-file=gcp-service-account.json="$SA_KEY" \
   -n openshift-lightspeed
 ```
 
 > **Tip — Choosing the right GCP service account:**
 > If a dedicated service account (e.g., `vertex-ai-sa`) returns permission errors like
-> `"Permission 'aiplatform.endpoints.predict' denied"`, test with the Compute Engine
-> default service account instead. You can verify access with:
+> `"Permission 'aiplatform.endpoints.predict' denied"`, fix the SA's IAM permissions —
+> do **not** fall back to the Compute Engine default service account (it holds
+> `roles/editor`, which is over-privileged for Vertex AI workloads). Grant the
+> dedicated SA the required role and verify:
 > ```bash
+> # Grant the role (if not already)
+> gcloud projects add-iam-policy-binding YOUR_PROJECT \
+>   --member="serviceAccount:YOUR_SA_EMAIL" \
+>   --role="roles/aiplatform.user"
+>
+> # Test access
 > curl -s -X POST \
 >   "https://aiplatform.googleapis.com/v1/projects/YOUR_PROJECT/locations/YOUR_LOCATION/publishers/anthropic/models/YOUR_MODEL:rawPredict" \
 >   -H "Authorization: Bearer $(gcloud auth print-access-token --impersonate-service-account=YOUR_SA_EMAIL)" \

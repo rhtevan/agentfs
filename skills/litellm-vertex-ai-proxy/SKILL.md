@@ -4,7 +4,7 @@ description: >
   setup litellm vertex, vertex ai proxy, litellm vertex
 platforms: ['linux']
 metadata:
-  version: "3.1.0"
+  version: "3.1.2"
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   related_skills: [litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
 user-invocable: true
@@ -36,7 +36,9 @@ can use this proxy. See agent-specific skills (`goose-litellm-provider`,
 - `uv` package manager (`which uv` or install from https://docs.astral.sh/uv/)
 - `gcloud` CLI authenticated (`gcloud auth login`)
 - A GCP project with Vertex AI API enabled
-- A GCP service account key (JSON) with `roles/aiplatform.user` permission
+- A **dedicated** GCP service account key (JSON) with `roles/aiplatform.user` —
+  do NOT use the Compute Engine default service account (`*-compute@developer.gserviceaccount.com`),
+  which holds `roles/editor` and is over-privileged for Vertex AI workloads
 - `python3` with `google-auth` package
 
 ## Known Available Models (as of 2026-08-10)
@@ -51,21 +53,30 @@ can use this proxy. See agent-specific skills (`goose-litellm-provider`,
 
 ## Workflow
 
-### Step 1 — Detect GCP Configuration
+### Step 1 — Select Service Account
+
+```bash
+SA_KEY=$(bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/select-sa.sh \
+  --project <project_id>)
+```
+
+Selects the best dedicated SA key file. Rejects the Compute Engine
+default service account (`*-compute@developer.gserviceaccount.com`)
+automatically — it holds `roles/editor`, which is over-privileged.
+Exits non-zero if no suitable key is found or if ambiguous (use
+`--sa-email <email>` to disambiguate).
+
+Use `detect-sa.sh` for a human-readable overview of all available keys:
 
 ```bash
 bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/detect-sa.sh
 ```
 
-Identifies GCP project, active account, and all service account
-key files. Prints metadata (type, email, truncated key ID) — never
-exposes private keys.
-
 ### Step 2 — Test Service Account Permissions
 
 ```bash
 bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/test-sa.sh \
-  --sa-key <path_to_key.json> \
+  --sa-key "$SA_KEY" \
   --project <project_id> \
   --region us-east5
 ```

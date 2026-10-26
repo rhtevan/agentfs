@@ -2,6 +2,17 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-26 10:33
+- Wire select-sa.sh into Phase 2: GCP credential setup uses deterministic SA selection instead of manual path (skills/crc-ols/SKILL.md)
+- Add select-sa.sh: non-interactive SA selection that rejects default compute SA; update workflow Step 1 to use it (skills/litellm-vertex-ai-proxy/SKILL.md)
+
+## 2026-10-26 10:25
+- Add default compute SA guardrails: detect-sa.sh warns, test-sa.sh warns, SKILL.md prereqs block usage
+
+## 2026-10-26 10:19
+- Fix GCP SA tip: replace fallback-to-default-compute advice with fix-dedicated-SA-permissions guidance (skills/crc-ols/SKILL.md)
+- Fix GCP SA tip: replace fallback-to-default-compute advice with fix-dedicated-SA-permissions guidance (skills/crc-ols/SKILL.md)
+
 ## 2026-10-23 22:09
 - G3 revised: universal QOO schemas, async on-demand evaluation, scores.yaml, qoo-profile.yaml, updated flow diagram (skills/agentfs-setup/references/design-spec.md)
 - Revised: Phase 0 remaining items (0.7-0.11), QOO terminology, corrected Phase 1 items, qoo-profile.yaml in Phase 2, scores.yaml persistence, updated dependency graph (knowledge/agentfs-engineering-evolution/implementation-plan.md)

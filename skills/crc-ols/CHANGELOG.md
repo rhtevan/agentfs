@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-26 10:33 | v3.3.2 — Wire select-sa.sh into Phase 2: GCP credential setup uses deterministic SA selection instead of manual path |
+| 2026-10-26 10:19 | v3.3.1 — Fix GCP SA tip: replace fallback-to-default-compute advice with fix-dedicated-SA-permissions guidance |
 | 2026-10-23 14:02 | vv6.1.1 — Update Skupper provider detection pattern and docs for naming convention alignment (listener- prefix) |
 | 2026-09-01 18:07 | v3.3.0 — Updated skupper-model-rhel provider model name from granite-4.1-8b-fp8 to granite-4.2-8b-fp8 (Granite 4.2 upgrade). Patched OLSConfig on CRC. Updated SKILL.md examples. |
 | 2026-08-27 19:33 | v3.2.0 — Added Skupper provider liveness check to list.sh — probes /v1/models endpoint via CRC router pod and detects model name mismatches or unreachable backends. Added spec S7 and tests T5/T6. |

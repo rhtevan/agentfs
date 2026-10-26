@@ -45,11 +45,17 @@ for keyfile in $(find ~/.config/gcloud/legacy_credentials -name "adc.json" 2>/de
 import json, sys
 with open('$keyfile') as f:
     d = json.load(f)
+email = d.get('client_email', 'unknown')
 print(f'  File:     $keyfile')
 print(f'  Type:     {d.get(\"type\", \"unknown\")}')
-print(f'  Email:    {d.get(\"client_email\", \"unknown\")}')
+print(f'  Email:    {email}')
 print(f'  Key ID:   {d.get(\"private_key_id\", \"\")[:12]}...')
 print(f'  Project:  {d.get(\"project_id\", \"unknown\")}')
+# Warn if this is the default compute SA
+if '-compute@developer.gserviceaccount.com' in email:
+    print(f'  ⚠️  WARNING: This is the Compute Engine default service account.')
+    print(f'     It holds roles/editor (project-wide) — over-privileged for Vertex AI.')
+    print(f'     Use a dedicated SA with roles/aiplatform.user instead.')
 " 2>/dev/null || echo "  ⚠️  Could not parse: $keyfile"
   echo ""
 done

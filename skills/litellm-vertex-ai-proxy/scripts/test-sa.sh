@@ -48,6 +48,14 @@ if [[ -z "$SA_KEY" || ! -f "$SA_KEY" ]]; then
   exit 1
 fi
 
+# Warn if selected key is the default compute SA
+if grep -q '\-compute@developer.gserviceaccount.com' "$SA_KEY" 2>/dev/null; then
+  echo "⚠️  WARNING: Selected key is the Compute Engine default service account."
+  echo "   It holds roles/editor (project-wide) — over-privileged for Vertex AI."
+  echo "   Consider using a dedicated SA with roles/aiplatform.user instead."
+  echo ""
+fi
+
 echo "Testing Vertex AI access..."
 echo "  SA Key:  $SA_KEY"
 echo "  Project: $PROJECT"
