@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-26 15:52
+- Corrected observation schema from per-skill to universal, updated directory layout (skills/schemas/README.md)
+- Updated evidence extraction to use gather-skill-state.sh for quality/operable schemas (scripts/sdm-evaluate.sh)
+- Phase 0 complete: all 12 items delivered and tested (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- New universal schema: execution correctness with 7 CECX-weighted dimensions (skills/schemas/observation.yaml)
+- New script: deterministic Tier 1 fact extraction for skills — 20-line explicit evidence for SDM (scripts/gather-skill-state.sh)
+- New script: batch trace evaluator — scans .traces/, calls sdm-evaluate, persists scores.yaml (scripts/evaluate-pending.sh)
+
 ## 2026-10-26 15:41
 - Added item 0.12 token cost tracking (complete) to Phase 0 deliverables (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 - Added trace_tokens() function and token totals in trace_end() for showback/ROI metrics (scripts/trace-lib.sh)

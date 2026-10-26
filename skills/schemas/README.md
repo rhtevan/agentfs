@@ -10,7 +10,7 @@ correctness.
 |------|-------|------|-----------|------|
 | **quality** | Universal | `quality.yaml` | Skill design against MCACS principles | Build-time audit |
 | **operable** | Universal | `operable.yaml` | Structural compliance with Operable Skill architecture | Build-time audit |
-| **observation** | Per-skill | `<skill>/observation.yaml` | Execution correctness for a specific skill | Run-time evaluation |
+| **observation** | Universal | `observation.yaml` | Execution correctness from trace evidence | Run-time evaluation |
 
 ## Unified Format
 
@@ -155,18 +155,21 @@ mismatches and triggers re-evaluation.
 │   ├── sdm-evaluate.sh          ← multi-dimension evaluator
 │   └── trace-lib.sh             ← trace capture library
 │
+├── .traces/                      ← gitignored, trace JSONL files
+│   ├── .gitignore
+│   └── <skill>-<timestamp>.jsonl
+│
 └── skills/
     ├── schemas/                  ← universal schemas (this directory)
     │   ├── README.md             ← this file
     │   ├── sdm-endpoint.md       ← API reference
     │   ├── quality.yaml          ← MCACS quality standard
-    │   └── operable.yaml         ← structural compliance
+    │   ├── operable.yaml         ← structural compliance
+    │   └── observation.yaml      ← execution correctness standard
     │
     └── <skill-name>/
         ├── SKILL.md
-        ├── observation.yaml      ← per-skill execution schema
-        ├── scripts/
-        └── observations/         ← gitignored, generated
-            ├── index.json
-            └── <timestamp>.json
+        ├── qoo-profile.yaml      ← semantic metrics (frontier-authored)
+        ├── scores.yaml            ← evaluation history (committed)
+        └── scripts/
 ```

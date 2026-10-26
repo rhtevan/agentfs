@@ -1,0 +1,89 @@
+schema-version: "1.0"
+schema-type: observation
+description: >
+  Universal execution correctness standard for AgentFS skill runs.
+  Evaluates whether the agent executed the skill correctly based on
+  the execution trace. Applied post-execution by evaluate-pending.sh
+  or sdm-evaluate.sh against a trace JSONL file. Scored using CECX
+  weighting: Correctness 0.40, Efficiency 0.25, Comprehension 0.25,
+  Complexity 0.10.
+
+dimensions:
+  # --- Correctness (weight 0.40) ---
+  - name: step_completion
+    question: >
+      Did the agent complete all steps recorded in the trace? Check
+      that every expected step from trace_init to trace_end was
+      executed and that the end record shows zero errors.
+    evidence_source: trace JSONL
+    metric: boolean
+    target: "true"
+    weight: 0.40
+
+  - name: no_fabrication
+    question: >
+      Based on the trace, did the agent use only real data from script
+      outputs? Look for steps where the detail field contains results
+      that could not have come from the preceding script execution
+      (fabricated counts, invented file paths, made-up status values).
+    evidence_source: trace JSONL
+    metric: boolean
+    target: "true"
+    weight: 0.40
+
+  # --- Efficiency (weight 0.25) ---
+  - name: minimal_inference_hops
+    question: >
+      Did the agent reach deterministic script checkpoints with
+      minimal reasoning steps? Count inference hops (steps where
+      exit code is 0 but action is not a script call). Fewer hops
+      means more efficient execution.
+    evidence_source: trace JSONL
+    metric: count
+    target: "<= 2"
+    weight: 0.25
+
+  - name: token_efficiency
+    question: >
+      If token records exist in the trace, is the total token count
+      reasonable for the task? Compare total_tokens in the end record
+      against the step count. A well-scripted skill should use fewer
+      than 1000 tokens per step on average.
+    evidence_source: trace JSONL
+    metric: ratio
+    target: "<= 0.50"
+    weight: 0.25
+
+  # --- Comprehension (weight 0.25) ---
+  - name: correct_sequence
+    question: >
+      Did the agent execute steps in the correct order as defined by
+      the step numbers in the trace? Check that step numbers are
+      monotonically increasing and no steps were skipped or reordered.
+    evidence_source: trace JSONL
+    metric: boolean
+    target: "true"
+    weight: 0.25
+
+  - name: scope_resolution
+    question: >
+      If the skill involves scope resolution (USER vs PROJECT), did
+      the agent resolve scope correctly based on the trace evidence?
+      Look for scope-related detail fields that match expected context.
+    evidence_source: trace JSONL
+    metric: boolean
+    target: "true"
+    weight: 0.25
+
+  # --- Complexity (weight 0.10) ---
+  - name: no_improvised_recovery
+    question: >
+      Did the agent follow the defined error handling path when errors
+      occurred, rather than improvising a recovery? Check for steps
+      after an error (exit != 0) — did the subsequent steps follow
+      the expected error handling pattern or did the agent invent
+      ad-hoc workarounds?
+    evidence_source: trace JSONL
+    metric: boolean
+    target: "true"
+    weight: 0.10

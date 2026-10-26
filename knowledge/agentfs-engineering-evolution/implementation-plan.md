@@ -33,9 +33,9 @@ Key technology: **SDM (Semantic Decision Model)** via NextToken API
 - `yq` and `jq` installed for YAML/JSON processing
 - Goose CLI available for harness/recipe execution
 
-## Phase 0 — SDM Foundation ⚠️ REMAINING ITEMS
+## Phase 0 — SDM Foundation ✅ COMPLETE
 
-### Status: Core infrastructure delivered. Evidence preparation and universal observation schema pending.
+### Status: All 12 items delivered and tested.
 
 ### Deliverables
 
@@ -120,11 +120,11 @@ Request/response patterns: `~/.agents/knowledge/llm-inference-constrained-gpu/de
 
 | Item | File | Status | Why Needed |
 |------|------|--------|-----------|
-| 0.7 observation.yaml | `skills/schemas/observation.yaml` | ❌ | Universal execution correctness dimensions (not per-skill) |
-| 0.8 gather-skill-state.sh | `scripts/gather-skill-state.sh` | ❌ | Deterministic Tier 1 facts for quality/operable evaluation (context window fix) |
-| 0.9 evaluate-pending.sh | `scripts/evaluate-pending.sh` | ❌ | Batch evaluator for accumulated traces |
-| 0.10 sdm-evaluate.sh update | `scripts/sdm-evaluate.sh` | ⚠️ | Use gather-skill-state.sh output instead of raw file dump |
-| 0.11 .traces/ convention | `~/.agents/.traces/` | ❌ | Directory + .gitignore for trace accumulation |
+| 0.7 observation.yaml | `skills/schemas/observation.yaml` | ✅ | Universal execution correctness: 7 dimensions, CECX-weighted |
+| 0.8 gather-skill-state.sh | `scripts/gather-skill-state.sh` | ✅ | Deterministic Tier 1 facts (~20 lines vs 3,000+ raw). Tested on 4 skills. |
+| 0.9 evaluate-pending.sh | `scripts/evaluate-pending.sh` | ✅ | Batch evaluator: scans .traces/, calls sdm-evaluate, persists to scores.yaml |
+| 0.10 sdm-evaluate.sh update | `scripts/sdm-evaluate.sh` | ✅ | Uses gather-skill-state.sh for quality/operable evidence. Fallback to raw. |
+| 0.11 .traces/ convention | `~/.agents/.traces/` | ✅ | Directory created with .gitignore (ignores all except .gitignore) |
 | 0.12 Token cost tracking | `~/.agents/scripts/trace-lib.sh` | ✅ | trace_tokens() function + token totals in trace_end() for showback/ROI |
 
 **Design corrections since initial Phase 0:**
@@ -380,7 +380,7 @@ Phase 0 (SDM + QOO infrastructure)
 
 | Phase | Metric | Target | Current |
 |:-----:|--------|--------|---------|
-| 0 | SDM callable + QOO evidence pipeline | All 0.x items complete | 0.1-0.6 ✅, 0.7-0.11 ❌ |
+| 0 | SDM callable + QOO evidence pipeline | All 0.x items complete | ✅ All 0.1-0.12 complete |
 | 1 | skill-gen produces QOO skills | New skills include scripts/, qoo-profile.yaml, trace_step() | Not started |
 | 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | 37.8 (Redesign) |
 | 3 | T1–T8 pass rate on 14B | ≥90% | Not measured |

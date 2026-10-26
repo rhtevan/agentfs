@@ -58,32 +58,37 @@ log "Schema: $SCHEMA_TYPE v$SCHEMA_VERSION for skill: $SKILL_NAME"
 # --- Extract evidence based on schema type ---
 
 extract_evidence_quality() {
-  # Target is a skill directory — read SKILL.md and scripts/
+  # Target is a skill directory — use gather-skill-state.sh for
+  # concise, explicit facts (~20 lines vs 3,000+ raw SKILL.md).
+  # SDM judges meaning, not computes — facts must be pre-computed.
   local skill_dir="$1"
-  local evidence=""
+  local gather_script="${SCRIPT_DIR}/gather-skill-state.sh"
 
-  if [[ -f "$skill_dir/SKILL.md" ]]; then
-    evidence+="=== SKILL.md ===\n"
-    evidence+=$(cat "$skill_dir/SKILL.md")
-    evidence+="\n"
-  fi
-
-  if [[ -d "$skill_dir/scripts" ]]; then
-    evidence+="\n=== Scripts ===\n"
-    for script in "$skill_dir/scripts/"*; do
-      [[ -f "$script" ]] || continue
-      evidence+="--- $(basename "$script") ---\n"
-      evidence+=$(cat "$script")
+  if [[ -x "$gather_script" ]]; then
+    "$gather_script" "$skill_dir"
+  else
+    # Fallback: raw SKILL.md (imprecise — legacy behavior)
+    log "WARNING: gather-skill-state.sh not found. Using raw SKILL.md as evidence (imprecise)."
+    local evidence=""
+    if [[ -f "$skill_dir/SKILL.md" ]]; then
+      evidence+="=== SKILL.md ===\n"
+      evidence+=$(cat "$skill_dir/SKILL.md")
       evidence+="\n"
-    done
+    fi
+    if [[ -d "$skill_dir/scripts" ]]; then
+      evidence+="\n=== Scripts ===\n"
+      for script in "$skill_dir/scripts/"*; do
+        [[ -f "$script" ]] || continue
+        evidence+="--- $(basename "$script") ---\n"
+        evidence+=$(cat "$script")
+        evidence+="\n"
+      done
+    fi
+    evidence+="\n=== Directory Structure ===\n"
+    evidence+=$(find "$skill_dir" -maxdepth 2 -not -path '*/observations/*' \
+      -not -path '*/.git/*' 2>/dev/null | sort)
+    printf '%b' "$evidence"
   fi
-
-  # Directory listing
-  evidence+="\n=== Directory Structure ===\n"
-  evidence+=$(find "$skill_dir" -maxdepth 2 -not -path '*/observations/*' \
-    -not -path '*/.git/*' 2>/dev/null | sort)
-
-  printf '%b' "$evidence"
 }
 
 extract_evidence_observation() {
