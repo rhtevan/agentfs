@@ -57,10 +57,12 @@ fi
 
 # --- Action step count ---
 # Count lines that look like step headers: ### Step N, ### N., numbered steps
-ACTION_STEPS=$(grep -cP '^\s*###\s+(Step\s+\d|[0-9]+\.)' "$SKILL_MD" 2>/dev/null || echo 0)
+ACTION_STEPS=$(grep -cP '^\s*###\s+(Step\s+\d|[0-9]+\.)' "$SKILL_MD" 2>/dev/null || true)
+  ACTION_STEPS="${ACTION_STEPS:-0}"
 # Fallback: count major workflow steps
 if [[ "$ACTION_STEPS" -eq 0 ]]; then
-  ACTION_STEPS=$(grep -cP '^\s*##\s+Step\s' "$SKILL_MD" 2>/dev/null || echo 0)
+  ACTION_STEPS=$(grep -cP '^\s*##\s+Step\s' "$SKILL_MD" 2>/dev/null || true)
+  ACTION_STEPS="${ACTION_STEPS:-0}"
 fi
 
 # --- Script count ---
@@ -75,7 +77,8 @@ fi
 # Count action steps that reference a script call (bash/sh + scripts/)
 SCRIPTED_STEPS=0
 if [[ "$SCRIPT_COUNT" -gt 0 ]]; then
-  SCRIPTED_STEPS=$(grep -cP '(bash|sh)\s+.*scripts/' "$SKILL_MD" 2>/dev/null || echo 0)
+  SCRIPTED_STEPS=$(grep -cP '(bash|sh)\s+.*scripts/' "$SKILL_MD" 2>/dev/null || true)
+  SCRIPTED_STEPS="${SCRIPTED_STEPS:-0}"
   # Cap at action step count
   if [[ "$SCRIPTED_STEPS" -gt "$ACTION_STEPS" ]]; then
     SCRIPTED_STEPS=$ACTION_STEPS
@@ -135,7 +138,8 @@ CONCERNS=$(echo "$CONCERNS" | sed 's/, $//')
 # Count lines with inline shell commands (HOW) vs total content lines
 TOTAL_LINES=$(wc -l < "$SKILL_MD")
 # Lines that contain shell-like commands (backtick blocks, $(), pipes, redirects)
-SHELL_LINES=$(grep -cP '^\s*(```|.*\$\(|.*\|.*\||.*[<>]{1,2}\s|.*&&\s|^\s*#\s*(bash|sh))' "$SKILL_MD" 2>/dev/null || echo 0)
+SHELL_LINES=$(grep -cP '^\s*(```|.*\$\(|.*\|.*\||.*[<>]{1,2}\s|.*&&\s|^\s*#\s*(bash|sh))' "$SKILL_MD" 2>/dev/null || true)
+SHELL_LINES="${SHELL_LINES:-0}"
 # Lines inside code fences (rough estimate)
 CODE_FENCE_LINES=$(awk '/^```/{if(f){f=0;n+=NR-s}else{f=1;s=NR}}END{print n+0}' "$SKILL_MD")
 ACCIDENTAL_LINES=$((SHELL_LINES + CODE_FENCE_LINES))

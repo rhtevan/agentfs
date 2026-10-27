@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 12:26
+- Item 2.5 validation: 14B model follows script for PROJECT scope (exit 1 path), but bypasses scripts for USER scope (reads README directly instead of running gather-state.sh) (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-27 12:06
+- Fixed grep -c || echo 0 patterns causing arithmetic errors with pipefail (scripts/gather-skill-state.sh)
+- Rewrite as CNL muscle: 283→168 lines, inline commands→script calls, Pattern C→A (skills/agentfs-readme-audit/SKILL.md)
+- First qoo-profile.yaml: semantic metrics for readme-audit conversion (Pattern C→A)
+
+## 2026-10-27 11:58
+- New script: SDM-powered README alignment evaluation — Pattern 1 integration, 9 USER dims, 8 PROJECT dims (skills/agentfs-readme-audit/scripts/evaluate-readme.sh)
+
+## 2026-10-27 11:53
+- New script: deterministic state gathering for README audit — replaces Steps 0-2, trace-instrumented, dual scope support (skills/agentfs-readme-audit/scripts/gather-state.sh)
+
 ## 2026-10-26 15:52
 - Corrected observation schema from per-skill to universal, updated directory layout (skills/schemas/README.md)
 - Updated evidence extraction to use gather-skill-state.sh for quality/operable schemas (scripts/sdm-evaluate.sh)
