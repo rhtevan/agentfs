@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 14:53
+- Added anti-pattern: frontier model implicit assumptions — CWD assumption, misattribution, mitigation for skill-gen (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
+- Added implicit_assumptions section — CWD git repo assumption discovered during 14B validation (skills/agentfs-readme-audit/qoo-profile.yaml)
+
+## 2026-10-27 13:41
+- Phase 2.5 PASS: corrected misattribution — script bug not model gap. Both scopes pass on 14B v3.0.1. (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-27 13:36
+- v3.0.1: add explicit --scope user instruction for USER scope, fix CWD-dependent scope detection (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-27 13:12
+- Phase 2.5: v3.0.1 retest results — 4 runs, 1 partial pass, root cause refined to model behavioral gap (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- v3.0.1: prohibition on direct README reading, absolute paths, stronger imperative, temp file pattern (skills/agentfs-readme-audit/SKILL.md)
+
 ## 2026-10-27 13:01
 - Updated Phase 2.5 with validation results, Phase 3.1 with goose run decision (not recipe), dependency graph with current status (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 

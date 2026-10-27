@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "3.0.0"
+  version: "3.0.1"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
@@ -18,7 +18,7 @@ AgentFS scope. Supports USER and PROJECT scopes.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 3.0.0 |
+| **Version** | 3.0.1 |
 | **Trigger** | Automatic during Git Push Safety, or explicit |
 | **Dependencies** | `scripts/gather-state.sh`, `scripts/evaluate-readme.sh` |
 
@@ -31,39 +31,56 @@ AgentFS scope. Supports USER and PROJECT scopes.
 | S3 | Present alignment report to user | Report contains dimension table and verdict |
 | S4 | Recommend fixes for drift | Each drifted dimension has a specific fix |
 
+## Rules
+
+Do NOT read README.md directly. Do NOT use `cat`, `shell`, `read_image`,
+or any tool to read the README file. The gather-state script reads it.
+All state comes from scripts. You orchestrate scripts, not files.
+
 ## Workflow
 
-Execute these steps in order.
+Execute these steps now. Run the scripts immediately. Do not explain
+the steps to the user. Do not ask for confirmation before Step 1.
 
 ### Step 1: Gather State
 
-Run the gather-state script. Pass `--repo-root` if the audit target
-is not the current working directory.
+Determine which scope to audit. If the current working directory
+is inside `~/.agents`, the scope is USER. Otherwise, the scope
+is PROJECT.
+
+For USER scope, run:
 
 ```bash
-bash scripts/gather-state.sh
+bash ~/.agents/skills/agentfs-readme-audit/scripts/gather-state.sh --scope user > /tmp/readme-audit-state.txt
+```
+
+For PROJECT scope, run:
+
+```bash
+bash ~/.agents/skills/agentfs-readme-audit/scripts/gather-state.sh > /tmp/readme-audit-state.txt
 ```
 
 If the script exits 1, report to the user:
 "No README found in PROJECT scope. Audit skipped."
 Stop here.
 
-Read the output. It contains the resolved scope, filesystem facts,
-and full README content.
+Read `/tmp/readme-audit-state.txt`. It contains the resolved scope,
+filesystem facts, and full README content. This is the ONLY source
+of truth for this audit. Do not gather state by other means.
 
 ### Step 2: Evaluate Alignment
 
-Run the evaluate-readme script. Pass the gather-state output.
+Run this command:
 
 ```bash
-bash scripts/gather-state.sh | bash scripts/evaluate-readme.sh
+bash ~/.agents/skills/agentfs-readme-audit/scripts/evaluate-readme.sh /tmp/readme-audit-state.txt
 ```
 
-If SDM is unavailable (exit 2), skip SDM evaluation. Fall through
-to Step 3 and perform the comparison using the gather-state facts
-directly.
+If the script exits 2, SDM is unavailable. Skip this step. Fall
+through to Step 3 and perform the comparison using the facts from
+`/tmp/readme-audit-state.txt` directly.
 
-If SDM evaluation succeeds, read the output. It contains a dimension
+If the script succeeds, read the output. It contains a dimension
 table with per-dimension verdicts and an aggregate verdict.
 
 ### Step 3: Interpret Results

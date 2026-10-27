@@ -80,6 +80,29 @@ system fails.
 intensive steps into deterministic scripts or Semantic Decision Model (SDM)
 calls. The agent orchestrates — it does not perform accidental complexity.
 
+## Discovered Anti-Pattern: Frontier Model Implicit Assumptions
+
+**Found in:** Phase 2.5 validation of readme-audit v3.0.0
+
+The authoring model (frontier) wrote `gather-state.sh` assuming CWD
+is always inside a git repo. This assumption was never stated, never
+tested, and invisible to the author. When the 14B operating model
+ran the script from a Goose session with a different CWD, the script
+failed. The frontier model then misattributed the failure to the 14B
+model's "behavioral gap" — compounding the error.
+
+**MCACS classification:** Abstraction failure. The script's interface
+leaked an internal assumption. A well-abstracted script accepts
+explicit inputs (`--scope user`) and does not depend on implicit
+execution context.
+
+**Mitigation for skill-gen (Phase 1):**
+- Test scripts from non-obvious CWDs (`/tmp`, `~`, non-git dirs)
+- Record `implicit_assumptions` in `qoo-profile.yaml`
+- Checklist: "Does this script work without any CWD assumptions?"
+- Accept that the authoring model's assumptions are invisible to
+  itself — only cross-model execution or explicit testing exposes them
+
 ## Key Insight
 
 These are not independent rules. They are interdependent lenses:

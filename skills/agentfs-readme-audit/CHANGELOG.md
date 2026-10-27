@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-27 13:12 | v3.0.1 — v3.0.1: prohibition on direct README reading, absolute paths, stronger imperative, temp file pattern |
 | 2026-10-27 11:53 | v3.0.0 — New script: deterministic state gathering for README audit — replaces Steps 0-2, trace-instrumented, dual scope support |
 | 2026-09-16 12:11 | v2.1.0 — Added D9/P8 Coverage Gaps dimension — non-blocking signal for unmentioned content |
 | 2026-09-11 10:51 | v2.0.0 — Add PROJECT scope support: Step 0 scope resolution from git repo root; PROJECT-specific audit dimensions (P1–P7) replacing USER-only D1–D8; dual report format; graceful skip when no PROJECT README exists; "What This Skill Does NOT Do" updated to remove USER-only limitation |

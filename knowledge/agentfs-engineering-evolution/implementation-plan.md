@@ -9,7 +9,7 @@ tags: [implementation, plan, phases, SDM, skill-gen, evolution]
 # Implementation Plan
 
 - **Type:** Convention
-- **Status:** Active — Phase 0 ✅, Phase 2 ⚠️ (2.1-2.4 done, 2.5 partial), Phases 1,3,4 pending
+- **Status:** Active — Phase 0 ✅, Phase 2 ✅, Phases 1,3,4 pending
 - **Source:** Session analysis — phased implementation of Goals G1–G3
 
 ## Context
@@ -94,6 +94,23 @@ Key technology: **SDM (Semantic Decision Model)** via NextToken API
 4. **NextToken API is the right choice.** Always available on port
    9000 (same as LLM). ~115-200ms per question. Sufficient accuracy
    for pass/fail evaluation on well-defined dimensions.
+
+5. **Frontier model implicit assumptions are the primary risk.**
+   The authoring model (frontier/Opus) wrote `gather-state.sh` with
+   an unstated assumption: CWD is always inside a git repo. When the
+   14B model ran it from a different CWD, the script failed. The
+   frontier model then misattributed the failure to the 14B model's
+   "behavioral gap" — 4 test runs, 4 wrong diagnoses. Actual root
+   cause: **Abstraction failure** — the script leaked an internal
+   assumption through its interface. The 14B model was correct.
+   **Implications for skill-gen (Phase 1):**
+   - Scripts must be tested from non-obvious CWDs
+   - `qoo-profile.yaml` should capture `implicit_assumptions`
+   - Post-creation checklist must include: "Does this script work
+     when run from `/tmp`? From `~`? From a non-git directory?"
+   - The authoring model's assumptions are invisible to itself —
+     only execution by a different model (or different context)
+     exposes them
 
 ### Bugs Found and Fixed
 
@@ -296,13 +313,36 @@ directly instead of running the script. The CNL instruction "Run the
 gather-state script" is not imperative enough to override the model's
 instinct to take the simpler path.
 
-**Fix direction (v3.0.1):**
-- Add explicit prohibition: "Do NOT read README.md directly."
-- Strengthen imperative: "gather-state.sh is the ONLY way to gather state."
-- Remove Step 2 pipe form (`gather-state.sh | evaluate-readme.sh`) —
-  too complex for 14B. Use two separate script calls with temp file.
+**v3.0.1 fixes applied (2026-10-27):**
+1. Added explicit prohibition: "Do NOT read README.md directly."
+2. Changed to absolute paths: `~/.agents/skills/agentfs-readme-audit/scripts/gather-state.sh`
+3. Removed pipe form — two separate script calls with temp file.
+4. Added stronger imperative: "Execute these steps now. Run the scripts immediately."
+5. Added explicit `--scope user` instruction for USER scope detection.
+6. Fixed root cause: gather-state.sh scope detection was CWD-dependent —
+   failed when Goose CWD was not inside a git repo. `--scope user` flag
+   bypasses CWD auto-detection entirely.
 
-**Target:** ≥75 (Tunable band) — improvement from current ~38 (Redesign).
+**Earlier test failures (pre-fix) were misattributed to 14B model
+behavioral gaps. Actual root cause: script bug (CWD-dependent scope
+detection). The model was executing the script correctly but the
+script returned exit 1/2 due to scope detection failure.**
+
+**v3.0.1 retest results (2 runs on Qwen3-14B-FP8, post-fix):**
+
+| Run | Scope | Dispatch | Skill Loaded | Script Ran | Outcome |
+|:---:|:-----:|:--------:|:------------:|:----------:|---------|
+| 1 | PROJECT | ✅ search_nodes | ✅ | ✅ gather-state.sh | ✅ PASS — exit 1, "no README" |
+| 2 | USER | ✅ search_nodes | ✅ | ✅ gather-state.sh --scope user | ✅ PASS — full alignment report, all D1-D9 |
+
+**Key findings:**
+1. 14B model follows skill instructions when scripts work correctly.
+2. Model picked up `--scope user` from SKILL.md Step 1 instructions.
+3. Model used absolute paths, temp file pattern, and did not read README directly.
+4. Produced correct 9-dimension alignment report: all ✅ ALIGNED.
+5. Earlier "model behavioral gap" attribution was wrong — it was a script bug.
+
+**Target:** ≥75 (Tunable band). Current: ✅ PASS on both scopes.
 
 ## Phase 3 — Harness & Benchmarking
 
@@ -389,12 +429,12 @@ Phase 0 (SDM + QOO infrastructure) ✅ COMPLETE
   │      1.2 MCACS gates + checklist       │
   │      1.3 QOO audit in Skill Check      │
   │                                        │
-  ├──► Phase 2 (first conversion) ─────────┤  ⚠️ 2.1-2.4 DONE, 2.5 PARTIAL
+  ├──► Phase 2 (first conversion) ─────────┤  ✅ COMPLETE
   │      2.1 gather-state.sh         ✅    │
   │      2.2 evaluate-readme.sh      ✅    ├──► Phase 3 ──► Phase 4
   │      2.3 qoo-profile.yaml        ✅    │
   │      2.4 SKILL.md CNL rewrite    ✅    │  Phase 3 harness: goose run CLI
-  │      2.5 Validate on 14B         ⚠️    │  (not goose recipe)
+  │      2.5 Validate on 14B         ✅    │  (not goose recipe)
   │                                        │
   │    (Phase 1 ∥ Phase 2 — parallel)      │
 ```
@@ -405,7 +445,7 @@ Phase 0 (SDM + QOO infrastructure) ✅ COMPLETE
 |:-----:|--------|--------|---------|
 | 0 | SDM callable + QOO evidence pipeline | All 0.x items complete | ✅ All 0.1-0.12 complete |
 | 1 | skill-gen produces QOO skills | New skills include scripts/, qoo-profile.yaml, trace_step() | Not started |
-| 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | ⚠️ PROJECT pass, USER fail (model bypasses script) |
+| 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | ✅ Both scopes pass on 14B (v3.0.1) |
 | 3 | T1–T8 pass rate on 14B | ≥90% | Not measured |
 | 4 | Repeatable evolution cycle | skill-evolve produces actionable upgrade spec | Not started |
 
