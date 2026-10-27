@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 13:01
+- Updated Phase 2.5 with validation results, Phase 3.1 with goose run decision (not recipe), dependency graph with current status (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
 ## 2026-10-27 12:26
 - Item 2.5 validation: 14B model follows script for PROJECT scope (exit 1 path), but bypasses scripts for USER scope (reads README directly instead of running gather-state.sh) (skills/agentfs-readme-audit/SKILL.md)
 

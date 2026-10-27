@@ -9,7 +9,7 @@ tags: [implementation, plan, phases, SDM, skill-gen, evolution]
 # Implementation Plan
 
 - **Type:** Convention
-- **Status:** Active — Phase 0 partially complete (0.7-0.11 remaining), Phases 1–4 pending
+- **Status:** Active — Phase 0 ✅, Phase 2 ⚠️ (2.1-2.4 done, 2.5 partial), Phases 1,3,4 pending
 - **Source:** Session analysis — phased implementation of Goals G1–G3
 
 ## Context
@@ -278,14 +278,29 @@ Read the output. It contains pre-computed metrics for all dimensions.
 
 **What:** Run the converted readme-audit on Qwen3-14B-FP8.
 
-**Process:**
-1. Start a goose session with 14B model
-2. Invoke `hey check readme`
-3. Trace captured automatically via `AGENTFS_TRACE` in `~/.agents/.traces/`
-4. Run `evaluate-pending.sh` to score trace against universal
-   `observation.yaml`
-5. Compare CECX score against frontier baseline
-6. First `scores.yaml` written to `readme-audit/`
+**Method:** `goose run` CLI with `--provider custom_skupper --model
+"Qwen/Qwen3-14B-FP8" --text "hey check readme" --no-session --quiet
+--max-turns 15`. Runs from this session — no separate Goose session
+or recipe needed.
+
+**Results (2026-10-27):**
+
+| Test | Scope | gather-state.sh ran? | Result |
+|------|-------|:--------------------:|--------|
+| CWD=context-eng (no README) | PROJECT | ✅ Yes | ✅ PASS — exit 1 interpreted correctly |
+| CWD=~/.agents (README exists) | USER | ❌ No — model read README directly | ❌ FAIL |
+
+**Root cause:** Coupling (model_portability). The 14B model bypasses
+`gather-state.sh` when the README file exists — it reads the file
+directly instead of running the script. The CNL instruction "Run the
+gather-state script" is not imperative enough to override the model's
+instinct to take the simpler path.
+
+**Fix direction (v3.0.1):**
+- Add explicit prohibition: "Do NOT read README.md directly."
+- Strengthen imperative: "gather-state.sh is the ONLY way to gather state."
+- Remove Step 2 pipe form (`gather-state.sh | evaluate-readme.sh`) —
+  too complex for 14B. Use two separate script calls with temp file.
 
 **Target:** ≥75 (Tunable band) — improvement from current ~38 (Redesign).
 
@@ -295,7 +310,17 @@ Read the output. It contains pre-computed metrics for all dimensions.
 
 ### 3.1 Build Test Harness
 
-**What:** Automated runner for T1–T8 using `goose recipe`.
+**What:** Automated runner for T1–T8 using `goose run` CLI.
+
+**Decision (2026-10-27):** `goose run` chosen over `goose recipe`.
+`goose run --provider --model --text --no-session --quiet --max-turns`
+provides all needed control via CLI flags. Recipes would require 8
+separate YAML files each doing what a single `--text` flag does.
+No benefit to recipe complexity. The harness is a single bash script
+that loops over T1-T8, calls `goose run` per test, captures output,
+and runs `evaluate-pending.sh` on accumulated traces.
+
+**Previously stated (now superseded):**
 
 **Test cases** (from benchmark-test-suite.md):
 
@@ -357,21 +382,19 @@ Validates the pattern is repeatable.
 ## Dependency Graph
 
 ```
-Phase 0 (SDM + QOO infrastructure)
-  │  ✅ 0.1-0.6 core (sdm-call, trace-lib, sdm-evaluate, schemas)
-  │  ❌ 0.7-0.11 remaining (observation.yaml, gather, evaluate-pending)
+Phase 0 (SDM + QOO infrastructure) ✅ COMPLETE
   │
-  ├──► Phase 1 (skill-gen QOO factory) ────┐
+  ├──► Phase 1 (skill-gen QOO factory) ────┐  ❌ NOT STARTED
   │      1.1 QOO profile step              │
   │      1.2 MCACS gates + checklist       │
   │      1.3 QOO audit in Skill Check      │
   │                                        │
-  ├──► Phase 2 (first conversion) ─────────┤
-  │      2.1 gather-state.sh               │
-  │      2.2 SDM dimension evaluation      ├──► Phase 3 ──► Phase 4
-  │      2.3 qoo-profile.yaml              │
-  │      2.4 Rewrite SKILL.md as CNL       │
-  │      2.5 Validate on 14B               │
+  ├──► Phase 2 (first conversion) ─────────┤  ⚠️ 2.1-2.4 DONE, 2.5 PARTIAL
+  │      2.1 gather-state.sh         ✅    │
+  │      2.2 evaluate-readme.sh      ✅    ├──► Phase 3 ──► Phase 4
+  │      2.3 qoo-profile.yaml        ✅    │
+  │      2.4 SKILL.md CNL rewrite    ✅    │  Phase 3 harness: goose run CLI
+  │      2.5 Validate on 14B         ⚠️    │  (not goose recipe)
   │                                        │
   │    (Phase 1 ∥ Phase 2 — parallel)      │
 ```
@@ -382,7 +405,7 @@ Phase 0 (SDM + QOO infrastructure)
 |:-----:|--------|--------|---------|
 | 0 | SDM callable + QOO evidence pipeline | All 0.x items complete | ✅ All 0.1-0.12 complete |
 | 1 | skill-gen produces QOO skills | New skills include scripts/, qoo-profile.yaml, trace_step() | Not started |
-| 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | 37.8 (Redesign) |
+| 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | ⚠️ PROJECT pass, USER fail (model bypasses script) |
 | 3 | T1–T8 pass rate on 14B | ≥90% | Not measured |
 | 4 | Repeatable evolution cycle | skill-evolve produces actionable upgrade spec | Not started |
 
@@ -406,3 +429,10 @@ To continue this work from a fresh session:
    - `~/.agents/knowledge/llm-inference-constrained-gpu/decision-api-request-patterns.md` — request/response examples
 6. SDM endpoint: `http://localhost:9000/v1/decisions` (NextToken API).
    Auto-detects model. Test with: `bash sdm-call.sh --input "test" --predicate "q" "Is this a test?"`
+7. 14B model validation via `goose run`:
+   ```bash
+   goose run --provider custom_skupper --model "Qwen/Qwen3-14B-FP8" \
+     --text "hey check readme" --no-session --quiet --max-turns 15
+   ```
+   No goose recipe needed. `goose run` CLI with `--provider` and
+   `--model` flags is sufficient for all test cases.

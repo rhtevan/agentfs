@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 13:01
+- Updated Phase 2.5 with validation results, Phase 3.1 with goose run decision (not recipe), dependency graph with current status (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
 ## 2026-10-26 15:52
 - Phase 0 complete: all 12 items delivered and tested (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 
