@@ -3,7 +3,7 @@ name: hermes-desktop-fixes
 description: >
   fix hermes desktop, hermes electron fix, hermes identity fix
 metadata:
-  version: "3.2.0"
+  version: "3.2.1"
   tags: [hermes, desktop, electron, fix, provider]
 ---
 
@@ -84,6 +84,24 @@ grep disable_gpu ~/.hermes/config.yaml
 cat /proc/$(pgrep -f "linux-unpacked/Hermes --disable" | head -1)/environ 2>/dev/null | tr '\0' '\n' | grep HERMES_DESKTOP_DISABLE_GPU
 ```
 
+### 7. Window Translucency Active on Linux Despite No Config (v3.2)
+**Symptom:** Hermes Desktop window appears partially transparent/translucent after an update, despite no translucency config ever being set. The Settings toggle for translucency is hidden on Linux (`TRANSLUCENCY_SUPPORTED` returns `false` for Linux in `src/store/translucency.ts`), so there's no UI to disable it.
+**Root cause:** A Hermes Desktop update shipped translucency as a new default. The renderer reads `localStorage` key `hermes.desktop.translucency.v2`; when absent, the default state includes non-zero intensity. On Linux, the settings row is gated behind `TRANSLUCENCY_SUPPORTED` (mac/win only), so the user has no toggle — but the effect still applies via CSS `data-hermes-clear` attribute and native `setOpacity`.
+**Fix:** Set the localStorage key to fully opaque:
+```js
+localStorage.setItem('hermes.desktop.translucency.v2', JSON.stringify({mode:'clear',base:{intensity:0,fade:0},light:{},dark:{}}));
+dispatchEvent(new StorageEvent('storage',{key:'hermes.desktop.translucency.v2'}));
+```
+**How to deliver the fix:** The localStorage is inside the Electron renderer — it cannot be accessed from `terminal` (LevelDB is locked by the running process), `browser_exec` (SecurityError: different origin sandbox), or `hermes config` (not exposed). Write an HTML file with a button that calls the JS above, then render it inline via `::preview{file="path.html"}` — the preview frame runs inside the Hermes Desktop renderer and has access to the app's `localStorage`. The fix persists across restarts (Electron localStorage is durable on disk).
+**Diagnostics:**
+```bash
+# Check if translucency key exists in storage
+strings ~/.config/Hermes/Local\ Storage/leveldb/*.ldb ~/.config/Hermes/Local\ Storage/leveldb/*.log 2>/dev/null | grep translucen
+
+# Check source for translucency support on current platform
+grep -A 3 "translucencySupportedOn" ~/.hermes/hermes-agent/apps/desktop/electron/translucency.test.ts
+```
+
 ### 5. electron-builder Can't Find Electron (RETIRED — v3.0)
 **Status:** Patch retired as of Sep 2026. Upstream removed `patch-electron-builder-mac-binary.cjs` entirely — only `dmgbuild-diagnostics.cjs` remains in `apps/desktop/scripts/`. The electron workspace hoisting issue may have been fixed upstream or is no longer relevant with current electron-builder versions.
 **Original symptom:** Build fails looking for `../../node_modules/electron/dist`.
@@ -148,6 +166,15 @@ rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
 - **GPU process crash kills Electron on Intel Arc + Wayland:** Fixed via `desktop.disable_gpu: true` in config.yaml — uses Hermes's built-in `HERMES_DESKTOP_DISABLE_GPU` mechanism to call `app.disableHardwareAcceleration()` before `app.ready`.
 - **Desktop entry overwritten by upstream after update:** Upstream's `linux_desktop_entry.py` overwrites `com.nousresearch.hermes.desktop` with a broken `Exec` path (raw python invocation instead of our launcher wrapper). The background watcher only detects `hermes.desktop` creation, not modifications to our own entry. Manually restored correct entry.
 - **Unconditional TUI/web/desktop rebuild on every `hermes update`:** Upstream's completion path (`complete_source_checkout` → `build_update_products`) unconditionally rebuilds all frontends even when already up to date. This was masked before because the orphaned skip-worktree flag made updates fail before reaching the build step. Fixed by adding a `--check` pre-flight in the launcher: plain `hermes update` now fetches and checks first, short-circuiting in ~2s when current instead of ~2min of unnecessary rebuilds.
+
+## Techniques
+
+### Executing JS in the Hermes Desktop Renderer
+When you need to run JavaScript in the Hermes Desktop Electron renderer context (e.g., to access `localStorage`, `document`, or app-internal APIs), and neither `browser_exec` (origin sandbox) nor `terminal` (process lock) can reach it:
+1. Write an HTML file with the JS logic (e.g., a button that calls `localStorage.setItem(...)`).
+2. Render it inline via `::preview{file="/path/to/file.html"}` in the chat response.
+3. The preview frame executes inside the desktop renderer and shares its `localStorage`, `document`, and `window` scope.
+4. Use `data-hermes-send="prompt"` on clickable elements if the widget needs to report results back to the agent.
 
 ## Safety Rules
 - **NEVER use `gdbus call org.gnome.Shell.Eval` to inspect windows on Wayland.** This can crash the entire GNOME session (compositor crash = full logout). There is no safe programmatic way to introspect live Wayland windows from a terminal. Verify `.desktop` entry correctness by reading the file and checking `package.json desktopName` — never by poking the compositor.

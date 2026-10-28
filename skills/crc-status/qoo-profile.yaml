@@ -1,0 +1,39 @@
+# qoo-profile.yaml — crc-status v2.0.0
+# Computed by frontier model at authorship (Tier 2 semantic metrics)
+
+skill: crc-status
+version: "2.0.0"
+computed_by: claude-opus-4-20250514
+computed_at: "2026-10-27"
+
+# --- Structure ---
+action_steps: 2
+scripted_steps: 1
+script_coverage_pct: 50
+concern_count: 1
+concerns:
+  - CRC cluster status gathering and reporting
+
+# --- Quality ---
+accidental_lines: 0
+accidental_pct: 0
+cnl_violations: 0
+cnl_compliance_pct: 100
+
+# --- Assumptions ---
+model_assumptions:
+  - name: "crc CLI is installed"
+    type: explicit
+    status: "Documented in script (exit 1 if missing)"
+  - name: "oc CLI is installed for extended checks"
+    type: explicit
+    status: "Documented — graceful skip if missing"
+model_assumption_count: 2
+
+implicit_assumptions: []
+
+# --- Operability ---
+anti_fabrication_rule: true
+script_execution_mandate: true
+passive_voice_count: 0
+conditional_blocks: 1

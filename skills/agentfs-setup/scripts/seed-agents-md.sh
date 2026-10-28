@@ -233,12 +233,20 @@ follow the **Do** block before proceeding.
 If keywords match a Signal Dispatch entry below → execute that action directly.
 
 **Path B — Skill/Knowledge dispatch (all other `hey` signals):**
-1. Call `search_nodes` with the literal keywords (mandatory — enforced by plugin hook; other tools are blocked until this completes).
-   Example: user says `hey check headroom status` → call `knowledgegraphmemory__search_nodes(query: "check headroom status")`.
-2. **Keywords** = all words after `hey`, excluding articles (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`). Use literally — do not rephrase or expand.
-3. If result is a skill → `load_skill` with the skill name. If `load_skill` fails, inform the user the skill is not available and fall through to Tier 2.
+1. Extract keywords: take every word after `hey`. Drop only articles
+   (`a`, `an`, `the`) and conjunctions (`and`, `or`, `but`).
+   Keep all other words exactly as the user typed them.
+   Do NOT add, remove, reorder, or rephrase any word.
+   Example: user says `hey crc status` → keywords = `crc status`.
+2. Call `search_nodes` with those exact keywords (mandatory —
+   enforced by plugin hook; other tools are blocked until this
+   completes). KGM search matches exact words, not fuzzy meaning.
+   Rephrased or expanded queries will miss.
+3. If result is a skill → call `load_skill` with the skill name.
+   You MUST call `load_skill`. Do NOT skip it. Do NOT execute the
+   skill from memory or training data.
 4. If result is a knowledge bundle → read the file at the given path.
-5. If no result → retry with fewer keywords (drop rightmost first).
+5. If no result → retry: drop the rightmost keyword and search again.
 6. If still no result → fall through to Tier 2.
 
 **Non-`hey` prompts → Tier 2:**

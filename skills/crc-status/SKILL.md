@@ -4,107 +4,74 @@ description: >
   crc status, check crc, crc health
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "2.0.0"
   tags: [openshift, crc, status, console]
 user-invocable: true
 disable-model-invocation: false
 ---
 
-# OpenShift Local Status & Banner Cleanup
+# OpenShift Local Status Check
 
-Read-only health check for an OpenShift Local (CRC) cluster. Reports
-cluster state, resource usage, and optionally removes the default
-caution banner from the OpenShift web console. This skill **never
-starts, stops, or modifies the CRC cluster itself** — it only
-observes and reports.
+Read-only health check for an OpenShift Local (CRC) cluster.
 
-## Prerequisites
+## Overview
 
-- `crc` CLI installed
-- `oc` CLI installed (for banner check/removal)
+| Property | Value |
+|----------|-------|
+| **Version** | 2.0.0 |
+| **Pattern** | A — single script |
+| **Dependencies** | `scripts/check-status.sh` |
 
-## Scope & Boundaries
+## Specification
 
-> ⚠️ **This is a status-check skill. Do NOT start, stop, restart,
-> or reconfigure CRC.** If the cluster is stopped, report that fact
-> and stop. The user will decide whether to start it.
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | Gather CRC state deterministically | `check-status.sh` exits 0 with structured output |
+| S2 | Report status facts to user | Response contains crc_vm_state and cluster_running |
+| S3 | Stop when cluster is stopped | No steps attempted beyond status report |
+
+## Rules
+
+Do NOT run `crc status` directly. Do NOT run `crc console` directly.
+Do NOT run any `oc` command directly. The script runs all commands.
+
+Do NOT generate, fabricate, or invent CRC output. All facts come from
+the script output. Report exactly what the script says.
+
+This skill never starts, stops, or modifies the CRC cluster.
+
+## Workflow
+
+### Step 1 — Run the status script
+
+Execute the check-status script. Read its output.
+
+```bash
+bash ~/.agents/skills/crc-status/scripts/check-status.sh
+```
+
+### Step 2 — Report the results
+
+Read the script output. Present the facts to the user in a clear format.
+
+If `cluster_running: false` appears in the output, report that the
+cluster is stopped. Do NOT proceed to any further steps. Do NOT
+suggest starting the cluster unless the user asks.
+
+If `cluster_running: true` appears in the output, also report the
+credentials and banner status from the script output.
+
+If `banner_exists: yes` appears, ask the user whether to remove it.
+Do NOT remove it without confirmation.
+
+## Scope
 
 | In scope | Out of scope |
 |----------|-------------|
 | Report CRC VM and OpenShift state | Starting or stopping CRC |
 | Report disk and cache usage | Changing CRC configuration |
-| Check for and remove the console banner | Troubleshooting CRC failures |
-| Report credentials | Installing or updating CRC |
-
-## Steps
-
-### Step 1 — Check CRC status
-
-Run `crc status` to read the current cluster state.
-
-```bash
-crc status
-```
-
-### Step 2 — Evaluate state (decision point)
-
-| CRC VM State | Agent Action |
-|:------------:|-------------|
-| **Running** | Proceed to Step 3 |
-| **Stopped** | Report status to user. **STOP here. Do NOT proceed.** |
-| **Starting / Stopping** | Report transitional state to user. **STOP here.** |
-| **Error / other** | Report the full output to user. **STOP here.** |
-
-> ⛔ **Hard gate:** Steps 3–6 require a running cluster. If CRC is
-> not in `Running` state, the skill ends at Step 2. Do NOT attempt
-> to start CRC or work around the stopped state.
-
-### Step 3 — Get console credentials
-
-Run `crc console --credentials` to retrieve the kubeadmin login
-command.
-
-```bash
-crc console --credentials
-```
-
-### Step 4 — Log in as admin
-
-Log in to the cluster using the credentials from Step 3:
-
-```bash
-oc login -u kubeadmin -p <password> https://api.crc.testing:6443
-```
-
-### Step 5 — Check for the caution banner
-
-Look for the default `ConsoleNotification` resource:
-
-```bash
-oc get consolenotification security-notice 2>/dev/null
-```
-
-- If output contains a resource row → banner **exists**, proceed to Step 6
-- If no output → banner **does not exist**, report to user and end
-
-### Step 6 — Remove the banner (only if it exists)
-
-Delete the banner resource:
-
-```bash
-oc delete consolenotification security-notice
-```
-
-Report the result to the user.
-
-## Verification
-
-Observational checks — verify these are true after execution:
-
-- [ ] `crc status` output was presented to the user
-- [ ] If CRC was stopped, no further steps were attempted
-- [ ] If CRC was running, credentials were retrieved
-- [ ] If banner existed, it was removed; if not, user was informed
+| Report banner status | Troubleshooting CRC failures |
+| Report credentials (if running) | Installing or updating CRC |
 
 ## Changelog
 

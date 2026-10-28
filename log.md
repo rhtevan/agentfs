@@ -2,6 +2,62 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 20:58
+- v3.2.1: Bug #7 translucency fix, Techniques section (skills/hermes-desktop-fixes/SKILL.md)
+
+## 2026-10-27 20:57
+- Removed hardcoded CWD path (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Removed hardcoded CWD path (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Fix hardcoded paths: replaced with BENCHMARK_PROJECT_CWD variable (scripts/benchmark.sh)
+
+## 2026-10-27 20:56
+- Fix D6 version drift: 7.3.8→7.5.0 (README.md)
+
+## 2026-10-27 20:55
+- New: deterministic CRC status gathering script — trace-instrumented, structured facts output (skills/crc-status/scripts/check-status.sh)
+
+## 2026-10-27 20:49
+- Version bump 7.4.1→7.5.0 for R1 dispatch rule CNL evolution (skills/agentfs-setup/SKILL.md)
+- EP1+EP2+EP3+EP6: R1 dispatch rule CNL rewrite — separate keyword extraction, KGM-hit example, anti-bypass instruction (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-27 20:42
+- Phase 3 COMPLETE: 100% skill operability achieved via QOO + R1 CNL fix (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- v3 results: skill operability 100% (20/20). Evolution journey from 40%→100% documented. (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 19:28
+- New: AGENTS.md artifact QOO profile — MCACS assessment, 6 evolution points, 3 implicit assumptions (skills/agentfs-setup/artifacts/agents-md/qoo-profile.yaml)
+- New: AGENTS.md structural baseline — 7 rules, per-rule metrics, cognitive load ranking, benchmark rates (skills/agentfs-setup/artifacts/agents-md/baseline.yaml)
+
+## 2026-10-27 19:26
+- New: artifact QOO separation pattern — sub-artifact directory for independently-consumed outputs like AGENTS.md (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+
+## 2026-10-27 17:59
+- Added principle 6: test targets must be QOO-qualified. Empirical evidence from crc-status 40%→80%. (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Phase 3 updated: 85% after crc-status QOO conversion (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- T3 before/after: 40%→80% after QOO conversion. Skill operability 75%→85%. (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 17:56
+- v2.0.0 QOO conversion: CNL rewrite, anti-fabrication rules, script orchestration (skills/crc-status/SKILL.md)
+
+## 2026-10-27 17:47
+- v2: preflight gate, T2 prompt fix, T9 added, all checkers require full chain (scripts/benchmark.sh)
+- Phase 3.3 updated: v2 harness 75% skill operability, 5 failure mode taxonomy (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- v2 results appended: 75% skill operability, 5 failure modes with MCACS attribution (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 17:25
+- v2 rewrite: KGM pre-flight gate, registered signal phrases, frontier-once protocol, T9 added, T2 prompt fixed, empirical results log (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+
+## 2026-10-27 17:11
+- Corrected: 2-round combined results — frontier 100%, 14B 79% (below 90%). Two failure modes identified. (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Phase 3.3 corrected: 79% not 91%. Two failure modes: T1 context loading (50%), T3 skill bypass (67%). (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-27 16:29
+- New: stochastic benchmark results — frontier 12/12, 14B 11/12, per-pattern analysis (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Phase 3.1-3.3 results: frontier 100%, 14B 91%, benchmark harness complete (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-27 15:04
+- New script: T1-T8 benchmark harness — goose run CLI, pass criteria checkers, summary report (scripts/benchmark.sh)
+
 ## 2026-10-27 14:53
 - Added anti-pattern: frontier model implicit assumptions — CWD assumption, misattribution, mitigation for skill-gen (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
 - Added implicit_assumptions section — CWD git repo assumption discovered during 14B validation (skills/agentfs-readme-audit/qoo-profile.yaml)

@@ -2,6 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-27 20:49 | v7.5.0 — EP1+EP2+EP3+EP6: R1 dispatch rule CNL rewrite — separate keyword extraction, KGM-hit example, anti-bypass instruction |
+| 2026-10-27 19:28 | v7.4.1 — New: AGENTS.md structural baseline — 7 rules, per-rule metrics, cognitive load ranking, benchmark rates |
 | 2026-10-23 22:09 | v7.3.8 — G3 revised: universal QOO schemas, async on-demand evaluation, scores.yaml, qoo-profile.yaml, updated flow diagram |
 | 2026-10-22 22:00 | v7.4.1 — Fixed race condition: added flock serialization and mktemp unique temp files to prevent log history wipe during concurrent post-write calls |
 | 2026-10-22 21:11 | v7.4.0 — Re-engineered Pre-Flight rule: two-tier specification-driven planning with Design Spec validation gate; added explicit rule scan instruction to Rules preamble; added condensed spec-driven rule to LITE template |

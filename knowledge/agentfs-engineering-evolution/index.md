@@ -39,6 +39,8 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [Observable Skill Design](./observable-skill-design.md) | Pattern | Agent-agnostic audit trail, two-phase observation, three schema types, score persistence, SDM integration |
 | [Implementation Plan](./implementation-plan.md) | Convention | Phased plan: Phase 0 (SDM foundation), Phase 1 (skill-gen), Phase 2 (first conversion), Phase 3 (benchmarking), Phase 4 (maturity) |
 | [Tokenomics Alignment](./tokenomics-alignment.md) | Reference | AI tokenomics convergence with QOO — multi-tier model routing, showback/ROI metrics, token cost tracking |
+| [Artifact QOO Separation](./artifact-qoo-separation.md) | Pattern | Sub-artifact directory pattern for skills that produce independently-consumed artifacts (e.g., agentfs-setup → AGENTS.md) |
+| [Benchmark Results](./benchmark-results.md) | Evidence | Stochastic benchmark results: frontier 100%, 14B 85% skill operability after QOO conversions |
 
 ## Source
 

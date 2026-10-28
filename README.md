@@ -555,7 +555,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.3.8 -->
+<!-- agentfs-template-version: 7.5.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:
