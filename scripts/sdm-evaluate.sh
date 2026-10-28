@@ -5,10 +5,10 @@
 #   sdm-evaluate.sh <target> <schema.yaml>
 #
 # Arguments:
-#   target      — For observation schemas: path to trace file (JSONL)
-#                 For quality/operable schemas: path to skill directory
-#   schema.yaml — Evaluation schema (quality.yaml, operable.yaml, or
-#                 per-skill observation.yaml)
+#   target      — For operable schema: path to trace file (JSONL)
+#                 For quality/observable schemas: path to skill directory
+#   schema.yaml — Evaluation schema (quality.yaml, observable.yaml, or
+#                 operable.yaml for runtime trace evaluation)
 #
 # Output:
 #   CECX-format JSON record on stdout.
@@ -91,13 +91,13 @@ extract_evidence_quality() {
   fi
 }
 
-extract_evidence_observation() {
+extract_evidence_operable() {
   # Target is a trace file — read JSONL
   cat "$1"
 }
 
 case "$SCHEMA_TYPE" in
-  quality|operable)
+  quality|observable)
     [[ -d "$TARGET" ]] || die "For $SCHEMA_TYPE schemas, target must be a skill directory"
     EVIDENCE=$(extract_evidence_quality "$TARGET")
     # Auto-detect skill name from directory if not in schema
@@ -105,12 +105,12 @@ case "$SCHEMA_TYPE" in
       SKILL_NAME=$(basename "$TARGET")
     fi
     ;;
-  observation)
-    [[ -f "$TARGET" ]] || die "For observation schemas, target must be a trace file"
-    EVIDENCE=$(extract_evidence_observation "$TARGET")
+  operable)
+    [[ -f "$TARGET" ]] || die "For operable schema, target must be a trace file"
+    EVIDENCE=$(extract_evidence_operable "$TARGET")
     ;;
   *)
-    die "Unknown schema-type: $SCHEMA_TYPE (expected quality, operable, or observation)"
+    die "Unknown schema-type: $SCHEMA_TYPE (expected quality, observable, or operable)"
     ;;
 esac
 
@@ -315,7 +315,7 @@ echo "$RECORD" | jq '.'
 
 # --- Persist if observation type and skill has observations dir ---
 
-if [[ "$SCHEMA_TYPE" == "observation" ]]; then
+if [[ "$SCHEMA_TYPE" == "operable" ]]; then
   # Infer skill dir from schema location
   SCHEMA_DIR=$(dirname "$SCHEMA")
   OBS_DIR="$SCHEMA_DIR/observations"

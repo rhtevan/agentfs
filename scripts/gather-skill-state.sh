@@ -185,22 +185,18 @@ if [[ "$SCRIPT_COUNT" -gt 0 ]]; then
   fi
 fi
 
-# --- Has observation.yaml ---
+# --- Has operable.yaml (runtime execution correctness schema) ---
 HAS_OBS_SCHEMA=false
-if [[ -f "$SKILL_DIR/observation.yaml" ]]; then
+if [[ -f "$SKILL_DIR/operable.yaml" ]]; then
   HAS_OBS_SCHEMA=true
 fi
 
-# --- Has qoo-profile.yaml ---
-HAS_QOO_PROFILE=false
-if [[ -f "$SKILL_DIR/qoo-profile.yaml" ]]; then
-  HAS_QOO_PROFILE=true
-fi
-
-# --- Has scores.yaml ---
+# --- Has scores.yaml (QOO qualification marker) ---
 HAS_SCORES=false
+QOO_QUALIFIED=false
 if [[ -f "$SKILL_DIR/scores.yaml" ]]; then
   HAS_SCORES=true
+  grep -q "qoo-qualified: true" "$SKILL_DIR/scores.yaml" && QOO_QUALIFIED=true
 fi
 
 # --- Output facts ---
@@ -219,7 +215,7 @@ Model assumptions detected: $MODEL_ASSUMPTIONS
 Conditional logic blocks: $CONDITIONAL_BLOCKS
 Passive voice instances: $PASSIVE_VOICE
 Trace instrumentation: $HAS_TRACE
-Has observation.yaml: $HAS_OBS_SCHEMA
-Has qoo-profile.yaml: $HAS_QOO_PROFILE
+Has operable.yaml: $HAS_OBS_SCHEMA
 Has scores.yaml: $HAS_SCORES
+QOO qualified: $QOO_QUALIFIED
 EOF

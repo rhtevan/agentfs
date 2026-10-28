@@ -271,3 +271,98 @@ Three independent improvements each contributed to the result:
 3. **System prompt quality** — CNL optimization of dispatch rule
 
 All three are necessary. No single fix alone would reach 100%.
+
+---
+
+## v4 — AGENTS.md EP4+EP5+EP7 (2026-10-27)
+
+### Changes
+- EP4: R2 Pre-Flight compressed (211→141 words, Tier 2 from 20→5 lines)
+- EP5: R4 Canary reordered (write canary is step 1, read USER.md is step 2)
+- EP7: post-write-enforce plugin created (AfterFileEdit + PreToolUse hooks)
+
+### Frontier: 5/5 = 100% ✅
+
+### 14B: 5 runs × 5 tests
+
+| Test | R1 | R2 | R3 | R4 | R5 | Rate |
+|------|:--:|:--:|:--:|:--:|:--:|:----:|
+| T1 canary | ✅ | ✅ | ❌ | ❌ | ❌ | 40% |
+| T2 headroom | ❌ | ❌ | ✅ | ❌ | ✅ | 40% |
+| T3 crc status | ✅ | ✅ | ✅ | ❌ | ✅ | 80% |
+| T5 violations | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
+| T9 readme | ✅ | ✅ | ✅ | ✅ | ✅ | 100% |
+
+- **Skill operability: 16/20 = 80%**
+- **T1 canary: 2/5 = 40%** (EP5 did not improve — model-level)
+- **Overall: 18/25 = 72%**
+
+### Analysis
+
+T2 dropped from 100% (v3) to 40%. Root cause: headroom-proxy-status
+is an unevolved v1 skill. Model loaded it correctly (search→load) but
+fabricated output instead of running shell commands. Same FM2 pattern
+that crc-status had before QOO conversion.
+
+T3 had 1 fabrication (run 4) despite QOO conversion — the anti-
+fabrication rule reduces but doesn't eliminate FM2 on a 14B model.
+
+T5 and T9 remain 100% — consistent across all benchmark rounds.
+
+EP4/EP5 changes to AGENTS.md did NOT cause the regression. The v3
+100% skill operability was stochastic luck. True rate with current
+skill mix is 80-100% depending on the run — T2's unevolved skill
+is the primary source of variance.
+
+### Key Principle Reconfirmed
+
+Test targets must be QOO-qualified. T2 (headroom-proxy-status) is
+still a v1 skill. Its failures measure skill maturity, not the
+AGENTS.md improvements.
+
+---
+
+## v6 — Full AGENTS.md Rule Coverage (2026-10-27)
+
+### Test Suite (auto-discovered + rule tests)
+
+| Test | Rule | Type | Safety |
+|------|:----:|------|:------:|
+| t1 | R4 | Session canary | read-only |
+| qoo_crc_status | R1 | Dispatch → QOO skill | read-only |
+| qoo_agentfs_readme_audit | R1 | Dispatch → QOO skill | read-only |
+| t_r2 | R2 | Pre-flight plan | write-contained |
+| t_r3 | R3 | Post-write after .agents/ write | write-contained |
+| t_r7 | R7 | Memory scope compliance | write-contained |
+
+### Results
+
+| Rule | Test | Frontier | 14B (5 runs) |
+|:----:|:----:|:--------:|:------------:|
+| R1 | QOO skills | 100% | **100%** (10/10) |
+| R2 | t_r2 | 100% | **100%** (5/5) |
+| R3 | t_r3 | **0%** | **0%** (0/5) |
+| R4 | t1 | 100% | **60%** (3/5) |
+| R5 | — | not testable | not testable |
+| R6 | — | not testable | not testable |
+| R7 | t_r7 | 100% | **40%** (2/5) |
+
+### Findings
+
+**R3 (Post-Write) — 0% on both models.** The `hey remember` prompt
+triggers Signal Dispatch → memory write → response. The model writes
+to `.agents/memories/MEMORY.md` then responds without running
+`post-write.sh`. The EP7 harness hook (`PreToolUse` block) cannot
+prevent this because there is no subsequent tool call after the write —
+the model's response is the final action. This is a platform limitation:
+goose has no `PreResponse` hook to block the response itself.
+
+**R7 (Scope Rules) — 40% on 14B.** The 14B model inconsistently
+writes memories to the sandbox project scope. In 3/5 runs, no memory
+write was detected in the output at all — the model may have responded
+without writing, or written to the wrong path.
+
+**R5, R6 — Not testable.** R5 (Conflict Resolution) requires multi-turn
+adversarial prompting. R6 (Checkpoint) requires destructive operations
+on real `.agents/` state. Both need test infrastructure beyond
+`goose run --text` single-turn.

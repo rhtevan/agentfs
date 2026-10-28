@@ -23,7 +23,7 @@ The producing skill and the produced artifact have different:
 - Failure modes (setup errors vs model behavioral variance)
 - Measurement frequency (at skill run vs every benchmark run)
 
-Merging their QOO metrics into a single `qoo-profile.yaml` conflates
+Merging their QOO metrics into a single `scores.yaml` conflates
 two independent concerns, violating Separation of Concerns.
 
 ## Primary Example: agentfs-setup → AGENTS.md
@@ -53,23 +53,20 @@ artifact's QOO metrics in `artifacts/<name>/` under the skill:
 ```
 ~/.agents/skills/agentfs-setup/
 ├── SKILL.md                    # skill instructions
-├── qoo-profile.yaml            # QOO for the skill itself
-├── scores.yaml                 # scores for the skill itself
+├── scores.yaml                 # QOO scores for the skill itself
 ├── scripts/
 │   ├── seed-agents-md.sh       # generates AGENTS.md
 │   └── ...
 └── artifacts/
     └── agents-md/
-        ├── qoo-profile.yaml    # QOO for AGENTS.md artifact
-        ├── scores.yaml         # per-rule benchmark scores
+        ├── scores.yaml         # per-rule benchmark scores for AGENTS.md
         └── baseline.yaml       # baseline metrics snapshot
 ```
 
 ### Directory semantics
 
-- `qoo-profile.yaml` at skill root → metrics for the skill itself
-- `artifacts/<name>/qoo-profile.yaml` → metrics for the named artifact
-- `artifacts/<name>/scores.yaml` → benchmark results for the artifact
+- `scores.yaml` at skill root → QOO scores for the skill itself
+- `artifacts/<name>/scores.yaml` → benchmark/evaluation scores for the named artifact
 - `artifacts/<name>/baseline.yaml` → snapshot of current-state metrics
   (CNL compliance, rule count, conditional blocks, etc.)
 

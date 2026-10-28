@@ -30,9 +30,9 @@ All schemas are universal, centrally maintained at
 
 | Schema | What It Evaluates | When | Evidence Source |
 |--------|-------------------|------|----------------|
-| `quality.yaml` | Skill design against MCACS principles | Build time (authoring, audit) | Frontier model computes `qoo-profile.yaml` |
-| `operable.yaml` | Structural compliance with Operable architecture | Build time (authoring, audit) | Frontier model computes `qoo-profile.yaml` + `gather-skill-state.sh` |
-| `observation.yaml` | Execution correctness — universal agent behavior | Run time (post-execution) | Execution trace from `trace-lib.sh` |
+| `quality.yaml` | Skill design against MCACS principles | Build time (authoring, audit) | `gather-skill-state.sh` + SDM evaluation |
+| `observable.yaml` | Build-time observability — instrumentation, traces, CNL, anti-fabrication | Build time (authoring, audit) | `gather-skill-state.sh` + SDM evaluation |
+| `operable.yaml` | Runtime execution correctness — CECX weighted | Run time (post-execution) | Execution trace from `trace-lib.sh` |
 
 **Why universal, not per-skill:** Most observation dimensions apply to
 every skill (did the agent fabricate data, hallucinate, complete all
@@ -47,15 +47,14 @@ never raw prose.
 | Tier | Type | Examples | Computed By |
 |------|------|----------|-------------|
 | **Deterministic** | Countable, filesystem-observable | script count, line count, has scripts/, trace_step calls | `gather-skill-state.sh` (shell script) |
-| **Semantic** | Requires understanding content meaning | concern count, accidental complexity, CNL compliance | Frontier model (writes `qoo-profile.yaml` at authorship) |
+| **Semantic** | Requires understanding content meaning | concern count, accidental complexity, CNL compliance | SDM via `sdm-evaluate.sh` (zero-shot bounded judgments) |
 
-**Build time (Quality + Operable):** The frontier model running
-`skill-gen` or `skill-check` already has the full SKILL.md in context.
-It computes semantic metrics directly and writes `qoo-profile.yaml`.
-`gather-skill-state.sh` computes deterministic facts.
-`sdm-evaluate.sh` merges both into compact evidence for SDM.
+**Build time (Quality + Observable):** `gather-skill-state.sh` computes
+deterministic Tier 1 facts. `sdm-evaluate.sh` evaluates semantic
+dimensions via SDM (1 token/question, ~115-200ms). Results persisted
+to `scores.yaml`. No frontier-subjective assessment needed.
 
-**Run time (Observation):** Execution traces from `trace-lib.sh` are
+**Run time (Operable):** Execution traces from `trace-lib.sh` are
 structured JSONL with explicit facts. A shell script extracts
 deterministic metrics (step count, error count, actions executed).
 SDM judges bounded questions on those facts.
@@ -63,33 +62,35 @@ SDM judges bounded questions on those facts.
 No frontier model session needed at run time. No weaker model
 self-evaluation. Just scripts + SDM.
 
-### 3. `qoo-profile.yaml` — Per-Skill Semantic Metrics
+### 3. `scores.yaml` — Per-Skill QOO Scores
 
-Written by the frontier model at skill authorship time as part of
-the `skill-gen` workflow. Contains semantic metrics that require
-content understanding:
+Produced by the objective evaluation pipeline:
+`gather-skill-state.sh` → `sdm-evaluate.sh` → `scores.yaml`.
+
+No frontier-subjective assessment. SDM is the oracle (1 token/question).
+The frontier model is the evaluation toolchain OPERATOR (constructs
+SDM requests), not the evaluator.
 
 ```yaml
-# <skill>/qoo-profile.yaml — computed by skill-gen at authorship
-computed-by: claude-sonnet-4
-computed-at: 2026-10-23T21:40:00Z
-metrics:
-  action_steps: 6
-  scripted_steps: 5
-  script_coverage_pct: 83
-  concern_count: 2
-  concerns: [data_gathering, formatting]
-  accidental_lines: 12
-  total_lines: 95
-  accidental_pct: 13
-  model_assumptions: 1
-  model_assumption_list: [scope_resolution_implicit]
-  cnl_violations: 0
-  cnl_compliance_pct: 100
+# <skill>/scores.yaml — computed by evaluation pipeline
+skill: agentfs-readme-audit
+version: "3.0.1"
+qoo-qualified: true
+qualification-basis:
+  - "scripts/gather-state.sh"
+  - "CNL-compliant SKILL.md"
+  - "Anti-fabrication rules"
+latest:
+  quality: 72.5
+  observable: 85.0
+  operable: null  # Populated after runtime trace evaluation
+  band: Tunable
+  evaluated: "2026-10-27T23:00:00Z"
+history: []
 ```
 
-Recomputed by `skill-evolve` or `skill-check` when the frontier model
-audits the skill.
+Recomputed by `skill-evolve` or `skill-check` when the evaluation
+pipeline is run.
 
 ### 4. Agent-Agnostic Audit Trail
 
@@ -130,7 +131,7 @@ weaker model never evaluates.
 
 **`evaluate-pending.sh`:**
 1. Finds unevaluated traces in `~/.agents/.traces/`
-2. Runs `sdm-evaluate.sh` for each against `observation.yaml`
+2. Runs `sdm-evaluate.sh` for each against `operable.yaml`
 3. Updates per-skill `scores.yaml`
 4. Moves traces to `.traces/.evaluated/`
 
@@ -153,23 +154,23 @@ skill: agentfs-readme-audit
 latest:
   version: "2.1.0"
   quality: 37.8
-  operable: 20.5
-  observation: null
+  observable: 20.5
+  operable: null
   band: Redesign
   evaluated: 2026-10-23T21:00:00Z
   by_model:
-    claude-sonnet-4: {observation: 96.2, band: Operable}
-    qwen3-14b-fp8: {observation: 68.4, band: Re-engineer}
+    claude-sonnet-4: {operable: 96.2, band: Operable}
+    qwen3-14b-fp8: {operable: 68.4, band: Re-engineer}
 history:
   - version: "2.0.0"
     quality: 35.0
-    operable: 18.0
-    observation: null
+    observable: 18.0
+    operable: null
     evaluated: 2026-10-20T15:00:00Z
   - version: "2.1.0"
     quality: 37.8
-    operable: 20.5
-    observation: {claude-sonnet-4: 96.2, qwen3-14b-fp8: 68.4}
+    observable: 20.5
+    operable: {claude-sonnet-4: 96.2, qwen3-14b-fp8: 68.4}
     evaluated: 2026-10-23T21:00:00Z
 ```
 
@@ -185,8 +186,8 @@ CHANGELOG gets one summary line referencing the scores:
 
 | Phase | Who Evaluates | How | Model Required |
 |-------|--------------|-----|:-:|
-| Build time (Quality, Operable) | Frontier model via `skill-gen`/`skill-check` | Model computes `qoo-profile.yaml`, calls `sdm-evaluate.sh` | Yes — frontier |
-| Run time (Observable) | `sdm-evaluate.sh` + `evaluate-pending.sh` | Script extracts trace facts, SDM judges | No — script + SDM only |
+| Build time (Quality, Observable) | Evaluation pipeline | `gather-skill-state.sh` → `sdm-evaluate.sh` → `scores.yaml` | No — script + SDM only |
+| Run time (Operable) | `sdm-evaluate.sh` + `evaluate-pending.sh` | Script extracts trace facts, SDM judges | No — script + SDM only |
 | Evolve time | Frontier model via `skill-evolve` | Reads `scores.yaml`, diagnoses gaps, produces upgrade spec | Yes — frontier |
 
 ## Revised Directory Structure
@@ -207,8 +208,8 @@ CHANGELOG gets one summary line referencing the scores:
 └── skills/
     ├── schemas/                          ← universal QOO standards
     │   ├── quality.yaml                  ← MCACS quality (6 dims)
-    │   ├── operable.yaml                 ← structural compliance (6 dims)
-    │   ├── observation.yaml              ← execution correctness (universal)
+    │   ├── observable.yaml                ← build-time observability (6 dims)
+    │   ├── operable.yaml                 ← runtime execution correctness (CECX, universal)
     │   ├── sdm-endpoint.md               ← API reference
     │   └── README.md                     ← schema format spec
     │
@@ -216,16 +217,15 @@ CHANGELOG gets one summary line referencing the scores:
         ├── SKILL.md                      ← muscle (CNL prose)
         ├── scripts/                      ← bones (source trace-lib.sh)
         ├── CHANGELOG.md
-        ├── qoo-profile.yaml             ← semantic metrics (frontier-computed)
-        └── scores.yaml                   ← QOO evaluation history (committed)
+        └── scores.yaml                   ← objective QOO scores (SDM-evaluated, committed)
 ```
 
 ## Relationship to Existing Concepts
 
 - **Operable Skill Architecture:** Observable is a property of an
   Operable Skill — universal evaluation schemas apply to all skills.
-- **CECX Observation Schema:** CECX scoring formula consumes the
-  observation results. CECX is the aggregation; observation schema
+- **CECX Operable Schema:** CECX scoring formula consumes the
+  runtime execution results. CECX is the aggregation; operable schema
   defines the dimensions.
 - **SDM Integration:** SDM Pattern 2 (evaluation engine) implemented
   through this design. SDM receives only pre-computed facts.

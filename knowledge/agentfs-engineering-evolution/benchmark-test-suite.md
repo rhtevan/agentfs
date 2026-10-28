@@ -74,12 +74,22 @@ registered signal phrases return empty.
 
 ### Skill Operability Tests (target: ≥90%)
 
-| ID | What It Tests | Prompt | Expected KGM Query | KGM Verified | Pattern |
-|:--:|--------------|--------|-------------------|:--:|:--:|
-| T2 | Dispatch → skill load → script | `hey headroom status` | `headroom status` | ✅ | Dispatch→A |
-| T3 | Dispatch → skill load → script | `hey crc status` | `crc status` | ✅ | Dispatch→A |
-| T5 | Dispatch → skill load → prose analysis | `hey check violations` | `check violations` | ✅ | Dispatch→C |
-| T9 | Dispatch → skill load → script (operable) | `hey check readme` | `check readme` | ✅ | Dispatch→A |
+**Rule: Only QOO-qualified skills may be test targets.** A skill is
+QOO-qualified when it has: scripts/, scores.yaml (qoo-qualified: true), CNL muscle
+SKILL.md, and anti-fabrication rules. Unevolved v1 skills measure
+skill maturity, not model operability — they must not be in the suite.
+
+| ID | What It Tests | Prompt | KGM Query | QOO Version | Pattern |
+|:--:|--------------|--------|-----------|:-----------:|:--:|
+| T3 | Dispatch → skill load → script | `hey crc status` | `crc status` | v2.0.0 ✅ | Dispatch→A |
+| T9 | Dispatch → skill load → script (operable) | `hey check readme` | `check readme` | v3.0.1 ✅ | Dispatch→A |
+
+### Removed from Suite (not QOO-qualified)
+
+| ID | Skill | Why Removed | Reinstate When |
+|:--:|-------|------------|----------------|
+| T2 | headroom-proxy-status | v1 skill, no scripts, 14B fabricates output | After QOO conversion |
+| T5 | agentfs-violation-chk | v1 skill, Pattern C, passes by luck not engineering | After QOO conversion |
 
 ### System Prompt Compliance Test (reported separately)
 
@@ -168,11 +178,14 @@ Phase 4: Report
 ## Scoring
 
 ```
-Skill Operability Rate = (T2 + T3 + T5 + T9 passes) / (4 tests × N runs)
+Skill Operability Rate = (QOO-qualified test passes) / (QOO test count × N runs)
+Current suite: T3 + T9 = 2 tests
 Target: ≥90%
 
 System Prompt Compliance = T1 passes / N runs
 Reported separately — no target (model-level, not architecture)
+
+Suite grows as more skills are QOO-converted and added.
 ```
 
 ## CWD Requirements
@@ -196,11 +209,13 @@ project directory.
 benchmark.sh --preflight
 
 # Frontier validation (1 run)
-benchmark.sh --provider custom_redhat --model claude-sonnet-4-6 --tests t1,t2,t3,t5,t9 --runs 1
+benchmark.sh --provider custom_redhat --model claude-sonnet-4-6 --runs 1
 
 # 14B measurement (5 runs)
-benchmark.sh --provider custom_skupper --model 'Qwen/Qwen3-14B-FP8' --tests t1,t2,t3,t5,t9 --runs 5
+benchmark.sh --provider custom_skupper --model 'Qwen/Qwen3-14B-FP8' --runs 5
 ```
+
+Default tests: `t1,t3,t9` (only QOO-qualified skills + canary).
 
 ## Model Tiers
 

@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "AfterFileEdit": [
+      {
+        "matcher": "\\.agents/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/detect-write.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^write$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/detect-write.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/enforce-postwrite.sh",
+            "on_failure": "allow"
+          }
+        ]
+      }
+    ],
+    "AfterShellExecution": [
+      {
+        "matcher": "post-write\\.sh",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/clear-flag.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

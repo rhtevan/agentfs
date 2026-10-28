@@ -20,8 +20,8 @@ Three ultimate goals for this Context/AgentFS Evolution:
 
 3. **Observable Skill & Skill Evolution.** Realize the concept of
    an Observable Skill that carries its own evaluation criteria
-   (observation schema) scored by SDM post-execution. An adjuster
-   model or human reads CECX observation scores, analyzes the gap,
+   (operable schema) scored by SDM post-execution. An adjuster
+   model or human reads CECX operable scores, analyzes the gap,
    suggests an improvement plan, and upgrades the skill — all with
    the help of the runtime harness.
 

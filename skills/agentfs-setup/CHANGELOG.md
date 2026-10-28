@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-27 21:07 | v7.5.1 — EP4+EP5: R2 Pre-Flight compressed (211→141 words), R4 canary reordered (action first) |
 | 2026-10-27 20:49 | v7.5.0 — EP1+EP2+EP3+EP6: R1 dispatch rule CNL rewrite — separate keyword extraction, KGM-hit example, anti-bypass instruction |
 | 2026-10-27 19:28 | v7.4.1 — New: AGENTS.md structural baseline — 7 rules, per-rule metrics, cognitive load ranking, benchmark rates |
 | 2026-10-23 22:09 | v7.3.8 — G3 revised: universal QOO schemas, async on-demand evaluation, scores.yaml, qoo-profile.yaml, updated flow diagram |

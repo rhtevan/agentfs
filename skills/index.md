@@ -4,10 +4,10 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-27 23:47 |
+| [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-10-27 23:46 |
+| [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-27 23:46 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-10-27 20:58 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, update agentfs, verify agentfs | 2026-10-27 20:49 |
-| [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-27 17:56 |
-| [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-10-27 14:53 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-10-26 10:33 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex | 2026-10-26 10:33 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-10-23 13:49 |

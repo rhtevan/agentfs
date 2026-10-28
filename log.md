@@ -2,6 +2,53 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 23:51
+- Renamed from operable.yaml — build-time observability schema (6 dimensions) (skills/schemas/observable.yaml)
+- Schema rename: observation→operable, operable→observable case statements and function names (scripts/sdm-evaluate.sh)
+
+## 2026-10-27 23:49
+- qoo-profile.yaml→scores.yaml in Observable Property section (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- QOO-qualified marker: qoo-profile.yaml→scores.yaml (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Eliminated qoo-profile.yaml section, replaced with scores.yaml pipeline, updated eval phase table (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+- Created scores.yaml — QOO qualification marker replacing qoo-profile.yaml
+- qoo-profile.yaml→scores.yaml, merged duplicate blocks, added QOO_QUALIFIED (scripts/gather-skill-state.sh)
+- qoo-profile.yaml→scores.yaml in directory layout (skills/schemas/README.md)
+
+## 2026-10-27 23:45
+- Schema rename: schema-type enum observation→operable, evaluation records (skills/schemas/README.md)
+- Schema rename: Operable/Observation → Observable/Operable in G3 schema table (skills/agentfs-setup/references/design-spec.md)
+- Schema rename: 8 references updated — operable→observable, observation→operable (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Schema rename: Quality/Operable/Observation → Quality/Observable/Operable triad (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- Schema rename: schema-type enum observation→operable, observation records→evaluation records (skills/schemas/README.md)
+- Schema rename: Operable/Observation → Observable/Operable in G3 schema table (skills/agentfs-setup/references/design-spec.md)
+- Schema rename: observation.yaml→operable.yaml references (scripts/evaluate-pending.sh)
+- Schema rename: observation.yaml→operable.yaml field name (scripts/gather-skill-state.sh)
+
+## 2026-10-27 22:05
+- v6: full rule coverage results — R1,R2 solved, R3 0% both models, R4 60%, R7 40% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- v6: auto-discovery QOO skills, rule coverage tests (R2,R3,R7), sandbox for write tests (scripts/benchmark.sh)
+
+## 2026-10-27 21:42
+- Auto-discovery: benchmark scans for qoo-profile.yaml, builds test suite dynamically. No hardcoded skill list. (scripts/benchmark.sh)
+
+## 2026-10-27 21:36
+- v5 clean suite (QOO-only): T3+T9 skill operability 90%, T1 100%, overall 93% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 21:29
+- Removed T2,T5 from suite — not QOO-qualified. Suite is now T1+T3+T9 only. (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Default tests changed to t1,t3,t9 — only QOO-qualified skills (scripts/benchmark.sh)
+
+## 2026-10-27 21:24
+- All 7 EPs status updated: EP1-3+EP6 done v7.5.0, EP4-5+EP7 done v7.5.1 (skills/agentfs-setup/artifacts/agents-md/qoo-profile.yaml)
+
+## 2026-10-27 21:23
+- v4 results: EP4+EP5+EP7 no regression on frontier, 14B stochastic variance confirms T2 needs QOO conversion (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 21:07
+- EP7: new post-write enforcement plugin — AfterFileEdit + PreToolUse hooks (plugins/post-write-enforce/plugin.json)
+- Version bump 7.5.0→7.5.1 for EP4+EP5+EP7 (skills/agentfs-setup/SKILL.md)
+- EP4+EP5: R2 Pre-Flight compressed (211→141 words), R4 canary reordered (action first) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-10-27 20:58
 - v3.2.1: Bug #7 translucency fix, Techniques section (skills/hermes-desktop-fixes/SKILL.md)
 

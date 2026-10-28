@@ -34,13 +34,13 @@ to `~/.agents/.traces/` (agent-agnostic). Evaluation is async and
 on-demand — the operating model never evaluates itself. `skill-evolve`
 or manual command triggers evaluation against accumulated traces.
 Scores persist per-skill in `scores.yaml` (committed). The frontier
-model computes semantic metrics in `qoo-profile.yaml` at authorship.
+pipeline computes objective scores in `scores.yaml` via gather-skill-state.sh + sdm-evaluate.sh.
 
 | Schema | Scope | Location | Phase |
 |--------|-------|----------|-------|
 | Quality (MCACS) | Universal | `skills/schemas/quality.yaml` | Build-time audit |
-| Operable | Universal | `skills/schemas/operable.yaml` | Build-time audit |
-| Observation | Universal | `skills/schemas/observation.yaml` | Run-time evaluation |
+| Observable | Universal | `skills/schemas/observable.yaml` | Build-time audit |
+| Operable | Universal | `skills/schemas/operable.yaml` | Run-time evaluation |
 
 ```
 Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)

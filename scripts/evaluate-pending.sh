@@ -2,7 +2,7 @@
 # evaluate-pending.sh — Batch evaluator for accumulated execution traces
 #
 # Scans ~/.agents/.traces/ for unevaluated JSONL trace files, runs
-# sdm-evaluate.sh against the universal observation schema, and
+# sdm-evaluate.sh against the universal operable schema, and
 # persists scores to <skill>/scores.yaml.
 #
 # Trigger points:
@@ -30,14 +30,14 @@ TRACES_DIR="${HOME}/.agents/.traces"
 SCHEMAS_DIR="${HOME}/.agents/skills/schemas"
 SKILLS_DIR="${HOME}/.agents/skills"
 SDM_EVALUATE="${SCRIPT_DIR}/sdm-evaluate.sh"
-OBS_SCHEMA="${SCHEMAS_DIR}/observation.yaml"
+OBS_SCHEMA="${SCHEMAS_DIR}/operable.yaml"
 
 die()  { echo "ERROR: $*" >&2; exit 3; }
 log()  { echo "[evaluate-pending] $*" >&2; }
 
 # --- Dependency check ---
 [[ -x "$SDM_EVALUATE" ]] || die "sdm-evaluate.sh not found at $SDM_EVALUATE"
-[[ -f "$OBS_SCHEMA" ]]   || die "observation.yaml not found at $OBS_SCHEMA"
+[[ -f "$OBS_SCHEMA" ]]   || die "operable.yaml not found at $OBS_SCHEMA"
 
 # --- Parse arguments ---
 FILTER_SKILL=""
@@ -118,7 +118,7 @@ for entry in "${PENDING[@]}"; do
 
   log "Evaluating: $(basename "$trace_file") (skill: $skill_name)"
 
-  # Run sdm-evaluate against observation schema
+  # Run sdm-evaluate against operable schema
   result=""
   eval_exit=0
   result=$("$SDM_EVALUATE" "$trace_file" "$OBS_SCHEMA" 2>/dev/null) || eval_exit=$?
@@ -151,7 +151,7 @@ for entry in "${PENDING[@]}"; do
     cat >> "$scores_file" <<SCORE_ENTRY
 
 - timestamp: "$timestamp"
-  schema: observation
+  schema: operable
   schema_version: "1.0"
   aggregate_score: $score
   band: "$band"

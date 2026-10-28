@@ -1,0 +1,17 @@
+# scores.yaml — crc-status
+# Objective QOO scores from gather-skill-state.sh + sdm-evaluate.sh pipeline.
+# Replaces frontier-subjective qoo-profile.yaml.
+#
+# Status: QOO-qualified (scripts, CNL muscle, anti-fabrication).
+# SDM evaluation pending — run evaluate-pending.sh to populate.
+
+skill: crc-status
+version: "2.0.0"
+qoo-qualified: true
+qualification-basis:
+  - "scripts/check-status.sh (deterministic state gathering)"
+  - "CNL-compliant SKILL.md (100% compliance)"
+  - "Anti-fabrication rules in muscle"
+  - "trace_step() instrumentation"
+latest: null  # Populated by sdm-evaluate.sh
+history: []   # Appended by evaluate-pending.sh

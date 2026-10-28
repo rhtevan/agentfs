@@ -2,6 +2,30 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-27 23:49
+- implicit_assumptions: qoo-profile.yaml→SKILL.md specification tables (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
+- qoo-profile.yaml→scores.yaml in Observable Property section (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- QOO-qualified marker: qoo-profile.yaml→scores.yaml (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Eliminated qoo-profile.yaml section, replaced with scores.yaml pipeline, updated eval phase table (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+- Eliminated qoo-profile.yaml from directory structure and semantics (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+
+## 2026-10-27 23:45
+- Schema rename: 8 references updated — operable→observable, observation→operable (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Schema rename: Quality/Operable/Observation → Quality/Observable/Operable triad (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- Schema rename: operable→observable, observation→operable in tables, examples, cross-refs (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
+## 2026-10-27 22:05
+- v6: full rule coverage results — R1,R2 solved, R3 0% both models, R4 60%, R7 40% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 21:36
+- v5 clean suite (QOO-only): T3+T9 skill operability 90%, T1 100%, overall 93% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-10-27 21:29
+- Removed T2,T5 from suite — not QOO-qualified. Suite is now T1+T3+T9 only. (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+
+## 2026-10-27 21:23
+- v4 results: EP4+EP5+EP7 no regression on frontier, 14B stochastic variance confirms T2 needs QOO conversion (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
 ## 2026-10-27 20:57
 - Removed hardcoded CWD path (knowledge/agentfs-engineering-evolution/benchmark-results.md)
 - Removed hardcoded CWD path (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)

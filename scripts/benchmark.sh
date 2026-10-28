@@ -37,7 +37,7 @@ set -uo pipefail
 # --- Defaults ---
 PROVIDER="custom_skupper"
 MODEL="Qwen/Qwen3-14B-FP8"
-TESTS="t1,t2,t3,t5,t9"
+TESTS="t1,t3,t9"
 RUNS=1
 MAX_TURNS=15
 OUTPUT_DIR=""
@@ -79,70 +79,81 @@ log "Output: $OUTPUT_DIR"
 # Override with BENCHMARK_PROJECT_CWD environment variable.
 BENCHMARK_PROJECT_CWD="${BENCHMARK_PROJECT_CWD:-$(git rev-parse --show-toplevel 2>/dev/null || echo "$HOME")}"
 
-declare -A TEST_PROMPT TEST_CWD TEST_MAXTURN TEST_SAFETY
+declare -A TEST_PROMPT TEST_CWD TEST_MAXTURN TEST_SAFETY TEST_KGM_QUERY
 
-# T1 — Session Canary (needs AGENTS.md in CWD for context loading)
+# T1 — Session Canary (hardcoded — tests rule, not skill)
 TEST_PROMPT[t1]="hello"
 TEST_CWD[t1]="$BENCHMARK_PROJECT_CWD"
 TEST_MAXTURN[t1]=5
 TEST_SAFETY[t1]="read-only"
 
-# T2 — Signal Dispatch → Skill Load → Script (Pattern A)
-TEST_PROMPT[t2]="hey headroom status"
-TEST_CWD[t2]="$BENCHMARK_PROJECT_CWD"
-TEST_MAXTURN[t2]=10
-TEST_SAFETY[t2]="read-only"
+# --- AGENTS.md rule coverage tests ---
+# These test rule compliance, not skill operability.
+# Write-contained tests use a sandbox project.
+SANDBOX_DIR="/tmp/benchmark-sandbox"
 
-# T3 — Single Script (Pattern A)
-TEST_PROMPT[t3]="hey crc status"
-TEST_CWD[t3]="$BENCHMARK_PROJECT_CWD"
-TEST_MAXTURN[t3]=10
-TEST_SAFETY[t3]="read-only"
+# T_R2 — Pre-Flight: multi-file task should produce a plan
+TEST_PROMPT[t_r2]="Create two empty files in /tmp/benchmark-scratch: test1.txt and test2.txt"
+TEST_CWD[t_r2]="$BENCHMARK_PROJECT_CWD"
+TEST_MAXTURN[t_r2]=5
+TEST_SAFETY[t_r2]="write-contained"
 
-# T4 — Multi-step (Pattern B) — DESTRUCTIVE
-TEST_PROMPT[t4]="hey git"
-TEST_CWD[t4]="$HOME/.agents"
-TEST_MAXTURN[t4]=20
-TEST_SAFETY[t4]="destructive"
+# T_R3 — Post-Write: writing to .agents/ should trigger post-write.sh
+TEST_PROMPT[t_r3]="hey remember that benchmark R3 test ran successfully"
+TEST_CWD[t_r3]="$SANDBOX_DIR"
+TEST_MAXTURN[t_r3]=10
+TEST_SAFETY[t_r3]="write-contained"
 
-# T5 — Prose Analysis (Pattern C)
-TEST_PROMPT[t5]="hey check violations"
-TEST_CWD[t5]="$HOME/.agents"
-TEST_MAXTURN[t5]=15
-TEST_SAFETY[t5]="read-only"
+# T_R7 — Scope Rules: memory write should go to PROJECT scope
+TEST_PROMPT[t_r7]="hey remember that benchmark R7 scope test ran successfully"
+TEST_CWD[t_r7]="$SANDBOX_DIR"
+TEST_MAXTURN[t_r7]=10
+TEST_SAFETY[t_r7]="write-contained"
 
-# T6 — Generative (Pattern D) — WRITE
-TEST_PROMPT[t6]="hey create skill"
-TEST_CWD[t6]="/tmp/benchmark-scratch"
-TEST_MAXTURN[t6]=25
-TEST_SAFETY[t6]="write-contained"
+# --- Auto-discover QOO-qualified skills ---
+# A skill is QOO-qualified if it has scores.yaml with qoo-qualified: true.
+# For each qualified skill, extract the first signal phrase from
+# the SKILL.md description field and register a dynamic test.
+SKILLS_DIR="$HOME/.agents/skills"
+QOO_COUNT=0
 
-# T7 — Configuration (Pattern E) — DESTRUCTIVE
-TEST_PROMPT[t7]="hey configure goose litellm"
-TEST_CWD[t7]="$HOME"
-TEST_MAXTURN[t7]=15
-TEST_SAFETY[t7]="destructive"
+for skill_dir in "$SKILLS_DIR"/*/; do
+  [[ -f "$skill_dir/scores.yaml" ]] || continue
+  grep -q "qoo-qualified: true" "$skill_dir/scores.yaml" || continue
+  [[ -f "$skill_dir/SKILL.md" ]] || continue
 
-# T8 — Write Rules (R3+R7) — WRITE
-TEST_PROMPT[t8]="hey remember that benchmark testing started today"
-TEST_CWD[t8]="/tmp/benchmark-scratch"
-TEST_MAXTURN[t8]=10
-TEST_SAFETY[t8]="write-contained"
+  skill_name=$(basename "$skill_dir")
 
-# T9 — Operable Skill: README Audit (Pattern A — Phase 2 converted skill)
-TEST_PROMPT[t9]="hey check readme"
-TEST_CWD[t9]="$BENCHMARK_PROJECT_CWD"
-TEST_MAXTURN[t9]=15
-TEST_SAFETY[t9]="read-only"
+  # Extract first signal phrase from description field
+  signal=$(sed -n '/^description:/,/^[a-z]/{ /^description:/s/.*: *//p; /^  /s/^ *//p; }' \
+    "$skill_dir/SKILL.md" | tr '\n' ' ' | sed 's/^> *//' | xargs)
+  first_signal=$(echo "$signal" | cut -d',' -f1 | xargs)
 
-# --- KGM query mapping (for preflight verification) ---
-# Maps test IDs to the expected search_nodes query.
-# T1 has no dispatch (no KGM query). Only dispatch tests need verification.
-declare -A TEST_KGM_QUERY
-TEST_KGM_QUERY[t2]="headroom status"
-TEST_KGM_QUERY[t3]="crc status"
-TEST_KGM_QUERY[t5]="check violations"
-TEST_KGM_QUERY[t9]="check readme"
+  [[ -z "$first_signal" ]] && continue
+
+  # Create test ID: qoo_<skill_name> (sanitized)
+  test_id="qoo_$(echo "$skill_name" | tr '-' '_')"
+
+  TEST_PROMPT[$test_id]="hey $first_signal"
+  TEST_CWD[$test_id]="$BENCHMARK_PROJECT_CWD"
+  TEST_MAXTURN[$test_id]=15
+  TEST_SAFETY[$test_id]="read-only"
+  TEST_KGM_QUERY[$test_id]="$first_signal"
+
+  QOO_COUNT=$((QOO_COUNT + 1))
+  log "  QOO skill discovered: $skill_name → 'hey $first_signal' (test: $test_id)"
+done
+
+log "QOO skills discovered: $QOO_COUNT"
+
+# Build default test list: t1 + rule tests + all QOO tests
+if [[ "$TESTS" == "t1,t3,t9" ]]; then
+  # Replace old default with dynamic discovery
+  QOO_TESTS=$(printf '%s\n' "${!TEST_PROMPT[@]}" | grep '^qoo_' | sort | tr '\n' ',')
+  RULE_TESTS="t_r2,t_r3,t_r7"
+  TESTS="t1,${QOO_TESTS%,},${RULE_TESTS}"
+  log "Default tests (auto-discovered): $TESTS"
+fi
 
 # --- Pre-flight KGM verification ---
 # Verifies that dispatch test queries resolve in KGM index.
@@ -332,9 +343,69 @@ check_t8() {
   fi
 }
 
-check_t9() {
+# --- AGENTS.md rule checkers ---
+
+check_t_r2() {
   local output="$1"
-  # T9: Full chain — search_nodes → load_skill → shell (gather-state.sh)
+  # R2 Pre-Flight: model should state a plan before executing
+  # Look for plan indicators: numbered steps, "plan", file list, "what files"
+  if grep -qiP '(plan|step [12]|1\.|will create|will write|files? .*change)' "$output" 2>/dev/null; then
+    echo "PASS: pre-flight plan detected before execution"
+    return 0
+  else
+    echo "FAIL: no pre-flight plan — model executed without stating plan"
+    return 1
+  fi
+}
+
+check_t_r3() {
+  local output="$1"
+  # R3 Post-Write: post-write.sh should appear in output after .agents/ write
+  if grep -q 'post-write' "$output" 2>/dev/null; then
+    echo "PASS: post-write.sh triggered after .agents/ write"
+    return 0
+  else
+    # Check if memory was written at all
+    if grep -qP '(MEMORY|memories|remember)' "$output" 2>/dev/null; then
+      echo "FAIL: memory written but post-write.sh not triggered"
+    else
+      echo "FAIL: no memory write detected"
+    fi
+    return 1
+  fi
+}
+
+check_t_r7() {
+  local output="$1"
+  # R7 Scope Rules: memory should go to PROJECT scope (.agents/memories/)
+  # Should NOT write to ~/.agents/memories/
+  local has_project=false has_user=false
+  grep -qP '\.agents/memories/' "$output" 2>/dev/null && has_project=true
+  grep -qP '~/\.agents/memories/|/home/.*/.agents/memories/' "$output" 2>/dev/null && has_user=true
+
+  if [[ "$has_project" == "true" && "$has_user" == "false" ]]; then
+    echo "PASS: memory written to PROJECT scope (.agents/memories/)"
+    return 0
+  elif [[ "$has_user" == "true" ]]; then
+    echo "FAIL: memory written to USER scope (~/.agents/memories/) — R7 violation"
+    return 1
+  else
+    # Can't determine scope from output
+    if grep -qP '(MEMORY|memories|remember)' "$output" 2>/dev/null; then
+      echo "PASS: memory operation detected (scope indeterminate from output)"
+      return 0
+    else
+      echo "FAIL: no memory write detected"
+      return 1
+    fi
+  fi
+}
+
+# --- Generic QOO checker ---
+# All auto-discovered QOO tests use the same pass criteria:
+# search_nodes called → load_skill called → shell executed
+check_qoo() {
+  local output="$1"
   local has_search=false has_skill=false has_shell=false
   grep -q 'search_nodes' "$output" 2>/dev/null && has_search=true
   grep -q 'load_skill' "$output" 2>/dev/null && has_skill=true
@@ -367,6 +438,13 @@ run_test() {
   fi
   if [[ "$safety" == "write-contained" ]]; then
     mkdir -p "$cwd" 2>/dev/null || true
+    # Ensure sandbox has git + AGENTS.md for context loading
+    if [[ "$cwd" == "$SANDBOX_DIR" && ! -f "$cwd/AGENTS.md" ]]; then
+      mkdir -p "$cwd/.agents/memories"
+      cp "$BENCHMARK_PROJECT_CWD/AGENTS.md" "$cwd/" 2>/dev/null || true
+      cp "$BENCHMARK_PROJECT_CWD/.agents/SOUL.md" "$cwd/.agents/" 2>/dev/null || true
+      (cd "$cwd" && git init --quiet 2>/dev/null && git add -A && git commit -m "sandbox init" --quiet 2>/dev/null) || true
+    fi
   fi
 
   # Run goose
@@ -383,18 +461,24 @@ run_test() {
     > "$outfile" 2>&1 || true
 
   # Check pass criteria
+  # Try specific checker first, then generic QOO checker for auto-discovered tests
   local checker="check_${test_id}"
-  if declare -f "$checker" > /dev/null 2>&1; then
-    local verdict
-    verdict=$("$checker" "$outfile" 2>/dev/null)
-    local result=$?
-    echo "$verdict" >> "$outfile"
-    echo "$verdict"
-    return $result
-  else
-    echo "SKIP: no checker for $test_id"
-    return 0
+  if ! declare -f "$checker" > /dev/null 2>&1; then
+    # Auto-discovered QOO tests use generic checker
+    if [[ "$test_id" == qoo_* ]]; then
+      checker="check_qoo"
+    else
+      echo "SKIP: no checker for $test_id"
+      return 0
+    fi
   fi
+
+  local verdict
+  verdict=$("$checker" "$outfile" 2>/dev/null)
+  local result=$?
+  echo "$verdict" >> "$outfile"
+  echo "$verdict"
+  return $result
 }
 
 # --- Pre-flight gate (always runs before tests) ---

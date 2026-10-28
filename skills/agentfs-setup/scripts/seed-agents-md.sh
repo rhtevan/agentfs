@@ -258,7 +258,7 @@ Use available tools and knowledge at your discretion.
 ### 2. Pre-Flight
 
 **When:** Before any task that modifies ≥2 files, has step
-dependencies, or includes `git push`. Single-file read+edit
+dependencies, or includes \`git push\`. Single-file read+edit
 pairs are exempt.
 
 **Do:**
@@ -267,36 +267,18 @@ Assess task complexity, then follow the matching tier:
 
 **Tier 1 — Standard** (steps are independent, single phase):
 1. State the plan: what files change, in what order, what outcome.
-2. Fold in constraints: Post-Write if touching `.agents/`,
-   Checkpoint if destructive, `git diff --stat` + confirmation
-   if `git push`.
+2. Fold in constraints: Post-Write if touching \`.agents/\`,
+   Checkpoint if destructive, \`git diff --stat\` + confirmation
+   if \`git push\`.
 3. Execute. Confirm the stated outcome before responding.
 
 **Tier 2 — Specification-Driven** (steps have dependencies,
 multi-phase, or user explicitly requests structured execution):
-
-1. **Design Spec.** Define what "done" looks like — verifiable
-   pass/fail criteria (test commands, file assertions, observable
-   behaviors):
-   > **Validation Gate**
-   > - [ ] [criterion] — [how to verify]
-
-2. **Action Spec.** Decompose into numbered action items, each
-   with an expected outcome. Group under phase headings when
-   multiple phases exist:
-   > **Phase 1 — [name]**
-   > 1. [action] → [expected outcome]
-   > 2. [action] → [expected outcome]
-
-3. **Constraints.** Fold in applicable rules: Post-Write,
-   Checkpoint, `git push` confirmation.
-
-4. **Execute.** Work through items in order. Confirm each
-   expected outcome. If an item fails, stop and report.
-
-5. **Gate.** Execute the Validation Gate from step 1.
-   Report pass/fail per criterion. Do not claim completion
-   until all pass.
+1. Define pass/fail criteria (**Validation Gate**).
+2. Decompose into numbered actions with expected outcomes.
+3. Fold in constraints: Post-Write, Checkpoint, git push confirmation.
+4. Execute in order. Stop and report on failure.
+5. Run the Validation Gate. Do not claim completion until all pass.
 
 ### 3. Post-Write
 
@@ -312,12 +294,12 @@ multi-phase, or user explicitly requests structured execution):
 **When:** Turn 1 of any session, or every 10 turns, or after compaction.
 
 **Do:**
-1. Read `.agents/memories/USER.md`. Apply any preferences found.
-2. Write a random two-word canary at the top of your response.
-   Use this format: `🐦 word-word` (example: `🐦 cobalt-heron`).
+1. Write a random two-word canary at the top of your response.
+   Use this format: \`🐦 word-word\` (example: \`🐦 cobalt-heron\`).
+2. Read \`.agents/memories/USER.md\`. Apply any preferences found.
 3. Keep the canary in memory for this session. Do not write it to any file.
-4. On every 10th turn and after every compaction: re-read `MEMORY.md`
-   and `USER.md`. Run a silent self-check against all rules.
+4. On every 10th turn and after every compaction: re-read \`MEMORY.md\`
+   and \`USER.md\`. Run a silent self-check against all rules.
    Report only if you find a violation.
 
 ### 5. Conflict Resolution

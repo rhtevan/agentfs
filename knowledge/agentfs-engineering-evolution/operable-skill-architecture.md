@@ -192,10 +192,10 @@ enables the evolution feedback loop.
 An Observable Skill:
 - Scripts self-report execution traces via `trace_step()` — agent-agnostic,
   zero LLM involvement. Traces go to `~/.agents/.traces/`.
-- All three evaluation schemas (Quality, Operable, Observation) are
+- All three evaluation schemas (Quality, Observable, Operable) are
   **universal** at `~/.agents/skills/schemas/`. No per-skill schemas.
-- The frontier model computes `qoo-profile.yaml` at authorship —
-  semantic metrics that require content understanding.
+- The evaluation pipeline (gather-skill-state.sh + sdm-evaluate.sh) computes
+  objective scores in `scores.yaml` — no frontier-subjective assessment needed.
 - Evaluation runs **async on demand** — never during skill execution.
   Triggered by `skill-evolve`, manual command, or benchmark harness.
 - Scores persist per-skill in `scores.yaml` (committed, not gitignored).

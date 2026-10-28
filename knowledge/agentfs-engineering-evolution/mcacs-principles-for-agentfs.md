@@ -98,7 +98,7 @@ execution context.
 
 **Mitigation for skill-gen (Phase 1):**
 - Test scripts from non-obvious CWDs (`/tmp`, `~`, non-git dirs)
-- Record `implicit_assumptions` in `qoo-profile.yaml`
+- Record `implicit_assumptions` in SKILL.md specification tables
 - Checklist: "Does this script work without any CWD assumptions?"
 - Accept that the authoring model's assumptions are invisible to
   itself — only cross-model execution or explicit testing exposes them

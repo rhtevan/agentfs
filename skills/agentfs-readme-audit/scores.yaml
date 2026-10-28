@@ -1,0 +1,17 @@
+# scores.yaml — agentfs-readme-audit
+# Objective QOO scores from gather-skill-state.sh + sdm-evaluate.sh pipeline.
+# Replaces frontier-subjective qoo-profile.yaml.
+#
+# Status: QOO-qualified (scripts, CNL muscle, SDM integration).
+# SDM evaluation pending — run evaluate-pending.sh to populate.
+
+skill: agentfs-readme-audit
+version: "3.0.1"
+qoo-qualified: true
+qualification-basis:
+  - "scripts/gather-state.sh (deterministic state gathering)"
+  - "scripts/evaluate-readme.sh (SDM-backed dimension evaluation)"
+  - "CNL-compliant SKILL.md"
+  - "Anti-fabrication rules in muscle"
+latest: null  # Populated by sdm-evaluate.sh
+history: []   # Appended by evaluate-pending.sh

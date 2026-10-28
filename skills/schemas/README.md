@@ -9,14 +9,14 @@ correctness.
 | Type | Scope | File | Evaluates | When |
 |------|-------|------|-----------|------|
 | **quality** | Universal | `quality.yaml` | Skill design against MCACS principles | Build-time audit |
-| **operable** | Universal | `operable.yaml` | Structural compliance with Operable Skill architecture | Build-time audit |
-| **observation** | Universal | `observation.yaml` | Execution correctness from trace evidence | Run-time evaluation |
+| **observable** | Universal | `observable.yaml` | Build-time observability — instrumentation, traces, CNL, anti-fabrication | Build-time audit |
+| **operable** | Universal | `operable.yaml` | Runtime execution correctness from trace evidence (CECX) | Run-time evaluation |
 
 ## Unified Format
 
 ```yaml
 schema-version: "1.0"
-schema-type: quality | operable | observation
+schema-type: quality | observable | operable
 skill: <skill-name>             # omitted for universal schemas
 description: >
   Human-readable purpose of this schema.
@@ -40,7 +40,7 @@ dimensions:
 | Field | Type | Description |
 |-------|------|-------------|
 | `schema-version` | string | Schema format version (currently "1.0") |
-| `schema-type` | enum | One of: `quality`, `operable`, `observation` |
+| `schema-type` | enum | One of: `quality`, `observable`, `operable` |
 | `dimensions` | array | List of evaluation dimensions |
 | `dimensions[].name` | string | Unique identifier for the dimension |
 | `dimensions[].question` | string | Natural language question for SDM |
@@ -100,8 +100,8 @@ Classification into one of several options.
 | Schema Type | Target Argument | Evidence Extraction |
 |-------------|-----------------|---------------------|
 | `quality` | Skill directory path | SKILL.md content + scripts/ listing + directory structure |
-| `operable` | Skill directory path | SKILL.md content + scripts/ listing + directory structure |
-| `observation` | Trace file path (JSONL) | Full trace content from `trace-lib.sh` output |
+| `observable` | Skill directory path | SKILL.md content + scripts/ listing + directory structure |
+| `operable` | Trace file path (JSONL) | Full trace content from `trace-lib.sh` output |
 
 ## Scoring
 
@@ -142,7 +142,7 @@ See [sdm-endpoint.md](./sdm-endpoint.md) for API reference.
 ## Versioning
 
 Schema files are version-controlled. When a schema is updated (e.g.,
-`quality.yaml` v1.0 → v1.1), observation records carry the schema
+`quality.yaml` v1.0 → v1.1), evaluation records carry the schema
 version they were scored against. `skill-evolve` detects version
 mismatches and triggers re-evaluation.
 
@@ -164,12 +164,12 @@ mismatches and triggers re-evaluation.
     │   ├── README.md             ← this file
     │   ├── sdm-endpoint.md       ← API reference
     │   ├── quality.yaml          ← MCACS quality standard
-    │   ├── operable.yaml         ← structural compliance
-    │   └── observation.yaml      ← execution correctness standard
+    │   ├── observable.yaml        ← build-time observability
+    │   └── operable.yaml         ← runtime execution correctness
     │
     └── <skill-name>/
         ├── SKILL.md
-        ├── qoo-profile.yaml      ← semantic metrics (frontier-authored)
+        ├── scores.yaml            ← objective QOO scores (SDM-evaluated)
         ├── scores.yaml            ← evaluation history (committed)
         └── scripts/
 ```
