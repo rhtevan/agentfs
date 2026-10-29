@@ -2,6 +2,35 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-28 23:43
+- Updated error handling table to reference extract-comparison.sh + sdm-evaluate.sh (skills/agentfs-readme-audit/SKILL.md)
+- Updated Step 3 to interpret CECX JSON; updated error handling table (skills/agentfs-readme-audit/SKILL.md)
+- Bumped metadata version to 3.1.0 (skills/agentfs-readme-audit/SKILL.md)
+- Replaced Step 2 — use extract-comparison.sh + sdm-evaluate.sh instead of evaluate-readme.sh (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-28 23:42
+- Updated S2 specification row (skills/agentfs-readme-audit/SKILL.md)
+- Updated dependencies to extract-comparison.sh + sdm-evaluate.sh (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-28 23:41
+- Fixed SIGPIPE — use here-strings instead of echo pipe for grep -q with large input (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+- Fixed grep patterns — use -E for alternation, if-then for pipefail safety (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-10-28 23:40
+- Created extract-comparison.sh — compact SDM evidence from gather-state output
+
+## 2026-10-28 23:38
+- Fixed scientific notation parsing in polarity inversion — use awk instead of bc (scripts/sdm-evaluate.sh)
+
+## 2026-10-28 23:37
+- Added readme-alignment to recognized schema types (scripts/sdm-evaluate.sh)
+- Added polarity: negative support — inverts boolean probability before threshold check (scripts/sdm-evaluate.sh)
+- Added polarity: negative support for boolean dimensions — inverts probability before threshold check (scripts/sdm-evaluate.sh)
+
+## 2026-10-28 23:36
+- Created readme-alignment schema with negative-framed predicates for SDM evaluation (skills/schemas/readme-alignment.yaml)
+- Created readme-alignment schema with negative-framed predicates for SDM evaluation (skills/schemas/readme-alignment.yaml)
+
 ## 2026-10-28 23:16
 - Fixed QOO cross-reference from Steps 5-10 to Steps 6-11 (skills/agentfs-eval/SKILL.md)
 - Renumbered Steps 6-11 to 7-12, made QOO optional, added Tier 3 Semantic to consolidated report (skills/agentfs-eval/SKILL.md)

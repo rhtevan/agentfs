@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "3.0.1"
+  version: "3.1.0"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
@@ -20,14 +20,14 @@ AgentFS scope. Supports USER and PROJECT scopes.
 |----------|-------|
 | **Version** | 3.0.1 |
 | **Trigger** | Automatic during Git Push Safety, or explicit |
-| **Dependencies** | `scripts/gather-state.sh`, `scripts/evaluate-readme.sh` |
+| **Dependencies** | `scripts/gather-state.sh`, `scripts/extract-comparison.sh`, `sdm-evaluate.sh` |
 
 ## Specification
 
 | ID | Capability | Verifiable By |
 |:--:|-----------|---------------|
 | S1 | Gather filesystem state deterministically | `gather-state.sh` exits 0 with structured output |
-| S2 | Evaluate README alignment via SDM | `evaluate-readme.sh` produces dimension verdicts |
+| S2 | Evaluate README alignment via SDM | `extract-comparison.sh` + `sdm-evaluate.sh` produces CECX JSON |
 | S3 | Present alignment report to user | Report contains dimension table and verdict |
 | S4 | Recommend fixes for drift | Each drifted dimension has a specific fix |
 
@@ -70,36 +70,37 @@ of truth for this audit. Do not gather state by other means.
 
 ### Step 2: Evaluate Alignment
 
-Run this command:
+Extract compact comparison evidence, then run SDM evaluation:
 
 ```bash
-bash ~/.agents/skills/agentfs-readme-audit/scripts/evaluate-readme.sh /tmp/readme-audit-state.txt
+bash ~/.agents/skills/agentfs-readme-audit/scripts/extract-comparison.sh /tmp/readme-audit-state.txt > /tmp/readme-comparison.txt
+
+bash ~/.agents/scripts/sdm-evaluate.sh /tmp/readme-comparison.txt \
+  ~/.agents/skills/schemas/readme-alignment.yaml \
+  --evidence /tmp/readme-comparison.txt
 ```
 
-If the script exits 2, SDM is unavailable. Skip this step. Fall
-through to Step 3 and perform the comparison using the facts from
-`/tmp/readme-audit-state.txt` directly.
+If `sdm-evaluate.sh` exits 2, SDM is unavailable. Skip this step.
+Fall through to Step 3 and perform the comparison using the facts
+from `/tmp/readme-audit-state.txt` directly.
 
-If the script succeeds, read the output. It contains a dimension
-table with per-dimension verdicts and an aggregate verdict.
+If it succeeds, read the CECX JSON output. Each dimension has
+`pass: true/false`, `score`, and `confidence`.
 
 ### Step 3: Interpret Results
 
-Read the gather-state output and the evaluate-readme output together.
+Read the CECX JSON from Step 2. For each dimension:
+- `pass: true` with `confidence >= 0.7` → ✅ aligned
+- `pass: true` with `confidence < 0.7` → ⚠️ uncertain (verify manually)
+- `pass: false` with `score: 0` → ⚠️ DRIFT (SDM detected a factually incorrect claim)
+- `pass: false` with `score: 50` → ⚠️ uncertain (verify manually)
+- Dimensions with `informational: true` in the schema (D9/P8) → ℹ️ informational
 
-For each dimension in the evaluate-readme report:
-- If the dimension shows ✅, no action is needed.
-- If the dimension shows ⚠️ DRIFT, check the gather-state facts
-  to confirm the drift. State what the README claims and what the
-  filesystem shows.
-- If the dimension shows ℹ️ Gap, note it as informational. Gaps
-  are not blocking.
-- If the dimension shows ⚠️ uncertain, check the gather-state
-  facts to make a judgment. SDM confidence was low.
+Filter dimensions by scope: show only `D*` dimensions for USER scope,
+only `P*` dimensions for PROJECT scope.
 
-If SDM was unavailable in Step 2, perform the comparison manually.
-Compare the README content from gather-state output against the
-filesystem facts. Check each dimension listed below.
+If SDM was unavailable in Step 2, perform the comparison manually
+using the `extract-comparison.sh` output or the raw gather-state facts.
 
 #### USER scope dimensions
 
@@ -162,7 +163,7 @@ Do not auto-apply fixes. Present them to the user for approval.
 | Step | Script | On Failure |
 |:----:|--------|------------|
 | 1 | `gather-state.sh` | Exit 1: no README, skip audit. Exit 2: not a git repo, report error. |
-| 2 | `evaluate-readme.sh` | Exit 2: SDM unavailable, fall through to manual comparison. Exit 1: partial, report what succeeded. |
+| 2 | `extract-comparison.sh` + `sdm-evaluate.sh` | Exit 2: SDM unavailable, fall through to manual comparison. Exit 1: partial, report what succeeded. |
 
 ## Integration with Git Push Safety
 

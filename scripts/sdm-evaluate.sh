@@ -109,7 +109,7 @@ extract_evidence_operable() {
 }
 
 case "$SCHEMA_TYPE" in
-  quality|observable)
+  quality|observable|readme-alignment)
     if [[ -n "$EVIDENCE_FILE" && -f "$EVIDENCE_FILE" ]]; then
       EVIDENCE=$(cat "$EVIDENCE_FILE")
       if [[ "$SKILL_NAME" == "unknown" ]]; then
@@ -146,6 +146,7 @@ DIMENSION_NAMES=()
 DIMENSION_WEIGHTS=()
 DIMENSION_TARGETS=()
 DIMENSION_METRICS=()
+DIMENSION_POLARITIES=()
 
 for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   name=$(yq -r ".dimensions[$i].name" "$SCHEMA")
@@ -153,11 +154,13 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   metric=$(yq -r ".dimensions[$i].metric" "$SCHEMA")
   target=$(yq -r ".dimensions[$i].target // \"\"" "$SCHEMA")
   weight=$(yq -r ".dimensions[$i].weight // 1.0" "$SCHEMA")
+  polarity=$(yq -r ".dimensions[$i].polarity // \"positive\"" "$SCHEMA")
 
   DIMENSION_NAMES+=("$name")
   DIMENSION_WEIGHTS+=("$weight")
   DIMENSION_TARGETS+=("$target")
   DIMENSION_METRICS+=("$metric")
+  DIMENSION_POLARITIES+=("$polarity")
 
   # Map metric type to SDM question type
   case "$metric" in
@@ -218,6 +221,7 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   metric="${DIMENSION_METRICS[$i]}"
   target="${DIMENSION_TARGETS[$i]}"
   weight="${DIMENSION_WEIGHTS[$i]}"
+  polarity="${DIMENSION_POLARITIES[$i]}"
 
   answer=$(echo "$ANSWERS" | jq ".[$i]")
   pass=false
@@ -228,6 +232,13 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   case "$metric" in
     boolean)
       prob=$(echo "$answer" | jq -r '.probability // 0')
+      # For negative polarity: high probability = bad (drift detected).
+      # Invert so that pass/fail logic stays consistent:
+      # after inversion, high = good (no drift), low = bad (drift).
+      # Note: awk handles scientific notation (e.g., 6.47e-7) that bc cannot.
+      if [[ "$polarity" == "negative" ]]; then
+        prob=$(awk "BEGIN {printf \"%.10f\", 1 - $prob}")
+      fi
       confidence=$prob
       if (( $(echo "$prob >= 0.7" | bc -l) )); then
         pass=true; score_val=100

@@ -1,0 +1,190 @@
+schema-version: "1.0"
+schema-type: readme-alignment
+description: >
+  README alignment standard for AgentFS scopes. Evaluates whether the
+  README makes factually incorrect claims relative to the current
+  filesystem state. Uses negative-framed predicates — high probability
+  means drift detected.
+
+# Scope selection: the caller must filter to the correct dimension set
+# based on scope (USER or PROJECT). Both sets are defined here.
+# sdm-evaluate.sh sends all dimensions; the caller filters the report.
+
+dimensions:
+  # --- USER scope dimensions ---
+  - name: D1_skill_count
+    question: >
+      Does the README make a factually incorrect claim about the
+      number of skills? If the README does not mention a specific
+      skill count, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D2_skill_categories
+    question: >
+      Does the README describe skill categories that do not exist,
+      or claim skills exist that are not in the filesystem? If the
+      README links to an index file instead of listing skills inline,
+      it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D3_knowledge_bundles
+    question: >
+      Does the README make a factually incorrect claim about the
+      number or names of knowledge bundles? If the README does not
+      mention a specific count, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D4_directory_structure
+    question: >
+      Does the README show a directory tree or file listing that
+      contradicts the actual top-level directory structure? If the
+      README does not show a tree, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D5_guardrail_summary
+    question: >
+      Does the README make a factually incorrect claim about the
+      number or names of guardrails or operational rules? If the
+      README does not list guardrails, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D6_version_references
+    question: >
+      Does the README mention a version number that does not match
+      the actual template version? If no versions are mentioned,
+      it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D7_feature_descriptions
+    question: >
+      Does the README describe capabilities or features that have
+      no backing skill or resource on the filesystem? If features
+      are described at a high level without specific counts, it is
+      NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D8_setup_instructions
+    question: >
+      Does the README contain setup or installation instructions
+      with file paths or commands that are factually wrong given the
+      actual directory structure? If no setup instructions exist,
+      it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: user
+
+  - name: D9_coverage_gaps
+    question: >
+      Are there major content categories on the filesystem (large
+      numbers of skills, knowledge bundles, or other resources) that
+      the README does not acknowledge at all — not even with a link
+      to an index file?
+    metric: boolean
+    polarity: negative
+    weight: 0.5
+    scope: user
+    informational: true
+
+  # --- PROJECT scope dimensions ---
+  - name: P1_project_skill_count
+    question: >
+      Does the README make a factually incorrect claim about the
+      number of project-scoped skills? If the README does not
+      mention project skills, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P2_agent_profiles
+    question: >
+      Does the README list agent profiles that do not exist, or
+      claim profiles exist that are not in the filesystem? If the
+      README does not mention profiles, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P3_agent_identity
+    question: >
+      Does the README describe an agent identity or persona that
+      contradicts the actual SOUL.md content? If the README does
+      not describe agent identity, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P4_directory_structure
+    question: >
+      Does the README show a directory tree that contradicts the
+      actual project .agents/ directory structure? If no tree is
+      shown, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P5_agentsmd_references
+    question: >
+      Does the README reference guardrails, rules, or AGENTS.md
+      content that is factually wrong based on the actual AGENTS.md?
+      If no references exist, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P6_feature_descriptions
+    question: >
+      Does the README describe capabilities that have no backing
+      file in the project .agents/ directory? If features are
+      described at a high level, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P7_setup_onboarding
+    question: >
+      Does the README contain setup or onboarding instructions
+      with file paths or commands that are factually wrong? If no
+      setup instructions exist, it is NOT incorrect.
+    metric: boolean
+    polarity: negative
+    weight: 1.0
+    scope: project
+
+  - name: P8_coverage_gaps
+    question: >
+      Are there major content categories in the project .agents/
+      (skills, profiles, agent identity) that the README does not
+      acknowledge at all?
+    metric: boolean
+    polarity: negative
+    weight: 0.5
+    scope: project
+    informational: true

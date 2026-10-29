@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-28 23:40 | v3.1.0 — Created extract-comparison.sh — compact SDM evidence from gather-state output |
 | 2026-10-27 13:12 | v3.0.1 — v3.0.1: prohibition on direct README reading, absolute paths, stronger imperative, temp file pattern |
 | 2026-10-27 11:53 | v3.0.0 — New script: deterministic state gathering for README audit — replaces Steps 0-2, trace-instrumented, dual scope support |
 | 2026-09-16 12:11 | v2.1.0 — Added D9/P8 Coverage Gaps dimension — non-blocking signal for unmentioned content |
