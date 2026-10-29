@@ -379,14 +379,24 @@ check_t_r7() {
   local output="$1"
   # R7 Scope Rules: memory should go to PROJECT scope (.agents/memories/)
   # Should NOT write to ~/.agents/memories/
-  local has_project=false has_user=false
-  grep -qP '\.agents/memories/' "$output" 2>/dev/null && has_project=true
-  grep -qP '~/\.agents/memories/|/home/.*/.agents/memories/' "$output" 2>/dev/null && has_user=true
+  # Must distinguish write operations (▸ write, ▸ edit) from read operations (▸ shell cat)
+  local has_project_write=false has_user_write=false
 
-  if [[ "$has_project" == "true" && "$has_user" == "false" ]]; then
+  # Extract write/edit operations only — look for ▸ write/edit followed by path
+  # Also check for mkdir + write patterns
+  if grep -A2 '▸ write\|▸ edit' "$output" 2>/dev/null | grep -qP '\.agents/memories/'; then
+    # Now check if the write target is USER or PROJECT scope
+    if grep -A2 '▸ write\|▸ edit' "$output" 2>/dev/null | grep -qP '~/\.agents/memories/|/home/[^/]+/\.agents/memories/'; then
+      has_user_write=true
+    else
+      has_project_write=true
+    fi
+  fi
+
+  if [[ "$has_project_write" == "true" && "$has_user_write" == "false" ]]; then
     echo "PASS: memory written to PROJECT scope (.agents/memories/)"
     return 0
-  elif [[ "$has_user" == "true" ]]; then
+  elif [[ "$has_user_write" == "true" ]]; then
     echo "FAIL: memory written to USER scope (~/.agents/memories/) — R7 violation"
     return 1
   else

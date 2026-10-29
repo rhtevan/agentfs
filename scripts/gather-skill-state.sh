@@ -30,7 +30,101 @@ set -euo pipefail
 die() { echo "ERROR: $*" >&2; exit 1; }
 
 # --- Arguments ---
-[[ $# -ge 1 ]] || die "Usage: gather-skill-state.sh <skill-directory>"
+TARGET_MODE="skill"
+if [[ "${1:-}" == "--target" && "${2:-}" == "agents-md" ]]; then
+  TARGET_MODE="agents-md"
+  shift 2
+fi
+
+[[ $# -ge 1 ]] || die "Usage: gather-skill-state.sh [--target agents-md] <path>"
+
+if [[ "$TARGET_MODE" == "agents-md" ]]; then
+  # --- AGENTS.md mode ---
+  AGENTS_FILE="$1"
+  [[ -f "$AGENTS_FILE" ]] || die "AGENTS.md not found: $AGENTS_FILE"
+
+  TOTAL_LINES=$(wc -l < "$AGENTS_FILE")
+
+  # Version
+  VERSION=$(grep -oP 'agentfs-template-version: \K[0-9.]+' "$AGENTS_FILE" 2>/dev/null || echo "unknown")
+
+  # Rule count and per-rule metrics
+  RULE_COUNT=$(grep -cP '^\s*### [0-9]+\.' "$AGENTS_FILE" 2>/dev/null || echo 0)
+
+  # Extract per-rule metrics
+  RULE_DETAILS=""
+  TOTAL_RULE_LINES=0
+  TOTAL_RULE_WORDS=0
+  TOTAL_CONDITIONALS=0
+  TOTAL_SUB_STEPS=0
+  TOTAL_PASSIVE=0
+
+  # Get line numbers of each rule header and the next section
+  rule_starts=()
+  while IFS= read -r line; do
+    rule_starts+=("$line")
+  done < <(grep -nP '^\s*### [0-9]+\.' "$AGENTS_FILE" | cut -d: -f1)
+
+  # Find end of rules section (next ## heading after rules, or Signal Dispatch)
+  rules_section_end=$(grep -nP '^## (Signal Dispatch|Quick Orientation)' "$AGENTS_FILE" | head -1 | cut -d: -f1)
+  [[ -z "$rules_section_end" ]] && rules_section_end=$TOTAL_LINES
+
+  for i in "${!rule_starts[@]}"; do
+    start=${rule_starts[$i]}
+    if [[ $((i + 1)) -lt ${#rule_starts[@]} ]]; then
+      end=$((${rule_starts[$((i + 1))]} - 1))
+    else
+      end=$((rules_section_end - 1))
+    fi
+
+    rule_name=$(sed -n "${start}p" "$AGENTS_FILE" | sed 's/^### [0-9]*\. //')
+    rule_lines=$((end - start + 1))
+    rule_text=$(sed -n "${start},${end}p" "$AGENTS_FILE")
+    rule_words=$(echo "$rule_text" | wc -w)
+    rule_conditionals=$(echo "$rule_text" | grep -ciP '\bif\b|\bwhen\b|\bunless\b' 2>/dev/null || true)
+    [[ -z "$rule_conditionals" ]] && rule_conditionals=0
+    rule_sub_steps=$(echo "$rule_text" | grep -cP '^\s*[0-9]+\.' 2>/dev/null || true)
+    [[ -z "$rule_sub_steps" ]] && rule_sub_steps=0
+    rule_passive=$(echo "$rule_text" | grep -ciP '\b(is|are|was|were|been|being)\s+\w+ed\b' 2>/dev/null || true)
+    [[ -z "$rule_passive" ]] && rule_passive=0
+
+    RULE_DETAILS+="Rule $((i + 1)) ($rule_name): $rule_lines lines, $rule_words words, $rule_sub_steps sub-steps, $rule_conditionals conditionals, $rule_passive passive voice
+"
+    TOTAL_RULE_LINES=$((TOTAL_RULE_LINES + rule_lines))
+    TOTAL_RULE_WORDS=$((TOTAL_RULE_WORDS + rule_words))
+    TOTAL_CONDITIONALS=$((TOTAL_CONDITIONALS + rule_conditionals))
+    TOTAL_SUB_STEPS=$((TOTAL_SUB_STEPS + rule_sub_steps))
+    TOTAL_PASSIVE=$((TOTAL_PASSIVE + rule_passive))
+  done
+
+  # Signal dispatch entries
+  SIGNAL_COUNT=$(grep -cP '^\| `hey ' "$AGENTS_FILE" 2>/dev/null || echo 0)
+
+  # Scope table entries
+  SCOPE_COUNT=$(grep -cP '^\| \*\*(USER|PROJECT|LITE)\*\*' "$AGENTS_FILE" 2>/dev/null || echo 0)
+
+  # Token estimate (rough: words * 1.3)
+  TOTAL_WORDS=$(wc -w < "$AGENTS_FILE")
+  TOKEN_ESTIMATE=$(echo "$TOTAL_WORDS * 13 / 10" | bc 2>/dev/null || echo "unknown")
+
+  cat <<AGENTS_EOF
+Target: AGENTS.md
+Version: $VERSION
+Total lines: $TOTAL_LINES
+Total words: $TOTAL_WORDS
+Estimated tokens: $TOKEN_ESTIMATE
+Rule count: $RULE_COUNT
+Total rule lines: $TOTAL_RULE_LINES
+Total rule words: $TOTAL_RULE_WORDS
+Total sub-steps across rules: $TOTAL_SUB_STEPS
+Total conditionals across rules: $TOTAL_CONDITIONALS
+Total passive voice across rules: $TOTAL_PASSIVE
+Signal dispatch entries: $SIGNAL_COUNT
+Scope definitions: $SCOPE_COUNT
+AGENTS_EOF
+  printf '%s' "$RULE_DETAILS"
+  exit 0
+fi
 
 SKILL_DIR="$1"
 [[ -d "$SKILL_DIR" ]] || die "Not a directory: $SKILL_DIR"

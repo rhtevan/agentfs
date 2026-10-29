@@ -40,10 +40,22 @@ command -v jq >/dev/null 2>&1 || die "jq is required but not found."
 [[ -x "$SDM_CALL" ]] || die "sdm-call.sh not found at $SDM_CALL"
 
 # --- Arguments ---
-[[ $# -ge 2 ]] || die "Usage: sdm-evaluate.sh <target> <schema.yaml>"
+EVIDENCE_FILE=""
+ARGS=()
+for arg in "$@"; do
+  if [[ "$arg" == "--evidence" ]]; then
+    EVIDENCE_FILE="__next__"
+  elif [[ "$EVIDENCE_FILE" == "__next__" ]]; then
+    EVIDENCE_FILE="$arg"
+  else
+    ARGS+=("$arg")
+  fi
+done
 
-TARGET="$1"
-SCHEMA="$2"
+[[ ${#ARGS[@]} -ge 2 ]] || die "Usage: sdm-evaluate.sh <target> <schema.yaml> [--evidence <file>]"
+
+TARGET="${ARGS[0]}"
+SCHEMA="${ARGS[1]}"
 
 [[ -e "$TARGET" ]] || die "Target not found: $TARGET"
 [[ -f "$SCHEMA" ]] || die "Schema not found: $SCHEMA"
@@ -98,16 +110,26 @@ extract_evidence_operable() {
 
 case "$SCHEMA_TYPE" in
   quality|observable)
-    [[ -d "$TARGET" ]] || die "For $SCHEMA_TYPE schemas, target must be a skill directory"
-    EVIDENCE=$(extract_evidence_quality "$TARGET")
-    # Auto-detect skill name from directory if not in schema
-    if [[ "$SKILL_NAME" == "unknown" ]]; then
-      SKILL_NAME=$(basename "$TARGET")
+    if [[ -n "$EVIDENCE_FILE" && -f "$EVIDENCE_FILE" ]]; then
+      EVIDENCE=$(cat "$EVIDENCE_FILE")
+      if [[ "$SKILL_NAME" == "unknown" ]]; then
+        SKILL_NAME=$(basename "$TARGET" .md)
+      fi
+    else
+      [[ -d "$TARGET" ]] || die "For $SCHEMA_TYPE schemas, target must be a skill directory (or use --evidence <file>)"
+      EVIDENCE=$(extract_evidence_quality "$TARGET")
+      if [[ "$SKILL_NAME" == "unknown" ]]; then
+        SKILL_NAME=$(basename "$TARGET")
+      fi
     fi
     ;;
   operable)
-    [[ -f "$TARGET" ]] || die "For operable schema, target must be a trace file"
-    EVIDENCE=$(extract_evidence_operable "$TARGET")
+    if [[ -n "$EVIDENCE_FILE" && -f "$EVIDENCE_FILE" ]]; then
+      EVIDENCE=$(cat "$EVIDENCE_FILE")
+    else
+      [[ -f "$TARGET" ]] || die "For operable schema, target must be a trace file (or use --evidence <file>)"
+      EVIDENCE=$(extract_evidence_operable "$TARGET")
+    fi
     ;;
   *)
     die "Unknown schema-type: $SCHEMA_TYPE (expected quality, observable, or operable)"

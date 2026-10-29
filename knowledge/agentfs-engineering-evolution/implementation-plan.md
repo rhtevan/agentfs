@@ -434,24 +434,25 @@ require explicit --tests flag.
 Use 3.3 results → MCACS attribution → upgrade one skill → re-run →
 compare CECX v1.0 vs v1.1.
 
-## Phase 4 — Maturity
+## Phase 4 — Maturity (SKILL Domain QOO)
 
-### Status: Not started. Depends on Phase 3.
+### Status: Not started. Depends on Phase 1 + Phase 5.
 
-### 4.1 Build `skill-evolve` Skill
+### 4.1 Re-engineer `skill-eval` for QOO-aligned SKILL Runtime Evaluation
 
-**What:** New skill that reads `observations/index.json` + universal
-schemas + operable.yaml, cross-references gaps, and produces an
-upgrade specification.
+**What:** Extend existing `skill-eval` with QOO runtime operable
+evaluation. Keep Tier 0 (S01-S22 deterministic + S23-S26 frontier
+qualitative). Add Tier 1 (Quality + Observable via SDM). Add Tier 2
+(Operable: read `.traces/` JSONL → `sdm-evaluate.sh operable.yaml`
+→ `scores.yaml`). One runtime eval skill per domain.
 
-**Input:** Skill name (reads its observations/index.json)
-**Output:** Structured upgrade spec — which scripts to add/modify,
-which CNL blocks to rewrite, which SDM calls to introduce.
+**Input:** Skill name or "all"
+**Output:** Unified report (Tier 0 + QOO scores) + updated `scores.yaml`
 
 ### 4.2 Audit Top-10 Skills
 
-Apply MCACS quality audit (`sdm-evaluate.sh <skill> quality.yaml`)
-to the 10 most-used skills. Upgrade as needed.
+Apply QOO evaluation (`agentfs-eval` pattern) to the 10 most-used
+skills. Upgrade as needed via `skill-gen` "upgrade skill" workflow.
 
 ### 4.3 8B Benchmark
 
@@ -459,27 +460,106 @@ Run T1–T8 on Qwen3-8B. Target ≥70%.
 
 ### 4.4 Second Operable Skill Conversion
 
-Convert `violation-chk` (Pattern C) using the same process as Phase 2.
-Validates the pattern is repeatable.
+Convert a third skill using the QOO process validated in Phase 2+5.
+
+## Phase 5 — AGENTS.md QOO Completion
+
+### Status: ✅ COMPLETE (2026-10-28).
+
+AGENTS.md is Non-Observable (passive document, no self-instrumentation).
+Evaluate Quality (build-time) + Operable (runtime) only, skip Observable.
+Same pipeline as skills: `gather-skill-state.sh` → `sdm-evaluate.sh` →
+`scores.yaml`. One build-time skill (`agentfs-setup`), one runtime eval
+skill (`agentfs-eval`). Absorbs `agentfs-violation-chk`.
+
+### Responsibility Matrix
+
+| | Build-time (static QOO) | Runtime (all evaluation) |
+|---|:---:|:---:|
+| **AGENTS.md** | `agentfs-setup` (Quality only) | `agentfs-eval` (Tier 0 + Quality + Operable) |
+| **SKILL** | `skill-gen` (Quality + Observable) | `skill-eval` (Tier 0 + QOO all) |
+
+### Evaluation Tiers (inside `agentfs-eval`)
+
+| Tier | Method | Model | What |
+|:----:|--------|:-----:|------|
+| 0 | `template-check.sh` (deterministic) | None | A1-A9 convention hygiene |
+| 1 | `gather-skill-state.sh --target agents-md` → `sdm-evaluate.sh quality.yaml` | SDM | Build-time Quality (MCACS) |
+| 2 | `benchmark.sh` frontier 1 run + target 5 runs → `sdm-evaluate.sh operable.yaml` | SDM + target | Runtime Operable (CECX), gap analysis |
+| — | Session audit (from violation-chk) | Frontier | In-session rule compliance, diagnostic only |
+
+### Test Suite
+
+- **Keep as Tier 0:** A1-A9 (`template-check.sh`)
+- **Drop:** B1-B3 (`template-behavioral.sh`) — subsumed by QOO_* auto-discovered dispatch
+- **Keep in benchmark:** T1 (canary), T_R2 (pre-flight), T_R3 (post-write), T_R7 (scope), QOO_* (dispatch)
+
+### 5.1 Cleanup
+
+Delete `baseline.yaml`. Fix stale refs in `artifact-qoo-separation.md`
+and `implementation-plan.md`.
+
+### 5.2 Build-time Quality in `agentfs-setup`
+
+Add `--target agents-md` flag to `gather-skill-state.sh` — extract
+AGENTS.md-specific facts (rule count, per-rule word count, conditionals,
+passive voice, signal dispatch entries). Add "upgrade agentfs" signal.
+Wire: gather → `sdm-evaluate.sh quality.yaml` → Quality section in
+`artifacts/agents-md/scores.yaml`.
+
+### 5.3 Re-engineer `agentfs-eval`
+
+(a) Keep Tier 0: `template-check.sh` A1-A9 unchanged.
+(b) Drop B1-B3 from `template-behavioral.sh`.
+(c) Add QOO Operable: call `benchmark.sh` frontier 1 run + target 5
+runs, extract per-test pass rates, `sdm-evaluate.sh operable.yaml`,
+gap analysis. (d) Absorb `agentfs-violation-chk` as session audit mode.
+(e) Simplify `template-eval.sh` to Tier 0 only. (f) Replace
+`template-scores.md` with `artifacts/agents-md/scores.yaml`.
+
+### 5.4 Signal Cleanup
+
+Add `upgrade agentfs` to `agentfs-setup`. Add `check violations`,
+`self audit` to `agentfs-eval`. Remove `verify agentfs`. Drop
+`edit skill` from `skill-gen` (reserve for Phase 1 `upgrade skill`).
+Deprecate `agentfs-violation-chk`. Reindex KGM.
+
+### 5.5 Run Full AGENTS.md QOO Evaluation
+
+Execute pipeline end-to-end: Tier 0, Quality, Operable (frontier +
+14B). Populate `artifacts/agents-md/scores.yaml`. Document gap analysis.
+
+### 5.6 Update Knowledge
+
+Update `artifact-qoo-separation.md`, `observable-skill-design.md`,
+MEMORY.md breadcrumb with finalized AGENTS QOO model.
 
 ## Dependency Graph
 
 ```
 Phase 0 (SDM + QOO infrastructure) ✅ COMPLETE
   │
+  ├──► Phase 2 (first conversion) ─────────┐  ✅ COMPLETE
+  │      2.1-2.5 all complete        ✅    │
+  │                                        ├──► Phase 3  ✅ COMPLETE
+  ├──► Phase 5 (AGENTS.md QOO) ◄───────────┘  ✅ COMPLETE
+  │      5.1 cleanup                       ✅
+  │      5.2 agentfs-setup Quality         ✅
+  │      5.3 agentfs-eval Operable         ✅
+  │      5.4 signal cleanup                ✅
+  │      5.5 run full evaluation           ✅
+  │      5.6 update knowledge              ✅
+  │
   ├──► Phase 1 (skill-gen QOO factory) ────┐  ❌ NOT STARTED
-  │      1.1 QOO profile step              │
+  │      1.1 QOO step in creation          │
   │      1.2 MCACS gates + checklist       │
-  │      1.3 QOO audit in Skill Check      │
+  │      1.3 signal cleanup               │
   │                                        │
-  ├──► Phase 2 (first conversion) ─────────┤  ✅ COMPLETE
-  │      2.1 gather-state.sh         ✅    │
-  │      2.2 evaluate-readme.sh      ✅    ├──► Phase 3  ──► Phase 4
-  │      2.3 scores.yaml              ✅    │    3.1 ✅ harness
-  │      2.4 SKILL.md CNL rewrite    ✅    │    3.2 ✅ frontier 100%
-  │      2.5 Validate on 14B         ✅    │    3.3 ✅ 14B 91%
-  │                                        │    3.4 ❌ evolution cycle
-  │    (Phase 1 ∥ Phase 2 — parallel)      │
+  └──► Phase 4 (SKILL domain QOO) ◄───────┘  ❌ NOT STARTED
+       4.1 skill-eval re-engineering
+       4.2 top-10 audit
+       4.3 8B benchmark
+       4.4 third skill conversion
 ```
 
 ## Success Criteria
@@ -487,10 +567,11 @@ Phase 0 (SDM + QOO infrastructure) ✅ COMPLETE
 | Phase | Metric | Target | Current |
 |:-----:|--------|--------|---------|
 | 0 | SDM callable + QOO evidence pipeline | All 0.x items complete | ✅ All 0.1-0.12 complete |
-| 1 | skill-gen produces QOO skills | New skills include scripts/, scores.yaml, trace_step() | Not started |
 | 2 | readme-audit CECX on 14B | ≥75 (Tunable band) | ✅ Both scopes pass on 14B (v3.0.1) |
-| 3 | Skill operability on 14B | ≥90% | ✅ 100% (20/20). T2 100%, T3 100%, T5 100%, T9 100%. After QOO + R1 CNL fix. |
-| 4 | Repeatable evolution cycle | skill-evolve produces actionable upgrade spec | Not started |
+| 3 | Skill operability on 14B | ≥90% | ✅ 100% (20/20) after QOO + R1 CNL fix |
+| 5 | AGENTS.md QOO scores populated | Quality + Operable in scores.yaml, gap analysis | ✅ Quality 32.2 + Operable 70.8 |
+| 1 | skill-gen produces QOO skills | New skills include scripts/, scores.yaml, trace_step() | Not started |
+| 4 | SKILL domain QOO eval | skill-eval re-engineered, top-10 audited | Not started |
 
 ## How to Resume
 

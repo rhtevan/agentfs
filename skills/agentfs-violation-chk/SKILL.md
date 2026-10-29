@@ -1,11 +1,17 @@
 ---
 name: agentfs-violation-chk
+deprecated: true
+deprecated-by: agentfs-eval
+deprecated-reason: >
+  Session audit functionality absorbed into agentfs-eval v2.0.0 as
+  "Session Audit Mode" (signals: check violations, self audit).
 description: >
+  DEPRECATED — use agentfs-eval instead.
   check violations, violation audit, self audit,
   behavioral compliance, hey check violations
 metadata:
   author: agentfs
-  version: "1.0.1"
+  version: "1.1.0"
   tags: [agentfs, audit, compliance, guardrails, behavioral]
 user-invocable: true
 disable-model-invocation: false

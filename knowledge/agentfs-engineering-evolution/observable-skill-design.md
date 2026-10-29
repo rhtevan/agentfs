@@ -220,6 +220,30 @@ CHANGELOG gets one summary line referencing the scores:
         └── scores.yaml                   ← objective QOO scores (SDM-evaluated, committed)
 ```
 
+## AGENTS.md — Non-Observable Artifact
+
+AGENTS.md is a passive system prompt document loaded into the model
+context window. It cannot self-instrument or produce audit trails.
+Therefore it is evaluated on **Quality + Operable only**, skipping
+Observable.
+
+| Property | SKILL | AGENTS.md |
+|----------|:-----:|:---------:|
+| Quality | ✅ MCACS via SDM | ✅ MCACS via SDM (adapted) |
+| Observable | ✅ scripts, traces, CNL | ❌ N/A (passive document) |
+| Operable | ✅ trace JSONL → CECX | ✅ benchmark → CECX |
+
+**Build-time Quality:** `gather-skill-state.sh --target agents-md` →
+`sdm-evaluate.sh quality.yaml` → `artifacts/agents-md/scores.yaml`.
+Handled by `agentfs-setup` ("upgrade agentfs").
+
+**Runtime Operable:** `benchmark.sh` frontier 1 run + target 5 runs →
+`sdm-evaluate.sh operable.yaml` → `artifacts/agents-md/scores.yaml`.
+Handled by `agentfs-eval` ("eval agentfs").
+
+**First baseline (2026-10-28):** Quality 32.2, Operable 70.8.
+Gaps: R3 Post-Write (0% both models), R4 Canary (60% on 14B).
+
 ## Relationship to Existing Concepts
 
 - **Operable Skill Architecture:** Observable is a property of an

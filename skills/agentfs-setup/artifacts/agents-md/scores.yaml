@@ -1,0 +1,119 @@
+# scores.yaml — AGENTS.md artifact
+# QOO scores: Quality (build-time) + Operable (runtime).
+# Observable: N/A (passive document, no self-instrumentation).
+
+artifact: AGENTS.md
+source_skill: agentfs-setup
+version: "7.5.1"
+
+quality:
+  aggregate_score: 32.2
+  band: Redesign
+  note: >
+    Score reflects quality.yaml schema designed for SKILLs, not system
+    prompts. Dimensions script_coverage, inference_hop_count, and
+    interface_opacity do not apply to AGENTS.md (no scripts by design).
+    Applicable dimensions: accidental_complexity=88, model_portability=100.
+    An AGENTS.md-adapted quality schema would score higher on applicable
+    dimensions only.
+  applicable_dimensions:
+    accidental_complexity: 88
+    model_portability: 100
+    concern_count: 0
+  non_applicable_dimensions:
+    - script_coverage (AGENTS.md has no scripts by design)
+    - inference_hop_count (no script checkpoints)
+    - interface_opacity (no script internals)
+  evaluated: "2026-10-28T21:07:01-04:00"
+
+operable:
+  aggregate_score: 54.1
+  band: Re-engineer
+  note: >
+    Benchmark run 2. Frontier (claude-opus-4-6) 1 run,
+    Target (Qwen3-14B-FP8) 5 runs, 6 tests covering Rules 1-4,7.
+    Frontier: 83% (5/6). Target: 63% (19/30).
+    Degraded from run 1 (70.8) due to t_r7 scope stochastic variance
+    (100%→40%) and readme_audit drop (100%→80%).
+  frontier:
+    provider: custom_redhat
+    model: claude-opus-4-6
+    runs: 1
+    pass_rate: 83
+    results:
+      t1_canary: 100
+      qoo_agentfs_readme_audit: 100
+      qoo_crc_status: 100
+      t_r2_preflight: 100
+      t_r3_postwrite: 0
+      t_r7_scope: 100
+  target:
+    provider: custom_skupper
+    model: Qwen/Qwen3-14B-FP8
+    runs: 5
+    pass_rate: 63
+    results:
+      t1_canary: 60
+      qoo_agentfs_readme_audit: 80
+      qoo_crc_status: 100
+      t_r2_preflight: 100
+      t_r3_postwrite: 0
+      t_r7_scope: 40
+  sdm_dimensions:
+    step_completion: { pass: false, score: 0, weight: 0.40 }
+    no_fabrication: { pass: true, score: 100, weight: 0.40 }
+    minimal_inference_hops: { pass: false, score: 71, weight: 0.25 }
+    token_efficiency: { pass: false, score: 40, weight: 0.25 }
+    correct_sequence: { pass: true, score: 100, weight: 0.25 }
+    scope_resolution: { pass: false, score: 0, weight: 0.25 }
+    no_improvised_recovery: { pass: true, score: 100, weight: 0.10 }
+  gap_analysis:
+    - rule: R3 Post-Write
+      test: t_r3
+      frontier: 0
+      target: 0
+      diagnosis: >
+        Both models fail to trigger post-write.sh after .agents/ writes.
+        Structural AGENTS.md prose gap. CNL rewrite candidate — make
+        post-write command explicit with full path.
+    - rule: R4 Session Canary
+      test: t1
+      frontier: 100
+      target: 60
+      diagnosis: >
+        14B model drops canary 40% of the time, responding with plain
+        greeting. Stable across runs. Rule needs stronger imperative
+        positioning.
+    - rule: R7 Scope Rules
+      test: t_r7
+      frontier: 100
+      target: 40
+      diagnosis: >
+        High stochastic variance on 14B — run 1 was 100%, run 2 was
+        40%. Model sometimes ignores 'hey remember' signal entirely.
+        When it does write, scope is correct.
+    - rule: R1 Dispatch (readme-audit)
+      test: qoo_agentfs_readme_audit
+      frontier: 100
+      target: 80
+      diagnosis: >
+        Minor stochastic drop — 1/5 run had dispatch but no shell
+        execution (skill loaded but script not called).
+  evaluated: "2026-10-28T22:15:20-04:00"
+  benchmark_output: /tmp/benchmark-target-20261028_220217
+
+history:
+  - date: "2026-10-28T21:07:01-04:00"
+    type: quality
+    score: 32.2
+    band: Redesign
+  - date: "2026-10-28T21:39:49-04:00"
+    type: operable
+    score: 70.8
+    band: Re-engineer
+    note: "Run 1 — frontier Sonnet 83%, target 76%"
+  - date: "2026-10-28T22:15:20-04:00"
+    type: operable
+    score: 54.1
+    band: Re-engineer
+    note: "Run 2 — frontier Opus 83%, target 63%. t_r7 degraded 100%→40%."

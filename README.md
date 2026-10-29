@@ -133,7 +133,8 @@ profiles — purely a capability and knowledge store.
 ├── skills/          # Shared agent workflows (SKILL.md format)
 ├── knowledge/       # Shared knowledge bundles (Open Knowledge Format)
 ├── plugins/         # Goose hooks plugins (deterministic enforcement)
-├── scripts/         # AGENTS-specific scripts (referenced from AGENTS.md)
+├── scripts/         # Shared scripts (SDM, benchmark, gather-state, etc.)
+├── assets/          # Static assets (images, diagrams)
 ├── index.md         # Navigation hub — start here
 └── log.md           # Activity log (reverse chronological)
 ```
@@ -284,7 +285,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.4.1 enforces 7 operational rules as numbered subsections
+AgentFS v7.5.1 enforces 7 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -555,7 +556,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.5.0 -->
+<!-- agentfs-template-version: 7.5.1 -->
 ```
 
 AGENTS.md is divided into two ownership zones:
@@ -716,49 +717,46 @@ Binding Pattern** (see [`knowledge/agentfs-skill-patterns/parameter-binding-patt
 
 ## Evaluation
 
-AgentFS includes an evaluation skill (`agentfs-eval`) that assesses the
-health and maturity of an AgentFS workspace through three progressively
-deeper verification layers.
+AgentFS includes a QOO (Quality, Observable, Operable) evaluation
+framework with two domain-specific skill pairs:
 
-### The Problem
+| Domain | Build-time (Quality) | Runtime (Evaluation) |
+|--------|---------------------|----------------------|
+| **AGENTS.md** | `agentfs-setup` (`hey upgrade agentfs`) | `agentfs-eval` (`hey eval agentfs`) |
+| **SKILL** | `skill-gen` (`hey upgrade skill`) | `skill-eval` (`hey eval skill`) |
 
-Rules in `AGENTS.md` are **prescriptive** — they tell the agent
-what to do. But nothing verifies the agent actually followed them.
-This is equivalent to having coding standards without a linter. The
-rules rely entirely on the agent's willingness and ability to
-follow instructions — which is exactly what AI model flaws undermine.
+### QOO Properties
 
-### Guiding Principles
+| Property | Schema | What It Measures |
+|----------|--------|-----------------|
+| **Quality** | `quality.yaml` (MCACS) | Build-time structural quality: modularity, cohesion, abstraction, coupling, separation of concerns |
+| **Observable** | `observable.yaml` | Build-time instrumentation: scripts, anti-fabrication guards, CNL compliance, trace instrumentation |
+| **Operable** | `operable.yaml` (CECX) | Runtime execution correctness: step completion, no fabrication, inference hops, token efficiency, correct sequence, scope resolution |
 
-Two sets of non-negotiable principles drive the evaluation design:
+AGENTS.md is **Non-Observable** (passive document, no self-instrumentation)
+and is evaluated on Quality + Operable only.
 
-**Safe Agent Actions:**
+### Evaluation Tiers (`agentfs-eval`)
 
-| Property | Requirement |
-|----------|-------------|
-| Idempotency | Actions can be retried without catastrophic consequences |
-| Resumability | A series of actions can be resumed or reverted after interruptions |
-| Auditability | An audit trail exists for all actions |
+The full eval sequence (`hey eval agentfs`) executes 11 steps across
+4 tiers in strict order:
 
-**AI Flaw Mitigation:**
+| Tier | Method | What It Verifies |
+|:----:|--------|-----------------|
+| 0 | `template-check.sh` (deterministic) | Template quality: token budget, section order, rule completeness (A1-A9) |
+| 1 | `agentfs-check.sh` (deterministic) | Structural: links, log ordering, index completeness, scope correctness (S1-S7) |
+| 2 | `agentfs-behavior.sh` (deterministic) | Behavioral: action-log correlation, timestamp alignment, scope leakage (B1-B5) |
+| 3 | `benchmark.sh` + `sdm-evaluate.sh` (SDM) | QOO Operable: frontier model 1 run + target model 5 runs, SDM scoring against CECX dimensions, gap analysis |
 
-| Flaw | Risk to AgentFS |
-|------|------------------|
-| Hallucination | Agent invents files, references, or observations that don't exist |
-| Stochasticity | Same skill produces inconsistent workspace structures across runs |
-| Sycophancy | Agent silently complies with requests that violate rules |
+Tier 3 uses the SDM (Semantic Decision Model) via NextToken API for
+zero-shot bounded semantic judgments at ~115-200ms per question.
 
-### Three-Layer Verification
+### Scoring
 
-| Layer | Paradigm | LLM Required? | What It Verifies |
-|-------|----------|:-:|------------------|
-| **L1: Structural** | Filesystem assertions (shell scripts) | No | Links, log ordering, index completeness, frontmatter, scope correctness, orphans |
-| **L2: Behavioral** | Forensic evidence correlation | No | Action-log correlation, timestamp alignment, scope leakage, idempotency, rule-in-memory |
-| **L3: Semantic** | Constrained LLM classification | Yes | Memory content classification, reference verification, sycophancy detection, skill accuracy |
-
-Layer 3 uses the LLM as a **classifier** with closed-ended questions
-and majority voting — not as an open-ended judge. This resists the
-very AI flaws being evaluated.
+All scores converge to `scores.yaml` — one file per evaluated entity.
+AGENTS.md scores live at `agentfs-setup/artifacts/agents-md/scores.yaml`
+(artifact QOO separation pattern — the artifact's scores are stored
+under the producing skill, not the evaluating skill).
 
 ### Maturity Levels
 
@@ -766,16 +764,18 @@ very AI flaws being evaluated.
 |-------|------|--------------|
 | L0 | Absent | No `.agents/` directory |
 | L1 | Scaffolded | `.agents/` exists with valid structure |
-| L2 | Structurally Sound | All Layer 1 assertions pass |
-| L3 | Behaviorally Safe | Layer 1 + Layer 2 pass |
-| L4 | Semantically Accurate | Layer 1 + Layer 2 + Layer 3 pass |
+| L2 | Structurally Sound | All Tier 1 assertions pass |
+| L3 | Behaviorally Safe | Tier 1 + Tier 2 pass |
+| L4 | Semantically Accurate | Tier 1 + Tier 2 + Tier 3 pass |
 | L5 | Self-Correcting | Agent detects and fixes its own violations |
 
 ### Usage
 
 Run `agentfs-eval` explicitly by asking any agent:
 
-> "Run agentfs eval" or "Run agentfs eval against /path/to/project"
+> "hey eval agentfs" — full eval (Tier 0-3, with provider/model selection)
+> "hey agentfs score" — Tier 0 only (quick deterministic check)
+> "hey check violations" — session audit mode (diagnostic, no scores)
 
 For the most reliable results, run in a **fresh session** with a
 capable model to eliminate self-evaluation bias.
@@ -785,15 +785,16 @@ capable model to eliminate self-evaluation bias.
 - **No golden test cases** — eval tests real workspace content, not
   synthetic scenarios
 - **Explicit trigger only** — no hooks, cron, or automated triggers
-  in v1.0
 - **Graceful degradation** — checks report N/A when evidence is
   insufficient (fresh projects) rather than failing
 - **Git provides audit evidence** — `agentfs-setup` initializes git
   in PROJECT scope by default; `.agents/memories/` is tracked for
   full audit trail
-- **L3 → L2 graduation is human-driven** — patterns observed in
-  semantic eval reports are manually codified as deterministic
-  heuristics over time
+- **Scores follow the artifact** — AGENTS.md scores in
+  `agentfs-setup/artifacts/agents-md/scores.yaml`, not in
+  `agentfs-eval/`
+- **SDM for objective scoring** — quantitative measurement via
+  bounded semantic decisions, not frontier model subjective judgment
 
 See [`skills/agentfs-eval/SKILL.md`](skills/agentfs-eval/SKILL.md)
 for full details and

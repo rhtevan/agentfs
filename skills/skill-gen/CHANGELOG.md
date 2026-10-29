@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-28 21:05 | v6.1.0 — Signal cleanup: 'upgrade skill' replaces 'edit skill'. Dropped 'check skill', 'skill check', 'audit skill' (eval territory) |
 | 2026-10-15 21:43 | v3.7.1 — Add CNL authoring checklist items: one instruction per sentence, active imperative voice, single vocabulary |
 
 | Updated          | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |

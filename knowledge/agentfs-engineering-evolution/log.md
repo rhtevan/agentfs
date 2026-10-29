@@ -2,6 +2,25 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-28 21:46
+- Mark Phase 5 dependency graph as COMPLETE — all 5.1-5.6 items done (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Update success criteria table with Phase 5 scores (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Mark Phase 5 status as COMPLETE (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-28 21:45
+- Add AGENTS.md Non-Observable section with QOO model, responsibility matrix, and first baseline scores (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
+## 2026-10-28 21:40
+- Add first baseline benchmark results (frontier 83%, target 76%, SDM operable 70.8) (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+
+## 2026-10-28 21:00
+- Updated QOO properties row: AGENTS.md = Quality + Operable (Observable N/A) (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- Removed baseline.yaml from directory structure and semantics, updated QOO property mapping (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- Updated dependency graph and success criteria for Phase 5 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-28 20:59
+- Phase 5 AGENTS.md QOO plan added, Phase 4 updated (skill-eval re-engineering replaces skill-evolve), stale observations/index.json fixed (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
 ## 2026-10-27 23:49
 - implicit_assumptions: qoo-profile.yaml→SKILL.md specification tables (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
 - qoo-profile.yaml→scores.yaml in Observable Property section (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)

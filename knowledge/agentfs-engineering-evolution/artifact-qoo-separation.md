@@ -42,7 +42,7 @@ is measured by benchmark tests (T1 canary, T2 dispatch, etc.).
 | Executor | Model running setup | Every model, every turn |
 | Correctness | Files in right places | Model follows rules |
 | Failure mode | Missing dir, bad template | Rule ignored, signal rephrased |
-| QOO schema | quality + operable | Rule compliance (new) |
+| QOO properties | Quality + Observable + Operable | Quality + Operable (Observable N/A) |
 | Measurement | At skill execution | Every benchmark run |
 
 ## Solution: Sub-Artifact Directory
@@ -59,16 +59,13 @@ artifact's QOO metrics in `artifacts/<name>/` under the skill:
 │   └── ...
 └── artifacts/
     └── agents-md/
-        ├── scores.yaml         # per-rule benchmark scores for AGENTS.md
-        └── baseline.yaml       # baseline metrics snapshot
+        └── scores.yaml         # QOO scores for AGENTS.md (Quality + Operable)
 ```
 
 ### Directory semantics
 
 - `scores.yaml` at skill root → QOO scores for the skill itself
-- `artifacts/<name>/scores.yaml` → benchmark/evaluation scores for the named artifact
-- `artifacts/<name>/baseline.yaml` → snapshot of current-state metrics
-  (CNL compliance, rule count, conditional blocks, etc.)
+- `artifacts/<name>/scores.yaml` → QOO scores for the named artifact (same format)
 
 ### When to use this pattern
 
@@ -151,3 +148,16 @@ This keeps the evolution feedback loop clean:
 4. Edit seed-agents-md.sh (source template)
 5. Regenerate AGENTS.md via sync
 6. Re-benchmark → compare scores
+
+## First Baseline (2026-10-28)
+
+Initial benchmark established with 6 tests covering Rules 1-4,7:
+
+| Metric | Frontier (Sonnet 4) | Target (Qwen3-14B) |
+|--------|:-------------------:|:-------------------:|
+| Pass rate | 83% (5/6) | 76% (23/30, 5 runs) |
+| SDM operable score | — | 70.8 (Re-engineer) |
+
+**Identified gaps:**
+- R3 Post-Write: 0% on both models — structural prose gap
+- R4 Session Canary: 100% frontier → 60% target — CNL rewrite candidate

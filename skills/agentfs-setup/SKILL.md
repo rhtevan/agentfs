@@ -1,7 +1,7 @@
 ---
 name: agentfs-setup
 description: >
-  setup agentfs, sync agentfs, update agentfs, verify agentfs
+  setup agentfs, sync agentfs, upgrade agentfs
 metadata:
   version: "7.5.1"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
@@ -331,6 +331,66 @@ config, `post-edit.sh` automatically reindexes the KGM JSONL from
 OKF knowledge bundles. This keeps the KGM search index in sync with
 knowledge content changes. See `load_skill(name: "goose-kgm")` for
 lifecycle management.
+
+## Upgrade AgentFS (QOO Build-time Quality)
+
+When the user says "upgrade agentfs", run build-time Quality evaluation
+on the current AGENTS.md and address identified gaps.
+
+### Step 1 — Gather AGENTS.md Facts
+
+Run the fact extraction script against the project's AGENTS.md:
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/agents-md-facts.txt
+```
+
+Read the output. It contains per-rule metrics (lines, words, sub-steps,
+conditionals, passive voice) and aggregate totals.
+
+### Step 2 — Evaluate Quality via SDM
+
+Run the SDM evaluation against the quality schema:
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh /tmp/agents-md-facts.txt ~/.agents/skills/schemas/quality.yaml
+```
+
+Read the output. It contains per-dimension scores and an aggregate
+Quality score with band classification.
+
+### Step 3 — Persist Scores
+
+Write the Quality scores to the artifact scores file:
+
+```
+~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml
+```
+
+Use the format:
+
+```yaml
+artifact: AGENTS.md
+source_skill: agentfs-setup
+version: "<template-version>"
+quality:
+  aggregate_score: <score>
+  band: "<band>"
+  dimensions: [...]
+  evaluated: "<timestamp>"
+```
+
+### Step 4 — Address Gaps
+
+For each dimension scoring below 75 (Tunable threshold):
+
+1. Identify the specific rules contributing to the low score.
+2. Propose concrete edits to `seed-agents-md.sh` (the source template).
+3. Present proposals to the user for approval.
+4. Apply approved changes via `seed-agents-md.sh` edit → `sync-agents-md.sh`.
+5. Re-run Steps 1-3 to verify improvement.
+
+Do NOT edit AGENTS.md directly. Always edit the seed template source.
 
 ## Companion Skills
 

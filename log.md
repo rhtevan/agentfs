@@ -2,6 +2,91 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-28 22:37
+- Add assets/ dir, update scripts/ description in USER scope directory tree (README.md)
+- Fix template version 7.5.0→7.5.1 (README.md)
+- Update Evaluation section, version 7.4.1→7.5.1 (README.md)
+
+## 2026-10-28 22:35
+- Update Evaluation section: QOO framework, Tier 0-3, SDM scoring, scores.yaml convergence, artifact QOO separation (README.md)
+
+## 2026-10-28 22:26
+- Consistent Tier 0-3 naming across Full Eval Sequence; QOO steps renamed to Tier 3 QOO; L1/L2 refs in sequence replaced with Tier 1/Tier 2; LITE scope ref updated (skills/agentfs-eval/SKILL.md)
+- Rename L2→Tier 2 in Full Eval Sequence (skills/agentfs-eval/SKILL.md)
+- Rename L1→Tier 1 in Full Eval Sequence (skills/agentfs-eval/SKILL.md)
+- Bump metadata.version 1.8.0→2.0.0 to match CHANGELOG (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-28 22:22
+- Replace old QOO Operable section with reference pointer to Full Eval Sequence steps 5-10 (skills/agentfs-eval/SKILL.md)
+- Demote old Execution Steps to Reference section (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-28 22:21
+- Add unified Full Eval Sequence (11 steps) — replaces disconnected Execution Steps + QOO sections (skills/agentfs-eval/SKILL.md)
+- Run 2 operable scores persisted (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-28 22:20
+- Run 2 operable scores: 54.1, frontier Opus 83%, target 63% (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-28 22:16
+- Run 2 operable scores: 54.1 (degraded from 70.8). Opus frontier 83%, Qwen3 target 63%. t_r7 scope variance. (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-28 21:58
+- Add Step 0 provider/model selection — discover from config, present options, require user confirmation before benchmark (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-28 21:46
+- Mark Phase 5 dependency graph as COMPLETE — all 5.1-5.6 items done (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Update success criteria table with Phase 5 scores (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Mark Phase 5 status as COMPLETE (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-28 21:45
+- Add AGENTS.md Non-Observable section with QOO model, responsibility matrix, and first baseline scores (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+- Mark as LEGACY — active scores now in artifacts/agents-md/scores.yaml (skills/agentfs-eval/references/template-scores.md)
+
+## 2026-10-28 21:44
+- Simplify to Tier 0 only — remove behavioral test body, add QOO tier guidance (skills/agentfs-eval/scripts/template-eval.sh)
+- Simplify to Tier 0 only — remove behavioral test section (B1-B3 deprecated, subsumed by QOO benchmark) (skills/agentfs-eval/scripts/template-eval.sh)
+
+## 2026-10-28 21:40
+- Add first baseline benchmark results (frontier 83%, target 76%, SDM operable 70.8) (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- Fix t_r7 checker: distinguish write ops from read ops to prevent false positives (scripts/benchmark.sh)
+- Populate operable section with benchmark results and SDM scores (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-28 21:07
+- Initial AGENTS.md Quality scores from SDM evaluation — schema applicability noted (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-28 21:06
+- Implemented --evidence flag: quality/observable case uses pre-computed evidence when provided (scripts/sdm-evaluate.sh)
+- Added --evidence flag for pre-computed evidence (AGENTS.md evaluation) (scripts/sdm-evaluate.sh)
+
+## 2026-10-28 21:05
+- Signal cleanup: 'upgrade skill' replaces 'edit skill'. Dropped 'check skill', 'skill check', 'audit skill' (eval territory) (skills/skill-gen/SKILL.md)
+- Deprecated: session audit absorbed into agentfs-eval v2.0.0 (skills/agentfs-violation-chk/SKILL.md)
+- Added QOO Operable evaluation (5 steps: benchmark frontier+target, SDM score, gap analysis, scores.yaml) and Session Audit mode (absorbed violation-chk) (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-28 21:04
+- Deprecated B1-B3 behavioral tests (subsumed by QOO benchmark dispatch) (skills/agentfs-eval/SKILL.md)
+- Updated Quick Dispatch with QOO modes and session audit (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-28 21:03
+- Added check violations + self audit signals, updated Quick Dispatch (skills/agentfs-eval/SKILL.md)
+- Added 'upgrade agentfs' QOO build-time Quality workflow with 4 steps (skills/agentfs-setup/SKILL.md)
+- Added 'upgrade agentfs' signal and QOO build-time Quality evaluation workflow (Steps 1-4) (skills/agentfs-setup/SKILL.md)
+
+## 2026-10-28 21:02
+- Fix grep -c || echo 0 producing multi-line output in agents-md mode (scripts/gather-skill-state.sh)
+- Fix heredoc delimiter and bc calc in --target agents-md mode (scripts/gather-skill-state.sh)
+
+## 2026-10-28 21:01
+- Added --target agents-md mode for AGENTS.md fact extraction (rule count, per-rule metrics, signal dispatch, token estimate) (scripts/gather-skill-state.sh)
+
+## 2026-10-28 21:00
+- Updated QOO properties row: AGENTS.md = Quality + Operable (Observable N/A) (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- Removed baseline.yaml from directory structure and semantics, updated QOO property mapping (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- Updated dependency graph and success criteria for Phase 5 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-28 20:59
+- Phase 5 AGENTS.md QOO plan added, Phase 4 updated (skill-eval re-engineering replaces skill-evolve), stale observations/index.json fixed (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
 ## 2026-10-27 23:51
 - Renamed from operable.yaml — build-time observability schema (6 dimensions) (skills/schemas/observable.yaml)
 - Schema rename: observation→operable, operable→observable case statements and function names (scripts/sdm-evaluate.sh)

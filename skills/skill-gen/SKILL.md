@@ -1,8 +1,7 @@
 ---
 name: skill-gen
 description: >
-  create skill, new skill, edit skill, check skill, skill check,
-  audit skill, advanced skill
+  create skill, new skill, upgrade skill, advanced skill
 argument-hint: "Describe what the skill should do. Add 'advanced' for full eval loop."
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:

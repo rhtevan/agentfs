@@ -1,9 +1,10 @@
 ---
 name: agentfs-eval
 description: >
-  eval agentfs, agentfs health, agentfs status, agentfs score, maturity check
+  eval agentfs, agentfs health, agentfs status, agentfs score,
+  maturity check, check violations, self audit
 metadata:
-  version: "1.8.0"
+  version: "2.0.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -16,8 +17,105 @@ three layers of progressively deeper verification.
 
 | User says | Run |
 |-----------|-----|
-| "agentfs score", "agentfs status" | `bash ~/.agents/skills/agentfs-eval/scripts/template-eval.sh "$PROJECT"` — auto-detects provider/model from session, runs checks, records scores |
-| "eval agentfs", "agentfs health", "maturity check" | Full eval: L1 (`agentfs-check.sh`) + L2 (`agentfs-behavior.sh`) + template eval (`template-eval.sh`) |
+| "agentfs score", "agentfs status" | Tier 0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score. |
+| "eval agentfs", "agentfs health", "maturity check" | Full eval. Execute ALL steps in the Full Eval Sequence below. Do NOT skip steps. |
+| "check violations", "self audit" | Session audit mode. Follow the Session Audit Mode section. Diagnostic only — no scores persisted. |
+
+## Full Eval Sequence
+
+Execute ALL steps in order. Do NOT skip steps. Do NOT jump to a
+later step because it seems more relevant to the conversation.
+
+### Step 1 — Determine Target
+
+Use the user-provided path. Default to the current working directory.
+Verify `.agents/` exists. If absent, report L0 and stop.
+
+### Step 2 — Tier 0: Template Quality Check
+
+```bash
+bash ~/.agents/skills/agentfs-eval/scripts/template-check.sh "$TARGET"
+```
+
+Report the score. Continue to Step 3.
+
+### Step 3 — Tier 1: Structural Assertions
+
+```bash
+bash ~/.agents/skills/agentfs-eval/scripts/agentfs-check.sh "$TARGET"
+```
+
+Report pass/fail per assertion. Continue to Step 4.
+
+### Step 4 — Tier 2: Behavioral Assertions
+
+```bash
+bash ~/.agents/skills/agentfs-eval/scripts/agentfs-behavior.sh "$TARGET"
+```
+
+Report pass/warn/N/A per assertion. Continue to Step 5.
+
+### Step 5 — Tier 3 QOO: Select Providers and Models
+
+List available providers and models:
+
+```bash
+for f in ~/.config/goose/custom_providers/*.json; do
+  name=$(python3 -c "import json; print(json.load(open('$f'))['name'])")
+  models=$(python3 -c "import json; ms=json.load(open('$f'))['models']; print(', '.join(m['name'] for m in ms))")
+  echo "  $name: $models"
+done
+```
+
+Ask the user to select a frontier provider/model and a target
+provider/model. Do NOT proceed until the user confirms both.
+
+### Step 6 — Tier 3 QOO: Frontier Benchmark (1 run)
+
+```bash
+bash ~/.agents/scripts/benchmark.sh \
+  --provider <frontier_provider> --model <frontier_model> --runs 1
+```
+
+Record per-test results. Continue to Step 7.
+
+### Step 7 — Tier 3 QOO: Target Benchmark (5 runs)
+
+```bash
+bash ~/.agents/scripts/benchmark.sh \
+  --provider <target_provider> --model <target_model> --runs 5
+```
+
+Record per-test results. Continue to Step 8.
+
+### Step 8 — Tier 3 QOO: SDM Operable Score
+
+Write benchmark evidence to a temp file. Run SDM evaluation:
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh /tmp/benchmark-evidence.txt \
+  ~/.agents/skills/schemas/operable.yaml --evidence /tmp/benchmark-evidence.txt
+```
+
+### Step 9 — Tier 3 QOO: Gap Analysis
+
+For each test, compute frontier pass rate vs target pass rate.
+Classify each gap: model-level, CNL weakness, or platform limitation.
+
+### Step 10 — Tier 3 QOO: Persist Scores
+
+Write operable scores and gap analysis to:
+
+```
+~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml
+```
+
+Append to the history array.
+
+### Step 11 — Produce Consolidated Report
+
+Report ALL results in one summary: Tier 0 score, Tier 1 pass/fail,
+Tier 2 pass/warn, Tier 3 QOO operable score, gap analysis, maturity level.
 
 ## Overview
 
@@ -26,7 +124,7 @@ three layers of progressively deeper verification.
 | **Version** | 1.0 |
 | **Trigger** | Explicit only — user asks to run eval |
 | **Scope** | Evaluates a PROJECT or LITE-scoped `.agents/` directory |
-| **LITE scope** | Skips skills/profiles L1 checks; adds LITE exclusion assertions |
+| **LITE scope** | Skips skills/profiles Tier 1 checks; adds LITE exclusion assertions |
 | **Dependencies** | `bash`, `find`, `grep`, `stat`, `git` (optional but recommended) |
 | **LLM required** | Layer 3 only (semantic rubrics) |
 
@@ -67,9 +165,10 @@ it defaults to the current working directory.
 | **L4** | Semantically Accurate | Layer 1 + Layer 2 + Layer 3 assertions pass |
 | **L5** | Self-Correcting | Agent can run eval, detect violations, and fix them |
 
-## Execution Steps
+## Reference: Execution Details
 
-When a user asks to run eval, follow these steps:
+The Full Eval Sequence above is the authoritative execution flow.
+The sections below provide implementation details for each layer.
 
 ### Step 1: Determine Target
 
@@ -218,21 +317,14 @@ Validates that the AGENTS.md prose is structurally sound and behaviorally effect
 | A8 | **WHY vs HOW** — no explanatory prose in rule cells |
 | A9 | **Version consistency** — template version matches skill version |
 
-### Behavioral (requires LLM): `scripts/template-behavioral.sh --provider PROVIDER [--model MODEL] [TARGET_DIR]`
+### Behavioral Tests (DEPRECATED)
 
-### One-command wrapper: `scripts/template-eval.sh [TARGET_DIR]`
+B1-B3 behavioral tests are deprecated. They are subsumed by QOO
+auto-discovered dispatch tests in `benchmark.sh` which use registered
+signals from QOO-qualified skills (more maintainable, better coverage).
 
-Auto-detects provider and model from `~/.config/goose/config.yaml`. Runs both checks and records scores. Zero arguments required.
-
-Replays fixed user inputs and asserts the model's first tool call.
-
-| ID | Input | Expected Tool | Catches |
-|----|-------|--------------|---------|
-| B1 | "skupper status" | `load_skill` | Model using shell/extensionmanager for skill discovery |
-| B2 | "hey git" | `load_skill` | Signal Dispatch not triggering |
-| B3 | "check crc status" | `load_skill` | Model going to extensionmanager |
-
-Run against each provider/model to build a compatibility matrix.
+`template-behavioral.sh` is retained for backward compatibility but
+is no longer called by the default evaluation flow.
 
 ## Layer 3: Semantic Assertions
 
@@ -269,6 +361,42 @@ a human-driven skill update:
 
 The rubric YAML files never change automatically. The L2 script
 grows over time through human observation of L3 results.
+
+## Reference: QOO Operable Details
+
+AGENTS.md is Non-Observable (passive document, no self-instrumentation).
+Runtime Operable evaluation uses the benchmark harness as an external
+monitor. Steps 5-10 in the Full Eval Sequence implement this section.
+
+Gap classification categories:
+- **model-level** — model lacks capability (e.g., ignores canary rule)
+- **CNL weakness** — rule prose is ambiguous or insufficiently imperative
+- **platform limitation** — test environment gap (e.g., missing sandbox state)
+
+## Session Audit Mode (from agentfs-violation-chk)
+
+When the user says "check violations" or "self audit", review the
+current session's conversation history against AGENTS.md rules and
+SOUL.md principles. This is diagnostic only — no scores are persisted.
+
+### Step 1 — Gather Audit Baseline
+
+Read the current project's AGENTS.md rules and SOUL.md principles.
+Count the numbered rules and named principles.
+
+### Step 2 — Review Session History
+
+For each rule and principle, scan the conversation history for
+compliance or violations. Cite specific turns where violations occurred.
+
+### Step 3 — Produce Report
+
+| # | Rule | Status | Detail |
+|---|------|--------|--------|
+| 1 | Signal Dispatch | 🟢 / 🟡 / 🔴 | Specific turn or "clean" |
+
+Classify findings as 🔴 violation, 🟡 borderline, 🟢 clean.
+Include actionable remediation for each violation.
 
 ## Design Principles
 
