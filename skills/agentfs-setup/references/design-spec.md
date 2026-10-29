@@ -14,33 +14,43 @@ combined with SDM (Semantic Decision Model).
 
 ### G2. Operable Skill
 
-An Operable Skill combines deterministic scripts (bones) with CNL
-prose instructions (muscle). A controller (LLM + SDM) executes the
-Operable Skill and observes results with the help of a runtime
-harness.
+An Operable Skill has both build-time structural readiness (BMBT)
+and runtime execution correctness (CECX). Build-time: deterministic
+scripts (bones) + CNL prose instructions (muscle) + SDM for semantic
+judgments (brain) + external harness for measurement (tool). Runtime:
+a controller (LLM + SDM) executes the skill; CECX scores the
+execution trace.
 
-| Layer | Role | Provider |
-|-------|------|----------|
-| Bones (scripts) | Deterministic execution | `skill-gen` at authorship |
-| Muscle (CNL prose) | Orchestration logic | `skill-gen` at authorship |
-| Controller (LLM + SDM) | Executes the skill | Runtime |
-| Harness (runtime) | Execution and observation | Goose session/recipe |
+| Layer | Role | Provider | Phase |
+|-------|------|----------|-------|
+| Bones (scripts) | Deterministic execution | `skill-gen` at authorship | Build |
+| Muscle (CNL prose) | Orchestration logic | `skill-gen` at authorship | Build |
+| Brain (SDM) | Bounded semantic judgments | SDM endpoint | Build + Runtime |
+| Harness (runtime) | Execution, observation, measurement | Goose session/recipe/benchmark | Runtime |
 
-### G3. Observable Skill & Skill Evolution
+### G3. Observable Measurement Readiness & Skill Evolution
 
-All three QOO evaluation schemas (Quality, Operable, Observation) are
-universal at `skills/schemas/`. Scripts self-report execution traces
-to `~/.agents/.traces/` (agent-agnostic). Evaluation is async and
-on-demand — the operating model never evaluates itself. `skill-evolve`
-or manual command triggers evaluation against accumulated traces.
-Scores persist per-skill in `scores.yaml` (committed). The frontier
-pipeline computes objective scores in `scores.yaml` via gather-skill-state.sh + sdm-evaluate.sh.
+Observable measures whether a skill has the instrumentation to
+produce trustworthy audit trails at runtime. It is a prerequisite
+for Operable runtime CECX scoring, but a separate QOO axis — not
+a property of Operable.
 
-| Schema | Scope | Location | Phase |
-|--------|-------|----------|-------|
-| Quality (MCACS) | Universal | `skills/schemas/quality.yaml` | Build-time audit |
-| Observable | Universal | `skills/schemas/observable.yaml` | Build-time audit |
-| Operable | Universal | `skills/schemas/operable.yaml` | Run-time evaluation |
+All three QOO evaluation schemas are universal at `skills/schemas/`.
+Scripts self-report execution traces to `~/.agents/.traces/`
+(agent-agnostic). Evaluation is async and on-demand — the operating
+model never evaluates itself. Scores persist per-skill in
+`scores.yaml` (committed). The frontier pipeline computes objective
+scores via gather-skill-state.sh + sdm-evaluate.sh.
+
+| Schema | What | Location | Phase |
+|--------|------|----------|-------|
+| Quality (MCACS) | Design soundness — 6 dims | `skills/schemas/quality.yaml` | Build-time |
+| Observable | Measurement readiness — 4 dims | `skills/schemas/observable.yaml` | Build-time |
+| Operable | Structural readiness (BMBT, 4 dims) + runtime correctness (CECX, 7 dims) | `skills/schemas/operable.yaml` | Build + Runtime |
+
+Artifact-specific adapted schemas (e.g., `quality-agents-md.yaml`,
+`operable-agents-md.yaml`) extend the universal schemas for
+non-SKILL artifacts with different evidence sources.
 
 ```
 Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)
@@ -52,7 +62,7 @@ Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)
 
 **Cross-references:**
 - MCACS principles: `~/.agents/knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md`
-- CECX schema: `~/.agents/knowledge/agentfs-engineering-evolution/observation-schema-cecx.md`
+- CECX schema: `~/.agents/knowledge/agentfs-engineering-evolution/operable-runtime-cecx.md`
 - Operable Skill architecture: `~/.agents/knowledge/agentfs-engineering-evolution/operable-skill-architecture.md`
 - SDM integration: `~/.agents/knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md`
 - Observable Skill design: `~/.agents/knowledge/agentfs-engineering-evolution/observable-skill-design.md`

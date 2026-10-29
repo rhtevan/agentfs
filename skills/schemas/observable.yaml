@@ -1,26 +1,25 @@
-schema-version: "1.0"
+schema-version: "1.1"
 schema-type: observable
 description: >
-  Build-time observability standard for AgentFS skills. Evaluates whether
-  a skill has the instrumentation to produce audit trails at runtime —
-  scripts, trace integration, CNL compliance, anti-fabrication rules.
+  Build-time measurement readiness standard for AgentFS skills.
+  Evaluates whether a skill has the instrumentation to produce
+  trustworthy audit trails at runtime — trace integration, CNL
+  compliance, anti-fabrication guards, and SDM delegation.
+  Observable is a prerequisite for runtime Operable (CECX) scoring.
   Used by skill-check and skill-evolve.
 
-dimensions:
-  - name: has_scripts
-    question: >
-      Does the skill have a scripts/ directory containing at least one
-      executable shell script that performs a deterministic operation?
-    evidence_source: filesystem
-    metric: boolean
-    target: "true"
-    weight: 1.0
+  Note: Observable does NOT measure structural properties (scripts
+  existence, bones/muscle separation) — those belong in Operable
+  (BMBT build-time readiness). Observable measures whether execution
+  CAN BE OBSERVED, not whether the structure exists.
 
-  - name: has_anti_fabrication
+dimensions:
+  - name: trace_instrumentation
     question: >
-      Does the skill SKILL.md contain explicit anti-fabrication rules
-      such as "Do NOT generate output" or "Do NOT read files directly"?
-    evidence_source: filesystem
+      Do the skill's scripts source trace-lib.sh and call trace_step()
+      to produce an agent-agnostic execution trace? Check for the
+      presence of trace_init, trace_step, and trace_end calls.
+    evidence_source: scripts/
     metric: boolean
     target: "true"
     weight: 1.0
@@ -36,7 +35,16 @@ dimensions:
     target: ">= 0.95"
     weight: 1.0
 
-  - name: sdm_integration
+  - name: anti_fabrication
+    question: >
+      Does the skill SKILL.md contain explicit anti-fabrication rules
+      such as "Do NOT generate output" or "Do NOT read files directly"?
+    evidence_source: skill.md
+    metric: boolean
+    target: "true"
+    weight: 1.0
+
+  - name: sdm_delegation
     question: >
       For skills that require semantic judgment (Pattern C: prose-only
       analysis, evaluation, or alignment checking), are those judgments
@@ -47,25 +55,3 @@ dimensions:
     target: "true"
     weight: 1.0
     applies_to: [pattern_c]
-
-  - name: trace_instrumentation
-    question: >
-      Do the skill's scripts source trace-lib.sh and call trace_step()
-      to produce an agent-agnostic execution trace? Check for the
-      presence of trace_init, trace_step, and trace_end calls.
-    evidence_source: scripts/
-    metric: boolean
-    target: "true"
-    weight: 1.0
-
-  - name: bones_muscle_separation
-    question: >
-      Is deterministic logic (data gathering, scope resolution, file
-      operations, API calls) implemented in scripts (bones), while
-      SKILL.md prose (muscle) contains only orchestration instructions
-      (which scripts to run, in what order, what decisions to make
-      based on script output)?
-    evidence_source: skill.md + scripts/
-    metric: boolean
-    target: "true"
-    weight: 1.0

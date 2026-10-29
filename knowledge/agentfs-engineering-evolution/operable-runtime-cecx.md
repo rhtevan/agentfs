@@ -1,11 +1,12 @@
 ---
-title: Observation Schema — CECX
+title: Operable Runtime — CECX Scoring
 parent: agentfs-engineering-evolution
 created: 2026-10-19
-tags: [observation, measurement, feedback, evolution, CECX, QSCZ]
+updated: 2026-10-29
+tags: [operable, runtime, measurement, feedback, evolution, CECX, QSCZ]
 ---
 
-# Observation Schema — CECX
+# Operable Runtime — CECX Scoring
 
 - **Type:** Convention
 - **Status:** Active
@@ -13,10 +14,14 @@ tags: [observation, measurement, feedback, evolution, CECX, QSCZ]
 
 ## Summary
 
-Four measurable traits for observing skill executions, modeled after the
-QSCZ deployment fitting guide. QSCZ evaluates **deployments** (model +
-engine + hardware). CECX evaluates **skill executions** (skill + model +
-harness) as a unit.
+Four measurable traits for evaluating runtime skill execution
+correctness — the runtime half of the Operable axis. Build-time
+Operable readiness (BMBT) is measured separately. Together BMBT
+and CECX form the complete Operable evaluation.
+
+Modeled after the QSCZ deployment fitting guide. QSCZ evaluates
+**deployments** (model + engine + hardware). CECX evaluates
+**skill executions** (skill + model + harness) as a unit.
 
 ## The Four Observation Traits
 

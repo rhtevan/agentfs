@@ -2,6 +2,23 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 17:01
+- QOO tidy-up E1: update Responsibility Matrix — AGENTS.md build-time includes Quality adapted + Operable BMBT (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-29 17:00
+- QOO tidy-up B4: rename observation-schema-cecx.md → operable-runtime-cecx.md, update title and summary — CECX is runtime half of Operable axis
+
+## 2026-10-29 16:59
+- QOO tidy-up B3b: fix scores.yaml comment — adapted Quality + Operable (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- QOO tidy-up B3a: fix QOO properties row — adapted schemas, Observable N/A (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- QOO tidy-up B2b: rewrite AGENTS.md section — adapted schemas, BMBT applicable, quality N/A explained, scores history updated, fix Observable relationship (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
+## 2026-10-29 16:58
+- QOO tidy-up B2a: update Three Universal Schemas table — Observable 4 dims, Operable BMBT+CECX (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
+## 2026-10-29 16:57
+- QOO tidy-up B1: rewrite Observable Property section — Observable is sibling axis not property of Operable, add three-axis table, list 4 Observable dims (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+
 ## 2026-10-29 15:16
 - Run 4 results: v7.6.0 Self-Contained Actions — frontier 100%, target 93% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
 

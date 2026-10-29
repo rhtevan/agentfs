@@ -34,7 +34,7 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [Operational Pattern Classification](./operational-pattern-classification.md) | Reference | Five skill patterns (A–E), 61 skills classified, cognitive demand and failure mode analysis |
 | [Benchmark Test Suite](./benchmark-test-suite.md) | Convention | 8 test cases (T1–T8), 3 model tiers, safety levels, SDM-automated scoring |
 | [SDM Integration for AgentFS](./sdm-integration-for-agentfs.md) | Pattern | Semantic Decision Model as skill runtime (Pattern 1) and evaluation engine (Pattern 2) |
-| [Observation Schema — CECX](./observation-schema-cecx.md) | Convention | Four measurable traits (Correctness, Efficiency, Comprehension, Complexity) for scoring skill executions, modeled after QSCZ deployment fitting |
+| [Operable Runtime — CECX Scoring](./operable-runtime-cecx.md) | Convention | Four measurable traits (Correctness, Efficiency, Comprehension, Complexity) for runtime Operable scoring, modeled after QSCZ deployment fitting |
 | [Operable Skill Architecture](./operable-skill-architecture.md) | Pattern | Four-layer skill anatomy (bones/muscle/controller/harness) and Author→Operate→Evolve lifecycle |
 | [Observable Skill Design](./observable-skill-design.md) | Pattern | Agent-agnostic audit trail, two-phase observation, three schema types, score persistence, SDM integration |
 | [Implementation Plan](./implementation-plan.md) | Convention | Phased plan: Phase 0 (SDM foundation), Phase 1 (skill-gen), Phase 2 (first conversion), Phase 3 (benchmarking), Phase 4 (maturity) |

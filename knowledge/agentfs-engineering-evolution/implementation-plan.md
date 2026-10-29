@@ -476,7 +476,7 @@ skill (`agentfs-eval`). Absorbs `agentfs-violation-chk`.
 
 | | Build-time (static QOO) | Runtime (all evaluation) |
 |---|:---:|:---:|
-| **AGENTS.md** | `agentfs-setup` (Quality only) | `agentfs-eval` (Tier 0 + Quality + Operable) |
+| **AGENTS.md** | `agentfs-setup` (Quality adapted + Operable BMBT) | `agentfs-eval` (Tier 0-3 + Operable CECX adapted) |
 | **SKILL** | `skill-gen` (Quality + Observable) | `skill-eval` (Tier 0 + QOO all) |
 
 ### Evaluation Tiers (inside `agentfs-eval`)

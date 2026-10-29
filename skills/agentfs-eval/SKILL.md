@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -401,13 +401,20 @@ a human-driven skill update:
 The rubric YAML files never change automatically. The L2 script
 grows over time through human observation of L3 results.
 
-## Reference: QOO Operable Details
+## Reference: QOO Details for AGENTS.md
 
-AGENTS.md is Non-Observable (passive document, no self-instrumentation)
-and Non-Quality-Scorable (declarative policy prose, not imperative
-scripted workflow — `quality.yaml` dimensions are inapplicable).
-Only Operable evaluation applies, using the benchmark harness as an
-external monitor. Steps 6-11 in the Full Eval Sequence implement this.
+AGENTS.md QOO applicability:
+
+| Axis | Applies? | Schema | Notes |
+|------|:--------:|--------|-------|
+| Quality | ✅ | `quality-agents-md.yaml` (adapted) | MCACS dims adapted for declarative policy. Universal `quality.yaml` is SKILL-specific. |
+| Observable | ❌ | N/A | Passive document — no self-instrumentation, no trace_step(). |
+| Operable (BMBT build) | ✅ | `operable-agents-md.yaml` (adapted) | Bones (scripts), muscle (CNL rules), harness (benchmark). |
+| Operable (CECX runtime) | ✅ | `operable-agents-md.yaml` (adapted) | Benchmark pass rates as evidence, not trace JSONL. |
+
+Steps 6-11 in the Full Eval Sequence implement Operable runtime.
+Quality and Operable build-time are handled by `agentfs-setup`
+("upgrade agentfs"). Adapted schemas are pending (Stream 2 retrofit).
 
 Gap classification categories:
 - **model-level** — model lacks capability (e.g., ignores canary rule)

@@ -183,22 +183,34 @@ model. A well-engineered skill (high Script Coverage, low Inference
 Hops, clear CNL) is executable by a model that could never have
 written it.
 
-## Observable Property
+## Observable — Measurement Readiness
 
-An Operable Skill is also an Observable Skill. Observability is not a
-separate architecture — it is a property of the Operable Skill that
-enables the evolution feedback loop.
+Observable is a sibling QOO axis, not a property of Operable. It
+measures whether a skill has the instrumentation to produce trustworthy
+runtime evidence — a prerequisite for Operable runtime CECX scoring.
 
-An Observable Skill:
-- Scripts self-report execution traces via `trace_step()` — agent-agnostic,
-  zero LLM involvement. Traces go to `~/.agents/.traces/`.
-- All three evaluation schemas (Quality, Observable, Operable) are
-  **universal** at `~/.agents/skills/schemas/`. No per-skill schemas.
-- The evaluation pipeline (gather-skill-state.sh + sdm-evaluate.sh) computes
-  objective scores in `scores.yaml` — no frontier-subjective assessment needed.
-- Evaluation runs **async on demand** — never during skill execution.
-  Triggered by `skill-evolve`, manual command, or benchmark harness.
-- Scores persist per-skill in `scores.yaml` (committed, not gitignored).
+**Three independent axes:**
+
+| Axis | Question | When |
+|------|----------|------|
+| Quality | Is the design sound? (MCACS) | Build time |
+| Observable | Can we know what happened? (measurement readiness) | Build time |
+| Operable | Can it run / did it run correctly? (BMBT + CECX) | Build time + Runtime |
+
+Observable measures 4 dimensions:
+- **Trace instrumentation** — scripts call `trace_step()`, producing
+  agent-agnostic JSONL traces in `~/.agents/.traces/`.
+- **CNL compliance** — prose follows Controlled Natural Language rules
+  so each instruction maps to one observable action.
+- **Anti-fabrication** — explicit guards against model-generated output.
+- **SDM delegation** — semantic judgments routed to SDM, not inline
+  agent reasoning (Pattern C skills only).
+
+All three evaluation schemas are **universal** at
+`~/.agents/skills/schemas/`. The evaluation pipeline
+(gather-skill-state.sh + sdm-evaluate.sh) computes objective scores
+in `scores.yaml`. Evaluation runs async on demand — never during
+skill execution.
 
 See [Observable Skill Design](./observable-skill-design.md) for full
 design decisions, evidence tiers, evaluation flow, and persistence.

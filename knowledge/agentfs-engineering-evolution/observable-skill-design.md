@@ -31,8 +31,8 @@ All schemas are universal, centrally maintained at
 | Schema | What It Evaluates | When | Evidence Source |
 |--------|-------------------|------|----------------|
 | `quality.yaml` | Skill design against MCACS principles | Build time (authoring, audit) | `gather-skill-state.sh` + SDM evaluation |
-| `observable.yaml` | Build-time observability — instrumentation, traces, CNL, anti-fabrication | Build time (authoring, audit) | `gather-skill-state.sh` + SDM evaluation |
-| `operable.yaml` | Runtime execution correctness — CECX weighted | Run time (post-execution) | Execution trace from `trace-lib.sh` |
+| `observable.yaml` | Measurement readiness — trace instrumentation, CNL, anti-fabrication, SDM delegation (4 dims) | Build time (authoring, audit) | `gather-skill-state.sh` + SDM evaluation |
+| `operable.yaml` | Build-time structural readiness (BMBT, 4 dims) + runtime execution correctness (CECX, 7 dims) | Build time + Run time | BMBT: filesystem + SDM. CECX: execution trace from `trace-lib.sh` |
 
 **Why universal, not per-skill:** Most observation dimensions apply to
 every skill (did the agent fabricate data, hallucinate, complete all
@@ -224,34 +224,47 @@ CHANGELOG gets one summary line referencing the scores:
 
 AGENTS.md is a passive system prompt document loaded into the model
 context window. It cannot self-instrument or produce audit trails.
-Therefore it is evaluated on **Quality + Operable only**, skipping
-Observable.
+Observable is N/A. Quality and Operable apply, but require
+**adapted schemas** — the universal SKILL schemas (`quality.yaml`,
+`operable.yaml`) measure SKILL-specific properties.
 
 | Property | SKILL | AGENTS.md |
 |----------|:-----:|:---------:|
-| Quality | ✅ MCACS via SDM | ✅ MCACS via SDM (adapted) |
-| Observable | ✅ scripts, traces, CNL | ❌ N/A (passive document) |
-| Operable | ✅ trace JSONL → CECX | ✅ benchmark → CECX |
+| Quality | ✅ MCACS via SDM (`quality.yaml`) | ✅ MCACS via SDM (`quality-agents-md.yaml` — adapted dims) |
+| Observable | ✅ 4 dims (trace, CNL, anti-fab, SDM) | ❌ N/A (passive document, no self-instrumentation) |
+| Operable (build) | ✅ BMBT via SDM | ✅ BMBT via SDM (`operable-agents-md.yaml` — bones=scripts, muscle=CNL rules, harness=benchmark) |
+| Operable (runtime) | ✅ trace JSONL → CECX | ✅ benchmark → adapted CECX (`operable-agents-md.yaml`) |
+
+AGENTS.md does have BMBT: bones (post-write.sh, checkpoint.sh,
+seed-agents-md.sh), muscle (6 CNL rules), controller (model),
+harness (benchmark.sh T1-T8). But the evidence source is benchmark
+results, not trace JSONL, so the SDM questions must be adapted.
 
 **Build-time Quality:** `gather-skill-state.sh --target agents-md` →
-`sdm-evaluate.sh quality.yaml` → `artifacts/agents-md/scores.yaml`.
+`sdm-evaluate.sh quality-agents-md.yaml` → `artifacts/agents-md/scores.yaml`.
 Handled by `agentfs-setup` ("upgrade agentfs").
 
-**Runtime Operable:** `benchmark.sh` frontier 1 run + target 5 runs →
-`sdm-evaluate.sh operable.yaml` → `artifacts/agents-md/scores.yaml`.
+**Build-time + Runtime Operable:** `benchmark.sh` frontier 1 run +
+target 5 runs → `sdm-evaluate.sh operable-agents-md.yaml` →
+`artifacts/agents-md/scores.yaml`.
 Handled by `agentfs-eval` ("eval agentfs").
 
-**First baseline (2026-10-28):** Quality 32.2, Operable 70.8.
-Gaps: R3 Post-Write (0% both models), R4 Canary (60% on 14B).
+**Scores history (2026-10-28 to 2026-10-29):**
+- Quality 32.2 → N/A (schema misapplication discovered; adapted schema pending)
+- Operable 70.8 → 93.3 (v7.6.0 Self-Contained Actions; raw benchmark pass rate, not SDM-computed)
+- Gaps resolved: R3 Post-Write 0%→100%, R7 Scope 40%→100%
+- Gaps remaining: T1 Canary 80%, readme-audit dispatch 80% (both model-level)
 
 ## Relationship to Existing Concepts
 
-- **Operable Skill Architecture:** Observable is a property of an
-  Operable Skill — universal evaluation schemas apply to all skills.
-- **CECX Operable Schema:** CECX scoring formula consumes the
-  runtime execution results. CECX is the aggregation; operable schema
-  defines the dimensions.
+- **Operable Skill Architecture:** Observable is a sibling QOO axis
+  that measures measurement readiness — a prerequisite for runtime
+  Operable CECX scoring, not a subset of Operable.
+- **CECX Scoring:** CECX constitutes the runtime portion of the
+  Operable axis. Build-time Operable readiness (BMBT) is measured
+  separately. Together they form the complete Operable evaluation.
 - **SDM Integration:** SDM Pattern 2 (evaluation engine) implemented
   through this design. SDM receives only pre-computed facts.
 - **MCACS Measurement:** Quality schema dimensions map directly to
-  MCACS per-principle metrics.
+  MCACS per-principle metrics. SKILL and AGENTS.md use different
+  dimension sets adapted to their nature (imperative vs declarative).

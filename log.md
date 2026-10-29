@@ -2,6 +2,31 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 17:01
+- QOO tidy-up E1: update Responsibility Matrix — AGENTS.md build-time includes Quality adapted + Operable BMBT (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Bump frontmatter version 2.2.0 → 2.3.0 (skills/agentfs-eval/SKILL.md)
+- QOO tidy-up D3: rewrite QOO Details section — Quality and Operable applicable with adapted schemas, Observable N/A, BMBT build-time acknowledged (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-29 17:00
+- QOO tidy-up C1-C3: G2 expanded BMBT+CECX, G3 retitled Observable Measurement Readiness, schema table updated with dims and phases, adapted schema note (skills/agentfs-setup/references/design-spec.md)
+- QOO tidy-up B4: fix cross-ref observation-schema-cecx → operable-runtime-cecx (skills/agentfs-setup/references/design-spec.md)
+- QOO tidy-up B4: rename observation-schema-cecx.md → operable-runtime-cecx.md, update title and summary — CECX is runtime half of Operable axis
+
+## 2026-10-29 16:59
+- QOO tidy-up B3b: fix scores.yaml comment — adapted Quality + Operable (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- QOO tidy-up B3a: fix QOO properties row — adapted schemas, Observable N/A (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+- QOO tidy-up B2b: rewrite AGENTS.md section — adapted schemas, BMBT applicable, quality N/A explained, scores history updated, fix Observable relationship (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
+## 2026-10-29 16:58
+- QOO tidy-up B2a: update Three Universal Schemas table — Observable 4 dims, Operable BMBT+CECX (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+
+## 2026-10-29 16:57
+- QOO tidy-up B1: rewrite Observable Property section — Observable is sibling axis not property of Operable, add three-axis table, list 4 Observable dims (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- QOO tidy-up A2: add BMBT build-time section (has_bones, has_muscle, has_brain, has_harness), add phase field to all dims, bump schema-version 1.1 (skills/schemas/operable.yaml)
+
+## 2026-10-29 16:56
+- QOO tidy-up A1: remove has_scripts and bones_muscle_separation duplicates, keep 4 measurement-readiness dims, bump schema-version 1.1 (skills/schemas/observable.yaml)
+
 ## 2026-10-29 16:07
 - Fix README drift: 7→6 structural rules on line 550 (README.md)
 

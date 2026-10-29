@@ -42,7 +42,7 @@ is measured by benchmark tests (T1 canary, T2 dispatch, etc.).
 | Executor | Model running setup | Every model, every turn |
 | Correctness | Files in right places | Model follows rules |
 | Failure mode | Missing dir, bad template | Rule ignored, signal rephrased |
-| QOO properties | Quality + Observable + Operable | Quality + Operable (Observable N/A) |
+| QOO properties | Quality + Observable + Operable | Quality (adapted) + Operable BMBT+CECX (adapted). Observable N/A. |
 | Measurement | At skill execution | Every benchmark run |
 
 ## Solution: Sub-Artifact Directory
@@ -59,7 +59,7 @@ artifact's QOO metrics in `artifacts/<name>/` under the skill:
 │   └── ...
 └── artifacts/
     └── agents-md/
-        └── scores.yaml         # QOO scores for AGENTS.md (Quality + Operable)
+        └── scores.yaml         # QOO scores for AGENTS.md (Quality adapted + Operable BMBT+CECX adapted)
 ```
 
 ### Directory semantics

@@ -1,15 +1,73 @@
-schema-version: "1.0"
+schema-version: "1.1"
 schema-type: operable
 description: >
-  Runtime execution correctness standard for AgentFS skill runs.
-  Evaluates whether the agent executed the skill correctly based on
-  the execution trace (audit trail). Applied post-execution by
-  evaluate-pending.sh against trace JSONL. Scored using CECX
-  weighting: Correctness 0.40, Efficiency 0.25, Comprehension 0.25,
-  Complexity 0.10.
+  Operable standard for AgentFS skills. Evaluates both build-time
+  structural readiness (BMBT anatomy) and runtime execution
+  correctness (CECX from traces). Applied by skill-eval and
+  agentfs-eval.
+
+  Build-time BMBT (Bones, Muscle, Brain, Tool/Harness) assesses
+  whether the skill has the structural prerequisites for reliable
+  mid-range model operation. Runtime CECX assesses whether the
+  agent actually executed correctly, scored from execution traces.
 
 dimensions:
-  # --- Correctness (weight 0.40) ---
+  # --- Build-time Readiness (BMBT) ---
+
+  - name: has_bones
+    question: >
+      Does the skill have a scripts/ directory containing at least
+      one executable shell script that performs a deterministic
+      operation (data gathering, state checking, file manipulation)?
+    evidence_source: filesystem
+    metric: boolean
+    target: "true"
+    weight: 1.0
+    phase: build
+
+  - name: has_muscle
+    question: >
+      Does SKILL.md contain CNL prose that orchestrates script
+      execution — specifying which scripts to run, in what order,
+      and what decisions to make based on script output — rather
+      than embedding deterministic logic inline?
+    evidence_source: skill.md
+    metric: boolean
+    target: "true"
+    weight: 1.0
+    phase: build
+
+  - name: has_brain
+    question: >
+      For skills requiring semantic judgment, are those judgments
+      delegated to SDM via scripts rather than requiring inline
+      multi-hop agent reasoning? Skills with no semantic judgment
+      requirements pass this dimension by default.
+    evidence_source: skill.md + scripts/
+    metric: boolean
+    target: "true"
+    weight: 1.0
+    phase: build
+    applies_to: [has_semantic_judgments]
+
+  - name: has_harness
+    question: >
+      Can the skill be executed and measured by an external harness
+      (goose run, goose recipe, benchmark.sh)? Does a test exist
+      or can one be constructed from the skill's registered signals?
+    evidence_source: benchmark.sh test list + skill signals
+    metric: boolean
+    target: "true"
+    weight: 1.0
+    phase: build
+
+  # --- Runtime Correctness (CECX) ---
+  # Scored using CECX weighting:
+  #   Correctness 0.40, Efficiency 0.25,
+  #   Comprehension 0.25, Complexity 0.10
+
+  # -- Correctness (weight 0.40) --
+
   - name: step_completion
     question: >
       Did the agent complete all steps recorded in the trace? Check
@@ -19,6 +77,7 @@ dimensions:
     metric: boolean
     target: "true"
     weight: 0.40
+    phase: runtime
 
   - name: no_fabrication
     question: >
@@ -30,8 +89,10 @@ dimensions:
     metric: boolean
     target: "true"
     weight: 0.40
+    phase: runtime
 
-  # --- Efficiency (weight 0.25) ---
+  # -- Efficiency (weight 0.25) --
+
   - name: minimal_inference_hops
     question: >
       Did the agent reach deterministic script checkpoints with
@@ -42,6 +103,7 @@ dimensions:
     metric: count
     target: "<= 2"
     weight: 0.25
+    phase: runtime
 
   - name: token_efficiency
     question: >
@@ -53,8 +115,10 @@ dimensions:
     metric: ratio
     target: "<= 0.50"
     weight: 0.25
+    phase: runtime
 
-  # --- Comprehension (weight 0.25) ---
+  # -- Comprehension (weight 0.25) --
+
   - name: correct_sequence
     question: >
       Did the agent execute steps in the correct order as defined by
@@ -64,6 +128,7 @@ dimensions:
     metric: boolean
     target: "true"
     weight: 0.25
+    phase: runtime
 
   - name: scope_resolution
     question: >
@@ -74,8 +139,10 @@ dimensions:
     metric: boolean
     target: "true"
     weight: 0.25
+    phase: runtime
 
-  # --- Complexity (weight 0.10) ---
+  # -- Complexity (weight 0.10) --
+
   - name: no_improvised_recovery
     question: >
       Did the agent follow the defined error handling path when errors
@@ -87,3 +154,4 @@ dimensions:
     metric: boolean
     target: "true"
     weight: 0.10
+    phase: runtime
