@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 17:40
+- Fixed version field: tracks AGENTS.md template version (7.6.0) not skill version (7.7.0) (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
 ## 2026-10-29 17:34
 - First real QOO scores: Quality 56.5 Re-engineer, Operable 73.1 Re-engineer via adapted schemas + SDM (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
 

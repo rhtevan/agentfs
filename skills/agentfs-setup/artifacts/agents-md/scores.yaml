@@ -5,7 +5,7 @@
 
 artifact: AGENTS.md
 source_skill: agentfs-setup
-version: "7.7.0"
+version: "7.6.0"  # AGENTS.md template version being scored (skill version is 7.7.0)
 
 quality:
   schema: quality-agents-md.yaml
