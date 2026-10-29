@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 17:19
+- Stream 2: restructure scores.yaml — quality/operable.build/operable.runtime/observable sections, reference adapted schemas, historical scores annotated as misapplied
+
+## 2026-10-29 17:18
+- Stream 2: create operable-agents-md.yaml — BMBT build (4 dims) + CECX runtime adapted for benchmark evidence (5 dims: rule_pass_rate, no_fabrication, frontier_target_delta, per_rule_comprehension, stochastic_variance)
+- Stream 2: create quality-agents-md.yaml — 6 MCACS dims adapted for declarative policy (rule_self_containment, rule_action_density, concern_count, trigger_clarity, cross_rule_dependency, accidental_complexity)
+
 ## 2026-10-29 17:01
 - QOO tidy-up E1: update Responsibility Matrix — AGENTS.md build-time includes Quality adapted + Operable BMBT (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 - Bump frontmatter version 2.2.0 → 2.3.0 (skills/agentfs-eval/SKILL.md)

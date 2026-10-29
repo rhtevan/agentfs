@@ -1,126 +1,109 @@
-# scores.yaml — AGENTS.md artifact
-# QOO scores: Quality (build-time) + Operable (runtime).
+# scores.yaml — AGENTS.md artifact QOO scores
+# Quality (build-time, adapted) + Operable (BMBT build + CECX runtime, adapted).
 # Observable: N/A (passive document, no self-instrumentation).
+# No composite score — per-axis bands reported separately.
 
 artifact: AGENTS.md
 source_skill: agentfs-setup
 version: "7.6.0"
 
 quality:
+  schema: quality-agents-md.yaml
   aggregate_score: null
   band: N/A
   note: >
-    Schema inapplicable. quality.yaml measures skill imperativeness
-    (script_coverage, inference_hop_count, interface_opacity) — these
-    dimensions apply to SKILL.md's imperative nature, not AGENTS.md's
-    declarative rule/policy prose. AGENTS.md references scripts
-    (post-write.sh, checkpoint.sh) as effects within rule Do blocks,
-    but is not itself a scripted workflow. Raw score 32.2 reflects
-    schema misapplication, not quality deficiency.
-  applicable_dimensions:
-    accidental_complexity: 88
-    model_portability: 100
-    concern_count: 0
-  non_applicable_dimensions:
-    - script_coverage (AGENTS.md has no scripts by design)
-    - inference_hop_count (no script checkpoints)
-    - interface_opacity (no script internals)
-  evaluated: "2026-10-28T21:07:01-04:00"
+    Adapted schema created (quality-agents-md.yaml) with 6 MCACS dims
+    for declarative policy. Not yet evaluated via SDM. Previous score
+    of 32.2 was from misapplying SKILL-specific quality.yaml.
+  evaluated: null
 
 operable:
-  aggregate_score: 93.3
-  band: Refine
+  build:
+    schema: operable-agents-md.yaml
+    aggregate_score: null
+    band: N/A
+    note: >
+      BMBT assessment not yet run via SDM. AGENTS.md has BMBT structure:
+      bones (post-write.sh, checkpoint.sh, seed-agents-md.sh),
+      muscle (6 CNL rules), controller (model), harness (benchmark.sh).
+    evaluated: null
+
+  runtime:
+    schema: operable-agents-md.yaml
+    aggregate_score: null
+    band: N/A
+    note: >
+      Adapted schema created (operable-agents-md.yaml) with 5 CECX dims
+      for benchmark evidence. Not yet evaluated via SDM. Previous score
+      of 93.3 was raw benchmark pass rate (28/30), not SDM-computed.
+    benchmark:
+      frontier:
+        provider: custom_redhat
+        model: claude-sonnet-4-6
+        runs: 1
+        pass_rate: 100
+      target:
+        provider: custom_skupper
+        model: Qwen/Qwen3-14B-FP8
+        runs: 5
+        pass_rate: 93
+      results:
+        t1_canary: { frontier: 100, target: 80 }
+        qoo_agentfs_readme_audit: { frontier: 100, target: 80 }
+        qoo_crc_status: { frontier: 100, target: 100 }
+        t_r2_preflight: { frontier: 100, target: 100 }
+        t_r3_postwrite: { frontier: 100, target: 100 }
+        t_r7_scope: { frontier: 100, target: 100 }
+    gap_analysis:
+      - rule: R3 Session Canary
+        test: t1
+        frontier: 100
+        target: 80
+        diagnosis: >
+          14B model drops canary 20% of the time. Model-level attention
+          failure, not CNL issue.
+      - rule: R1 Dispatch (readme-audit)
+        test: qoo_agentfs_readme_audit
+        frontier: 100
+        target: 80
+        diagnosis: >
+          1/5 run had dispatch but no shell execution — skill loaded
+          but script not called. Model-level stochastic failure.
+    evaluated: "2026-10-29T15:00:00-04:00"
+
+observable:
+  aggregate_score: null
+  band: N/A
   note: >
-    Run 4 — v7.6.0 Self-Contained Actions. Frontier (claude-sonnet-4-6)
-    1 run, Target (Qwen3-14B-FP8) 5 runs, 6 tests covering Rules 1-6.
-    Frontier: 100% (6/6). Target: 93% (28/30). t_r3 0%→100% (effect-based
-    rule eliminated), t_r7 60%→100% (KGM disambiguation).
-  frontier:
-    provider: custom_redhat
-    model: claude-sonnet-4-6
-    runs: 1
-    pass_rate: 100
-    results:
-      t1_canary: 100
-      qoo_agentfs_readme_audit: 100
-      qoo_crc_status: 100
-      t_r2_preflight: 100
-      t_r3_postwrite: 100
-      t_r7_scope: 100
-  target:
-    provider: custom_skupper
-    model: Qwen/Qwen3-14B-FP8
-    runs: 5
-    pass_rate: 93
-    results:
-      t1_canary: 80
-      qoo_agentfs_readme_audit: 80
-      qoo_crc_status: 100
-      t_r2_preflight: 100
-      t_r3_postwrite: 100
-      t_r7_scope: 100
-  sdm_dimensions:
-    step_completion: { pass: false, score: 0, weight: 0.40 }
-    no_fabrication: { pass: true, score: 100, weight: 0.40 }
-    minimal_inference_hops: { pass: false, score: 71, weight: 0.25 }
-    token_efficiency: { pass: false, score: 40, weight: 0.25 }
-    correct_sequence: { pass: true, score: 100, weight: 0.25 }
-    scope_resolution: { pass: false, score: 0, weight: 0.25 }
-    no_improvised_recovery: { pass: true, score: 100, weight: 0.10 }
-  gap_analysis:
-    - rule: R3 Session Canary
-      test: t1
-      frontier: 100
-      target: 80
-      diagnosis: >
-        14B model drops canary 20% of the time. Marginal improvement
-        from 60% (Run 2). Model-level attention failure, not CNL issue.
-    - rule: R1 Dispatch (readme-audit)
-      test: qoo_agentfs_readme_audit
-      frontier: 100
-      target: 80
-      diagnosis: >
-        Minor stochastic drop — 1/5 run had dispatch but no shell
-        execution (skill loaded but script not called).
-    - rule: R6 Scope & Post-Write (RESOLVED)
-      test: t_r3
-      frontier: 100
-      target: 100
-      diagnosis: >
-        RESOLVED in v7.6.0. Effect-based Rule 3 eliminated, post-write
-        merged into Rule 6 (Self-Contained Actions). 0%→100% both models.
-    - rule: R6 Scope & Post-Write (RESOLVED)
-      test: t_r7
-      frontier: 100
-      target: 100
-      diagnosis: >
-        RESOLVED in v7.6.0. KGM vs filesystem disambiguation added to
-        Signal Dispatch patterns. 40%→100% on 14B.
-  evaluated: "2026-10-28T22:15:20-04:00"
-  benchmark_output: /tmp/benchmark-target-20261028_220217
+    Not applicable. AGENTS.md is a passive document loaded into the
+    model context window. It cannot self-instrument or produce audit
+    trails. Observable measurement readiness dimensions (trace
+    instrumentation, CNL compliance, anti-fabrication, SDM delegation)
+    apply to SKILL artifacts only.
 
 history:
   - date: "2026-10-28T21:07:01-04:00"
     type: quality
     score: 32.2
     band: Redesign
+    note: "SKILL-specific quality.yaml misapplied to AGENTS.md. Invalidated."
   - date: "2026-10-28T21:39:49-04:00"
-    type: operable
+    type: operable.runtime
     score: 70.8
     band: Re-engineer
-    note: "Run 1 — frontier Sonnet 83%, target 76%"
+    note: "Run 1 — raw pass rate. SDM dims from SKILL-specific operable.yaml misapplied."
   - date: "2026-10-28T22:15:20-04:00"
-    type: operable
+    type: operable.runtime
     score: 54.1
     band: Re-engineer
-    note: "Run 2 — frontier Opus 83%, target 63%. t_r7 degraded 100%→40%."
+    note: "Run 2 — raw pass rate. t_r7 degraded 100%→40%."
   - date: "2026-10-29T12:19:15-04:00"
-    type: operable
+    type: operable.runtime
     score: 62.5
     band: Re-engineer
-    note: "Run 3 — frontier Sonnet 83%, target 66%. SystemOne API. t_r3 still 0% both models."
+    note: "Run 3 — raw pass rate. t_r3 still 0% both models."
   - date: "2026-10-29T15:00:00-04:00"
-    type: operable
+    type: operable.runtime
     score: 93.3
     band: Refine
-    note: "Run 4 — v7.6.0 Self-Contained Actions. Frontier Sonnet 100% (6/6), target 14B 93% (28/30). t_r3 0%→100%, t_r7 60%→100%."
+    note: "Run 4 — raw benchmark pass rate (28/30). NOT SDM-computed CECX. v7.6.0 Self-Contained Actions."

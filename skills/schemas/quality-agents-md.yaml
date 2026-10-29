@@ -1,0 +1,86 @@
+schema-version: "1.0"
+schema-type: quality
+artifact-type: agents-md
+description: >
+  MCACS quality standard adapted for AGENTS.md — a declarative policy
+  document loaded as system prompt. Dimensions measure design soundness
+  of rules and dispatch tables, not imperative script workflows.
+  The universal quality.yaml applies to SKILL.md; this schema applies
+  to AGENTS.md. Both are grounded in the same MCACS principles.
+
+  Evaluated by: gather-skill-state.sh --target agents-md → sdm-evaluate.sh
+  Scores stored in: agentfs-setup/artifacts/agents-md/scores.yaml
+
+dimensions:
+  - name: rule_self_containment
+    question: >
+      Does each rule's Do block include ALL consequences of its
+      actions? Are there any rules whose effects depend on a different
+      rule firing afterward? Count rules that violate the
+      Self-Contained Actions principle (design constraint C1).
+    evidence_source: AGENTS.md rules
+    metric: count
+    target: "0"
+    weight: 1.0
+    mcacs: Modularity
+
+  - name: rule_action_density
+    question: >
+      For each rule, how many distinct actions are in the Do block?
+      Rules with more than 5 actions are harder for mid-range models
+      to follow completely. Report the maximum action count across
+      all rules.
+    evidence_source: AGENTS.md rules
+    metric: count
+    target: "<= 5"
+    weight: 1.0
+    mcacs: Modularity
+
+  - name: concern_count
+    question: >
+      How many distinct operational concerns does each rule address?
+      Count from: dispatch routing, memory management, file operations,
+      scope resolution, version control, checkpoint/recovery,
+      user interaction. A rule addressing more than 2 concerns
+      has low cohesion.
+    evidence_source: AGENTS.md rules
+    metric: count
+    target: "<= 2"
+    weight: 1.0
+    mcacs: Cohesion
+
+  - name: trigger_clarity
+    question: >
+      Can each rule's When clause be evaluated by reading ONLY the
+      user's message and current session state, WITHOUT executing any
+      action first? Count rules with effect-based triggers that
+      require completed actions to evaluate.
+    evidence_source: AGENTS.md rules
+    metric: count
+    target: "0"
+    weight: 1.0
+    mcacs: Abstraction
+
+  - name: cross_rule_dependency
+    question: >
+      How many rules reference other rules by number or name in their
+      Do blocks? Cross-references create coupling — changing one rule
+      may break another. Count the number of inter-rule references.
+    evidence_source: AGENTS.md rules
+    metric: count
+    target: "<= 1"
+    weight: 1.0
+    mcacs: Coupling
+
+  - name: accidental_complexity
+    question: >
+      What percentage of rule prose is dedicated to implementation
+      details (specific file paths, script arguments, directory
+      structures) versus policy intent (when to act, what outcome
+      is expected)? Implementation details that could be in scripts
+      are accidental complexity in a policy document.
+    evidence_source: AGENTS.md rules
+    metric: ratio
+    target: "<= 0.30"
+    weight: 1.0
+    mcacs: Separation of Concerns

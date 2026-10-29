@@ -1,0 +1,139 @@
+schema-version: "1.0"
+schema-type: operable
+artifact-type: agents-md
+description: >
+  Operable standard adapted for AGENTS.md — a declarative policy
+  document evaluated via external benchmark harness. Build-time BMBT
+  assesses structural readiness. Runtime CECX assesses rule compliance
+  from benchmark pass/fail evidence (not trace JSONL).
+
+  The universal operable.yaml applies to SKILL trace JSONL; this
+  schema applies to AGENTS.md benchmark results. Both use the same
+  CECX weighting formula: Cr×0.40 + Ef×0.25 + Cm×0.25 + Cx×0.10.
+
+  Evaluated by: benchmark.sh → sdm-evaluate.sh
+  Scores stored in: agentfs-setup/artifacts/agents-md/scores.yaml
+
+dimensions:
+  # --- Build-time Readiness (BMBT) ---
+
+  - name: has_bones
+    question: >
+      Do AGENTS.md rule Do blocks delegate deterministic actions to
+      scripts (post-write.sh, checkpoint.sh, sync-agents-md.sh)
+      rather than requiring the model to compose shell commands
+      inline? What percentage of rule actions reference scripts?
+    evidence_source: AGENTS.md rules
+    metric: ratio
+    target: ">= 0.50"
+    weight: 1.0
+    phase: build
+
+  - name: has_muscle
+    question: >
+      Are the rules written in CNL (Controlled Natural Language)?
+      One instruction per sentence, active imperative voice, single
+      vocabulary per concept. Count rules that violate CNL.
+    evidence_source: AGENTS.md rules
+    metric: ratio
+    target: ">= 0.90"
+    weight: 1.0
+    phase: build
+
+  - name: has_brain
+    question: >
+      For rules that require semantic judgment (e.g., classifying
+      task complexity in Pre-Flight), is the judgment bounded with
+      explicit criteria rather than requiring open-ended reasoning?
+      Count rules with unbounded semantic judgment requirements.
+    evidence_source: AGENTS.md rules
+    metric: count
+    target: "0"
+    weight: 1.0
+    phase: build
+
+  - name: has_harness
+    question: >
+      Does a benchmark test suite exist with at least one test per
+      enforceable rule? What percentage of rules have corresponding
+      benchmark tests?
+    evidence_source: benchmark.sh test list vs AGENTS.md rule count
+    metric: ratio
+    target: ">= 0.80"
+    weight: 1.0
+    phase: build
+
+  # --- Runtime Correctness (CECX) ---
+  # Evidence source: benchmark pass/fail results, not trace JSONL.
+  # Scored using CECX weighting:
+  #   Correctness 0.40, Efficiency 0.25,
+  #   Comprehension 0.25, Complexity 0.10
+
+  # -- Correctness (weight 0.40) --
+
+  - name: rule_pass_rate
+    question: >
+      What is the overall rule pass rate on the target model across
+      all benchmark runs? This is the primary correctness signal —
+      did the model follow the rules?
+    evidence_source: benchmark results (target model)
+    metric: ratio
+    target: ">= 0.90"
+    weight: 0.40
+    phase: runtime
+
+  - name: no_fabrication
+    question: >
+      In benchmark runs, did the model produce real outputs from
+      actual tool calls, or did it fabricate results without running
+      scripts? Count runs where the model generated plausible output
+      without executing the required tool chain.
+    evidence_source: benchmark results (fabrication failures)
+    metric: boolean
+    target: "true"
+    weight: 0.40
+    phase: runtime
+
+  # -- Efficiency (weight 0.25) --
+
+  - name: frontier_target_delta
+    question: >
+      What is the pass rate gap between frontier and target models?
+      A smaller delta means the rules are written efficiently for
+      mid-range models — they don't require frontier reasoning.
+      Delta = frontier_pass_rate - target_pass_rate.
+    evidence_source: benchmark results (frontier vs target)
+    metric: ratio
+    target: "<= 0.10"
+    weight: 0.25
+    phase: runtime
+
+  # -- Comprehension (weight 0.25) --
+
+  - name: per_rule_comprehension
+    question: >
+      Which specific rules have below-threshold pass rates on the
+      target model? A rule failing on the target model but passing
+      on the frontier indicates a comprehension gap — the rule
+      requires reasoning the mid-range model cannot reliably perform.
+      Count rules with target pass rate below 80%.
+    evidence_source: benchmark results (per-rule breakdown)
+    metric: count
+    target: "0"
+    weight: 0.25
+    phase: runtime
+
+  # -- Complexity (weight 0.10) --
+
+  - name: stochastic_variance
+    question: >
+      Across multiple benchmark runs on the target model, what is
+      the variance in per-rule pass rates? High variance (a rule
+      passes in some runs but fails in others) indicates the rule
+      is near the model's comprehension boundary — it is too complex
+      for reliable execution.
+    evidence_source: benchmark results (per-rule per-run breakdown)
+    metric: ratio
+    target: "<= 0.20"
+    weight: 0.10
+    phase: runtime
