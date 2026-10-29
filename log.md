@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 17:43
+- Removed stale 7.7.0 comment from version field (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-29 17:42
+- Reverted version to 7.6.0 — wiring changes are internal, no user-facing behavior change (skills/agentfs-setup/SKILL.md)
+- Reverted version to 7.6.0 — wiring changes are internal, no user-facing behavior change (skills/agentfs-setup/SKILL.md)
+
 ## 2026-10-29 17:40
 - Fixed version field: tracks AGENTS.md template version (7.6.0) not skill version (7.7.0) (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
 
