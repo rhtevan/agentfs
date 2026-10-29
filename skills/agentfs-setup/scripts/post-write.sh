@@ -158,13 +158,25 @@ if [[ "$ABS_FILE" == */skills/*/* ]]; then
 fi
 
 if [[ -n "$SKILL_DIR" ]]; then
+  # Determine if this file is a version-significant change.
+  # SKILL.md and scripts/ are behavioral — version bump required.
+  # artifacts/, references/, templates/, rubrics/ are supporting
+  # content — version bump optional (log entry still recorded).
+  FILE_IN_SKILL="${ABS_FILE#"$SKILL_DIR/"}"
+  VERSION_REQUIRED=false
+  case "$FILE_IN_SKILL" in
+    SKILL.md|scripts/*) VERSION_REQUIRED=true ;;
+  esac
+
   if [[ -n "$VERSION" ]]; then
     echo "[post-write] Updating changelog: $SKILL_DIR/CHANGELOG.md v$VERSION"
     bash "$SCRIPT_DIR/merge-changelog-entry.sh" "$SKILL_DIR/CHANGELOG.md" "$VERSION" "$CHANGELOG_DESCRIPTION"
-  else
-    echo "[post-write] ❌ Skill file modified ($SKILL_DIR) but no --version provided."
+  elif $VERSION_REQUIRED; then
+    echo "[post-write] ❌ Skill behavioral file modified ($FILE_IN_SKILL) but no --version provided."
     echo "  Re-run with: bash post-write.sh <file> \"<description>\" --version <ver>"
     exit 1
+  else
+    echo "[post-write] ℹ️  Supporting file modified ($FILE_IN_SKILL) — no version bump required."
   fi
 fi
 

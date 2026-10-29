@@ -75,11 +75,29 @@ if ! grep -q '^|[-]*|[-]*|' "$CHANGELOG_FILE"; then
   echo "[merge-changelog] Repaired: inserted missing table separator."
 fi
 
-# ── Deduplication check ───────────────────────────────────────────────
+# ── Deduplication / Amendment ─────────────────────────────────────────
 NEW_ROW="| ${TODAY} | v${VERSION} — ${DESCRIPTION} |"
 
-if grep -qF "| ${DATE_ONLY}" "$CHANGELOG_FILE" 2>/dev/null && grep -qF "v${VERSION} —" "$CHANGELOG_FILE" 2>/dev/null; then
-  echo "[merge-changelog] Entry for ${DATE_ONLY} v${VERSION} already exists — skipping duplicate."
+# Check if an entry for this date+version exists on the SAME row
+EXISTING_ROW=$(grep -F "v${VERSION} —" "$CHANGELOG_FILE" 2>/dev/null | grep -F "| ${DATE_ONLY}" | head -1 || true)
+
+if [[ -n "$EXISTING_ROW" ]]; then
+  # Extract existing description (after "vX.Y.Z — ")
+  EXISTING_DESC=$(echo "$EXISTING_ROW" | sed "s/.*v${VERSION} — //" | sed 's/ |$//')
+  if [[ "$EXISTING_DESC" == "$DESCRIPTION" ]]; then
+    echo "[merge-changelog] Exact duplicate — skipping."
+    exit 0
+  fi
+  # Amend: append new description to existing entry
+  AMENDED_DESC="${EXISTING_DESC}; ${DESCRIPTION}"
+  AMENDED_ROW="| ${TODAY} | v${VERSION} — ${AMENDED_DESC} |"
+  # Use awk for replacement — avoids sed delimiter/escaping issues
+  awk -v old="$EXISTING_ROW" -v new="$AMENDED_ROW" '
+    index($0, old) && !replaced { print new; replaced=1; next }
+    { print }
+  ' "$CHANGELOG_FILE" > "$CHANGELOG_FILE.tmp"
+  mv "$CHANGELOG_FILE.tmp" "$CHANGELOG_FILE"
+  echo "[merge-changelog] ✓ Amended existing v${VERSION} entry with: ${DESCRIPTION}"
   exit 0
 fi
 

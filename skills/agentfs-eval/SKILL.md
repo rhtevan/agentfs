@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -347,13 +347,14 @@ Validates that the AGENTS.md prose is structurally sound and behaviorally effect
 | ID | Assertion |
 |----|-----------|
 | A1 | **Token budget** — template-owned content ≤ 2000 tokens |
-| A2 | **Section order** — Scopes before Rules |
-| A3 | **Rule completeness** — all 8 numbered rules present |
+| A2 | **Section order** — Rules is first `##` section |
+| A3 | **Rule completeness** — all 6 numbered rules present |
 | A4 | **Context lookup fallback** — fallback note present for when `search_nodes` unavailable |
 | A5 | **Skill discovery in Signal Dispatch rule** — names `search_nodes` and `load_skill` |
 | A7 | **Redundancy** — skill lookup procedure not defined in 3+ places |
 | A8 | **WHY vs HOW** — no explanatory prose in rule cells |
 | A9 | **Version consistency** — template version matches skill version |
+| A10 | **No effect-based triggers** — When clauses must be evaluable before execution (Self-Contained Actions) |
 
 ### Behavioral Tests (DEPRECATED)
 
@@ -402,9 +403,11 @@ grows over time through human observation of L3 results.
 
 ## Reference: QOO Operable Details
 
-AGENTS.md is Non-Observable (passive document, no self-instrumentation).
-Runtime Operable evaluation uses the benchmark harness as an external
-monitor. Steps 6-11 in the Full Eval Sequence implement this section.
+AGENTS.md is Non-Observable (passive document, no self-instrumentation)
+and Non-Quality-Scorable (declarative policy prose, not imperative
+scripted workflow — `quality.yaml` dimensions are inapplicable).
+Only Operable evaluation applies, using the benchmark harness as an
+external monitor. Steps 6-11 in the Full Eval Sequence implement this.
 
 Gap classification categories:
 - **model-level** — model lacks capability (e.g., ignores canary rule)

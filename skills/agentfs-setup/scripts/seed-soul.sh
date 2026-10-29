@@ -51,6 +51,9 @@ TEMPLATE_PRINCIPLES='## Principles
 - **Reliability over cleverness.** Prefer simple, proven solutions.
 - **Root cause, not symptom.** Ad-hoc fixes are temporary — trace to
   root cause, implement durable fix (script, guardrail, or config change).
+- **Diagnose before patching.** When a failure occurs, identify the
+  root cause before writing a fix. Do not patch the immediate symptom
+  and move on — ask "what caused this?" first, then fix at the source.
 - **Proactive risk naming.** Name risks and failure modes even when
   not asked. Push back on bad plans.
 - **Scope discipline.** Defer on aesthetic and domain-specific choices
@@ -178,6 +181,7 @@ TEMPLATE_FINGERPRINTS=(
   "## Principles"
   "Reliability over cleverness"
   "Root cause, not symptom"
+  "Diagnose before patching"
   "Direct communication"
   "Intellectual integrity"
   "No assumed inputs"

@@ -2,7 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
-| 2026-10-29 11:42 | v7.6.0 — Graceful SDM failure: Step 2 handles SDM_UNAVAILABLE, skips Step 3 |
+| 2026-10-29 16:01 | v7.6.0 — Graceful SDM failure: Step 2 handles SDM_UNAVAILABLE, skips Step 3; Fix merge-changelog-entry.sh: amend same-day same-version entries instead of silent skip; fix post-write.sh version requirement for artifacts; Fix dedup: amend same-day same-version entries instead of silent skip; use awk instead of sed to avoid pipe-delimiter collision; Add 'Diagnose before patching' principle to SOUL template and validation array; Add 'Diagnose before patching' to REQUIRED_PRINCIPLES validation array |
 | 2026-10-28 21:03 | v7.6.0 — Added 'upgrade agentfs' signal and QOO build-time Quality evaluation workflow (Steps 1-4) |
 | 2026-10-27 21:07 | v7.5.1 — EP4+EP5: R2 Pre-Flight compressed (211→141 words), R4 canary reordered (action first) |
 | 2026-10-27 20:49 | v7.5.0 — EP1+EP2+EP3+EP6: R1 dispatch rule CNL rewrite — separate keyword extraction, KGM-hit example, anti-bypass instruction |

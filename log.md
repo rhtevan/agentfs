@@ -2,6 +2,42 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 16:07
+- Fix README drift: 7→6 structural rules on line 550 (README.md)
+
+## 2026-10-29 16:01
+- Add 'Diagnose before patching' to REQUIRED_PRINCIPLES validation array (skills/agentfs-setup/scripts/seed-soul.sh)
+- Add 'Diagnose before patching' principle to SOUL template and validation array (skills/agentfs-setup/scripts/seed-soul.sh)
+
+## 2026-10-29 16:00
+- Fix dedup: amend same-day same-version entries instead of silent skip; use awk instead of sed to avoid pipe-delimiter collision (skills/agentfs-setup/scripts/merge-changelog-entry.sh)
+
+## 2026-10-29 15:59
+- Fix dedup: same-day same-version entries now amend existing row instead of silent skip; exact duplicates still skipped (skills/agentfs-setup/scripts/merge-changelog-entry.sh)
+
+## 2026-10-29 15:56
+- Update scores.yaml: version 7.5.1→7.6.0, operable narrative to Run 4, frontier/target results updated, gap analysis reflects v7.6.0 resolutions, quality marked N/A (schema inapplicable)
+
+## 2026-10-29 15:53
+- Harden version requirement: only SKILL.md and scripts/ require --version; artifacts, references, templates, rubrics pass without it (skills/agentfs-setup/scripts/post-write.sh)
+- Test: reference without version (skills/agentfs-eval/references/design-decisions.md)
+- Test: script without version (skills/agentfs-setup/scripts/post-write.sh)
+- Test: SKILL.md without version
+- Test: artifact write without version (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-29 15:41
+- Add Quality schema inapplicability note to QOO section; version bump already at 2.2.0 (skills/agentfs-eval/SKILL.md)
+- Update scores.yaml: version 7.6.0, operable narrative to Run 4, gap analysis updated, quality marked N/A (schema inapplicable)
+
+## 2026-10-29 15:40
+- Update version 7.5.1→7.6.0 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-29 15:39
+- Bump version frontmatter 2.1.0→2.2.0 to match CHANGELOG (skills/agentfs-eval/SKILL.md)
+- Updated template assertions table: A2 description, A3 rule count 8→6, added A10 (skills/agentfs-eval/SKILL.md)
+- Updated template assertions table: A2 description, A3 rule count 8→6, added A10 effect-based trigger check (skills/agentfs-eval/SKILL.md)
+- Fixed README drift for v7.6.0: version, rule count, rule table, design constraint note (README.md)
+
 ## 2026-10-29 15:24
 - Fix README drift: v7.5.1→v7.6.0, 7→6 rules, remove Rule 3, add Rule 6 Scope & Post-Write, add design constraint note (README.md)
 
