@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-28 23:16
+- Fixed QOO cross-reference from Steps 5-10 to Steps 6-11 (skills/agentfs-eval/SKILL.md)
+- Renumbered Steps 6-11 to 7-12, made QOO optional, added Tier 3 Semantic to consolidated report (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-28 23:15
+- Bumped metadata version to 2.1.0 to match changelog (skills/agentfs-eval/SKILL.md)
+- Added Step 5 (Tier 3 Semantic Assertions) to Full Eval Sequence for L4 qualification (skills/agentfs-eval/SKILL.md)
+- Added Step 5 (Tier 3 Semantic Assertions) to Full Eval Sequence for L4 qualification (skills/agentfs-eval/SKILL.md)
+
 ## 2026-10-28 22:37
 - Add assets/ dir, update scripts/ description in USER scope directory tree (README.md)
 - Fix template version 7.5.0→7.5.1 (README.md)

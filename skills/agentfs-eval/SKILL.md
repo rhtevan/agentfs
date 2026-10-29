@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -15,11 +15,11 @@ three layers of progressively deeper verification.
 
 ## Quick Dispatch
 
-| User says | Run |
-|-----------|-----|
-| "agentfs score", "agentfs status" | Tier 0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score. |
-| "eval agentfs", "agentfs health", "maturity check" | Full eval. Execute ALL steps in the Full Eval Sequence below. Do NOT skip steps. |
-| "check violations", "self audit" | Session audit mode. Follow the Session Audit Mode section. Diagnostic only — no scores persisted. |
+| User says                                          | Run                                                                                               |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| "agentfs score", "agentfs status"                  | Tier 0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score.                      |
+| "eval agentfs", "agentfs health", "maturity check" | Full eval. Execute ALL steps in the Full Eval Sequence below. Do NOT skip steps.                  |
+| "check violations", "self audit"                   | Session audit mode. Follow the Session Audit Mode section. Diagnostic only — no scores persisted. |
 
 ## Full Eval Sequence
 
@@ -55,7 +55,40 @@ bash ~/.agents/skills/agentfs-eval/scripts/agentfs-behavior.sh "$TARGET"
 
 Report pass/warn/N/A per assertion. Continue to Step 5.
 
-### Step 5 — Tier 3 QOO: Select Providers and Models
+### Step 5 — Tier 3: Semantic Assertions (L4 qualification)
+
+For each rubric YAML file in the skill's `rubrics/` directory
+(`memory-classification.yaml`, `reference-verification.yaml`,
+`sycophancy-detection.yaml`):
+
+1. Read the rubric file.
+2. Read the target content specified by the rubric:
+   - R1: each entry in `$TARGET/.agents/memories/MEMORY.md`
+   - R2: each entry in `$TARGET/.agents/memories/MEMORY.md` that
+     contains artifact references
+   - R3: each action entry in `$TARGET/.agents/log.md` cross-referenced
+     against guardrails in `$TARGET/AGENTS.md`
+3. If target content is empty or absent → report `N/A` for this rubric.
+4. For each entry/item in the target content:
+   a. Apply the `prompt_template` from the rubric, substituting the
+      entry content into the `{entry}` placeholder.
+   b. Answer the closed-ended question — select ONLY from the
+      enumerated choices.
+   c. Record the answer.
+   d. Repeat `vote_count` times if specified (take majority vote).
+5. Score: compare answers against `pass_answers` and `fail_answers`.
+6. Report pass/fail per entry with the `fail_routing` message if failed.
+
+**Critical: The LLM acts as a CLASSIFIER, not a judge.** Answer only
+the specific question asked. Do not provide open-ended commentary
+on content quality.
+
+Report pass/fail/N/A per rubric. Continue to Step 6.
+
+### Step 6 — Tier 3 QOO: Select Providers and Models (optional)
+
+If the user says "skip tier 3 qoo" or "skip benchmarks", skip
+Steps 6–11 and proceed directly to Step 12.
 
 List available providers and models:
 
@@ -70,25 +103,25 @@ done
 Ask the user to select a frontier provider/model and a target
 provider/model. Do NOT proceed until the user confirms both.
 
-### Step 6 — Tier 3 QOO: Frontier Benchmark (1 run)
+### Step 7 — Tier 3 QOO: Frontier Benchmark (1 run)
 
 ```bash
 bash ~/.agents/scripts/benchmark.sh \
   --provider <frontier_provider> --model <frontier_model> --runs 1
 ```
 
-Record per-test results. Continue to Step 7.
+Record per-test results. Continue to Step 8.
 
-### Step 7 — Tier 3 QOO: Target Benchmark (5 runs)
+### Step 8 — Tier 3 QOO: Target Benchmark (5 runs)
 
 ```bash
 bash ~/.agents/scripts/benchmark.sh \
   --provider <target_provider> --model <target_model> --runs 5
 ```
 
-Record per-test results. Continue to Step 8.
+Record per-test results. Continue to Step 9.
 
-### Step 8 — Tier 3 QOO: SDM Operable Score
+### Step 9 — Tier 3 QOO: SDM Operable Score
 
 Write benchmark evidence to a temp file. Run SDM evaluation:
 
@@ -97,12 +130,12 @@ bash ~/.agents/scripts/sdm-evaluate.sh /tmp/benchmark-evidence.txt \
   ~/.agents/skills/schemas/operable.yaml --evidence /tmp/benchmark-evidence.txt
 ```
 
-### Step 9 — Tier 3 QOO: Gap Analysis
+### Step 10 — Tier 3 QOO: Gap Analysis
 
 For each test, compute frontier pass rate vs target pass rate.
 Classify each gap: model-level, CNL weakness, or platform limitation.
 
-### Step 10 — Tier 3 QOO: Persist Scores
+### Step 11 — Tier 3 QOO: Persist Scores
 
 Write operable scores and gap analysis to:
 
@@ -112,10 +145,11 @@ Write operable scores and gap analysis to:
 
 Append to the history array.
 
-### Step 11 — Produce Consolidated Report
+### Step 12 — Produce Consolidated Report
 
 Report ALL results in one summary: Tier 0 score, Tier 1 pass/fail,
-Tier 2 pass/warn, Tier 3 QOO operable score, gap analysis, maturity level.
+Tier 2 pass/warn, Tier 3 Semantic pass/fail/N/A, Tier 3 QOO operable
+score, gap analysis, maturity level.
 
 ## Overview
 
@@ -366,7 +400,7 @@ grows over time through human observation of L3 results.
 
 AGENTS.md is Non-Observable (passive document, no self-instrumentation).
 Runtime Operable evaluation uses the benchmark harness as an external
-monitor. Steps 5-10 in the Full Eval Sequence implement this section.
+monitor. Steps 6-11 in the Full Eval Sequence implement this section.
 
 Gap classification categories:
 - **model-level** — model lacks capability (e.g., ignores canary rule)
