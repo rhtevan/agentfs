@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, upgrade agentfs
 metadata:
-  version: "7.6.0"
+  version: "7.7.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -346,15 +346,21 @@ bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /t
 ```
 
 Read the output. It contains per-rule metrics (lines, words, sub-steps,
-conditionals, passive voice) and aggregate totals.
+conditionals, passive voice), aggregate totals, and BMBT build-time
+readiness evidence (bones delegation ratio, CNL violations, unbounded
+judgments, benchmark coverage).
 
 ### Step 2 — Evaluate Quality via SDM
 
-Run the SDM evaluation against the quality schema:
+Run the SDM evaluation against the adapted AGENTS.md quality schema:
 
 ```bash
-bash ~/.agents/scripts/sdm-evaluate.sh /tmp/agents-md-facts.txt ~/.agents/skills/schemas/quality.yaml
+bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md ~/.agents/skills/schemas/quality-agents-md.yaml
 ```
+
+The script detects `artifact-type: agents-md` in the schema and
+automatically runs `gather-skill-state.sh --target agents-md` for
+evidence extraction. No `--evidence` flag needed.
 
 If the output contains `"band": "SDM_UNAVAILABLE"`, report:
 "⚠️ SDM unavailable — quality scoring skipped."

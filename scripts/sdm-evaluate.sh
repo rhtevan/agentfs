@@ -63,13 +63,14 @@ SCHEMA="${ARGS[1]}"
 # --- Parse schema ---
 SCHEMA_TYPE=$(yq -r '.["schema-type"]' "$SCHEMA")
 SCHEMA_VERSION=$(yq -r '.["schema-version"] // "1.0"' "$SCHEMA")
+ARTIFACT_TYPE=$(yq -r '.["artifact-type"] // "skill"' "$SCHEMA")
 SKILL_NAME=$(yq -r '.skill // "unknown"' "$SCHEMA")
 
-log "Schema: $SCHEMA_TYPE v$SCHEMA_VERSION for skill: $SKILL_NAME"
+log "Schema: $SCHEMA_TYPE v$SCHEMA_VERSION (artifact: $ARTIFACT_TYPE) for skill: $SKILL_NAME"
 
-# --- Extract evidence based on schema type ---
+# --- Extract evidence based on schema type and artifact type ---
 
-extract_evidence_quality() {
+extract_evidence_quality_skill() {
   # Target is a skill directory — use gather-skill-state.sh for
   # concise, explicit facts (~20 lines vs 3,000+ raw SKILL.md).
   # SDM judges meaning, not computes — facts must be pre-computed.
@@ -103,9 +104,34 @@ extract_evidence_quality() {
   fi
 }
 
+extract_evidence_agents_md() {
+  # Target is an AGENTS.md file — use gather-skill-state.sh --target agents-md
+  # Extracts per-rule metrics AND BMBT evidence for adapted schemas.
+  local agents_file="$1"
+  local gather_script="${SCRIPT_DIR}/gather-skill-state.sh"
+
+  if [[ -x "$gather_script" ]]; then
+    "$gather_script" --target agents-md "$agents_file"
+  else
+    # Fallback: raw AGENTS.md content
+    log "WARNING: gather-skill-state.sh not found. Using raw AGENTS.md as evidence."
+    cat "$agents_file"
+  fi
+}
+
 extract_evidence_operable() {
   # Target is a trace file — read JSONL
   cat "$1"
+}
+
+extract_evidence_operable_agents_md() {
+  # Target is benchmark evidence file (pre-composed by caller)
+  local target="$1"
+  if [[ -f "$target" ]]; then
+    cat "$target"
+  else
+    die "Benchmark evidence file not found: $target"
+  fi
 }
 
 case "$SCHEMA_TYPE" in
@@ -115,9 +141,14 @@ case "$SCHEMA_TYPE" in
       if [[ "$SKILL_NAME" == "unknown" ]]; then
         SKILL_NAME=$(basename "$TARGET" .md)
       fi
+    elif [[ "$ARTIFACT_TYPE" == "agents-md" ]]; then
+      # Adapted schema for AGENTS.md — target is the AGENTS.md file itself
+      [[ -f "$TARGET" ]] || die "For agents-md schemas, target must be an AGENTS.md file (or use --evidence <file>)"
+      EVIDENCE=$(extract_evidence_agents_md "$TARGET")
+      SKILL_NAME="AGENTS.md"
     else
       [[ -d "$TARGET" ]] || die "For $SCHEMA_TYPE schemas, target must be a skill directory (or use --evidence <file>)"
-      EVIDENCE=$(extract_evidence_quality "$TARGET")
+      EVIDENCE=$(extract_evidence_quality_skill "$TARGET")
       if [[ "$SKILL_NAME" == "unknown" ]]; then
         SKILL_NAME=$(basename "$TARGET")
       fi
@@ -126,6 +157,11 @@ case "$SCHEMA_TYPE" in
   operable)
     if [[ -n "$EVIDENCE_FILE" && -f "$EVIDENCE_FILE" ]]; then
       EVIDENCE=$(cat "$EVIDENCE_FILE")
+    elif [[ "$ARTIFACT_TYPE" == "agents-md" ]]; then
+      # Adapted operable schema for AGENTS.md — target is benchmark evidence
+      [[ -f "$TARGET" ]] || die "For agents-md operable schema, target must be a benchmark evidence file (or use --evidence <file>)"
+      EVIDENCE=$(extract_evidence_operable_agents_md "$TARGET")
+      SKILL_NAME="AGENTS.md"
     else
       [[ -f "$TARGET" ]] || die "For operable schema, target must be a trace file (or use --evidence <file>)"
       EVIDENCE=$(extract_evidence_operable "$TARGET")

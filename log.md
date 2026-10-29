@@ -2,6 +2,23 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 17:34
+- First real QOO scores: Quality 56.5 Re-engineer, Operable 73.1 Re-engineer via adapted schemas + SDM (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-29 17:32
+- Bumped version to 7.7.0 in frontmatter (skills/agentfs-setup/SKILL.md)
+- Updated Step 1 to mention BMBT evidence in gather output (skills/agentfs-setup/SKILL.md)
+- Wired upgrade steps to quality-agents-md.yaml adapted schema; updated Step 1 to mention BMBT evidence (skills/agentfs-setup/SKILL.md)
+- Bumped version to 2.4.0 in frontmatter (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-29 17:31
+- Step 9: wired to operable-agents-md.yaml adapted schema with BMBT+benchmark evidence composition (skills/agentfs-eval/SKILL.md)
+- Step 9: wired to operable-agents-md.yaml adapted schema with BMBT+benchmark evidence composition (skills/agentfs-eval/SKILL.md)
+- Added artifact-type routing: agents-md schemas use gather-skill-state.sh --target agents-md for evidence extraction (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 17:30
+- Added BMBT evidence extraction (bones/muscle/brain/harness) to --target agents-md mode (scripts/gather-skill-state.sh)
+
 ## 2026-10-29 17:19
 - Stream 2: restructure scores.yaml — quality/operable.build/operable.runtime/observable sections, reference adapted schemas, historical scores annotated as misapplied
 

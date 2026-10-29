@@ -107,6 +107,68 @@ if [[ "$TARGET_MODE" == "agents-md" ]]; then
   TOTAL_WORDS=$(wc -w < "$AGENTS_FILE")
   TOKEN_ESTIMATE=$(echo "$TOTAL_WORDS * 13 / 10" | bc 2>/dev/null || echo "unknown")
 
+  # --- BMBT Evidence (Build-time Readiness) ---
+
+  # has_bones: count rule actions referencing scripts vs total actions
+  SCRIPT_REFS=$(grep -cP '\.(sh|bash)\b' "$AGENTS_FILE" 2>/dev/null || echo 0)
+  # Count total action lines (numbered steps inside Do blocks)
+  TOTAL_ACTIONS=$TOTAL_SUB_STEPS
+  if [[ "$TOTAL_ACTIONS" -gt 0 ]]; then
+    BONES_RATIO=$(echo "scale=2; $SCRIPT_REFS / $TOTAL_ACTIONS" | bc 2>/dev/null || echo "0")
+  else
+    BONES_RATIO="0"
+  fi
+
+  # has_muscle: CNL compliance — passive voice ratio, multi-action sentences
+  # Multi-action: sentences with "and" or ";" joining actions in Do blocks
+  MULTI_ACTION=$(grep -cP '(Do:|^\d+\.).*\band\b.*\b(run|write|read|check|ask|report|call|load)\b' "$AGENTS_FILE" 2>/dev/null || echo 0)
+  if [[ "$TOTAL_RULE_WORDS" -gt 0 ]]; then
+    PASSIVE_RATIO=$(echo "scale=3; $TOTAL_PASSIVE / ($TOTAL_RULE_WORDS / 10)" | bc 2>/dev/null || echo "0")
+  else
+    PASSIVE_RATIO="0"
+  fi
+  # CNL compliance: 1.0 minus deductions for passive and multi-action
+  CNL_DEDUCTIONS=$((TOTAL_PASSIVE + MULTI_ACTION))
+  CNL_VIOLATIONS=$CNL_DEDUCTIONS
+
+  # has_brain: count rules with unbounded semantic judgment
+  # Look for judgment words without bounded criteria (open-ended assess/evaluate)
+  UNBOUNDED_JUDGMENT=0
+  for i in "${!rule_starts[@]}"; do
+    start=${rule_starts[$i]}
+    if [[ $((i + 1)) -lt ${#rule_starts[@]} ]]; then
+      end=$((${rule_starts[$((i + 1))]} - 1))
+    else
+      end=$((rules_section_end - 1))
+    fi
+    rule_text=$(sed -n "${start},${end}p" "$AGENTS_FILE")
+    # Has semantic judgment words?
+    has_judgment=$(echo "$rule_text" | grep -ciP '\b(assess|evaluate|judge|classify|determine complexity)\b' 2>/dev/null || true)
+    [[ -z "$has_judgment" ]] && has_judgment=0
+    # Has bounding criteria (explicit tiers, enum, table)?
+    has_bounds=$(echo "$rule_text" | grep -ciP '\b(tier|standard|specification|criteria|table|enum)\b' 2>/dev/null || true)
+    [[ -z "$has_bounds" ]] && has_bounds=0
+    if [[ "$has_judgment" -gt 0 && "$has_bounds" -eq 0 ]]; then
+      UNBOUNDED_JUDGMENT=$((UNBOUNDED_JUDGMENT + 1))
+    fi
+  done
+
+  # has_harness: benchmark test coverage
+  BENCHMARK_SCRIPT="$HOME/.agents/scripts/benchmark.sh"
+  BENCHMARK_TEST_COUNT=0
+  if [[ -f "$BENCHMARK_SCRIPT" ]]; then
+    # Count unique test definitions (TEST_PROMPT entries)
+    BENCHMARK_TEST_COUNT=$(grep -cP 'TEST_PROMPT\[' "$BENCHMARK_SCRIPT" 2>/dev/null || echo 0)
+    # Subtract the auto-generated line (template assignment)
+    AUTO_GEN=$(grep -cP 'TEST_PROMPT\[\$test_id\]' "$BENCHMARK_SCRIPT" 2>/dev/null || echo 0)
+    BENCHMARK_TEST_COUNT=$((BENCHMARK_TEST_COUNT - AUTO_GEN))
+  fi
+  if [[ "$RULE_COUNT" -gt 0 ]]; then
+    HARNESS_RATIO=$(echo "scale=2; $BENCHMARK_TEST_COUNT / $RULE_COUNT" | bc 2>/dev/null || echo "0")
+  else
+    HARNESS_RATIO="0"
+  fi
+
   cat <<AGENTS_EOF
 Target: AGENTS.md
 Version: $VERSION
@@ -121,6 +183,10 @@ Total conditionals across rules: $TOTAL_CONDITIONALS
 Total passive voice across rules: $TOTAL_PASSIVE
 Signal dispatch entries: $SIGNAL_COUNT
 Scope definitions: $SCOPE_COUNT
+BMBT bones — script references: $SCRIPT_REFS, total actions: $TOTAL_ACTIONS, delegation ratio: $BONES_RATIO
+BMBT muscle — CNL violations: $CNL_VIOLATIONS (passive: $TOTAL_PASSIVE, multi-action: $MULTI_ACTION)
+BMBT brain — unbounded judgment rules: $UNBOUNDED_JUDGMENT
+BMBT harness — benchmark tests: $BENCHMARK_TEST_COUNT for $RULE_COUNT rules, coverage ratio: $HARNESS_RATIO
 AGENTS_EOF
   printf '%s' "$RULE_DETAILS"
   exit 0

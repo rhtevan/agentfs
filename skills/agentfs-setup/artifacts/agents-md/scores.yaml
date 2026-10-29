@@ -5,37 +5,62 @@
 
 artifact: AGENTS.md
 source_skill: agentfs-setup
-version: "7.6.0"
+version: "7.7.0"
 
 quality:
   schema: quality-agents-md.yaml
-  aggregate_score: null
-  band: N/A
+  aggregate_score: 56.5
+  band: Re-engineer
+  pass_rate: 33.3
+  dimensions:
+    rule_self_containment: { score: 50, pass: false, confidence: 0.51, detail: "SDM count→target comparison gap" }
+    rule_action_density: { score: 0, pass: false, confidence: 0.95, detail: "SDM rated max action count at 5+ (highest bracket)" }
+    concern_count: { score: 100, pass: true, confidence: 0.99 }
+    trigger_clarity: { score: 50, pass: false, confidence: 0.65, detail: "SDM count→target comparison gap" }
+    cross_rule_dependency: { score: 85, pass: true, confidence: 0.56 }
+    accidental_complexity: { score: 54, pass: false, confidence: 0.73 }
   note: >
-    Adapted schema created (quality-agents-md.yaml) with 6 MCACS dims
-    for declarative policy. Not yet evaluated via SDM. Previous score
-    of 32.2 was from misapplying SKILL-specific quality.yaml.
-  evaluated: null
+    First real Quality assessment using adapted quality-agents-md.yaml.
+    SDM (Qwen3-14B) scored via count/ratio metric types against MCACS dims.
+    Two dims hit 'no target comparison' — SDM reported counts but the
+    score→pass mapping for count metrics with target "0" needs calibration.
+    rule_action_density scored 0 because SDM rated action density at 5+
+    (the highest bracket on the 0-5+ ordinal scale).
+  evaluated: "2026-10-29T17:32:59-04:00"
 
 operable:
   build:
     schema: operable-agents-md.yaml
-    aggregate_score: null
-    band: N/A
+    dimensions:
+      has_bones: { score: 99, pass: true, confidence: 0.95, detail: "SDM rated script delegation highly despite 0.36 computed ratio" }
+      has_muscle: { score: 25, pass: false, confidence: 0.92, detail: "SDM rated CNL compliance low — 4 violations detected" }
+      has_brain: { score: 50, pass: false, confidence: 0.99, detail: "SDM count→target comparison gap" }
+      has_harness: { score: 100, pass: true, confidence: 0.99 }
     note: >
-      BMBT assessment not yet run via SDM. AGENTS.md has BMBT structure:
-      bones (post-write.sh, checkpoint.sh, seed-agents-md.sh),
-      muscle (6 CNL rules), controller (model), harness (benchmark.sh).
-    evaluated: null
+      BMBT build-time assessment. has_bones scored 99 (SDM sees script
+      delegation even though computed ratio is 0.36). has_muscle scored
+      25 (4 CNL violations: 2 passive, 2 multi-action). has_harness
+      scored 100 (5 tests for 6 rules = 83% coverage, above threshold).
+    evaluated: "2026-10-29T17:33:24-04:00"
 
   runtime:
     schema: operable-agents-md.yaml
-    aggregate_score: null
-    band: N/A
+    aggregate_score: 73.1
+    band: Re-engineer
+    pass_rate: 66.6
+    dimensions:
+      rule_pass_rate: { score: 100, pass: true, weight: 0.40, confidence: 1.0 }
+      no_fabrication: { score: 100, pass: true, weight: 0.40, confidence: 0.99 }
+      frontier_target_delta: { score: 82, pass: true, weight: 0.25, confidence: 0.73 }
+      per_rule_comprehension: { score: 50, pass: false, weight: 0.25, confidence: 0.99, detail: "SDM count→target comparison gap" }
+      stochastic_variance: { score: 75, pass: true, weight: 0.10, confidence: 0.99 }
     note: >
-      Adapted schema created (operable-agents-md.yaml) with 5 CECX dims
-      for benchmark evidence. Not yet evaluated via SDM. Previous score
-      of 93.3 was raw benchmark pass rate (28/30), not SDM-computed.
+      First real SDM-computed CECX from benchmark evidence. Overall 73.1
+      (Re-engineer). Previous 93.3 was raw pass rate, not SDM-computed.
+      Correctness dims (rule_pass_rate, no_fabrication) both 100.
+      Efficiency (frontier_target_delta) 82. Comprehension
+      (per_rule_comprehension) 50 — SDM count→target mapping issue.
+      Complexity (stochastic_variance) 75.
     benchmark:
       frontier:
         provider: custom_redhat
@@ -69,7 +94,7 @@ operable:
         diagnosis: >
           1/5 run had dispatch but no shell execution — skill loaded
           but script not called. Model-level stochastic failure.
-    evaluated: "2026-10-29T15:00:00-04:00"
+    evaluated: "2026-10-29T17:33:24-04:00"
 
 observable:
   aggregate_score: null
@@ -107,3 +132,13 @@ history:
     score: 93.3
     band: Refine
     note: "Run 4 — raw benchmark pass rate (28/30). NOT SDM-computed CECX. v7.6.0 Self-Contained Actions."
+  - date: "2026-10-29T17:32:59-04:00"
+    type: quality
+    score: 56.5
+    band: Re-engineer
+    note: "Run 5 — first real Quality via quality-agents-md.yaml + SDM (Qwen3-14B). v7.7.0."
+  - date: "2026-10-29T17:33:24-04:00"
+    type: operable
+    score: 73.1
+    band: Re-engineer
+    note: "Run 5 — first real Operable (BMBT+CECX) via operable-agents-md.yaml + SDM (Qwen3-14B). v7.7.0."

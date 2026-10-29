@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -123,11 +123,25 @@ Record per-test results. Continue to Step 9.
 
 ### Step 9 — Tier 3 QOO: SDM Operable Score
 
-Write benchmark evidence to a temp file. Run SDM evaluation:
+Compose benchmark evidence into a temp file. Include:
+- AGENTS.md facts from `gather-skill-state.sh --target agents-md`
+  (provides BMBT build-time evidence)
+- Benchmark summary: per-test pass rates for frontier and target,
+  per-run variance, fabrication failures
 
 ```bash
+# Gather AGENTS.md facts (includes BMBT evidence)
+bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/benchmark-evidence.txt
+
+# Append benchmark results summary
+echo "" >> /tmp/benchmark-evidence.txt
+echo "=== Benchmark Results ===" >> /tmp/benchmark-evidence.txt
+# Add per-test frontier/target pass rates and per-run breakdown
+# from Steps 7 and 8 output
+
+# Run SDM evaluation against adapted operable schema
 bash ~/.agents/scripts/sdm-evaluate.sh /tmp/benchmark-evidence.txt \
-  ~/.agents/skills/schemas/operable.yaml --evidence /tmp/benchmark-evidence.txt
+  ~/.agents/skills/schemas/operable-agents-md.yaml --evidence /tmp/benchmark-evidence.txt
 ```
 
 If the output contains `"band": "SDM_UNAVAILABLE"`, report:
