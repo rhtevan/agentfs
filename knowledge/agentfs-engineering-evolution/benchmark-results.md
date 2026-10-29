@@ -366,3 +366,46 @@ without writing, or written to the wrong path.
 adversarial prompting. R6 (Checkpoint) requires destructive operations
 on real `.agents/` state. Both need test infrastructure beyond
 `goose run --text` single-turn.
+
+## Run 4 — v7.6.0 Self-Contained Actions (2026-10-29)
+
+### Template Change
+
+Eliminated effect-based Rule 3 (Post-Write). Merged post-write into
+Rule 6 (Scope & Post-Write) — an intent-based guard rule. Added
+`(filesystem, not KGM)` disambiguation to Signal Dispatch patterns.
+Rules reduced from 7 to 6. Token budget: 1990 → 1909 (~80 tokens freed).
+
+### Results
+
+| Test | Frontier (Sonnet 4.6) | Target (14B) 5 runs | Previous (v7.5.1) |
+|------|----------------------|---------------------|-------------------|
+| t1 Canary | 100% | 80% (4/5) | 100% / 60% |
+| qoo_readme_audit | 100% | 80% (4/5) | 100% / 80% |
+| qoo_crc_status | 100% | 100% (5/5) | 100% / 100% |
+| t_r2 Pre-Flight | 100% | 100% (5/5) | 100% / 100% |
+| t_r3 Post-Write | **100%** | **100% (5/5)** | **0% / 0%** |
+| t_r7 Scope | 100% | **100% (5/5)** | 100% / 60% |
+| **Overall** | **100% (6/6)** | **93% (28/30)** | **83% / 66%** |
+
+### Key Improvements
+
+- **t_r3:** 0% → 100% on BOTH models. Root cause: effect-based rule
+  never fired because scanner can't match post-execution conditions.
+  Fix: merged into guard rule's Do block (Self-Contained Actions principle).
+- **t_r7:** 60% → 100% on 14B. Root cause: KGM vs filesystem tool
+  confusion. Fix: `(filesystem, not KGM)` disambiguation in dispatch.
+- **t1:** 60% → 80% on 14B. Marginal improvement, likely variance.
+- **First time 14B exceeded 90% target.**
+
+### Remaining Failures (14B only)
+
+- t1 run 2: no canary. Model-level attention failure on blank turn 1.
+- qoo_readme_audit run 2: incomplete chain. Dispatch succeeded but
+  shell execution skipped. Model-level stochastic failure.
+
+### Stale Sandbox Bug
+
+First post-fix run showed 0% on t_r3 because `/tmp/benchmark-sandbox`
+cached the old v7.5.1 AGENTS.md. Fixed benchmark.sh to always refresh
+sandbox AGENTS.md from project CWD.

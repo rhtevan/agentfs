@@ -88,7 +88,7 @@ fi
 #   Rule 8 (Path Hygiene) removed in v7.0.0 — redundant with pre-push-scan
 # v6.x: 10 rules as table rows (| N | Event|Signal|Always |)
 # Detect format and validate accordingly.
-EXPECTED_RULES=7
+EXPECTED_RULES=6
 
 # Try v7.2+ heading format first (no severity tags)
 HEADING_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^### [0-9]+\. ' || true)
@@ -215,6 +215,22 @@ if [ -n "$TEMPLATE_VER" ] && [ -n "$SKILL_VER" ]; then
   fi
 elif [ -z "$TEMPLATE_VER" ]; then
   result_warn "A9: No template version tag found in AGENTS.md"
+fi
+
+# ── A10: No Effect-Based Triggers ────────────────────────────────────
+# When clauses must be evaluable at scan time from user input alone.
+# Effect-based triggers (depend on agent's own actions) are structurally
+# unenforceable in single-pass LLM rule processing.
+EFFECT_PATTERNS="where writes touched|after you have|having done|where you wrote|response where writes"
+WHEN_CLAUSES=$(echo "$CONTENT" | grep -P '^\*\*When:\*\*' 2>/dev/null || true)
+if [ -n "$WHEN_CLAUSES" ]; then
+  if echo "$WHEN_CLAUSES" | grep -qiP "$EFFECT_PATTERNS"; then
+    result_fail "A10: Effect-based trigger detected in When clause (Self-Contained Actions principle)"
+  else
+    result_pass "A10: No effect-based triggers in When clauses"
+  fi
+else
+  result_warn "A10: No When clauses found to check"
 fi
 
 # ── Score & History ───────────────────────────────────────────────────

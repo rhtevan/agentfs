@@ -267,29 +267,19 @@ Assess task complexity, then follow the matching tier:
 
 **Tier 1 — Standard** (steps are independent, single phase):
 1. State the plan: what files change, in what order, what outcome.
-2. Fold in constraints: Post-Write if touching \`.agents/\`,
-   Checkpoint if destructive, \`git diff --stat\` + confirmation
-   if \`git push\`.
+2. Fold in constraints: Checkpoint if destructive,
+   \`git diff --stat\` + confirmation if \`git push\`.
 3. Execute. Confirm the stated outcome before responding.
 
 **Tier 2 — Specification-Driven** (steps have dependencies,
 multi-phase, or user explicitly requests structured execution):
 1. Define pass/fail criteria (**Validation Gate**).
 2. Decompose into numbered actions with expected outcomes.
-3. Fold in constraints: Post-Write, Checkpoint, git push confirmation.
+3. Fold in constraints: Checkpoint, git push confirmation.
 4. Execute in order. Stop and report on failure.
 5. Run the Validation Gate. Do not claim completion until all pass.
 
-### 3. Post-Write
-
-**When:** Before sending any response where writes touched `.agents/` or `~/.agents/`.
-
-**Do:**
-1. Run `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>" [--version <ver>]` for each modified file. Skip `log.md`, `CHANGELOG.md`, and auto-generated `index.md`.
-2. If the script does not exist: warn the user. Recommend `hey setup agentfs`.
-3. Do not send the response until all post-write runs complete.
-
-### 4. Session Canary
+### 3. Session Canary
 
 **When:** Turn 1 of any session, or every 10 turns, or after compaction.
 
@@ -302,7 +292,7 @@ multi-phase, or user explicitly requests structured execution):
    and \`USER.md\`. Run a silent self-check against all rules.
    Report only if you find a violation.
 
-### 5. Conflict Resolution
+### 4. Conflict Resolution
 
 **When:** Reversing a position, or a request conflicts with a rule.
 
@@ -310,7 +300,7 @@ multi-phase, or user explicitly requests structured execution):
 1. When reversing a position: state what changed. State your previous position.
 2. When a request conflicts with a rule: quote the rule. Explain the conflict. Ask the user for `[OVERRIDE]` approval.
 
-### 6. Checkpoint
+### 5. Checkpoint
 
 **When:** Before destructive op (delete, rename, or edit ≥3 files under `.agents/`). Also before any edit to `seed-agents-md.sh`.
 
@@ -323,15 +313,19 @@ multi-phase, or user explicitly requests structured execution):
 6. If `checkpoint.sh` does not exist: warn the user. Do not proceed until `hey setup agentfs` is run.
 7. Never edit a project `AGENTS.md` directly. Edit the template source in `seed-agents-md.sh`.
 
-### 7. Scope Rules
+### 6. Scope & Post-Write
 
-**When:** Writing to `memories/` or creating a skill.
+**When:** Writing to any file under `.agents/` or `~/.agents/`.
 
 **Do:**
-1. Write memories to PROJECT scope only (`.agents/memories/`).
-2. When MEMORY.md accumulates ≥3 entries on the same topic: suggest graduation to a knowledge bundle via `hey harvest`.
-3. Graduate repeated patterns to an OKF bundle under `~/.agents/knowledge/`.
-4. Place skills in USER scope (`~/.agents/skills/`) by default. Use PROJECT scope only when the user explicitly says "project skill", "for this project", or "local skill".
+1. Scope: write memories to PROJECT scope only (`.agents/memories/`).
+   Place skills in USER scope (`~/.agents/skills/`) by default.
+   Use PROJECT scope only when user says "project skill" or "local skill".
+2. After EACH write (except `log.md`, `CHANGELOG.md`, auto-generated
+   `index.md`), run:
+   `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>"`
+3. When MEMORY.md accumulates ≥3 entries on same topic: suggest
+   graduation via `hey harvest`.
 
 ## Signal Dispatch
 

@@ -449,11 +449,16 @@ run_test() {
   if [[ "$safety" == "write-contained" ]]; then
     mkdir -p "$cwd" 2>/dev/null || true
     # Ensure sandbox has git + AGENTS.md for context loading
-    if [[ "$cwd" == "$SANDBOX_DIR" && ! -f "$cwd/AGENTS.md" ]]; then
+    # Always refresh AGENTS.md from project CWD to pick up template changes
+    if [[ "$cwd" == "$SANDBOX_DIR" ]]; then
       mkdir -p "$cwd/.agents/memories"
       cp "$BENCHMARK_PROJECT_CWD/AGENTS.md" "$cwd/" 2>/dev/null || true
       cp "$BENCHMARK_PROJECT_CWD/.agents/SOUL.md" "$cwd/.agents/" 2>/dev/null || true
-      (cd "$cwd" && git init --quiet 2>/dev/null && git add -A && git commit -m "sandbox init" --quiet 2>/dev/null) || true
+      if [[ ! -d "$cwd/.git" ]]; then
+        (cd "$cwd" && git init --quiet 2>/dev/null && git add -A && git commit -m "sandbox init" --quiet 2>/dev/null) || true
+      else
+        (cd "$cwd" && git add -A && git commit -m "sandbox refresh" --quiet 2>/dev/null) || true
+      fi
     fi
   fi
 

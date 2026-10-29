@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 15:15
+- New concept: Rule Trigger Classification — guard, inline constraint, effect taxonomy (knowledge/context-engineering/rule-trigger-classification.md)
+
 ## 2026-10-19 10:05
 - Rename MCASC → MCACS (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 

@@ -1,30 +1,31 @@
 # SDM Endpoint Reference
 
-Decision API endpoint specification for AgentFS skill evaluation.
+SystemOne API endpoint specification for AgentFS skill evaluation.
 
 ## Endpoint
 
 | Property | Value |
 |----------|-------|
 | Base URL | `${SDM_ENDPOINT:-http://localhost:9000}` |
-| Path | `/v1/decisions` |
+| Path | `/v1/systemone` |
 | Method | `POST` |
 | Content-Type | `application/json` |
-| API | NextToken (vLLM logit-reading, zero output tokens) |
+| API | SystemOne (vLLM logit-reading, structured decision output) |
 | Latency | ~115-200ms per question |
 | Availability | Coexists with LLM on same port — always available when model is running |
 
-## Why NextToken over D3 SystemOne
+## Why SystemOne
 
-NextToken was chosen over D3 (`/v1/systemone`) because:
-- Always available on the LLM port (no extra GPUs or composite profile)
-- Faster (~150ms vs ~350ms per question)
-- Sufficient accuracy for bounded skill evaluation judgments
-- Multi-question batching in one request
+SystemOne was chosen over NextToken (`/v1/decisions`) because:
+- Same port, same model, same latency — no tradeoff
+- Richer response: explicit `confidence`, full `probabilities` map
+- `diagnostics.label_mass` — detects when evidence quality is too low
+- `diagnostics.argmax_is_label` — detects unreliable classifications
+- Native `probabilities.yes`/`probabilities.no` — no polarity inversion hacks needed
 
-D3 SystemOne is preferred for high-stakes production decisions requiring
-SOTA accuracy (Decision Index 66.26). Skill evaluation is pass/fail
-classification on well-defined dimensions — NextToken is adequate.
+Both APIs are available on the same vLLM port. The `/v1/decisions` API
+is deprecated for AgentFS use but remains available for backward
+compatibility.
 
 ## Model Resolution
 
@@ -36,53 +37,47 @@ SDM_MODEL=$(curl -s "${SDM_ENDPOINT}/v1/models" | jq -r '.data[0].id')
 
 ## Question Types
 
-### Predicate (Yes/No)
+### Noul (Yes/No)
 
 ```json
 {
-  "name": "dimension_name",
-  "type": "predicate",
-  "instructions": "Question text?"
+  "q1": {
+    "type": "noul",
+    "instructions": "Question text?"
+  }
 }
 ```
 
-Response: `{"probability": 0.99}` — near 1.0 = yes, near 0.0 = no.
-Threshold: ≥0.7 = pass, <0.3 = fail, 0.3-0.7 = uncertain.
+Response: `{"noul": 0.99, "probabilities": {"yes": 0.99, "no": 0.01}, "confidence": 1.0}`.
+Threshold: `probabilities.yes` ≥0.7 = pass, <0.3 = fail, 0.3-0.7 = uncertain.
 
 ### Choice (Multiple Options)
 
 ```json
 {
-  "name": "dimension_name",
-  "type": "choice",
-  "instructions": "Question text?",
-  "choices": [
-    {"value": "option_a"},
-    {"value": "option_b"},
-    {"value": "option_c"}
-  ]
+  "q2": {
+    "type": "choice",
+    "instructions": "Question text?",
+    "criteria": {"option_a": null, "option_b": null, "option_c": null}
+  }
 }
 ```
 
-Response: `{"choice": "option_a", "confidence": 0.95, "probabilities": [...]}`.
+Response: `{"choice": "option_a", "probabilities": {"option_a": 0.99, ...}, "confidence": 1.0}`.
 
 ### Score (Ordinal Scale)
 
 ```json
 {
-  "name": "dimension_name",
-  "type": "score",
-  "instructions": "Rate the quality of X.",
-  "levels": [
-    {"label": "poor"},
-    {"label": "fair"},
-    {"label": "good"},
-    {"label": "excellent"}
-  ]
+  "q3": {
+    "type": "score",
+    "instructions": "Rate the quality of X.",
+    "criteria": ["poor", "fair", "good", "excellent"]
+  }
 }
 ```
 
-Response: `{"score": 2.8, "confidence": 0.92, "probabilities": [...]}`.
+Response: `{"score": 2.8, "legend": {"0":"poor",...}, "probabilities": {"0": 0.01,...}, "confidence": 0.92}`.
 Score is 0-indexed weighted average.
 
 ## Request Format
@@ -90,12 +85,12 @@ Score is 0-indexed weighted average.
 ```json
 {
   "model": "<model-id>",
-  "input": "<evidence text>",
-  "questions": [
-    { "name": "q1", "type": "predicate", "instructions": "..." },
-    { "name": "q2", "type": "choice", "instructions": "...", "choices": [...] },
-    { "name": "q3", "type": "score", "instructions": "...", "levels": [...] }
-  ]
+  "state": "<evidence text>",
+  "questions": {
+    "q1": { "type": "noul", "instructions": "..." },
+    "q2": { "type": "choice", "instructions": "...", "criteria": {"a": null} },
+    "q3": { "type": "score", "instructions": "...", "criteria": ["low","high"] }
+  }
 }
 ```
 
@@ -107,17 +102,30 @@ Latency scales linearly with question count.
 ```json
 {
   "model": "<model-id>",
-  "answers": [
-    { "type": "predicate", "name": "q1", "probability": 0.99 },
-    { "type": "choice", "name": "q2", "choice": "option_a", "confidence": 0.95, "probabilities": [...] },
-    { "type": "score", "name": "q3", "score": 2.8, "confidence": 0.92, "probabilities": [...] }
-  ],
+  "answers": {
+    "q1": { "type": "noul", "noul": 0.99, "probabilities": {"yes": 0.99, "no": 0.01}, "confidence": 1.0 },
+    "q2": { "type": "choice", "choice": "a", "probabilities": {"a": 0.99}, "confidence": 1.0 },
+    "q3": { "type": "score", "score": 2.8, "legend": {"0":"low","1":"high"}, "probabilities": {"0": 0.01, "1": 0.99}, "confidence": 0.99 }
+  },
   "usage": {
     "input_tokens": 120,
     "output_tokens": 3,
     "total_tokens": 123
+  },
+  "diagnostics": {
+    "q1": { "label_mass": 1.0, "argmax_is_label": true },
+    "q2": { "label_mass": 1.0, "argmax_is_label": true },
+    "q3": { "label_mass": 0.99, "argmax_is_label": true }
   }
 }
+```
+
+### Diagnostics
+
+| Field | Meaning | Action |
+|-------|---------|--------|
+| `label_mass` | How much probability lands on valid answer tokens (0-1) | If < 0.8, evidence may be noisy |
+| `argmax_is_label` | Whether the model's top token is a valid answer | If `false`, result is unreliable |
 ```
 
 ## Error Handling

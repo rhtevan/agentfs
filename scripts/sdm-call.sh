@@ -1,8 +1,8 @@
 #!/bin/bash
-# sdm-call.sh — Make a decision API call to SDM (NextToken /v1/decisions)
+# sdm-call.sh — Make a structured decision call via SystemOne API (/v1/systemone)
 #
 # Usage:
-#   sdm-call.sh --input "evidence text" --questions '<json-array>'
+#   sdm-call.sh --input "evidence text" --questions '<json-object>'
 #   sdm-call.sh --input "evidence text" --predicate "question_name" "Is X true?"
 #   sdm-call.sh --input "evidence text" --choice "question_name" "Which option?" "a,b,c"
 #   sdm-call.sh --input "evidence text" --score "question_name" "Rate X." "low,medium,high"
@@ -19,6 +19,12 @@
 #   1 — SDM error (bad request, model error)
 #   2 — Network error (endpoint unreachable)
 #   3 — Usage error (bad arguments)
+#
+# API: SystemOne (/v1/systemone)
+#   Request:  {model, state, questions: {name: {type, instructions, ...}}}
+#   Response: {answers: {name: {type, noul|choice|score, probabilities, confidence}},
+#              diagnostics: {name: {label_mass, argmax_is_label}}}
+#   Question types: noul (yes/no), choice (multi-option), score (ordinal)
 
 set -euo pipefail
 
@@ -47,46 +53,52 @@ resolve_model() {
   fi
 }
 
+# --- Question builders (SystemOne format) ---
+# Each builds a JSON fragment: {"type": "...", "instructions": "...", ...}
+# The name is used as the dict key, not embedded in the value.
+
 build_predicate() {
   local name="$1" instructions="$2"
+  # SystemOne uses "noul" type for yes/no predicates
   jq -n --arg n "$name" --arg i "$instructions" \
-    '{name: $n, type: "predicate", instructions: $i}'
+    '{($n): {type: "noul", instructions: $i}}'
 }
 
 build_choice() {
   local name="$1" instructions="$2" choices_csv="$3"
-  local choices_json
-  choices_json=$(echo "$choices_csv" | tr ',' '\n' | jq -R '{value: .}' | jq -s '.')
-  jq -n --arg n "$name" --arg i "$instructions" --argjson c "$choices_json" \
-    '{name: $n, type: "choice", instructions: $i, choices: $c}'
+  # SystemOne uses criteria dict: {option: null} for each choice
+  local criteria
+  criteria=$(echo "$choices_csv" | tr ',' '\n' | jq -R '{(.): null}' | jq -s 'add')
+  jq -n --arg n "$name" --arg i "$instructions" --argjson c "$criteria" \
+    '{($n): {type: "choice", instructions: $i, criteria: $c}}'
 }
 
 build_score() {
   local name="$1" instructions="$2" levels_csv="$3"
-  local levels_json
-  levels_json=$(echo "$levels_csv" | tr ',' '\n' | jq -R '{label: .}' | jq -s '.')
-  jq -n --arg n "$name" --arg i "$instructions" --argjson l "$levels_json" \
-    '{name: $n, type: "score", instructions: $i, levels: $l}'
+  # SystemOne uses criteria array for score levels
+  local criteria
+  criteria=$(echo "$levels_csv" | tr ',' '\n' | jq -R '.' | jq -s '.')
+  jq -n --arg n "$name" --arg i "$instructions" --argjson c "$criteria" \
+    '{($n): {type: "score", instructions: $i, criteria: $c}}'
 }
 
 call_sdm() {
-  local model="$1" input="$2" questions="$3"
+  local model="$1" state="$2" questions="$3"
   local payload
-  payload=$(jq -n --arg m "$model" --arg i "$input" --argjson q "$questions" \
-    '{model: $m, input: $i, questions: $q}')
+  payload=$(jq -n --arg m "$model" --arg s "$state" --argjson q "$questions" \
+    '{model: $m, state: $s, questions: $q}')
 
   local attempt=0 response http_code
   while (( attempt < SDM_RETRIES )); do
     attempt=$((attempt + 1))
 
-    # Use temp file for response body, capture HTTP code
     local tmpfile
     tmpfile=$(mktemp)
     http_code=$(curl -s -o "$tmpfile" -w '%{http_code}' \
       --max-time "$SDM_TIMEOUT" \
       -H "Content-Type: application/json" \
       -d "$payload" \
-      "${SDM_ENDPOINT}/v1/decisions" 2>/dev/null) || http_code="000"
+      "${SDM_ENDPOINT}/v1/systemone" 2>/dev/null) || http_code="000"
     response=$(cat "$tmpfile")
     rm -f "$tmpfile"
 
@@ -102,7 +114,6 @@ call_sdm() {
         ;;
       000)
         log "Connection refused — SDM endpoint not reachable at ${SDM_ENDPOINT}"
-        rm -f "$tmpfile" 2>/dev/null
         return 2
         ;;
       400|422)
@@ -123,7 +134,7 @@ call_sdm() {
 # --- Main ---
 
 INPUT=""
-QUESTIONS="[]"
+QUESTIONS="{}"
 QUESTIONS_FILE=""
 QUESTION_PARTS=()
 
@@ -133,7 +144,7 @@ while [[ $# -gt 0 ]]; do
       [[ $# -ge 2 ]] || die "--input requires a value"
       INPUT="$2"; shift 2 ;;
     --questions)
-      [[ $# -ge 2 ]] || die "--questions requires a JSON array"
+      [[ $# -ge 2 ]] || die "--questions requires a JSON object"
       QUESTIONS="$2"; shift 2 ;;
     --questions-file)
       [[ $# -ge 2 ]] || die "--questions-file requires a file path"
@@ -162,14 +173,15 @@ done
 
 # Build questions from parts, file, or direct JSON
 if [[ ${#QUESTION_PARTS[@]} -gt 0 ]]; then
-  QUESTIONS=$(printf '%s\n' "${QUESTION_PARTS[@]}" | jq -s '.')
+  # Merge individual question dicts into one object
+  QUESTIONS=$(printf '%s\n' "${QUESTION_PARTS[@]}" | jq -s 'add')
 elif [[ -n "$QUESTIONS_FILE" ]]; then
   [[ -f "$QUESTIONS_FILE" ]] || die "Questions file not found: $QUESTIONS_FILE"
   QUESTIONS=$(cat "$QUESTIONS_FILE")
 fi
 
-# Validate questions is a non-empty array
-q_count=$(echo "$QUESTIONS" | jq 'length' 2>/dev/null) || die "Invalid questions JSON"
+# Validate questions is a non-empty object
+q_count=$(echo "$QUESTIONS" | jq 'keys | length' 2>/dev/null) || die "Invalid questions JSON"
 [[ "$q_count" -gt 0 ]] || die "At least one question is required"
 
 MODEL=$(resolve_model)

@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, upgrade agentfs
 metadata:
-  version: "7.5.1"
+  version: "7.6.0"
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---
 
@@ -356,8 +356,12 @@ Run the SDM evaluation against the quality schema:
 bash ~/.agents/scripts/sdm-evaluate.sh /tmp/agents-md-facts.txt ~/.agents/skills/schemas/quality.yaml
 ```
 
-Read the output. It contains per-dimension scores and an aggregate
-Quality score with band classification.
+If the output contains `"band": "SDM_UNAVAILABLE"`, report:
+"⚠️ SDM unavailable — quality scoring skipped."
+Skip Step 3. Continue to Step 4.
+
+Otherwise, read the output. It contains per-dimension scores and an
+aggregate Quality score with band classification.
 
 ### Step 3 — Persist Scores
 

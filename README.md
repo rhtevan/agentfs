@@ -285,7 +285,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.5.1 enforces 7 operational rules as numbered subsections
+AgentFS v7.6.0 enforces 6 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -294,12 +294,16 @@ external enforcement only: routing, hooks, process obligations.
 | # | Name | When | Do |
 |---|------|------|----|
 | 1 | Signal Dispatch | User message starts with `hey` | Route per Signal Dispatch table (Path A) or search_nodes (Path B). Progressive narrowing on miss. |
-| 2 | Pre-Flight | Before any task that modifies ≥2 files, has step dependencies, or includes `git push` | Two tiers: **Tier 1 (Standard)** — state plan, fold in constraints, execute. **Tier 2 (Specification-Driven)** — define Design Spec (validation gate) first, then Action Spec (numbered items with expected outcomes), fold in constraints, execute incrementally, run gate before claiming done. Tier 2 applies when steps have dependencies, task is multi-phase, or user explicitly requests structured execution. |
-| 3 | Post-Write | Writes touched `.agents/` or `~/.agents/` | Run `post-write.sh` for each modified file. Do not respond until complete. |
-| 4 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
-| 5 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
-| 6 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
-| 7 | Scope Rules | Writing to `memories/` or creating a skill | Memories PROJECT-only. Skills default USER. Graduate mature patterns to OKF via `hey harvest`. |
+| 2 | Pre-Flight | Before any task that modifies ≥2 files, has step dependencies, or includes `git push` | Two tiers: **Tier 1 (Standard)** — state plan, fold in constraints, execute. **Tier 2 (Specification-Driven)** — define validation gate, numbered actions with expected outcomes, fold in constraints, execute incrementally, run gate before claiming done. |
+| 3 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
+| 4 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
+| 5 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
+| 6 | Scope & Post-Write | Writing to any file under `.agents/` or `~/.agents/` | Scope: memories PROJECT-only, skills default USER. After EACH write run `post-write.sh`. Graduate mature patterns via `hey harvest`. |
+
+**Design constraint (v7.6.0):** Rules must use guard-style When clauses
+(evaluable before execution). Effect-based triggers — whose conditions
+depend on the agent's own completed actions — are prohibited (0% fire
+rate on all model sizes). See [design-spec.md](skills/agentfs-setup/references/design-spec.md) C1/C2.
 
 **Signal Dispatch** is a separate table in AGENTS.md. All signals are
 unified under the `hey` prefix. Deterministic enforcement is provided
@@ -556,7 +560,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.5.1 -->
+<!-- agentfs-template-version: 7.6.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

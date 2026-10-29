@@ -218,8 +218,58 @@ L5 is intentionally not auto-scored. It requires observing the agent
 in action — can it find a problem and fix it without being told how?
 This is the highest bar and represents genuine agent maturity.
 
+## Self-Contained Actions Principle (v7.6.0)
+
+### Problem
+Effect-based rules (When clause depends on agent's own actions)
+have a 0% fire rate on both frontier and 14B models. Rule 3
+(Post-Write) never fired because its trigger ("writes touched
+`.agents/`") could not be evaluated at scan time.
+
+### Root Cause
+LLM rule processing is single-pass, single-match, no forward
+chaining. Unlike Rete/Phreak rule engines (e.g., Drools), LLMs
+do not re-evaluate rule conditions after state changes. The scanner
+preamble says "scan each rule's When clause against the current
+request" — this evaluates user INPUT, not agent OUTPUT. A rule
+whose When clause depends on the agent's own actions is structurally
+unenforceable because the triggering condition doesn't exist at
+scan time.
+
+### Rule Classification
+| Type | Trigger | Evaluable | Examples |
+|------|---------|-----------|----------|
+| Guard | User input, session state, task intent | Before execution ✅ | Rules 1-5 |
+| Effect | Agent's own actions | After execution ❌ | Former Rule 3 |
+
+### Principle
+Every rule's Do block must include ALL consequences of its actions.
+No rule may produce side-effects that depend on a DIFFERENT rule
+firing. If action A always requires follow-up B, then B must be
+part of A's Do block.
+
+### Litmus Test
+For any proposed rule: "Can I evaluate this When clause by reading
+ONLY the user's message, without executing any action first?"
+YES → valid guard rule. NO → must be rewritten or merged into a
+guard rule's Do block.
+
+### Applied
+- Rule 3 (Post-Write) eliminated as standalone rule
+- Post-write merged into Rule 6 (Scope & Post-Write) — an
+  intent-based rule whose When clause the scanner CAN match
+- A10 template assertion added to prevent future effect-based rules
+- Signal Dispatch patterns updated with filesystem/KGM disambiguation
+
+### Future: Rule Engine Integration
+Current LLM-as-rule-processor architecture cannot support forward
+chaining. A platform-level rule engine (file-watch triggers,
+post-action hooks) would eliminate this category of failure entirely.
+This is an architectural evolution item, not a prompt engineering fix.
+
 ## Changelog
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-29 14:52 | v7.6.0 — Self-Contained Actions principle, Rule 3 elimination |
 | 2026-07-13 15:43 | v1.0 — Initial design decisions captured from design session |

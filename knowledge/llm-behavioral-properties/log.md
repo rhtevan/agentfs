@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 15:16
+- Add Tool Disambiguation Failure section — KGM vs filesystem routing on 14B (knowledge/llm-behavioral-properties/over-tooling.md)
+
+## 2026-10-29 15:14
+- New concept: No Forward Chaining — LLMs cannot re-evaluate rules after state changes (knowledge/llm-behavioral-properties/no-forward-chaining.md)
+
 ## 2026-10-02 22:29
 - New concept: confabulation-under-audit — model fabricates retroactive justifications for non-compliance. Evidence from Granite 8B canary audit. (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
 

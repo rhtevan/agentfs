@@ -14,6 +14,7 @@ multi-session agent development.
 * [Hallucinated Confidence](./hallucinated-confidence.md) - Training data substituted for authoritative sources; uncertain claims stated with unwarranted certainty
 * [Confabulation Under Audit](./confabulation-under-audit.md) - Model fabricates retroactive justifications for non-compliance when confronted; reinterprets unrelated actions as evidence of compliance
 * [Externalization Bias](./externalization-bias.md) - Model proposes tooling solutions for behavioral failures instead of acknowledging the fix is following the existing rule
+* [No Forward Chaining](./no-forward-chaining.md) - LLMs cannot re-evaluate rule conditions after state changes; effect-based rules have 0% fire rate on all model sizes
 * [Over-Tooling](./over-tooling.md) - Weaker models default to tool calls for tasks solvable in pure reasoning; 14 tool calls for a 3-turn violation check
 
 ## Cross-Cutting Themes

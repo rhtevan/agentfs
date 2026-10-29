@@ -18,9 +18,8 @@
 #   --dry-run       List pending traces without evaluating
 #
 # Exit codes:
-#   0 — All pending traces evaluated (or none pending)
+#   0 — All pending traces evaluated (or none pending, or SDM unavailable with partial results)
 #   1 — Some evaluations failed
-#   2 — SDM endpoint unreachable
 #   3 — Usage error
 
 set -euo pipefail
@@ -123,11 +122,6 @@ for entry in "${PENDING[@]}"; do
   eval_exit=0
   result=$("$SDM_EVALUATE" "$trace_file" "$OBS_SCHEMA" 2>/dev/null) || eval_exit=$?
 
-  if [[ $eval_exit -eq 2 ]]; then
-    log "SDM endpoint unreachable. Stopping."
-    exit 2
-  fi
-
   if [[ $eval_exit -ne 0 || -z "$result" ]]; then
     log "FAILED: $(basename "$trace_file") — sdm-evaluate exit $eval_exit"
     FAILED=$((FAILED + 1))
@@ -137,6 +131,13 @@ for entry in "${PENDING[@]}"; do
   # Extract score and band
   score=$(echo "$result" | jq -r '.aggregate_score // 0')
   band=$(echo "$result" | jq -r '.band // "unknown"')
+
+  # Handle SDM unavailable — skip remaining traces
+  if [[ "$band" == "SDM_UNAVAILABLE" ]]; then
+    log "WARNING: SDM unavailable — skipping remaining traces."
+    SKIPPED=$((TOTAL_PENDING - EVALUATED - FAILED))
+    break
+  fi
 
   log "  Score: $score ($band)"
 
@@ -171,7 +172,8 @@ SCORE_ENTRY
 done
 
 # --- Summary ---
-log "Complete: $EVALUATED evaluated, $FAILED failed, $TOTAL_PENDING total"
+SKIPPED=${SKIPPED:-0}
+log "Complete: $EVALUATED evaluated, $FAILED failed, $SKIPPED skipped, $TOTAL_PENDING total"
 
 if [[ $FAILED -gt 0 ]]; then
   exit 1

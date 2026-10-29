@@ -130,6 +130,10 @@ bash ~/.agents/scripts/sdm-evaluate.sh /tmp/benchmark-evidence.txt \
   ~/.agents/skills/schemas/operable.yaml --evidence /tmp/benchmark-evidence.txt
 ```
 
+If the output contains `"band": "SDM_UNAVAILABLE"`, report:
+"⚠️ SDM unavailable — QOO operable score skipped."
+Skip Steps 10–11. Proceed directly to Step 12.
+
 ### Step 10 — Tier 3 QOO: Gap Analysis
 
 For each test, compute frontier pass rate vs target pass rate.
@@ -149,7 +153,7 @@ Append to the history array.
 
 Report ALL results in one summary: Tier 0 score, Tier 1 pass/fail,
 Tier 2 pass/warn, Tier 3 Semantic pass/fail/N/A, Tier 3 QOO operable
-score, gap analysis, maturity level.
+score (or "SKIPPED — SDM unavailable"), gap analysis, maturity level.
 
 ## Overview
 

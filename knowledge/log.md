@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 15:16
+- Run 4 results: v7.6.0 Self-Contained Actions — frontier 100%, target 93% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Add Tool Disambiguation Failure section — KGM vs filesystem routing on 14B (knowledge/llm-behavioral-properties/over-tooling.md)
+
+## 2026-10-29 15:15
+- New concept: Rule Trigger Classification — guard, inline constraint, effect taxonomy (knowledge/context-engineering/rule-trigger-classification.md)
+
+## 2026-10-29 15:14
+- New concept: No Forward Chaining — LLMs cannot re-evaluate rules after state changes (knowledge/llm-behavioral-properties/no-forward-chaining.md)
+
 ## 2026-10-28 21:46
 - Mark Phase 5 dependency graph as COMPLETE — all 5.1-5.6 items done (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 - Update success criteria table with Phase 5 scores (knowledge/agentfs-engineering-evolution/implementation-plan.md)

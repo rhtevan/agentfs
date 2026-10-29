@@ -57,6 +57,42 @@ Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)
 - SDM integration: `~/.agents/knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md`
 - Observable Skill design: `~/.agents/knowledge/agentfs-engineering-evolution/observable-skill-design.md`
 
+## Design Constraints
+
+### C1. Self-Contained Actions (v7.6.0)
+
+Every rule's Do block must include ALL consequences of its actions.
+No rule may produce side-effects that depend on a different rule
+firing after it.
+
+**Rationale:** LLM rule processing is single-pass with no forward
+chaining. Unlike Rete/Phreak rule engines, LLMs do not re-evaluate
+rule conditions after state changes. Effect-based rules (When clause
+depends on agent's own actions) have a proven 0% fire rate on both
+frontier and 14B models.
+
+**Litmus test:** For any proposed rule — "Can I evaluate this When
+clause by reading ONLY the user's message, without executing any
+action first?" YES → valid. NO → must be rewritten or merged into
+a guard rule's Do block.
+
+**Enforcement:** A10 assertion in `template-check.sh` lints all
+When clauses for effect-based language patterns.
+
+### C2. No Effect-Based Rule Triggers
+
+Rules are classified by when their trigger is evaluable:
+
+| Type | When Evaluable | LLM-Compatible |
+|------|---------------|-----------------|
+| Guard | Before execution (from user input) | ✅ Yes |
+| Inline Constraint | During execution (at point of action) | ✅ Yes |
+| Effect | After execution (from agent's actions) | ❌ No |
+
+Effect-based triggers are prohibited in AGENTS.md. If an action
+requires a follow-up, the follow-up must be in the same Do block
+(inline constraint), not in a separate rule.
+
 ## Core Philosophy
 
 Strict separation of **Identity**, **Capabilities**, **Semantic Context**,

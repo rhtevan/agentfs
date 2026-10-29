@@ -40,6 +40,33 @@ of information the model couldn't hold in its reasoning buffer.
 | **Instruction** | Keep procedures short. 3 steps with scripts > 6 steps with prose. Each prose step is a potential over-tooling point |
 | **Template** | AGENTS.md rules should be self-contained — each rule's trigger and action in one paragraph. Cross-referencing between rules ("see Rule 3") is acceptable only when there's a causal link (Pre-Flight → Post-Write) |
 
+## Tool Disambiguation Failure (v7.6.0)
+
+A specific over-tooling variant: when multiple tools serve similar
+semantic purposes, smaller models route to the wrong one.
+
+**Observed case:** `hey remember X` should write to `.agents/memories/MEMORY.md`
+(filesystem). With KGM (Knowledge Graph Memory) extension active, 14B models
+routed 40% of `hey remember` requests to `knowledgegraphmemory__create_entities`
+instead of the filesystem write tool — because both are "memory" operations.
+
+**Fix:** Explicit disambiguation in Signal Dispatch action descriptions:
+```
+# Before (ambiguous):
+remember|Write to .agents/memories/MEMORY.md
+
+# After (disambiguated):
+remember|Write file .agents/memories/MEMORY.md (filesystem, not KGM) + run post-write.sh
+```
+
+**Result:** t_r7 scope pass rate on 14B improved from 60% → 100%.
+
+**Design principle:** When an agent has access to multiple tools that
+could semantically match the same action, the instruction must
+explicitly name which tool to use AND which to avoid. Positive
+instruction alone ("write to MEMORY.md") is insufficient — negative
+instruction ("not KGM") is required for disambiguation.
+
 ## Implications for Skill Design
 
 - Skills targeting broad model compatibility should minimize

@@ -5,16 +5,16 @@
 #   - seed-agents-md.sh (Signal Dispatch table generation)
 # Lines starting with # are comments. Empty lines ignored.
 
-remember|Write to .agents/memories/MEMORY.md
-note |Write to .agents/memories/MEMORY.md
-keep in mind|Write to .agents/memories/MEMORY.md
-forget|Edit MEMORY.md, remove entry
-remove|Edit MEMORY.md, remove entry
+remember|Write file .agents/memories/MEMORY.md (filesystem, not KGM) + run post-write.sh
+note |Write file .agents/memories/MEMORY.md (filesystem, not KGM) + run post-write.sh
+keep in mind|Write file .agents/memories/MEMORY.md (filesystem, not KGM) + run post-write.sh
+forget|Edit file MEMORY.md, remove entry + run post-write.sh
+remove|Edit file MEMORY.md, remove entry + run post-write.sh
 what do you remember|Read .agents/memories/MEMORY.md
 check your notes|Read .agents/memories/MEMORY.md
-i prefer|Write to .agents/memories/USER.md
-i like|Write to .agents/memories/USER.md
-my style is|Write to .agents/memories/USER.md
+i prefer|Write file .agents/memories/USER.md (filesystem, not KGM) + run post-write.sh
+i like|Write file .agents/memories/USER.md (filesystem, not KGM) + run post-write.sh
+my style is|Write file .agents/memories/USER.md (filesystem, not KGM) + run post-write.sh
 always|Propose as AGENTS.md guardrail (human approval required)
 never|Propose as AGENTS.md guardrail (human approval required)
 this is a rule|Propose as AGENTS.md guardrail (human approval required)

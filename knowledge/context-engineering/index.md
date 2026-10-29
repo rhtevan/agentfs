@@ -1,6 +1,6 @@
 # Context Engineering
 
-9 concepts covering principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks. Derived from empirical analysis of Goose + AgentFS across strong and weak models.
+10 concepts covering principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks. Derived from empirical analysis of Goose + AgentFS across strong and weak models.
 
 | Concept | Type | Description |
 |---------|------|-------------|
@@ -13,3 +13,4 @@
 | [Generation Prior Conflict](generation-prior-conflict.md) | Pattern | How pretraining priors override system prompt rules at generation time |
 | [CNL Authoring for Weak Models](cnl-authoring-for-weak-models.md) | Convention | Controlled Natural Language principles for agent instruction authoring |
 | [Assistant Prefix as Continuation](assistant-prefix-continuation.md) | Lesson | Assistant-role prefix messages shift model from generation to continuation mode |
+| [Rule Trigger Classification](rule-trigger-classification.md) | Pattern | Guard / inline constraint / effect taxonomy — effect rules are 0% enforceable, litmus test and conversion pattern |

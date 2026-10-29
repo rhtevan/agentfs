@@ -141,7 +141,7 @@ esac
 DIMENSION_COUNT=$(yq -r '.dimensions | length' "$SCHEMA")
 log "Evaluating $DIMENSION_COUNT dimensions..."
 
-QUESTIONS="[]"
+QUESTIONS="{}"
 DIMENSION_NAMES=()
 DIMENSION_WEIGHTS=()
 DIMENSION_TARGETS=()
@@ -162,38 +162,41 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   DIMENSION_METRICS+=("$metric")
   DIMENSION_POLARITIES+=("$polarity")
 
-  # Map metric type to SDM question type
+  # Map metric type to SystemOne question type
   case "$metric" in
     boolean)
+      # SystemOne uses "noul" for yes/no predicates
       q=$(jq -n --arg n "$name" --arg i "$question" \
-        '{name: $n, type: "predicate", instructions: $i}')
+        '{($n): {type: "noul", instructions: $i}}')
       ;;
     count)
-      # Use score with levels 0-5 for count metrics
+      # SystemOne uses criteria array for score levels
       q=$(jq -n --arg n "$name" --arg i "$question" \
-        '{name: $n, type: "score", instructions: $i,
-          levels: [{"label":"0"},{"label":"1"},{"label":"2"},{"label":"3"},{"label":"4"},{"label":"5+"}]}')
+        '{($n): {type: "score", instructions: $i,
+          criteria: ["0","1","2","3","4","5+"]}}')
       ;;
     ratio)
-      # Use score with percentage levels
       q=$(jq -n --arg n "$name" --arg i "$question" \
-        '{name: $n, type: "score", instructions: $i,
-          levels: [{"label":"0-20%"},{"label":"20-40%"},{"label":"40-60%"},{"label":"60-80%"},{"label":"80-100%"}]}')
+        '{($n): {type: "score", instructions: $i,
+          criteria: ["0-20%","20-40%","40-60%","60-80%","80-100%"]}}')
       ;;
     choice)
-      choices_json=$(yq -r ".dimensions[$i].choices | .[] " "$SCHEMA" \
-        | jq -R '{value: .}' | jq -s '.')
-      q=$(jq -n --arg n "$name" --arg i "$question" --argjson c "$choices_json" \
-        '{name: $n, type: "choice", instructions: $i, choices: $c}')
+      # SystemOne uses criteria dict: {option: null}
+      local criteria
+      criteria=$(yq -r ".dimensions[$i].choices | .[] " "$SCHEMA" \
+        | jq -R '{(.): null}' | jq -s 'add')
+      q=$(jq -n --arg n "$name" --arg i "$question" --argjson c "$criteria" \
+        '{($n): {type: "choice", instructions: $i, criteria: $c}}')
       ;;
     *)
-      log "WARNING: Unknown metric type '$metric' for dimension '$name'. Using predicate."
+      log "WARNING: Unknown metric type '$metric' for dimension '$name'. Using noul."
       q=$(jq -n --arg n "$name" --arg i "$question" \
-        '{name: $n, type: "predicate", instructions: $i}')
+        '{($n): {type: "noul", instructions: $i}}')
       ;;
   esac
 
-  QUESTIONS=$(echo "$QUESTIONS" | jq --argjson q "$q" '. + [$q]')
+  # Merge question dict into QUESTIONS object
+  QUESTIONS=$(echo "$QUESTIONS" | jq --argjson q "$q" '. + $q')
 done
 
 # --- Call SDM ---
@@ -201,8 +204,37 @@ done
 SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/null) || {
   exit_code=$?
   if [[ $exit_code -eq 2 ]]; then
-    log "SDM endpoint unreachable."
-    exit 2
+    log "WARNING: SDM endpoint unreachable. Returning SDM_UNAVAILABLE."
+    # Build CECX JSON with all dimensions marked N/A
+    UNAVAIL_DIMS="[]"
+    for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
+      dim=$(jq -n \
+        --arg n "${DIMENSION_NAMES[$i]}" \
+        --argjson w "${DIMENSION_WEIGHTS[$i]}" \
+        '{name: $n, pass: null, score: -1, confidence: 0, detail: "SDM unavailable", weight: $w}')
+      UNAVAIL_DIMS=$(echo "$UNAVAIL_DIMS" | jq --argjson d "$dim" '. + [$d]')
+    done
+    jq -n \
+      --arg skill "$SKILL_NAME" \
+      --arg schema_type "$SCHEMA_TYPE" \
+      --arg schema_version "$SCHEMA_VERSION" \
+      --arg ts "$(date -Iseconds)" \
+      --argjson dims "$UNAVAIL_DIMS" \
+      --argjson total "$DIMENSION_COUNT" \
+      '{
+        skill: $skill,
+        schema_type: $schema_type,
+        schema_version: $schema_version,
+        timestamp: $ts,
+        aggregate_score: -1,
+        band: "SDM_UNAVAILABLE",
+        pass_rate: -1,
+        dimensions_total: $total,
+        dimensions_passed: 0,
+        dimensions: $dims
+      }'
+    log "Evaluation skipped: $SKILL_NAME — SDM_UNAVAILABLE"
+    exit 0
   fi
   log "SDM call failed (exit $exit_code)."
   exit 1
@@ -210,7 +242,9 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
 
 # --- Parse results and compute scores ---
 
+# SystemOne returns answers as a dict keyed by question name
 ANSWERS=$(echo "$SDM_RESPONSE" | jq '.answers')
+DIAGNOSTICS=$(echo "$SDM_RESPONSE" | jq '.diagnostics // {}')
 TIMESTAMP=$(date -Iseconds)
 TOTAL_PASS=0
 TOTAL_DIMS=0
@@ -223,27 +257,38 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   weight="${DIMENSION_WEIGHTS[$i]}"
   polarity="${DIMENSION_POLARITIES[$i]}"
 
-  answer=$(echo "$ANSWERS" | jq ".[$i]")
+  # SystemOne: answers keyed by name, not by index
+  answer=$(echo "$ANSWERS" | jq --arg n "$name" '.[$n]')
+  diag=$(echo "$DIAGNOSTICS" | jq --arg n "$name" '.[$n] // {}')
+  label_mass=$(echo "$diag" | jq -r '.label_mass // 1')
+  argmax_ok=$(echo "$diag" | jq -r '.argmax_is_label // true')
+
   pass=false
   score_val=0
   confidence=0
   detail=""
 
+  # Flag unreliable results from diagnostics
+  if [[ "$argmax_ok" == "false" ]]; then
+    detail="unreliable — argmax not a label"
+  fi
+
   case "$metric" in
     boolean)
-      prob=$(echo "$answer" | jq -r '.probability // 0')
-      # For negative polarity: high probability = bad (drift detected).
-      # Invert so that pass/fail logic stays consistent:
-      # after inversion, high = good (no drift), low = bad (drift).
-      # Note: awk handles scientific notation (e.g., 6.47e-7) that bc cannot.
+      # SystemOne noul: read probabilities.yes or probabilities.no directly
+      # No inversion hack needed — just read the right field
       if [[ "$polarity" == "negative" ]]; then
-        prob=$(awk "BEGIN {printf \"%.10f\", 1 - $prob}")
+        prob=$(echo "$answer" | jq -r '.probabilities.no // 0')
+      else
+        prob=$(echo "$answer" | jq -r '.probabilities.yes // .noul // 0')
       fi
-      confidence=$prob
+      # Normalize scientific notation for bc
+      prob=$(awk "BEGIN {printf \"%.10f\", $prob}")
+      confidence=$(echo "$answer" | jq -r '.confidence // 0')
       if (( $(echo "$prob >= 0.7" | bc -l) )); then
         pass=true; score_val=100
       elif (( $(echo "$prob >= 0.3" | bc -l) )); then
-        score_val=50; detail="uncertain"
+        score_val=50; detail="${detail:+$detail; }uncertain"
       else
         score_val=0
       fi
@@ -251,33 +296,28 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
     count|ratio)
       score_raw=$(echo "$answer" | jq -r '.score // 0')
       confidence=$(echo "$answer" | jq -r '.confidence // 0')
-      # SDM returns score on 0-4 scale (5 levels).
-      # Normalize to 0-100 based on target direction.
       max_scale=4
       case "$target" in
         ">="*)
-          # Higher is better (e.g., script_coverage >= 0.80)
           score_val=$(echo "$score_raw $max_scale" | awk '{printf "%.0f", ($1 / $2) * 100}')
           if (( $(echo "$score_raw >= $((max_scale - 1))" | bc -l) )); then pass=true; fi
           ;;
         "<="*)
-          # Lower is better (e.g., concern_count <= 2) — invert
           score_val=$(echo "$score_raw $max_scale" | awk '{v = (1 - $1 / $2) * 100; if (v < 0) v = 0; printf "%.0f", v}')
           if (( $(echo "$score_raw <= 1" | bc -l) )); then pass=true; fi
           ;;
         *)
-          score_val=50; detail="no target comparison"
+          score_val=50; detail="${detail:+$detail; }no target comparison"
           ;;
       esac
       ;;
     choice)
       chosen=$(echo "$answer" | jq -r '.choice // "unknown"')
       confidence=$(echo "$answer" | jq -r '.confidence // 0')
-      # For choices, pass if confidence > 0.7 and matches expected
       if [[ "$target" == "$chosen" ]] || [[ -z "$target" ]]; then
         pass=true; score_val=100
       else
-        score_val=0; detail="expected=$target got=$chosen"
+        score_val=0; detail="${detail:+$detail; }expected=$target got=$chosen"
       fi
       ;;
   esac
@@ -289,7 +329,9 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
     --argjson c "$confidence" \
     --arg d "$detail" \
     --argjson w "$weight" \
-    '{name: $n, pass: $p, score: $s, confidence: $c, detail: $d, weight: $w}')
+    --argjson lm "$label_mass" \
+    --argjson ao "$(echo "$argmax_ok" | jq -R 'if . == "true" then true else false end')" \
+    '{name: $n, pass: $p, score: $s, confidence: $c, detail: $d, weight: $w, label_mass: $lm, argmax_is_label: $ao}')
 
   DIMENSIONS_JSON=$(echo "$DIMENSIONS_JSON" | jq --argjson d "$dim_json" '. + [$d]')
 

@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-29 14:52 | v2.2.0 — Add A10 assertion: no effect-based triggers in When clauses; update EXPECTED_RULES=6 |
+| 2026-10-29 11:42 | v2.1.0 — Graceful SDM failure: Step 9 handles SDM_UNAVAILABLE, skips Steps 10-11 |
 | 2026-10-28 23:15 | v2.1.0 — Added Step 5 (Tier 3 Semantic Assertions) to Full Eval Sequence for L4 qualification |
 | 2026-10-28 22:28 | v2.0.0 — Major restructure: unified Full Eval Sequence (11 steps, Tier 0-3), consistent Tier naming (Tier 0=template, 1=structural, 2=behavioral, 3=QOO operable), dynamic provider/model selection (Step 5), template-eval.sh simplified to Tier 0 only (B1-B3 deprecated), template-scores.md marked LEGACY, old Execution Steps + QOO sections demoted to Reference, absorbed agentfs-violation-chk as Session Audit Mode, version bump 1.8.0→2.0.0 |
 | 2026-10-02 15:06 | v1.8.0 — Removed R4 (skill-accuracy) — skill evaluation moved to skill-eval. agentfs-eval now focuses on workspace health only. |

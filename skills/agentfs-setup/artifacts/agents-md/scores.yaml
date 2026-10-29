@@ -27,8 +27,8 @@ quality:
   evaluated: "2026-10-28T21:07:01-04:00"
 
 operable:
-  aggregate_score: 54.1
-  band: Re-engineer
+  aggregate_score: 93.3
+  band: Refine
   note: >
     Benchmark run 2. Frontier (claude-opus-4-6) 1 run,
     Target (Qwen3-14B-FP8) 5 runs, 6 tests covering Rules 1-4,7.
@@ -117,3 +117,13 @@ history:
     score: 54.1
     band: Re-engineer
     note: "Run 2 — frontier Opus 83%, target 63%. t_r7 degraded 100%→40%."
+  - date: "2026-10-29T12:19:15-04:00"
+    type: operable
+    score: 62.5
+    band: Re-engineer
+    note: "Run 3 — frontier Sonnet 83%, target 66%. SystemOne API. t_r3 still 0% both models."
+  - date: "2026-10-29T15:00:00-04:00"
+    type: operable
+    score: 93.3
+    band: Refine
+    note: "Run 4 — v7.6.0 Self-Contained Actions. Frontier Sonnet 100% (6/6), target 14B 93% (28/30). t_r3 0%→100%, t_r7 60%→100%."

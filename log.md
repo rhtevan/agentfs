@@ -2,6 +2,67 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 15:24
+- Fix README drift: v7.5.1→v7.6.0, 7→6 rules, remove Rule 3, add Rule 6 Scope & Post-Write, add design constraint note (README.md)
+
+## 2026-10-29 15:17
+- Fix sandbox AGENTS.md refresh — always copy from project CWD, not just on first creation (scripts/benchmark.sh)
+
+## 2026-10-29 15:16
+- Run 4 results: v7.6.0 Self-Contained Actions — frontier 100%, target 93% (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- v7.6.0 benchmark: frontier 100%, target 93%. t_r3 0%→100%, t_r7 60%→100% (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- Add Tool Disambiguation Failure section — KGM vs filesystem routing on 14B (knowledge/llm-behavioral-properties/over-tooling.md)
+
+## 2026-10-29 15:15
+- New concept: Rule Trigger Classification — guard, inline constraint, effect taxonomy (knowledge/context-engineering/rule-trigger-classification.md)
+
+## 2026-10-29 15:14
+- New concept: No Forward Chaining — LLMs cannot re-evaluate rules after state changes (knowledge/llm-behavioral-properties/no-forward-chaining.md)
+
+## 2026-10-29 15:13
+- Add design constraints C1 (Self-Contained Actions) and C2 (No Effect-Based Triggers) (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-10-29 14:53
+- Document Self-Contained Actions principle and rule engine future direction (skills/agentfs-eval/references/design-decisions.md)
+
+## 2026-10-29 14:52
+- Bump version 7.5.1 → 7.6.0: Self-Contained Actions rule redesign (skills/agentfs-setup/SKILL.md)
+- Add filesystem/KGM disambiguation and post-write to write actions (t_r7 + t_r3 fix) (plugins/signal-dispatch/patterns.txt)
+- Add A10 assertion: no effect-based triggers in When clauses; update EXPECTED_RULES=6 (skills/agentfs-eval/scripts/template-check.sh)
+- Add A10 assertion: no effect-based triggers in When clauses; update EXPECTED_RULES=6 (skills/agentfs-eval/scripts/template-check.sh)
+- Eliminate effect-based Rule 3 (Post-Write), merge into Rule 6 (Scope & Post-Write), renumber rules 7→6 (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-29 14:51
+- Remove Post-Write from Pre-Flight Tier 2 constraints (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Remove Post-Write from Pre-Flight constraints (Rule 3 elimination) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Remove Post-Write from Pre-Flight constraints (Rule 3 elimination prep) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-29 11:48
+- Updated question types, request/response format, added diagnostics reference (skills/schemas/sdm-endpoint.md)
+
+## 2026-10-29 11:47
+- Updated to SystemOne API — noul/criteria format, diagnostics section (skills/schemas/sdm-endpoint.md)
+
+## 2026-10-29 11:45
+- Migrated response parsing to SystemOne — dict answers, noul probabilities, diagnostics (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 11:44
+- Changed QUESTIONS from array to dict for SystemOne format (scripts/sdm-evaluate.sh)
+- Migrated question building to SystemOne format — noul, criteria dict/array (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 11:43
+- Migrated from /v1/decisions to /v1/systemone API — noul/choice/score types, dict format (scripts/sdm-call.sh)
+
+## 2026-10-29 11:42
+- Graceful SDM failure: Step 2 handles SDM_UNAVAILABLE, skips Step 3 (skills/agentfs-setup/SKILL.md)
+- Graceful SDM failure: Step 9 handles SDM_UNAVAILABLE, skips Steps 10-11 (skills/agentfs-eval/SKILL.md)
+- Removed exit code 2 from docs — SDM unavailable now handled gracefully (scripts/evaluate-pending.sh)
+
+## 2026-10-29 11:41
+- Added SKIPPED count to summary, report partial results on SDM unavailable (scripts/evaluate-pending.sh)
+- Graceful SDM failure: skip remaining traces on SDM_UNAVAILABLE, report skipped count (scripts/evaluate-pending.sh)
+- Graceful SDM failure: return SDM_UNAVAILABLE CECX JSON instead of exit 2 (scripts/sdm-evaluate.sh)
+
 ## 2026-10-28 23:43
 - Updated error handling table to reference extract-comparison.sh + sdm-evaluate.sh (skills/agentfs-readme-audit/SKILL.md)
 - Updated Step 3 to interpret CECX JSON; updated error handling table (skills/agentfs-readme-audit/SKILL.md)
