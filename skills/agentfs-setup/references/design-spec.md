@@ -67,6 +67,48 @@ Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)
 - SDM integration: `~/.agents/knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md`
 - Observable Skill design: `~/.agents/knowledge/agentfs-engineering-evolution/observable-skill-design.md`
 
+### G4. QOO Evaluation Dispatch Model (v7.6.0)
+
+QOO axes map to two evaluation signals per artifact. `upgrade`
+covers build-time design properties. `eval` covers operability
+(build-time structural readiness + runtime execution correctness).
+
+| Signal | QOO Axes | Phase | Purpose |
+|--------|----------|-------|---------|
+| `hey upgrade agentfs` | Quality (MCACS) | Build | Is the AGENTS.md design sound? |
+| `hey eval agentfs` | Operable (BMBT + CECX) | Build + Runtime | Does it work? (structure + benchmark) |
+| `hey upgrade skill` | Quality (MCACS) + Observable | Build | Is the skill well-designed and instrumented? |
+| `hey eval skill` | Operable (BMBT + CECX) | Build + Runtime | Does it run correctly? (structure + trace) |
+
+**Observable is always build-time** — it measures whether
+instrumentation exists to produce audit trails, not whether
+those trails were produced. Quality is always build-time — it
+measures design soundness of the artifact as authored. Operable
+spans both: BMBT (build-time structural readiness) and CECX
+(runtime execution correctness from benchmarks or traces).
+
+**Hybrid evidence architecture:** Each evaluation uses a two-stage
+evidence pipeline:
+
+| Stage | Actor | Role |
+|-------|-------|------|
+| 1a | `gather-skill-state.sh` (bash) | Structural facts — line counts, file refs, script counts |
+| 1b | Frontier model (the running agent) | Semantic evidence — intent, coupling, complexity, concern boundaries |
+| 2 | SDM (SystemOne API, 14B) | Quantitative scoring — reproducible bounded judgments per dimension |
+
+Stage 1a handles what regex can reliably count. Stage 1b handles
+what requires reading comprehension. Stage 2 turns evidence into
+reproducible numeric scores. The frontier model is NOT avoided —
+it is essential for semantic extraction. SDM avoids frontier
+stochasticity in the scoring stage.
+
+**No composite score across axes.** Each axis reports its own band
+(Redesign / Re-engineer / Tunable / Operable). Maturity levels
+(L0-L5 from Tier 0-3 assertions) measure operational readiness.
+QOO scores measure engineering quality. Different audiences,
+different purposes, premature to composite until data shows
+whether axes are independent or correlated.
+
 ## Design Constraints
 
 ### C1. Self-Contained Actions (v7.6.0)

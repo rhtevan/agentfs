@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 20:45
+- Added G4: QOO Evaluation Dispatch Model — upgrade=build-time Quality+Observable, eval=Operable BMBT+CECX, hybrid evidence architecture, no composite score (skills/agentfs-setup/references/design-spec.md)
+
 ## 2026-10-29 20:34
 - Round count metric score_raw to nearest integer — SystemOne returns expected value not discrete bucket (scripts/sdm-evaluate.sh)
 
