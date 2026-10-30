@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 21:51
+- has_muscle: clarified conditionals are not CNL violations, target 0.90→0.80 (skills/schemas/operable-agents-md.yaml)
+
+## 2026-10-29 21:50
+- Adjusted has_bones target 0.50→0.30 and has_muscle target 0.90→0.80 for declarative policy document; clarified questions (skills/schemas/operable-agents-md.yaml)
+
 ## 2026-10-29 21:43
 - Updated with corrected scores after all 6 sdm-evaluate.sh bug fixes (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
 

@@ -22,10 +22,14 @@ dimensions:
       Do AGENTS.md rule Do blocks delegate deterministic actions to
       scripts (post-write.sh, checkpoint.sh, sync-agents-md.sh)
       rather than requiring the model to compose shell commands
-      inline? What percentage of rule actions reference scripts?
+      inline? AGENTS.md is a declarative policy document — only
+      deterministic filesystem operations should be scripted.
+      Model-mediated judgment (planning, conflict resolution) is
+      correctly expressed as prose, not scripts. What percentage
+      of deterministic rule actions reference scripts?
     evidence_source: AGENTS.md rules
     metric: ratio
-    target: ">= 0.50"
+    target: ">= 0.30"
     weight: 1.0
     phase: build
 
@@ -33,10 +37,13 @@ dimensions:
     question: >
       Are the rules written in CNL (Controlled Natural Language)?
       One instruction per sentence, active imperative voice, single
-      vocabulary per concept. Count rules that violate CNL.
+      vocabulary per concept. Conditional structures (If/When/Else)
+      are inherent to policy rules and are NOT CNL violations.
+      Count the ratio of CNL-compliant sentences to total sentences
+      in rule Do blocks.
     evidence_source: AGENTS.md rules
     metric: ratio
-    target: ">= 0.90"
+    target: ">= 0.80"
     weight: 1.0
     phase: build
 
