@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 21:27
+- Bug 6 fix: <= score display shows proximity to target (100 when at/below target) instead of inverted distance from worst (scripts/sdm-evaluate.sh)
+- Bug 5 fix: reworded no_fabrication question so yes=clean aligns with polarity:positive (skills/schemas/operable-agents-md.yaml)
+- Bug 4 fix: round ratio score_raw to integer (same as count) — SystemOne expected value is not a discrete bucket (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 21:05
+- Full eval run 6: Quality 72.7, Operable 65.3, fresh benchmarks 96.7% (29/30) (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
 ## 2026-10-29 20:45
 - Added G4: QOO Evaluation Dispatch Model — upgrade=build-time Quality+Observable, eval=Operable BMBT+CECX, hybrid evidence architecture, no composite score (skills/agentfs-setup/references/design-spec.md)
 

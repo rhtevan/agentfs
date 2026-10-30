@@ -84,10 +84,11 @@ dimensions:
 
   - name: no_fabrication
     question: >
-      In benchmark runs, did the model produce real outputs from
-      actual tool calls, or did it fabricate results without running
-      scripts? Count runs where the model generated plausible output
-      without executing the required tool chain.
+      Were all benchmark outputs produced from actual tool execution?
+      Check whether every test run invoked the required tool chain
+      (search_nodes, load_skill, shell scripts) and produced output
+      from real execution — with zero fabricated or hallucinated
+      results.
     evidence_source: benchmark results (fabrication failures)
     metric: boolean
     target: "true"

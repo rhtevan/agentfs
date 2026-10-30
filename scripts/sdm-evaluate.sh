@@ -332,14 +332,9 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
     count|ratio)
       # Normalize scientific notation (e.g., 6.47E-7) to decimal for bc.
       # SystemOne returns expected value (probability-weighted ordinal average),
-      # not a discrete bucket index. For count metrics, round to nearest
-      # integer since ordinal buckets are whole numbers.
-      score_raw_float=$(echo "$answer" | jq -r '.score // 0' | awk '{printf "%.10f", $1}')
-      if [[ "$metric" == "count" ]]; then
-        score_raw=$(echo "$score_raw_float" | awk '{printf "%.0f", $1}')
-      else
-        score_raw="$score_raw_float"
-      fi
+      # not a discrete bucket index. Round to nearest integer since ordinal
+      # buckets are whole numbers (both count and ratio metrics).
+      score_raw=$(echo "$answer" | jq -r '.score // 0' | awk '{printf "%.0f", $1}')
       confidence=$(echo "$answer" | jq -r '.confidence // 0')
       # SystemOne score type returns ordinal index (0-based) into criteria array.
       # count: ["0","1","2","3","4","5+"] → 6 buckets, max_scale=5
@@ -374,8 +369,21 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
           fi
           if (( $(echo "$score_raw >= $target_bucket" | bc -l) )); then pass=true; fi
         else
-          # Lower is better (<=). Invert: (1 - score_raw/max_scale) → 0-100.
-          score_val=$(echo "$score_raw $max_scale" | awk '{v = (1 - $1 / $2) * 100; if (v < 0) v = 0; printf "%.0f", v}')
+          # Lower is better (<=). Score 100 when at/below target, scale
+          # down as score_raw exceeds target. Shows proximity to target,
+          # not distance from worst.
+          # score = max(0, 100 - ((score_raw - target_bucket) / max_scale) * 100)
+          # When score_raw <= target_bucket → 100 (at or below target)
+          # When score_raw > target_bucket → decreases toward 0
+          if [[ "$metric" == "ratio" ]]; then
+            _tb=$(echo "$target_num $max_scale" | awk '{printf "%.0f", $1 * $2}')
+          else
+            _tb=$(printf "%.0f" "$target_num")
+          fi
+          score_val=$(echo "$score_raw $_tb $max_scale" | awk '{
+            if ($1 <= $2) printf "%.0f", 100;
+            else { v = 100 - (($1 - $2) / $3) * 100; if (v < 0) v = 0; printf "%.0f", v }
+          }')
           # Map target to ordinal threshold.
           if [[ "$metric" == "ratio" ]]; then
             # ratio target like "<= 0.30" → pass if score_raw <= 1 (20-40% bucket)
