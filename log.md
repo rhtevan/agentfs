@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 21:56
+- C3: Explicit Paths Over Abstraction — accidental_complexity trade-off for model portability, no action until rule engine (skills/agentfs-setup/references/design-spec.md)
+
 ## 2026-10-29 21:51
 - has_muscle: clarified conditionals are not CNL violations, target 0.90→0.80 (skills/schemas/operable-agents-md.yaml)
 

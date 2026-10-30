@@ -145,6 +145,34 @@ Effect-based triggers are prohibited in AGENTS.md. If an action
 requires a follow-up, the follow-up must be in the same Do block
 (inline constraint), not in a separate rule.
 
+### C3. Explicit Paths Over Abstraction in Rules (v7.6.0)
+
+AGENTS.md rules contain inline implementation detail (full script
+paths, tool names, invocation syntax) that raises the
+`accidental_complexity` Quality dimension (scored 75 — borderline).
+This is a deliberate trade-off, not a deficiency.
+
+**Rationale:** Mid-range models (14B) cannot reliably resolve
+abstract references ("run post-write.sh") to concrete paths
+(`bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh`).
+Removing explicit paths improves the Quality score but degrades
+Operable runtime pass rates on target models. Model portability
+takes precedence over design purity.
+
+**Affected rules:**
+- Rule 5 (Checkpoint): 6 script/file references forming a
+  deterministic sequence
+- Rule 6 (Post-Write): full post-write.sh invocation inline
+
+**Long-term fix:** Platform-level rule engine with file-watch
+triggers and post-action hooks that fire deterministically,
+removing the model from the enforcement loop. See MEMORY.md
+"Retrospection: Rule Engine Integration" for architecture
+candidates.
+
+**Decision:** No action on accidental_complexity until rule engine
+infrastructure exists. Current score (75) is acceptable.
+
 ## Core Philosophy
 
 Strict separation of **Identity**, **Capabilities**, **Semantic Context**,
