@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 21:43
+- Updated with corrected scores after all 6 sdm-evaluate.sh bug fixes (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-10-29 21:42
+- Step 11: explicit merge instructions for scores.yaml — preserves quality section, appends to history (skills/agentfs-eval/SKILL.md)
+- Fixed stale 'pending Stream 2 retrofit' note — adapted schemas are wired and working (skills/agentfs-eval/SKILL.md)
+
 ## 2026-10-29 21:27
 - Bug 6 fix: <= score display shows proximity to target (100 when at/below target) instead of inverted distance from worst (scripts/sdm-evaluate.sh)
 - Bug 5 fix: reworded no_fabrication question so yes=clean aligns with polarity:positive (skills/schemas/operable-agents-md.yaml)

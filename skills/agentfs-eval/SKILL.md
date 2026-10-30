@@ -180,13 +180,29 @@ Classify each gap: model-level, CNL weakness, or platform limitation.
 
 ### Step 11 — Tier 3 QOO: Persist Scores
 
-Write operable scores and gap analysis to:
+Update the artifact scores file:
 
 ```
 ~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml
 ```
 
-Append to the history array.
+Read the existing file. Update these sections from Step 9 SDM output:
+
+1. **`operable.build.dimensions`** — copy each build-phase dim's
+   `score`, `pass`, `confidence` from SDM JSON `.dimensions[]`.
+2. **`operable.runtime.dimensions`** — copy each runtime-phase dim.
+3. **`operable.runtime.aggregate_score`** and **`band`** — from SDM
+   JSON root `.aggregate_score` and `.band`.
+4. **`operable.runtime.benchmark`** — update provider, model, runs,
+   pass_rate, per-test results from Steps 7-8.
+5. **`operable.runtime.gap_analysis`** — from Step 10.
+6. **`operable.runtime.evaluated`** — SDM JSON `.timestamp`.
+7. **`history`** — append a new entry with date, type `operable`,
+   score (aggregate), band, and a one-line note.
+
+Do NOT rewrite the entire file. Preserve the `quality` section
+(owned by `hey upgrade agentfs`), `observable` section, and
+existing history entries. Run post-write.sh after writing.
 
 ### Step 12 — Produce Consolidated Report
 
@@ -451,9 +467,11 @@ AGENTS.md QOO applicability:
 | Operable (BMBT build) | ✅ | `operable-agents-md.yaml` (adapted) | Bones (scripts), muscle (CNL rules), harness (benchmark). |
 | Operable (CECX runtime) | ✅ | `operable-agents-md.yaml` (adapted) | Benchmark pass rates as evidence, not trace JSONL. |
 
-Steps 6-11 in the Full Eval Sequence implement Operable runtime.
-Quality and Operable build-time are handled by `agentfs-setup`
-("upgrade agentfs"). Adapted schemas are pending (Stream 2 retrofit).
+Steps 6-11 in the Full Eval Sequence implement Operable (BMBT build
++ CECX runtime). Quality build-time is handled by `agentfs-setup`
+("upgrade agentfs"). Both use adapted schemas (`quality-agents-md.yaml`,
+`operable-agents-md.yaml`) with hybrid evidence architecture (frontier
+semantic extraction + SDM scoring).
 
 Gap classification categories:
 - **model-level** — model lacks capability (e.g., ignores canary rule)
