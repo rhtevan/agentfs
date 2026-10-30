@@ -212,6 +212,7 @@ Skills cover topics like:
 | **Desktop/System** | Hermes desktop fixes, Fedora window list, desktop WMClass fixes, DNS cache, NetworkManager boot delays, Goose CLI/desktop fixes, Obsidian Snap fix |
 | **Shell Tooling** | Bash tab-completion generation (`bash-completion-gen`) |
 | **Spec Authoring** | Spec-kit setup and configuration (`spec-kit-setup`) |
+| **Evaluation** | AgentFS workspace eval (`agentfs-eval`), individual skill eval (`skill-eval`), QOO schemas (`schemas/quality.yaml`, `observable.yaml`, `operable.yaml`, adapted variants for AGENTS.md) |
 | **Data Services** | Apache Fuseki triplestore lifecycle (`agentflow-fuseki`) |
 
 See [`skills/index.md`](skills/index.md) for the full catalog.
@@ -285,7 +286,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.6.0 enforces 6 operational rules as numbered subsections
+AgentFS v7.6.1 enforces 6 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -298,9 +299,9 @@ external enforcement only: routing, hooks, process obligations.
 | 3 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
 | 4 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
 | 5 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
-| 6 | Scope & Post-Write | Writing to any file under `.agents/` or `~/.agents/` | Scope: memories PROJECT-only, skills default USER. After EACH write run `post-write.sh`. Graduate mature patterns via `hey harvest`. |
+| 6 | Scope & Post-Write | Writing to any file under `.agents/` or `~/.agents/` | Scope: memories PROJECT-only, skills default USER. After EACH write immediately run `post-write.sh` — do not respond until it completes. Graduate mature patterns via `hey harvest`. |
 
-**Design constraint (v7.6.0):** Rules must use guard-style When clauses
+**Design constraint (v7.6.1):** Rules must use guard-style When clauses
 (evaluable before execution). Effect-based triggers — whose conditions
 depend on the agent's own completed actions — are prohibited (0% fire
 rate on all model sizes). See [design-spec.md](skills/agentfs-setup/references/design-spec.md) C1/C2.
@@ -734,11 +735,19 @@ framework with two domain-specific skill pairs:
 | Property | Schema | What It Measures |
 |----------|--------|-----------------|
 | **Quality** | `quality.yaml` (MCACS) | Build-time structural quality: modularity, cohesion, abstraction, coupling, separation of concerns |
-| **Observable** | `observable.yaml` | Build-time instrumentation: scripts, anti-fabrication guards, CNL compliance, trace instrumentation |
-| **Operable** | `operable.yaml` (CECX) | Runtime execution correctness: step completion, no fabrication, inference hops, token efficiency, correct sequence, scope resolution |
+| **Observable** | `observable.yaml` | Build-time instrumentation: trace instrumentation, CNL compliance, anti-fabrication guards, SDM delegation |
+| **Operable** | `operable.yaml` (BMBT + CECX) | Build-time structural readiness (bones, muscle, brain, harness) + runtime execution correctness (step completion, no fabrication, inference hops, token efficiency, correct sequence, scope resolution) |
 
 AGENTS.md is **Non-Observable** (passive document, no self-instrumentation)
-and is evaluated on Quality + Operable only.
+and uses **adapted schemas** (`quality-agents-md.yaml`,
+`operable-agents-md.yaml`) with calibrated thresholds for declarative
+policy. SKILL artifacts use the universal schemas.
+
+Each evaluation uses a **hybrid evidence architecture**: Stage 1a
+(`gather-skill-state.sh` for structural facts) + Stage 1b (frontier
+model for semantic extraction per dimension) + Stage 2 (SDM SystemOne
+API for reproducible bounded scoring). No composite score across axes
+— per-axis bands reported separately.
 
 ### Evaluation Tiers (`agentfs-eval`)
 

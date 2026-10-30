@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 23:01
+- Fix D7 drift: update QOO table with BMBT, adapted schemas, hybrid evidence architecture (README.md)
+
+## 2026-10-29 23:00
+- Fix D2 drift: add Evaluation category to skill categories table (README.md)
+- Fix D2/D6/D7 drift: update Rule 6 wording, version constraint ref (README.md)
+- Fix D6 drift: version 7.6.0 → 7.6.1 (README.md)
+
+## 2026-10-29 22:53
+- Fix: validate --version before side effects to prevent duplicate log entries (skills/agentfs-setup/scripts/post-write.sh)
+
+## 2026-10-29 22:46
+- Bump version to 7.6.1 for R6 Post-Write CNL tuning (skills/agentfs-setup/SKILL.md)
+- R6 Post-Write CNL tuning: add 'immediately' temporal anchor and blocking gate (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-29 22:25
+- Operable Run 7: BMBT 4/4 pass after calibration, runtime 86.8 Tunable (25/30 target) (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
 ## 2026-10-29 21:56
 - C3: Explicit Paths Over Abstraction — accidental_complexity trade-off for model portability, no action until rule engine (skills/agentfs-setup/references/design-spec.md)
 

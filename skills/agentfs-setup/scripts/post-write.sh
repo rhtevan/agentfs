@@ -130,19 +130,7 @@ fi
 # Strip bullet prefix for changelog (table row, not a list)
 CHANGELOG_DESCRIPTION="${DESCRIPTION#- }"
 
-# ── Step 1: Log entries ────────────────────────────────────────────
-for log in "${LOGS[@]}"; do
-  # Ensure parent directory exists (knowledge bundle logs may not exist yet)
-  log_dir="$(dirname "$log")"
-  if [[ ! -d "$log_dir" ]]; then
-    echo "[post-write] Skipping log $log (parent dir does not exist)"
-    continue
-  fi
-  echo "[post-write] Logging to $log"
-  bash "$SCRIPT_DIR/merge-log-entry.sh" "$log" "$LOG_DESCRIPTION"
-done
-
-# ── Step 2: Changelog (if skill + version provided) ───────────────
+# ── Pre-flight: Validate version requirement before side effects ──
 # Detect if file is under a skills/*/ directory
 SKILL_DIR=""
 if [[ "$ABS_FILE" == */skills/*/* ]]; then
@@ -158,23 +146,36 @@ if [[ "$ABS_FILE" == */skills/*/* ]]; then
 fi
 
 if [[ -n "$SKILL_DIR" ]]; then
-  # Determine if this file is a version-significant change.
-  # SKILL.md and scripts/ are behavioral — version bump required.
-  # artifacts/, references/, templates/, rubrics/ are supporting
-  # content — version bump optional (log entry still recorded).
   FILE_IN_SKILL="${ABS_FILE#"$SKILL_DIR/"}"
   VERSION_REQUIRED=false
   case "$FILE_IN_SKILL" in
     SKILL.md|scripts/*) VERSION_REQUIRED=true ;;
   esac
 
-  if [[ -n "$VERSION" ]]; then
-    echo "[post-write] Updating changelog: $SKILL_DIR/CHANGELOG.md v$VERSION"
-    bash "$SCRIPT_DIR/merge-changelog-entry.sh" "$SKILL_DIR/CHANGELOG.md" "$VERSION" "$CHANGELOG_DESCRIPTION"
-  elif $VERSION_REQUIRED; then
+  if $VERSION_REQUIRED && [[ -z "$VERSION" ]]; then
     echo "[post-write] ❌ Skill behavioral file modified ($FILE_IN_SKILL) but no --version provided."
     echo "  Re-run with: bash post-write.sh <file> \"<description>\" --version <ver>"
     exit 1
+  fi
+fi
+
+# ── Step 1: Log entries ────────────────────────────────────────────
+for log in "${LOGS[@]}"; do
+  # Ensure parent directory exists (knowledge bundle logs may not exist yet)
+  log_dir="$(dirname "$log")"
+  if [[ ! -d "$log_dir" ]]; then
+    echo "[post-write] Skipping log $log (parent dir does not exist)"
+    continue
+  fi
+  echo "[post-write] Logging to $log"
+  bash "$SCRIPT_DIR/merge-log-entry.sh" "$log" "$LOG_DESCRIPTION"
+done
+
+# ── Step 2: Changelog (if skill + version provided) ───────────────
+if [[ -n "$SKILL_DIR" ]]; then
+  if [[ -n "$VERSION" ]]; then
+    echo "[post-write] Updating changelog: $SKILL_DIR/CHANGELOG.md v$VERSION"
+    bash "$SCRIPT_DIR/merge-changelog-entry.sh" "$SKILL_DIR/CHANGELOG.md" "$VERSION" "$CHANGELOG_DESCRIPTION"
   else
     echo "[post-write] ℹ️  Supporting file modified ($FILE_IN_SKILL) — no version bump required."
   fi

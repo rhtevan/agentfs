@@ -322,8 +322,9 @@ multi-phase, or user explicitly requests structured execution):
    Place skills in USER scope (`~/.agents/skills/`) by default.
    Use PROJECT scope only when user says "project skill" or "local skill".
 2. After EACH write (except `log.md`, `CHANGELOG.md`, auto-generated
-   `index.md`), run:
+   `index.md`), immediately run:
    `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>"`
+   Do NOT respond to the user until the command completes.
 3. When MEMORY.md accumulates ≥3 entries on same topic: suggest
    graduation via `hey harvest`.
 

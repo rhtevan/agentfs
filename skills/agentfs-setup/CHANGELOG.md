@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-29 22:53 | v7.6.1 — R6 Post-Write CNL tuning: add 'immediately' temporal anchor and blocking gate; Bump version to 7.6.1 for R6 Post-Write CNL tuning; Fix: validate --version before side effects to prevent duplicate log entries |
 | 2026-10-29 19:25 | v7.6.0 — Wired upgrade steps to quality-agents-md.yaml adapted schema; Step 1 outputs BMBT evidence; sdm-evaluate.sh routes artifact-type agents-md; Graceful SDM failure handling; Fix merge-changelog-entry.sh dedup; Add 'Diagnose before patching' principle; Redesigned Upgrade flow: hybrid evidence architecture — bash structural facts + frontier semantic extraction + SDM scoring |
 | 2026-10-28 21:03 | v7.6.0 — Added 'upgrade agentfs' signal and QOO build-time Quality evaluation workflow (Steps 1-4) |
 | 2026-10-27 21:07 | v7.5.1 — EP4+EP5: R2 Pre-Flight compressed (211→141 words), R4 canary reordered (action first) |
