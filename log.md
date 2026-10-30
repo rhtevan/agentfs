@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-29 20:34
+- Round count metric score_raw to nearest integer — SystemOne returns expected value not discrete bucket (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 20:33
+- Removed debug line, score_raw normalization covers both >= and <= branches (scripts/sdm-evaluate.sh)
+- Normalize score_raw scientific notation via awk before bc comparisons (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 20:32
+- Added debug line for <= target comparison (temporary) (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 20:30
+- Fixed count/ratio target mapping: bare '0' targets, proper ordinal-to-threshold conversion for count (6 buckets) and ratio (5 buckets) (scripts/sdm-evaluate.sh)
+
+## 2026-10-29 19:25
+- Updated description: hybrid evidence architecture (structural + frontier semantic + SDM scoring) (skills/schemas/quality-agents-md.yaml)
+- Step 9: hybrid evidence architecture — frontier semantic extraction + SDM scoring (skills/agentfs-eval/SKILL.md)
+- Redesigned Upgrade flow: hybrid evidence architecture — bash structural facts + frontier semantic extraction + SDM scoring (skills/agentfs-setup/SKILL.md)
+
 ## 2026-10-29 17:43
 - Removed stale 7.7.0 comment from version field (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
 

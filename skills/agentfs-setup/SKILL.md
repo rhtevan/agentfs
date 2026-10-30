@@ -337,39 +337,84 @@ lifecycle management.
 When the user says "upgrade agentfs", run build-time Quality evaluation
 on the current AGENTS.md and address identified gaps.
 
-### Step 1 — Gather AGENTS.md Facts
+### Evidence Architecture
 
-Run the fact extraction script against the project's AGENTS.md:
+QOO evaluation uses a two-stage pipeline:
+
+| Stage | Actor | Role | Strength |
+|-------|-------|------|----------|
+| **1a** | `gather-skill-state.sh` (bash) | Extract structural facts | Reproducible, cheap: line counts, file refs, section counts |
+| **1b** | Frontier model (you, the agent) | Extract semantic evidence | Comprehension: intent, coupling, complexity, concern boundaries |
+| **2** | SDM (SystemOne API on 14B) | Quantitative scoring | Reproducible bounded judgments, avoids frontier stochasticity |
+
+Stage 1a handles what regex can reliably count. Stage 1b handles what
+requires reading comprehension — the frontier model reads the artifact
+and produces per-dimension evidence statements. Stage 2 turns those
+evidence statements into reproducible numeric scores via SDM.
+
+### Step 1 — Gather Structural Facts
+
+Run the deterministic fact extraction:
 
 ```bash
 bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/agents-md-facts.txt
 ```
 
-Read the output. It contains per-rule metrics (lines, words, sub-steps,
-conditionals, passive voice), aggregate totals, and BMBT build-time
-readiness evidence (bones delegation ratio, CNL violations, unbounded
-judgments, benchmark coverage).
+Read the output. It contains per-rule structural metrics (lines, words,
+script references) and BMBT readiness indicators.
 
-### Step 2 — Evaluate Quality via SDM
+### Step 2 — Extract Semantic Evidence
 
-Run the SDM evaluation against the adapted AGENTS.md quality schema:
+Read the quality schema:
 
 ```bash
-bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md ~/.agents/skills/schemas/quality-agents-md.yaml
+cat ~/.agents/skills/schemas/quality-agents-md.yaml
 ```
 
-The script detects `artifact-type: agents-md` in the schema and
-automatically runs `gather-skill-state.sh --target agents-md` for
-evidence extraction. No `--evidence` flag needed.
+Read the project's AGENTS.md. For each dimension in the schema:
+
+1. Read the `question` field — it describes what to measure.
+2. Read the AGENTS.md content with that question in mind.
+3. Write a concise evidence statement (1-3 sentences) answering
+   the question with specific references to rules.
+
+Write all evidence statements to `/tmp/agents-md-evidence.txt` in
+this format:
+
+```
+=== Structural Facts ===
+<paste contents of /tmp/agents-md-facts.txt>
+
+=== Semantic Evidence ===
+rule_self_containment: <your evidence statement>
+rule_action_density: <your evidence statement>
+concern_count: <your evidence statement>
+trigger_clarity: <your evidence statement>
+cross_rule_dependency: <your evidence statement>
+accidental_complexity: <your evidence statement>
+```
+
+Be precise and factual. Cite specific rule numbers and content.
+Do NOT editorialize or score — SDM handles scoring in Step 3.
+
+### Step 3 — SDM Scoring
+
+Pass the composed evidence to SDM for quantitative evaluation:
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md \
+  ~/.agents/skills/schemas/quality-agents-md.yaml \
+  --evidence /tmp/agents-md-evidence.txt
+```
 
 If the output contains `"band": "SDM_UNAVAILABLE"`, report:
 "⚠️ SDM unavailable — quality scoring skipped."
-Skip Step 3. Continue to Step 4.
+Skip Step 4. Continue to Step 5.
 
-Otherwise, read the output. It contains per-dimension scores and an
-aggregate Quality score with band classification.
+Read the output. It contains per-dimension scores and an aggregate
+Quality score with band classification.
 
-### Step 3 — Persist Scores
+### Step 4 — Persist Scores
 
 Write the Quality scores to the artifact scores file:
 
@@ -390,7 +435,7 @@ quality:
   evaluated: "<timestamp>"
 ```
 
-### Step 4 — Address Gaps
+### Step 5 — Address Gaps
 
 For each dimension scoring below 75 (Tunable threshold):
 
@@ -398,7 +443,7 @@ For each dimension scoring below 75 (Tunable threshold):
 2. Propose concrete edits to `seed-agents-md.sh` (the source template).
 3. Present proposals to the user for approval.
 4. Apply approved changes via `seed-agents-md.sh` edit → `sync-agents-md.sh`.
-5. Re-run Steps 1-3 to verify improvement.
+5. Re-run Steps 1-4 to verify improvement.
 
 Do NOT edit AGENTS.md directly. Always edit the seed template source.
 

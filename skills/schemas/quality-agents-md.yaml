@@ -8,7 +8,8 @@ description: >
   The universal quality.yaml applies to SKILL.md; this schema applies
   to AGENTS.md. Both are grounded in the same MCACS principles.
 
-  Evaluated by: gather-skill-state.sh --target agents-md → sdm-evaluate.sh
+  Evidence: gather-skill-state.sh (structural facts) + frontier model
+  (semantic extraction per dimension) → sdm-evaluate.sh (scoring).
   Scores stored in: agentfs-setup/artifacts/agents-md/scores.yaml
 
 dimensions:

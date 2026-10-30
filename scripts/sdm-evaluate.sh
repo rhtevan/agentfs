@@ -330,22 +330,66 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
       fi
       ;;
     count|ratio)
-      score_raw=$(echo "$answer" | jq -r '.score // 0')
+      # Normalize scientific notation (e.g., 6.47E-7) to decimal for bc.
+      # SystemOne returns expected value (probability-weighted ordinal average),
+      # not a discrete bucket index. For count metrics, round to nearest
+      # integer since ordinal buckets are whole numbers.
+      score_raw_float=$(echo "$answer" | jq -r '.score // 0' | awk '{printf "%.10f", $1}')
+      if [[ "$metric" == "count" ]]; then
+        score_raw=$(echo "$score_raw_float" | awk '{printf "%.0f", $1}')
+      else
+        score_raw="$score_raw_float"
+      fi
       confidence=$(echo "$answer" | jq -r '.confidence // 0')
-      max_scale=4
+      # SystemOne score type returns ordinal index (0-based) into criteria array.
+      # count: ["0","1","2","3","4","5+"] → 6 buckets, max_scale=5
+      # ratio: ["0-20%","20-40%","40-60%","60-80%","80-100%"] → 5 buckets, max_scale=4
+      if [[ "$metric" == "count" ]]; then
+        max_scale=5
+      else
+        max_scale=4
+      fi
+
+      # Parse target value (strip operator)
+      target_op=""
+      target_num=""
       case "$target" in
-        ">="*)
-          score_val=$(echo "$score_raw $max_scale" | awk '{printf "%.0f", ($1 / $2) * 100}')
-          if (( $(echo "$score_raw >= $((max_scale - 1))" | bc -l) )); then pass=true; fi
-          ;;
-        "<="*)
-          score_val=$(echo "$score_raw $max_scale" | awk '{v = (1 - $1 / $2) * 100; if (v < 0) v = 0; printf "%.0f", v}')
-          if (( $(echo "$score_raw <= 1" | bc -l) )); then pass=true; fi
-          ;;
-        *)
-          score_val=50; detail="${detail:+$detail; }no target comparison"
-          ;;
+        ">="*) target_op=">="; target_num=$(echo "$target" | sed 's/>= *//') ;;
+        "<="*) target_op="<="; target_num=$(echo "$target" | sed 's/<= *//') ;;
+        [0-9]*) target_op="<="; target_num="$target" ;;  # bare number = exact/at-most
+        *) target_op=""; target_num="" ;;
       esac
+
+      if [[ -n "$target_op" && -n "$target_num" ]]; then
+        if [[ "$target_op" == ">=" ]]; then
+          # Higher is better. score_raw/max_scale → 0-100.
+          score_val=$(echo "$score_raw $max_scale" | awk '{printf "%.0f", ($1 / $2) * 100}')
+          # Map target to ordinal threshold.
+          if [[ "$metric" == "ratio" ]]; then
+            # ratio target like ">= 0.50" → need score_raw >= 2 (40-60% bucket or higher)
+            target_bucket=$(echo "$target_num $max_scale" | awk '{printf "%.0f", $1 * $2}')
+          else
+            # count target like ">= 3" → need score_raw >= 3
+            target_bucket=$(printf "%.0f" "$target_num")
+          fi
+          if (( $(echo "$score_raw >= $target_bucket" | bc -l) )); then pass=true; fi
+        else
+          # Lower is better (<=). Invert: (1 - score_raw/max_scale) → 0-100.
+          score_val=$(echo "$score_raw $max_scale" | awk '{v = (1 - $1 / $2) * 100; if (v < 0) v = 0; printf "%.0f", v}')
+          # Map target to ordinal threshold.
+          if [[ "$metric" == "ratio" ]]; then
+            # ratio target like "<= 0.30" → pass if score_raw <= 1 (20-40% bucket)
+            target_bucket=$(echo "$target_num $max_scale" | awk '{printf "%.0f", $1 * $2}')
+          else
+            # count target like "<= 5" → pass if score_raw <= 4 (bucket "4")
+            # count target like "0" → pass if score_raw == 0
+            target_bucket=$(printf "%.0f" "$target_num")
+          fi
+          if (( $(echo "$score_raw <= $target_bucket" | bc -l) )); then pass=true; fi
+        fi
+      else
+        score_val=50; detail="${detail:+$detail; }no target comparison"
+      fi
       ;;
     choice)
       chosen=$(echo "$answer" | jq -r '.choice // "unknown"')

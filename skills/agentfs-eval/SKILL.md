@@ -123,25 +123,50 @@ Record per-test results. Continue to Step 9.
 
 ### Step 9 — Tier 3 QOO: SDM Operable Score
 
-Compose benchmark evidence into a temp file. Include:
-- AGENTS.md facts from `gather-skill-state.sh --target agents-md`
-  (provides BMBT build-time evidence)
-- Benchmark summary: per-test pass rates for frontier and target,
-  per-run variance, fabrication failures
+Compose evidence using hybrid extraction (structural + semantic):
+
+**9a. Structural facts:**
 
 ```bash
-# Gather AGENTS.md facts (includes BMBT evidence)
 bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/benchmark-evidence.txt
+```
 
-# Append benchmark results summary
-echo "" >> /tmp/benchmark-evidence.txt
-echo "=== Benchmark Results ===" >> /tmp/benchmark-evidence.txt
-# Add per-test frontier/target pass rates and per-run breakdown
-# from Steps 7 and 8 output
+**9b. Semantic evidence:**
 
-# Run SDM evaluation against adapted operable schema
+Read the operable schema:
+
+```bash
+cat ~/.agents/skills/schemas/operable-agents-md.yaml
+```
+
+Read AGENTS.md. For each build-time dimension (has_bones, has_muscle,
+has_brain, has_harness), write a 1-3 sentence evidence statement
+citing specific rules and scripts. For each runtime dimension, extract
+evidence from the benchmark results in Steps 7 and 8.
+
+Write to `/tmp/benchmark-evidence.txt`:
+
+```
+=== Structural Facts ===
+<paste gather-skill-state.sh output>
+
+=== Semantic Evidence (Build) ===
+has_bones: <evidence about script delegation in rules>
+has_muscle: <evidence about CNL compliance>
+has_brain: <evidence about bounded vs unbounded judgments>
+has_harness: <evidence about benchmark coverage>
+
+=== Benchmark Results (Runtime) ===
+<per-test frontier/target pass rates from Steps 7-8>
+<per-run variance, fabrication failures>
+```
+
+**9c. SDM scoring:**
+
+```bash
 bash ~/.agents/scripts/sdm-evaluate.sh /tmp/benchmark-evidence.txt \
-  ~/.agents/skills/schemas/operable-agents-md.yaml --evidence /tmp/benchmark-evidence.txt
+  ~/.agents/skills/schemas/operable-agents-md.yaml \
+  --evidence /tmp/benchmark-evidence.txt
 ```
 
 If the output contains `"band": "SDM_UNAVAILABLE"`, report:
