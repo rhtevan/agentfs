@@ -1,0 +1,21 @@
+( user ) hey check violations
+
+  ▸ search_nodes {"query": "check violations"}
+  ◂ {"entities":[{"name":"skill:agentfs-eval","entityType":"AgentSkill","observations":["Signals: eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit","Action: load_skill(name: \"agentfs-eval\")"]}]}
+
+  ▸ load_skill {"name": "agentfs-eval"}
+  ◂ # Loaded Skill: agentfs-eval (skill)
+
+Session audit mode activated. Gathering audit baseline...
+
+  ▸ shell {"command": "cat AGENTS.md"}
+  ◂ ### 1. Signal Dispatch
+
+  ▸ shell {"command": "cat .agents/SOUL.md"}
+  ◂ # Agent Identity
+
+## Session Audit Report
+
+| # | Rule | Status | Detail |
+|---|------|--------|--------|
+| 1 | Signal Dispatch | 🟢 Clean | search_nodes called correctly |

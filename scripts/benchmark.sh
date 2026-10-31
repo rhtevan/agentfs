@@ -476,12 +476,19 @@ run_test() {
     > "$outfile" 2>&1 || true
 
   # Check pass criteria
-  # Try specific checker first, then generic QOO checker for auto-discovered tests
+  # Try specific checker first, then dispatch fidelity for QOO tests
   local checker="check_${test_id}"
   if ! declare -f "$checker" > /dev/null 2>&1; then
-    # Auto-discovered QOO tests use generic checker
+    # Auto-discovered QOO tests use 3-level dispatch fidelity checker
     if [[ "$test_id" == qoo_* ]]; then
-      checker="check_qoo"
+      local verdict
+      local script_dir
+      script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+      verdict=$(bash "$script_dir/check-dispatch-fidelity.sh" "$outfile" 2>/dev/null)
+      local result=$?
+      echo "$verdict" >> "$outfile"
+      echo "$verdict"
+      return $result
     else
       echo "SKIP: no checker for $test_id"
       return 0

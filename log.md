@@ -2,6 +2,64 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 15:43
+- Fix D9 coverage gap extraction to handle empty skill list gracefully (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+- Fix skill list extraction regex to match gather-state format (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-10-31 15:42
+- Rewrite: per-dimension evidence excerpts instead of lossy booleans — Stage 1b semantic decisions left to SDM (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-10-31 15:41
+- Revoke QOO qualification — missing Stage 1b, regex extraction causes SDM false negatives (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 15:04
+- Suppress filesystem facts when README makes no corresponding claim — eliminates SDM omission-vs-fact false negatives (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+- Fix SDM false negatives: omit absent claims from evidence instead of emitting 'not mentioned' (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-10-31 15:00
+- Fix false positive skill name detection — use parenthesized backtick convention only (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-10-31 14:59
+- Add feature/skill reference validation to comparison evidence for D7 accuracy (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-10-31 14:58
+- D6: Remove historical version citation; D8: Fix broken AGENTS.md link to seed-agents-md.sh (README.md)
+
+## 2026-10-31 14:56
+- D6: Disambiguate version citation; D7: Add dispatch fidelity to Evaluation; D8: Update scripts/ description (README.md)
+
+## 2026-10-31 14:53
+- D6: Fix template version 7.6.0→7.6.2; D7: Add ES-First knowledge bundle (README.md)
+- D5: Update Rule 6 description to include deletion support (README.md)
+- D6: Fix design constraint version reference to v7.6.0 (origin version) (README.md)
+
+## 2026-10-31 14:52
+- D6: Fix version reference 7.6.1 → 7.6.2 (README.md)
+
+## 2026-10-31 14:48
+- Integrate check-dispatch-fidelity.sh for QOO tests — 3-level dispatch validation (scripts/benchmark.sh)
+
+## 2026-10-31 14:39
+- Dispatch fidelity checker: 3-level validation (presence, invocation, utilization) (scripts/check-dispatch-fidelity.sh)
+
+## 2026-10-31 14:37
+- ES implementation patterns: deterministic, SDM-hybrid, benchmark (knowledge/executable-specification-first/es-implementation-patterns.md)
+
+## 2026-10-31 14:36
+- ES-First principle: write test, verify fail, implement, verify pass (knowledge/executable-specification-first/es-first-principle.md)
+
+## 2026-10-31 14:15
+- Test: validate --deleted flag works (skills/agentfs-violation-chk/SKILL.md)
+- Bump version to 7.6.2 for Rule 6 deletion support (skills/agentfs-setup/SKILL.md)
+- Widen Rule 6 When clause to include deletions; add step 3 for --deleted (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-10-31 14:14
+- Add --deleted flag: log-only mode for file/dir deletions (skills/agentfs-setup/scripts/post-write.sh)
+- Add --deleted flag to header comment (skills/agentfs-setup/scripts/post-write.sh)
+
+## 2026-10-31 14:10
+Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; KGM entity and index entry also removed
+
 ## 2026-10-29 23:01
 - Fix D7 drift: update QOO table with BMBT, adapted schemas, hybrid evidence architecture (README.md)
 

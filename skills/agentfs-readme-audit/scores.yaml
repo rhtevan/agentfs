@@ -1,17 +1,33 @@
 # scores.yaml — agentfs-readme-audit
 # Objective QOO scores from gather-skill-state.sh + sdm-evaluate.sh pipeline.
-# Replaces frontier-subjective qoo-profile.yaml.
 #
-# Status: QOO-qualified (scripts, CNL muscle, SDM integration).
-# SDM evaluation pending — run evaluate-pending.sh to populate.
+# Status: QOO qualification REVOKED (2026-10-31).
+# Gap: missing Stage 1b (LLM-based semantic evidence extraction).
+# extract-comparison.sh used regex for semantic decisions, causing
+# false negatives on D1, D2, D6, D7 dimensions.
 
 skill: agentfs-readme-audit
-version: "3.0.1"
-qoo-qualified: true
-qualification-basis:
-  - "scripts/gather-state.sh (deterministic state gathering)"
-  - "scripts/evaluate-readme.sh (SDM-backed dimension evaluation)"
-  - "CNL-compliant SKILL.md"
-  - "Anti-fabrication rules in muscle"
-latest: null  # Populated by sdm-evaluate.sh
-history: []   # Appended by evaluate-pending.sh
+version: "3.0.2"
+qoo-qualified: false
+qualification-gaps:
+  has_brain: >
+    extract-comparison.sh performs semantic judgment via regex
+    (claim detection, version classification, skill name matching)
+    instead of delegating to LLM extraction (Stage 1b). SDM scores
+    correctly on bad evidence — the extraction is the weak link.
+  has_harness: >
+    Benchmark tests validate dispatch chain only, not audit accuracy.
+    No end-to-end test verifies that the skill detects known drift
+    correctly (no fixture-based red/green validation).
+  manual_fallback: >
+    When SDM unavailable, SKILL.md instructs unbounded LLM manual
+    comparison — violates has_brain bounded judgment requirement.
+requalification-requires:
+  - "Implement Stage 1b LLM extraction in extract-comparison.sh"
+  - "Remove or bound the manual fallback path"
+  - "Add fixture-based accuracy test (known-drift → detect, clean → pass)"
+latest: null
+history:
+  - date: "2026-10-31"
+    type: "qualification-revoked"
+    note: "Stage 1b missing — regex extraction causes SDM false negatives on D1/D2/D6/D7"

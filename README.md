@@ -133,7 +133,7 @@ profiles — purely a capability and knowledge store.
 ├── skills/          # Shared agent workflows (SKILL.md format)
 ├── knowledge/       # Shared knowledge bundles (Open Knowledge Format)
 ├── plugins/         # Goose hooks plugins (deterministic enforcement)
-├── scripts/         # Shared scripts (SDM, benchmark, gather-state, etc.)
+├── scripts/         # Shared scripts (SDM, benchmark, dispatch fidelity checker, gather-state, test fixtures)
 ├── assets/          # Static assets (images, diagrams)
 ├── index.md         # Navigation hub — start here
 └── log.md           # Activity log (reverse chronological)
@@ -281,12 +281,13 @@ Current bundles:
 - **Deployment Fitting Guide** — Rules of thumb for context window and parameter sizing, hardware interaction data, multi-dimensional deployment scoring framework
 - **KGM-Based Skill Dispatch** — Design decisions, evidence, and architecture for using KGM as the primary skill dispatch mechanism
 - **AgentFS Engineering Evolution** — MCACS systems engineering principles applied to evolve AgentFS for mid-range model operability, measurement framework, benchmark test suite, SDM integration
+- **Executable Specification First (ES-First)** — Development process principle: write test, verify fail, implement, verify pass. Three ES patterns (deterministic, SDM-hybrid, benchmark)
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.6.1 enforces 6 operational rules as numbered subsections
+AgentFS v7.6.2 enforces 6 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -299,9 +300,9 @@ external enforcement only: routing, hooks, process obligations.
 | 3 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
 | 4 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
 | 5 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
-| 6 | Scope & Post-Write | Writing to any file under `.agents/` or `~/.agents/` | Scope: memories PROJECT-only, skills default USER. After EACH write immediately run `post-write.sh` — do not respond until it completes. Graduate mature patterns via `hey harvest`. |
+| 6 | Scope & Post-Write | Writing to or deleting any file under `.agents/` or `~/.agents/` | Scope: memories PROJECT-only, skills default USER. After EACH write immediately run `post-write.sh` — do not respond until it completes. After EACH deletion run `post-write.sh --deleted`. Graduate mature patterns via `hey harvest`. |
 
-**Design constraint (v7.6.1):** Rules must use guard-style When clauses
+**Design constraint:** Rules must use guard-style When clauses
 (evaluable before execution). Effect-based triggers — whose conditions
 depend on the agent's own completed actions — are prohibited (0% fire
 rate on all model sizes). See [design-spec.md](skills/agentfs-setup/references/design-spec.md) C1/C2.
@@ -314,7 +315,7 @@ Path hygiene (never use `/home/<user>/` in output) is enforced by
 `pre-push-scan.sh` Category 2 rather than a dedicated rule.
 
 The canonical source for rules is the `agentfs-setup` skill template (`seed-agents-md.sh`).
-See [AGENTS.md](./AGENTS.md) in any project for the full rendered rules.
+See any project's `AGENTS.md` for the full rendered rules (generated from [`seed-agents-md.sh`](skills/agentfs-setup/scripts/seed-agents-md.sh)).
 
 ## Memory Architecture
 
@@ -561,7 +562,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.6.0 -->
+<!-- agentfs-template-version: 7.6.2 -->
 ```
 
 AGENTS.md is divided into two ownership zones:
@@ -759,7 +760,7 @@ The full eval sequence (`hey eval agentfs`) executes 11 steps across
 | 0 | `template-check.sh` (deterministic) | Template quality: token budget, section order, rule completeness (A1-A9) |
 | 1 | `agentfs-check.sh` (deterministic) | Structural: links, log ordering, index completeness, scope correctness (S1-S7) |
 | 2 | `agentfs-behavior.sh` (deterministic) | Behavioral: action-log correlation, timestamp alignment, scope leakage (B1-B5) |
-| 3 | `benchmark.sh` + `sdm-evaluate.sh` (SDM) | QOO Operable: frontier model 1 run + target model 5 runs, SDM scoring against CECX dimensions, gap analysis |
+| 3 | `benchmark.sh` + `sdm-evaluate.sh` (SDM) | QOO Operable: frontier model 1 run + target model 5 runs, 3-level dispatch fidelity checking (presence, invocation correctness, result utilization), SDM scoring against CECX dimensions, gap analysis |
 
 Tier 3 uses the SDM (Semantic Decision Model) via NextToken API for
 zero-shot bounded semantic judgments at ~115-200ms per question.

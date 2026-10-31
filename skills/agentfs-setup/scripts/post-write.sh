@@ -5,12 +5,13 @@
 # post-edit, link check) with one invocation per modified file.
 #
 # Usage:
-#   bash post-write.sh <modified-file> "<description>" [--version <ver>]
+#   bash post-write.sh <modified-file> "<description>" [--version <ver>] [--deleted]
 #
 # Arguments:
-#   modified-file   Path to the file that was written/edited
+#   modified-file   Path to the file that was written/edited (or deleted)
 #   description     What changed (will be bullet-prefixed if not already)
 #   --version <ver> Optional: version string for skill changelog entry
+#   --deleted       File was deleted — skip existence checks, log only
 #
 # Behaviour:
 #   1. Detects scope (USER vs PROJECT vs knowledge bundle)
@@ -33,11 +34,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODIFIED_FILE="${1:?Usage: post-write.sh <modified-file> \"<description>\" [--version <ver>]}"
 DESCRIPTION="${2:?Usage: post-write.sh <modified-file> \"<description>\" [--version <ver>]}"
 VERSION=""
+DELETED=false
 
 shift 2
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --version) VERSION="${2:?--version requires a value}"; shift 2 ;;
+    --deleted) DELETED=true; shift ;;
     *) echo "[post-write] Unknown arg: $1"; exit 1 ;;
   esac
 done
@@ -129,6 +132,21 @@ if [[ "$LOG_DESCRIPTION" != *"$REL_PATH"* ]] && [[ "$LOG_DESCRIPTION" != *"$BASE
 fi
 # Strip bullet prefix for changelog (table row, not a list)
 CHANGELOG_DESCRIPTION="${DESCRIPTION#- }"
+
+# ── Deleted mode: log only, skip changelog and post-edit ──────────
+if $DELETED; then
+  for log in "${LOGS[@]}"; do
+    log_dir="$(dirname "$log")"
+    if [[ ! -d "$log_dir" ]]; then
+      echo "[post-write] Skipping log $log (parent dir does not exist)"
+      continue
+    fi
+    echo "[post-write] Logging deletion to $log"
+    bash "$SCRIPT_DIR/merge-log-entry.sh" "$log" "$LOG_DESCRIPTION"
+  done
+  echo "[post-write] ✓ Deletion logged (scope: $SCOPE)"
+  exit 0
+fi
 
 # ── Pre-flight: Validate version requirement before side effects ──
 # Detect if file is under a skills/*/ directory

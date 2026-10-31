@@ -315,7 +315,7 @@ multi-phase, or user explicitly requests structured execution):
 
 ### 6. Scope & Post-Write
 
-**When:** Writing to any file under `.agents/` or `~/.agents/`.
+**When:** Writing to or deleting any file under `.agents/` or `~/.agents/`.
 
 **Do:**
 1. Scope: write memories to PROJECT scope only (`.agents/memories/`).
@@ -325,7 +325,9 @@ multi-phase, or user explicitly requests structured execution):
    `index.md`), immediately run:
    `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> "<description>"`
    Do NOT respond to the user until the command completes.
-3. When MEMORY.md accumulates ≥3 entries on same topic: suggest
+3. After EACH deletion, immediately run:
+   `bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <deleted-path> "<description>" --deleted`
+4. When MEMORY.md accumulates ≥3 entries on same topic: suggest
    graduation via `hey harvest`.
 
 ## Signal Dispatch

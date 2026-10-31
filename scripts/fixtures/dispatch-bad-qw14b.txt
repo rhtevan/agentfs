@@ -1,0 +1,21 @@
+( user ) hey check violations
+
+  ▸ load_skill {"name": "agentfs-violation-chk"}
+  ◂ ERROR: Tool call denied by policy hook `signal-dispatch`: This tool is not needed yet. The user said: hey check violations. Follow the Signal Dispatch rule in AGENTS.md: first tool call MUST be search_nodes with the keywords.
+
+  ▸ search_nodes {"keywords": "check violations"}
+  ◂ ERROR: Tool 'search_nodes' is not available.
+
+  ▸ load_skill {"name": "agentfs-eval"}
+  ◂ # Loaded Skill: agentfs-eval (skill)
+
+  ▸ shell {"command": "bash ~/.agents/skills/agentfs-eval/scripts/agentfs-check.sh /home/ezhang/app/playground/goofing-around"}
+  ◂ === Layer 1: Structural Assertions ===
+
+# AgentFS Evaluation Report (Layer 1)
+
+## Structural Assertions Summary
+✅ **6/7 checks passed** with 1 warning:
+
+### ⚠️ S7: Orphan Detection
+**2 files not linked from any index.md:**

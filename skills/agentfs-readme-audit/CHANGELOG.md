@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-31 15:43 | v3.0.2 — Add feature/skill reference validation to comparison evidence for D7 accuracy; Fix false positive skill name detection — use parenthesized backtick convention only; Fix SDM false negatives: omit absent claims from evidence instead of emitting 'not mentioned'; Suppress filesystem facts when README makes no corresponding claim — eliminates SDM omission-vs-fact false negatives; Rewrite: per-dimension evidence excerpts instead of lossy booleans — Stage 1b semantic decisions left to SDM; Fix skill list extraction regex to match gather-state format; Fix D9 coverage gap extraction to handle empty skill list gracefully |
 | 2026-10-28 23:40 | v3.1.0 — Created extract-comparison.sh — compact SDM evidence from gather-state output |
 | 2026-10-27 13:12 | v3.0.1 — v3.0.1: prohibition on direct README reading, absolute paths, stronger imperative, temp file pattern |
 | 2026-10-27 11:53 | v3.0.0 — New script: deterministic state gathering for README audit — replaces Steps 0-2, trace-instrumented, dual scope support |
