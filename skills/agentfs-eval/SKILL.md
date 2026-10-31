@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.4.0"
+  version: "2.5.0"
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
 
@@ -19,7 +19,41 @@ three layers of progressively deeper verification.
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | "agentfs score", "agentfs status"                  | Tier 0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score.                      |
 | "eval agentfs", "agentfs health", "maturity check" | Full eval. Execute ALL steps in the Full Eval Sequence below. Do NOT skip steps.                  |
-| "check violations", "self audit"                   | Session audit mode. Follow the Session Audit Mode section. Diagnostic only — no scores persisted. |
+| "check violations", "self audit"                   | Session audit mode. Follow the Session Audit Mode section below. Diagnostic only — no scores persisted. |
+
+**ROUTING STOP: Find your match above, then jump to that section.
+Do NOT read past the matched section. Do NOT run the Full Eval
+Sequence unless the match says "Full eval".**
+
+## Session Audit Mode
+
+When the user says "check violations" or "self audit", review the
+current session's conversation history against AGENTS.md rules and
+SOUL.md principles. This is diagnostic only — no scores are persisted.
+Do NOT run any scripts. Do NOT run the Full Eval Sequence.
+
+### Step 1 — Gather Audit Baseline
+
+Read the current project's AGENTS.md rules and SOUL.md principles.
+Count the numbered rules and named principles.
+
+### Step 2 — Review Session History
+
+For each rule and principle, scan the conversation history for
+compliance or violations. Cite specific turns where violations occurred.
+
+### Step 3 — Produce Report
+
+| # | Rule | Status | Detail |
+|---|------|--------|--------|
+| 1 | Signal Dispatch | 🟢 / 🟡 / 🔴 | Specific turn or "clean" |
+
+Classify findings as 🔴 violation, 🟡 borderline, 🟢 clean.
+Include actionable remediation for each violation.
+
+**END OF SESSION AUDIT MODE. Stop here.**
+
+---
 
 ## Full Eval Sequence
 
@@ -477,31 +511,6 @@ Gap classification categories:
 - **model-level** — model lacks capability (e.g., ignores canary rule)
 - **CNL weakness** — rule prose is ambiguous or insufficiently imperative
 - **platform limitation** — test environment gap (e.g., missing sandbox state)
-
-## Session Audit Mode (from agentfs-violation-chk)
-
-When the user says "check violations" or "self audit", review the
-current session's conversation history against AGENTS.md rules and
-SOUL.md principles. This is diagnostic only — no scores are persisted.
-
-### Step 1 — Gather Audit Baseline
-
-Read the current project's AGENTS.md rules and SOUL.md principles.
-Count the numbered rules and named principles.
-
-### Step 2 — Review Session History
-
-For each rule and principle, scan the conversation history for
-compliance or violations. Cite specific turns where violations occurred.
-
-### Step 3 — Produce Report
-
-| # | Rule | Status | Detail |
-|---|------|--------|--------|
-| 1 | Signal Dispatch | 🟢 / 🟡 / 🔴 | Specific turn or "clean" |
-
-Classify findings as 🔴 violation, 🟡 borderline, 🟢 clean.
-Include actionable remediation for each violation.
 
 ## Design Principles
 

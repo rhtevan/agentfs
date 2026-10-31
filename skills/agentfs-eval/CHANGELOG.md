@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-31 17:02 | v2.5.0 — Restructure SKILL.md: move Session Audit Mode before Full Eval Sequence, add ROUTING STOP and END signals for weaker model comprehension; Remove duplicate Session Audit Mode section from old position (now relocated above Full Eval Sequence); Bump metadata version to 2.5.0 |
 | 2026-10-29 21:42 | v2.4.0 — Step 9: wired to operable-agents-md.yaml adapted schema with BMBT+benchmark evidence composition; Bumped version to 2.4.0 in frontmatter; Step 9: hybrid evidence architecture — frontier semantic extraction + SDM scoring; Fixed stale 'pending Stream 2 retrofit' note — adapted schemas are wired and working; Step 11: explicit merge instructions for scores.yaml — preserves quality section, appends to history |
 | 2026-10-29 17:01 | v2.3.0 — QOO tidy-up D3: rewrite QOO Details section — Quality and Operable applicable with adapted schemas, Observable N/A, BMBT build-time acknowledged; Bump frontmatter version 2.2.0 → 2.3.0 |
 | 2026-10-29 15:41 | v2.2.0 — Align with v7.6.0 QOO: A2 description updated, A3 rule count 8→6, A10 assertion added to table, version frontmatter 2.1.0→2.2.0, Quality schema marked inapplicable for AGENTS.md, EXPECTED_RULES=6 in template-check.sh |

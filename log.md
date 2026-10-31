@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 17:02
+- Bump metadata version to 2.5.0 (skills/agentfs-eval/SKILL.md)
+
+## 2026-10-31 17:01
+- Remove duplicate Session Audit Mode section from old position (now relocated above Full Eval Sequence) (skills/agentfs-eval/SKILL.md)
+- Restructure SKILL.md: move Session Audit Mode before Full Eval Sequence, add ROUTING STOP and END signals for weaker model comprehension
+
 ## 2026-10-31 16:59
 - Update template version marker from 7.6.2 to 7.6.3 (README.md)
 - Update version references from 7.6.2 to 7.6.3 for Rule 1 CNL fix (README.md)
