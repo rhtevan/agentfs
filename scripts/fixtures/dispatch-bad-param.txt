@@ -1,0 +1,7 @@
+( user ) hey check violations
+
+  ▸ search_nodes {"keywords": "check violations"}
+  ◂ {"entities": [{"name": "skill:agentfs-eval", "entityType": "skill"}]}
+
+  ▸ load_skill {"name": "agentfs-eval"}
+  ◂ # Loaded Skill: agentfs-eval (skill)

@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 16:59
+- Update template version marker from 7.6.2 to 7.6.3 (README.md)
+- Update version references from 7.6.2 to 7.6.3 for Rule 1 CNL fix (README.md)
+
+## 2026-10-31 16:58
+- Bump metadata version to 7.6.3 for Rule 1 CNL fix (skills/agentfs-setup/SKILL.md)
+- Rule 1 CNL fix: add literal search_nodes(query:) syntax to Path B step 2, preventing weaker models from using wrong parameter name (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Add L2-param-specific bad fixture for ES-First verification of CNL fix (scripts/fixtures/dispatch-bad-param.txt)
+
 ## 2026-10-31 15:43
 - Fix D9 coverage gap extraction to handle empty skill list gracefully (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
 - Fix skill list extraction regex to match gather-state format (skills/agentfs-readme-audit/scripts/extract-comparison.sh)

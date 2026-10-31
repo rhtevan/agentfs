@@ -238,9 +238,10 @@ If keywords match a Signal Dispatch entry below → execute that action directly
    Keep all other words exactly as the user typed them.
    Do NOT add, remove, reorder, or rephrase any word.
    Example: user says `hey crc status` → keywords = `crc status`.
-2. Call `search_nodes` with those exact keywords (mandatory —
-   enforced by plugin hook; other tools are blocked until this
-   completes). KGM search matches exact words, not fuzzy meaning.
+2. Call \`search_nodes(query: "<keywords>")\` — the parameter name
+   is \`query\`, not \`keywords\`. This call is mandatory; the
+   policy hook blocks all other tools until it completes.
+   KGM search matches exact words, not fuzzy meaning.
    Rephrased or expanded queries will miss.
 3. If result is a skill → call `load_skill` with the skill name.
    You MUST call `load_skill`. Do NOT skip it. Do NOT execute the
