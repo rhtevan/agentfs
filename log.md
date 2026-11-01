@@ -2,6 +2,32 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 22:31
+- assess: add comprehensive assess history entry (skills/crc-status/scores.yaml)
+- assess: update runtime timestamp (skills/crc-status/scores.yaml)
+- assess: update build evaluated timestamp (skills/crc-status/scores.yaml)
+
+## 2026-10-31 22:30
+- assess: refresh quality+observable timestamps (skills/crc-status/scores.yaml)
+
+## 2026-10-31 22:28
+- Add Assess Sequence — 11-step comprehensive assessment mode (skills/skill-eval/SKILL.md)
+
+## 2026-10-31 22:27
+- Add Assess mode to Quick Dispatch (skills/skill-eval/SKILL.md)
+
+## 2026-10-31 22:26
+- Bump metadata version to 2.2.0 (skills/skill-eval/SKILL.md)
+- Add assess skill mode — chains score+eval into single comprehensive assessment (skills/skill-eval/SKILL.md)
+
+## 2026-10-31 22:20
+- Add operable history entry (skills/crc-status/scores.yaml)
+- skill-eval: operable scores updated (BMBT 75 Tunable, CECX 60.5 Re-engineer) (skills/crc-status/scores.yaml)
+
+## 2026-10-31 22:17
+- Add quality+observable history entry (skills/crc-status/scores.yaml)
+- skill-gen: upgrade quality + observable scores (skills/crc-status/scores.yaml)
+
 ## 2026-10-31 22:07
 - All phases (0-6) complete (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 - Phase 6 COMPLETE (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)

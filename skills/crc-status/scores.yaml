@@ -22,34 +22,58 @@ quality:
   dimensions:
     script_coverage: { score: 25, pass: false, confidence: 1.00 }
     inference_hop_count: { score: 100, pass: true, confidence: 1.00 }
-    step_clarity: { score: 67, pass: true, confidence: 0.90 }
-    prose_executability: { score: 67, pass: true, confidence: 0.78 }
+    step_clarity: { score: 67, pass: true, confidence: 0.99 }
+    prose_executability: { score: 67, pass: true, confidence: 0.90 }
     model_portability: { score: 100, pass: true, confidence: 1.00 }
-    interface_opacity: { score: 0, pass: false, confidence: 0.99 }
-  evaluated: "2026-10-31T22:05:43-04:00"
+    interface_opacity: { score: 0, pass: false, confidence: 0.94 }
+  evaluated: "2026-10-31T22:30:09-04:00"
+
+observable:
+  schema: observable.yaml
+  schema_version: "1.1"
+  aggregate_score: 75
+  band: Tunable
+  dimensions:
+    trace_instrumentation: { score: 100, pass: true, confidence: 0.78 }
+    cnl_compliance: { score: 100, pass: true, confidence: 1.00 }
+    anti_fabrication: { score: 100, pass: true, confidence: 1.00 }
+    sdm_delegation: { score: 0, pass: false, confidence: 1.00 }
+  evaluated: "2026-10-31T22:30:15-04:00"
 
 operable:
   build:
     schema: operable.yaml
+    aggregate_score: 75
+    band: Tunable
     dimensions:
       has_bones: { score: 100, pass: true, confidence: 1.00 }
-      has_muscle: { score: 100, pass: true, confidence: 0.99 }
-      has_brain: { score: 100, pass: true, confidence: 0.99 }
-      has_harness: { score: 100, pass: true, confidence: 1.00 }
+      has_muscle: { score: 100, pass: true, confidence: 1.00 }
+      has_brain: { score: 0, pass: false, confidence: 1.00 }
+      has_harness: { score: 100, pass: true, confidence: 0.99 }
     note: >
-      BMBT 4/4 pass. All build-time structural readiness met.
-      Pattern A skill with single script, CNL orchestration,
-      no semantic judgment, and trace instrumentation.
-    evaluated: "2026-10-31T18:01:31-04:00"
+      BMBT 3/4 pass. has_brain=0 — no SDM delegation (Pattern A skill).
+      Expected and correct by design.
+    evaluated: "2026-10-31T22:30:43-04:00"
 
   runtime:
     schema: operable.yaml
-    aggregate_score: null
-    band: N/A
+    aggregate_score: 60.5
+    band: Re-engineer
+    dimensions:
+      step_completion: { score: 100, pass: true, confidence: 1.00, weight: 0.40 }
+      no_fabrication: { score: 0, pass: false, confidence: 1.00, weight: 0.40 }
+      minimal_inference_hops: { score: 100, pass: true, confidence: 0.99, weight: 0.25 }
+      token_efficiency: { score: 100, pass: true, confidence: 1.00, weight: 0.25 }
+      correct_sequence: { score: 100, pass: true, confidence: 1.00, weight: 0.25 }
+      scope_resolution: { score: 0, pass: false, confidence: 1.00, weight: 0.25 }
+      no_improvised_recovery: { score: 0, pass: false, confidence: 1.00, weight: 0.10 }
     note: >
-      No execution traces found in ~/.agents/.traces/.
-      Run the skill to generate traces, then re-evaluate.
-    evaluated: "2026-10-31T18:01:31-04:00"
+      CECX 4/7 pass. Trace is script-level only — no_fabrication,
+      scope_resolution, no_improvised_recovery lack trace evidence
+      (known trace-richness gap).
+    model: "custom_skupper/Qwen/Qwen3-14B-FP8"
+    trace: "crc-status-20261031-221540-762788.jsonl"
+    evaluated: "2026-10-31T22:30:56-04:00"
 
 history:
   - date: "2026-10-31T18:01:31-04:00"
@@ -62,3 +86,28 @@ history:
     quality_score: 59.8
     quality_band: Re-engineer
     note: "Phase 6 Quality Schema v2.0 — first quality evaluation. script_coverage(25), interface_opacity(0) fail. step_clarity(67), prose_executability(67) pass."
+  - date: "2026-10-31T22:17:25-04:00"
+    type: quality+observable
+    quality_score: 59.8
+    quality_band: Re-engineer
+    observable_score: 75
+    observable_band: Tunable
+    note: "Re-evaluation via hey score skill — stable quality, first observable scoring. sdm_delegation=0 (no SDM in this skill, expected)."
+  - date: "2026-10-31T22:19:40-04:00"
+    type: operable
+    build_score: 75
+    build_band: Tunable
+    runtime_score: 60.5
+    runtime_band: Re-engineer
+    note: "skill-eval — BMBT 3/4 Tunable (has_brain=0 expected), CECX 4/7 Re-engineer (trace-richness gap)"
+  - date: "2026-10-31T22:30:56-04:00"
+    type: assess
+    quality_score: 59.8
+    quality_band: Re-engineer
+    observable_score: 75
+    observable_band: Tunable
+    build_score: 75
+    build_band: Tunable
+    runtime_score: 60.5
+    runtime_band: Re-engineer
+    note: "First assess — all axes stable. qoo-qualified: false (quality Re-engineer blocks)"

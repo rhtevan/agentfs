@@ -2,12 +2,12 @@
 name: skill-eval
 description: >
   check skill, eval skill, audit skill quality,
-  check all skills, skill evaluation
-argument-hint: "hey check skill <name> | hey eval skill <name> | hey check all skills"
+  check all skills, skill evaluation, assess skill
+argument-hint: "hey check skill <name> | hey eval skill <name> | hey assess skill <name> | hey check all skills"
 compatibility: "bash, shellcheck (optional), yq, jq"
 metadata:
   author: agentfs
-  version: "2.1.0"
+  version: "2.2.0"
   tags: [agentfs, skills, evaluation, quality, audit, qoo, operable]
 user-invocable: true
 disable-model-invocation: false
@@ -38,6 +38,7 @@ skill internals.
 |-----------|-----|
 | "check skill \<name\>" | Tier 0 only. Run `skill-check.sh`. Stop after reporting. |
 | "eval skill \<name\>" | Full eval. Execute ALL steps in the Full Eval Sequence below. |
+| "assess skill \<name\>" | Comprehensive assessment. Execute ALL steps in the Assess Sequence below. |
 | "check all skills" | List skills → ask human permission → run Tier 0 against each → summary. |
 
 **ROUTING STOP: Find your match above, then jump to that section.
@@ -303,6 +304,177 @@ Aggregate: <score> | Band: <band>
 | Operable (build) | ... | ... | skill-eval |
 | Operable (runtime) | ... | ... | skill-eval / N/A |
 ```
+
+---
+
+## Assess Sequence (assess skill)
+
+Comprehensive assessment that chains Score Skill (Quality + Observable)
+with Full Eval (Tier 0 + BMBT + CECX) into a single pass. Evidence is
+gathered once and reused across all SDM calls.
+
+Execute ALL steps in order. Do NOT skip steps.
+
+### Step 1 — Resolve Skill
+
+Same as Full Eval Step 1. Resolve the skill path. Check USER scope
+first (`~/.agents/skills/<name>/`), then PROJECT scope
+(`./.agents/skills/<name>/`).
+
+Verify `SKILL.md` exists. If absent, report and stop.
+
+Set `SKILL_DIR` to the resolved absolute path.
+
+### Step 2 — Gather Evidence (once)
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/skill-assess-evidence.txt
+```
+
+Read the output. This evidence file is reused by all subsequent
+SDM calls. Do NOT re-run gather-skill-state.sh.
+
+### Step 3 — Score: Quality (MCACS)
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/quality.yaml \
+  --evidence /tmp/skill-assess-evidence.txt
+```
+
+Record the JSON output.
+
+### Step 4 — Score: Observable
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/observable.yaml \
+  --evidence /tmp/skill-assess-evidence.txt
+```
+
+Record the JSON output.
+
+### Step 5 — Persist Quality + Observable
+
+Update `$SKILL_DIR/scores.yaml` with the `quality:` and `observable:`
+sections from Steps 3 and 4. Follow the same structure and rules as
+Score Skill mode in `skill-gen` (Step 5 of that mode).
+
+Do NOT overwrite `operable:` — that section is owned by `skill-eval`.
+Preserve existing `operable:` and `history:` entries.
+
+Append a history entry with type `quality+observable`.
+
+Immediately run post-write.sh after writing.
+
+### Step 6 — Tier 0: Deterministic Checks
+
+```bash
+bash ~/.agents/skills/skill-eval/scripts/skill-check.sh "$SKILL_DIR"
+```
+
+Record pass/fail/warn/skip counts.
+
+### Step 7 — Tier 0: LLM Rubric Checks (S23–S26)
+
+Same as Full Eval Step 3. For each rubric YAML in
+`~/.agents/skills/skill-eval/rubrics/`, apply the rubric
+as a classifier against `$SKILL_DIR/SKILL.md`.
+
+### Step 8 — BMBT Build-time Operable
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/operable.yaml \
+  --evidence /tmp/skill-assess-evidence.txt \
+  --phase build
+```
+
+Record the build-phase dimensions.
+
+### Step 9 — CECX Runtime Operable
+
+Search for the latest execution trace:
+
+```bash
+LATEST_TRACE=$(ls -t ~/.agents/.traces/${SKILL_NAME}*.jsonl 2>/dev/null | head -1)
+```
+
+If no trace exists, report N/A and skip to Step 10.
+
+If a trace exists:
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$LATEST_TRACE" \
+  ~/.agents/skills/schemas/operable.yaml
+```
+
+Record the runtime-phase dimensions.
+
+### Step 10 — Persist Operable + Compute Qualification
+
+Update `$SKILL_DIR/scores.yaml` with `operable.build` and
+`operable.runtime` from Steps 8 and 9. Same rules as Full Eval
+Step 8.
+
+Compute `qoo-qualified` deterministically:
+
+```
+qoo-qualified = quality.band ∈ {Tunable, Operable}
+             AND observable.band ∈ {Tunable, Operable}
+             AND operable.build.band ∈ {Tunable, Operable}
+```
+
+Runtime CECX is exempt. Append a history entry with type `assess`.
+
+Immediately run post-write.sh after writing.
+
+### Step 11 — Combined Report
+
+Produce a single report covering all axes:
+
+```
+## Skill Assessment: <skill-name>
+
+Date: YYYY-MM-DD HH:MM
+Version: <metadata.version>
+Path: <skill-dir>
+
+### Tier 0 — Deterministic (S01–S22)
+Pass: N | Fail: N | Warn: N | Skip: N
+<details for failures and warnings>
+
+### Tier 0 — LLM Rubric (S23–S26)
+<per-rubric pass/fail>
+
+### QOO Scores
+
+| Axis | Score | Band | Dims |
+|------|:-----:|------|------|
+| Quality (MCACS) | ... | ... | N/N pass |
+| Observable | ... | ... | N/N pass |
+| Operable (build) | ... | ... | N/N pass |
+| Operable (runtime) | ... | ... | N/N pass or N/A |
+
+qoo-qualified: true/false
+
+### Quality Dimensions
+<per-dimension table>
+
+### Observable Dimensions
+<per-dimension table>
+
+### Build Dimensions (BMBT)
+<per-dimension table>
+
+### Runtime Dimensions (CECX)
+<per-dimension table or "N/A — no traces">
+
+### Improvement Priorities
+<top 3 failing dimensions with suggested fixes>
+```
+
+---
 
 ## Checks
 
