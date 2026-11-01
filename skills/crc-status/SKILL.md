@@ -4,7 +4,7 @@ description: >
   crc status, check crc, crc health
 metadata:
   author: agentfs
-  version: "2.0.0"
+  version: "2.1.0"
   tags: [openshift, crc, status, console]
 user-invocable: true
 disable-model-invocation: false
@@ -18,7 +18,7 @@ Read-only health check for an OpenShift Local (CRC) cluster.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 2.0.0 |
+| **Version** | 2.1.0 |
 | **Pattern** | A — single script |
 | **Dependencies** | `scripts/check-status.sh` |
 
@@ -52,17 +52,42 @@ bash ~/.agents/skills/crc-status/scripts/check-status.sh
 
 ### Step 2 — Report the results
 
-Read the script output. Present the facts to the user in a clear format.
+Read the script output. Present the facts to the user in a clear
+summary. The script prints a structured status report — see the
+[Output Contract](#output-contract) below for the full list of fields.
 
-If `cluster_running: false` appears in the output, report that the
-cluster is stopped. Do NOT proceed to any further steps. Do NOT
-suggest starting the cluster unless the user asks.
+**When the cluster is stopped:** Tell the user the CRC VM is not
+running and report the VM state, disk usage, and cache usage. Do NOT
+proceed to any further steps. Do NOT suggest starting the cluster
+unless the user asks.
 
-If `cluster_running: true` appears in the output, also report the
-credentials and banner status from the script output.
+**When the cluster is running:** Report the VM state, OpenShift state,
+disk and cache usage, credentials, and whether a console notification
+banner is present.
 
-If `banner_exists: yes` appears, ask the user whether to remove it.
-Do NOT remove it without confirmation.
+**When a console banner is present:** Ask the user whether to remove
+it. Do NOT remove it without confirmation.
+
+## Output Contract
+
+The status script (`check-status.sh`) prints a structured report with
+these fields. All fields are plain text, one per line, in `key: value`
+format.
+
+| Field | Always present | Description |
+|-------|:-:|---|
+| `crc_cli_found` | ✅ | Whether the `crc` CLI is installed |
+| `crc_exit_code` | ✅ | Exit code from `crc status` |
+| `crc_vm_state` | ✅ | VM state (Running, Stopped, etc.) |
+| `openshift_state` | ✅ | OpenShift cluster state |
+| `disk_usage` | ✅ | CRC disk usage |
+| `cache_usage` | ✅ | CRC cache usage |
+| `cache_directory` | ✅ | Path to cache directory |
+| `cluster_running` | ✅ | `true` or `false` — derived from VM state |
+| `oc_cli_found` | running only | Whether `oc` CLI is available |
+| `credentials` | running only | Console credentials from `crc console --credentials` |
+| `banner_exists` | running only | `yes`, `no`, or `unknown` |
+| `banner_name` | running only | Console notification resource name (if banner exists) |
 
 ## Scope
 

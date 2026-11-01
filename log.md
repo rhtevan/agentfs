@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 22:55
+- Add explicit skill count (59) to fix D1 drift (README.md)
+
+## 2026-10-31 22:49
+- Update quality scores after interface_opacity fix — 59.8→76.5, now qoo-qualified (skills/crc-status/scores.yaml)
+
+## 2026-10-31 22:48
+- Add Output Contract section — document script output fields as public interface (skills/crc-status/SKILL.md)
+
+## 2026-10-31 22:47
+- Bump overview table version to 2.1.0 (skills/crc-status/SKILL.md)
+- Bump frontmatter version to 2.1.0 (skills/crc-status/SKILL.md)
+- Reframe Step 2 prose to remove opaque script key references, add Output Contract section — fix interface_opacity (skills/crc-status/SKILL.md)
+
 ## 2026-10-31 22:31
 - assess: add comprehensive assess history entry (skills/crc-status/scores.yaml)
 - assess: update runtime timestamp (skills/crc-status/scores.yaml)
