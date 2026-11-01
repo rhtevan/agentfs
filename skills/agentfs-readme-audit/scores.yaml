@@ -1,33 +1,129 @@
 # scores.yaml — agentfs-readme-audit
-# Objective QOO scores from gather-skill-state.sh + sdm-evaluate.sh pipeline.
-#
-# Status: QOO qualification REVOKED (2026-10-31).
-# Gap: missing Stage 1b (LLM-based semantic evidence extraction).
-# extract-comparison.sh used regex for semantic decisions, causing
-# false negatives on D1, D2, D6, D7 dimensions.
+# Objective QOO scores from skill-gen (quality+observable) + skill-eval (operable).
 
 skill: agentfs-readme-audit
-version: "3.0.2"
+version: "3.3.0"
 qoo-qualified: false
+# Formula: quality.band∈{Tunable,Operable} AND observable.band∈{Tunable,Operable} AND operable.build.band∈{Tunable,Operable}
+# quality=Re-engineer(74.2) ❌, observable=Operable(100) ✅, operable.build=Operable(100) ✅
+
 qualification-gaps:
-  has_brain: >
-    extract-comparison.sh performs semantic judgment via regex
-    (claim detection, version classification, skill name matching)
-    instead of delegating to LLM extraction (Stage 1b). SDM scores
-    correctly on bad evidence — the extraction is the weak link.
-  has_harness: >
-    Benchmark tests validate dispatch chain only, not audit accuracy.
-    No end-to-end test verifies that the skill detects known drift
-    correctly (no fixture-based red/green validation).
-  manual_fallback: >
-    When SDM unavailable, SKILL.md instructs unbounded LLM manual
-    comparison — violates has_brain bounded judgment requirement.
-requalification-requires:
-  - "Implement Stage 1b LLM extraction in extract-comparison.sh"
-  - "Remove or bound the manual fallback path"
-  - "Add fixture-based accuracy test (known-drift → detect, clean → pass)"
-latest: null
+  quality_band: >
+    Quality 74.2 (Re-engineer) — 0.8 points below Tunable threshold (75).
+    concern_count (40) and accidental_complexity (50) are structurally bounded.
+    concern_count: 6 real concerns inherent to README auditing.
+    accidental_complexity: 35% HOW lines — code fences contain essential
+    report template and script paths needed for execution.
+
+quality:
+  schema: quality.yaml
+  aggregate_score: 74.2
+  band: Re-engineer
+  dimensions:
+    script_coverage: { score: 75, pass: true, confidence: 1.00 }
+    inference_hop_count: { score: 80, pass: false, confidence: 0.39 }
+    concern_count: { score: 40, pass: false, confidence: 0.92 }
+    accidental_complexity: { score: 50, pass: false, confidence: 0.90 }
+    model_portability: { score: 100, pass: true, confidence: 1.00 }
+    interface_opacity: { score: 100, pass: true, confidence: 1.00 }
+  evaluated: "2026-10-31T21:28:45-04:00"
+
+observable:
+  schema: observable.yaml
+  aggregate_score: 100
+  band: Operable
+  dimensions:
+    trace_instrumentation: { score: 100, pass: true, confidence: 1.00 }
+    cnl_compliance: { score: 100, pass: true, confidence: 1.00 }
+    anti_fabrication: { score: 100, pass: true, confidence: 1.00 }
+    sdm_delegation: { score: 100, pass: true, confidence: 1.00 }
+  evaluated: "2026-10-31T21:28:51-04:00"
+
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 100
+    band: Operable
+    dimensions:
+      has_bones: { score: 100, pass: true, confidence: 1.00 }
+      has_muscle: { score: 100, pass: true, confidence: 1.00 }
+      has_brain: { score: 100, pass: true, confidence: 1.00 }
+      has_harness: { score: 100, pass: true, confidence: 1.00 }
+    note: >
+      BMBT 4/4 pass. has_brain passes — evaluate-alignment.sh
+      wraps sdm-evaluate.sh, satisfying SDM delegation criterion.
+    evaluated: "2026-10-31T21:18:36-04:00"
+
+  runtime:
+    schema: operable.yaml
+    aggregate_score: 60.5
+    band: Re-engineer
+    dimensions:
+      step_completion: { score: 100, pass: true, confidence: 1.00, weight: 0.40 }
+      no_fabrication: { score: 0, pass: false, confidence: 1.00, weight: 0.40 }
+      minimal_inference_hops: { score: 100, pass: true, confidence: 0.96, weight: 0.25 }
+      token_efficiency: { score: 100, pass: true, confidence: 1.00, weight: 0.25 }
+      correct_sequence: { score: 100, pass: true, confidence: 1.00, weight: 0.25 }
+      scope_resolution: { score: 0, pass: false, confidence: 0.94, weight: 0.25 }
+      no_improvised_recovery: { score: 0, pass: false, confidence: 1.00, weight: 0.10 }
+    note: >
+      CECX 4/7 pass. Trace is from evaluate-alignment.sh (script-level),
+      not full skill session — limited CECX visibility.
+    model: "custom_skupper/Qwen/Qwen3-14B-FP8"
+    trace: "agentfs-readme-audit-20261031-211624-647121.jsonl"
+    evaluated: "2026-10-31T21:19:00-04:00"
+
 history:
   - date: "2026-10-31"
     type: "qualification-revoked"
-    note: "Stage 1b missing — regex extraction causes SDM false negatives on D1/D2/D6/D7"
+    note: "Stage 1b missing — regex extraction causes SDM false negatives"
+  - date: "2026-10-31T18:03:02-04:00"
+    type: operable
+    score: 100
+    band: Operable
+    note: "skill-eval v2.0.0 — BMBT 4/4 pass, CECX N/A"
+  - date: "2026-10-31T18:48:01-04:00"
+    type: operable
+    score: 100
+    band: Operable
+    note: "skill-eval v2.0.0 — BMBT 4/4, CECX 73.7 Re-engineer"
+  - date: "2026-10-31T20:25:21-04:00"
+    type: operable
+    score: 75
+    band: Tunable
+    note: "skill-eval v2.1.0 — BMBT 3/4, CECX 73.7, model from trace"
+  - date: "2026-10-31T20:29:28-04:00"
+    type: quality+observable
+    quality_score: 74.2
+    quality_band: Re-engineer
+    observable_score: 50
+    observable_band: Re-engineer
+    note: "Re-evaluation via hey score skill (pre-v3.2.0)"
+  - date: "2026-10-31T20:52:29-04:00"
+    type: quality+observable
+    quality_score: 62.5
+    quality_band: Re-engineer
+    observable_score: 100
+    observable_band: Operable
+    note: "Re-evaluation via hey score skill — post v3.2.0 fixes"
+  - date: "2026-10-31T21:10:35-04:00"
+    type: quality+observable
+    quality_score: 62.5
+    quality_band: Re-engineer
+    observable_score: 100
+    observable_band: Operable
+    note: "Re-evaluation via hey score skill — stable after gather-skill-state fix"
+  - date: "2026-10-31T21:19:00-04:00"
+    type: operable
+    build_score: 100
+    build_band: Operable
+    runtime_score: 60.5
+    runtime_band: Re-engineer
+    note: "skill-eval v2.1.0 — BMBT 4/4 Operable, CECX 4/7 Re-engineer"
+  - date: "2026-10-31T21:28:51-04:00"
+    type: quality+observable
+    quality_score: 74.2
+    quality_band: Re-engineer
+    observable_score: 100
+    observable_band: Operable
+    note: "v3.3.0 — merged Steps 3-5, extracted dimensions to references/. Quality +11.7, script_coverage 25→75"

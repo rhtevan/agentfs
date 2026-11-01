@@ -729,7 +729,7 @@ framework with two domain-specific skill pairs:
 | Domain | Build-time (Quality) | Runtime (Evaluation) |
 |--------|---------------------|----------------------|
 | **AGENTS.md** | `agentfs-setup` (`hey upgrade agentfs`) | `agentfs-eval` (`hey eval agentfs`) |
-| **SKILL** | `skill-gen` (`hey upgrade skill`) | `skill-eval` (`hey eval skill`) |
+| **SKILL** | `skill-gen` (`hey score skill`) | `skill-eval` (`hey eval skill`) |
 
 ### QOO Properties
 

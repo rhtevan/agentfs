@@ -2,6 +2,177 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 21:43
+- Add Phase 6 reference — Quality Schema v2.0 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 21:42
+- Quality Schema v2.0 implementation plan — replace concern_count + accidental_complexity with step_clarity + prose_executability (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)
+
+## 2026-10-31 21:30
+- skill-gen: QOO re-score v3.3.0 — quality 62.5→74.2, observable 100 stable (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 21:28
+- v3.3.0: add References section for dimensions.md (skills/agentfs-readme-audit/SKILL.md)
+- v3.3.0: update step refs in Integration section (skills/agentfs-readme-audit/SKILL.md)
+- v3.3.0: merge Steps 3-5 into single Report step, extract dimensions to references/ (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-31 21:27
+- v3.3.0: version in overview table (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-31 21:26
+- v3.3.0: merge Steps 3-5 into single Report step, extract dimensions to references/ (skills/agentfs-readme-audit/SKILL.md)
+- Extract dimension tables from SKILL.md to references/ for context economy (skills/agentfs-readme-audit/references/dimensions.md)
+
+## 2026-10-31 21:19
+- skill-eval: operable scores updated — BMBT 100 Operable, CECX 60.5 Re-engineer (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 21:11
+- skill-gen: QOO re-score — quality+observable stable after gather-skill-state fix (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 21:07
+- Fix script_coverage: step-level counting instead of line-level grep (scripts/gather-skill-state.sh)
+
+## 2026-10-31 20:53
+- skill-gen: fix history entry quality band to Re-engineer (skills/agentfs-readme-audit/scores.yaml)
+- skill-gen: fix quality band label in qualification-gaps (skills/agentfs-readme-audit/scores.yaml)
+- skill-gen: QOO re-score quality+observable post v3.2.0 (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 20:47
+- Fix 3: added Supporting Files table + Troubleshooting table (S09 + S21 fixes) (skills/agentfs-readme-audit/SKILL.md)
+- Bumped frontmatter version to 3.2.0 (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-31 20:46
+- Updated Overview version and dependencies (skills/agentfs-readme-audit/SKILL.md)
+- Fix 2: simplified Step 2 to use evaluate-alignment.sh wrapper (skills/agentfs-readme-audit/SKILL.md)
+- Fix 2: wrapper script combining extract-comparison + sdm-evaluate into single call (skills/agentfs-readme-audit/scripts/evaluate-alignment.sh)
+
+## 2026-10-31 20:45
+- Fix 1: added explicit anti-fabrication rule to Rules section (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-31 20:38
+- Rename: upgrade skill → score skill (README.md)
+- Rename: upgrade skill → score skill (6 refs) (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Rename: upgrade skill → score skill (skills/agentfs-setup/references/design-spec.md)
+- Rename: upgrade skill → score skill (skills/agentfs-readme-audit/scores.yaml)
+- Rename: upgrade skill → score skill (skills/crc-status/scores.yaml)
+
+## 2026-10-31 20:37
+- Rename: 'upgrade skill' → 'score skill' in ownership table (skills/skill-eval/SKILL.md)
+- Rename: 'upgrade skill' → 'score skill' across all references (skills/skill-gen/SKILL.md)
+
+## 2026-10-31 20:30
+- skill-gen: upgrade quality + observable scores (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 20:25
+- skill-eval v2.1.0: operable scores + deterministic qoo-qualified=false + model from trace init record (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 20:23
+- Step 7d: added deterministic qoo-qualified formula — same rule as skill-eval Step 8 (skills/skill-gen/SKILL.md)
+- Step 7d: qoo-qualified template changed from hardcoded true to <computed> (skills/skill-gen/SKILL.md)
+
+## 2026-10-31 20:22
+- Bump frontmatter version to 2.1.0 (skills/skill-eval/SKILL.md)
+- Step 8: added deterministic qoo-qualified formula — Tunable+ on quality, observable, operable.build; runtime exempt (skills/skill-eval/SKILL.md)
+
+## 2026-10-31 20:17
+- Fix: _trace_resolve_model now reads from AGENT_SESSION_ID + goose session export — gets actual session provider/model, not config default (scripts/trace-lib.sh)
+
+## 2026-10-31 20:15
+- trace_init now captures model from goose config (active_provider + model) — no env var or self-reporting needed (scripts/trace-lib.sh)
+
+## 2026-10-31 20:11
+- Fix: removed fabricated model name — trace init record has no model field (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 20:08
+- skill-eval: operable scores updated — BMBT 75 Tunable (3/4), CECX 73.7 Re-engineer (5/7) (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 19:46
+- Simplified Step 1: single command with auto-fallback, removed manual scope branching (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-10-31 19:45
+- Auto-fallback: when no --scope and PROJECT has no README, automatically try USER scope before failing (skills/agentfs-readme-audit/scripts/gather-state.sh)
+- Add SCOPE_EXPLICIT tracking for auto-fallback support (skills/agentfs-readme-audit/scripts/gather-state.sh)
+
+## 2026-10-31 19:37
+- Fix: trace_end step_count grep -c returned '0
+0' when 0 steps — same pattern as error_count fix (scripts/trace-lib.sh)
+
+## 2026-10-31 19:36
+- Fix 2: stderr summary on success — model sees feedback even when stdout is redirected to file (skills/agentfs-readme-audit/scripts/gather-state.sh)
+- Fix 1: trace_end before exit 1 on no-README path + stderr feedback for model (skills/agentfs-readme-audit/scripts/gather-state.sh)
+
+## 2026-10-31 19:35
+- Fixed stale comment: trace integration now unconditional (skills/agentfs-readme-audit/scripts/gather-state.sh)
+
+## 2026-10-31 19:19
+- Updated success criteria: Phase 1 now shows v4.0.0 deliverables (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated dependency graph: Phase 1 marked COMPLETE with sub-task details (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated status line to ALL PHASES COMPLETE (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 19:18
+- Phase 1 marked COMPLETE — all 3 sub-tasks delivered in skill-gen v4.0.0 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Phase 1.3: updated mode table and mode selection to include Upgrade mode (4 modes) (skills/skill-gen/SKILL.md)
+- Phase 1.3: added Upgrade Skill Mode section — 'hey upgrade skill' re-evaluates Quality + Observable, persists to scores.yaml, ownership boundary documented (skills/skill-gen/SKILL.md)
+
+## 2026-10-31 19:17
+- Phase 1.1: added Step 7 — Compute QOO Scores (gather-state + quality + observable SDM eval + scores.yaml persist) (skills/skill-gen/SKILL.md)
+- Phase 1.2: added trace instrumentation + QOO scores checklist items to Post-Creation Checklist (skills/skill-gen/SKILL.md)
+
+## 2026-10-31 19:16
+- skill-gen v4.0.0: version bump for QOO factory (Phase 1 in progress) (skills/skill-gen/SKILL.md)
+
+## 2026-10-31 19:05
+- Phase 1 updated: 1.3 revised to 'hey upgrade skill' signal (supersedes Skill Check audit), ownership model added to 1.1, unconditional tracing note in 1.2 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 19:04
+- Added model and trace fields to Step 8 persist — CECX scores are model-dependent (skills/skill-eval/SKILL.md)
+
+## 2026-10-31 19:03
+- Updated success criteria table (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated dependency graph and success criteria — Phase 4 complete, Phase 5 scores updated (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Phase 4 marked COMPLETE: 4.1-4.2 done, 4.3-4.4 dropped, infra fixes captured, skill eval vs agentfs eval design learning, CECX trace richness gap documented (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 18:48
+- skill-eval: operable scores updated — BMBT 4/4 Operable, CECX 73.7 Re-engineer (5/7) (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 18:41
+- Added trace_end at script exit (skills/agentfs-readme-audit/scripts/gather-state.sh)
+- Unconditional trace — removed AGENTFS_TRACE guard, added trace_init (skills/agentfs-readme-audit/scripts/gather-state.sh)
+
+## 2026-10-31 18:33
+- trace_init: auto-route to .traces/<skill>-<timestamp>.jsonl when default path (scripts/trace-lib.sh)
+- trace-lib: default AGENTFS_TRACE to ~/.agents/.traces/<skill>-<timestamp>.jsonl when .traces/ dir exists (scripts/trace-lib.sh)
+
+## 2026-10-31 18:24
+- Added --phase build flag to BMBT sdm-evaluate.sh call (skills/skill-eval/SKILL.md)
+
+## 2026-10-31 18:23
+- Added Observable facts to output section (scripts/gather-skill-state.sh)
+- Added Observable-specific facts: anti-fabrication rules, CNL compliance ratio, SDM delegation detection (scripts/gather-skill-state.sh)
+
+## 2026-10-31 18:22
+- Fixed --phase filter: EVALUATED_COUNT for post-SDM loops, DIMENSION_COUNT for schema iteration (scripts/sdm-evaluate.sh)
+
+## 2026-10-31 18:21
+- Added --phase filter to dimension loop — skip non-matching phase dims (scripts/sdm-evaluate.sh)
+- Added --phase filter flag to skip dimensions by phase (build/runtime) (scripts/sdm-evaluate.sh)
+
+## 2026-10-31 18:03
+- skill-eval: operable scores updated — BMBT 4/4 pass, CECX N/A (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 18:02
+- skill-eval: operable scores updated — BMBT 4/4 pass, CECX N/A (skills/crc-status/scores.yaml)
+
+## 2026-10-31 17:40
+- Updated success criteria table: Phase 4 in progress, Phase 1 not started (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated dependency graph: Phase 4 before Phase 1, 4.1 marked complete (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 17:39
+- Phase 4.1 marked COMPLETE, dependency graph adjusted: Phase 4 before Phase 1 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 17:38
+- skill-eval v2.0.0: QOO re-engineering — Tier 1 BMBT + Quality/Observable read + Tier 2 CECX runtime + eval skill dispatch + persist + consolidated report (skills/skill-eval/SKILL.md)
+
 ## 2026-10-31 17:02
 - Bump metadata version to 2.5.0 (skills/agentfs-eval/SKILL.md)
 

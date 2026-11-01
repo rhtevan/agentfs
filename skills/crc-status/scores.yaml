@@ -1,9 +1,7 @@
 # scores.yaml — crc-status
 # Objective QOO scores from gather-skill-state.sh + sdm-evaluate.sh pipeline.
-# Replaces frontier-subjective qoo-profile.yaml.
 #
 # Status: QOO-qualified (scripts, CNL muscle, anti-fabrication).
-# SDM evaluation pending — run evaluate-pending.sh to populate.
 
 skill: crc-status
 version: "2.0.0"
@@ -13,5 +11,36 @@ qualification-basis:
   - "CNL-compliant SKILL.md (100% compliance)"
   - "Anti-fabrication rules in muscle"
   - "trace_step() instrumentation"
-latest: null  # Populated by sdm-evaluate.sh
-history: []   # Appended by evaluate-pending.sh
+
+# Quality + Observable owned by skill-gen (hey score skill).
+# Sections intentionally absent — not yet evaluated by skill-gen.
+
+operable:
+  build:
+    schema: operable.yaml
+    dimensions:
+      has_bones: { score: 100, pass: true, confidence: 1.00 }
+      has_muscle: { score: 100, pass: true, confidence: 0.99 }
+      has_brain: { score: 100, pass: true, confidence: 0.99 }
+      has_harness: { score: 100, pass: true, confidence: 1.00 }
+    note: >
+      BMBT 4/4 pass. All build-time structural readiness met.
+      Pattern A skill with single script, CNL orchestration,
+      no semantic judgment, and trace instrumentation.
+    evaluated: "2026-10-31T18:01:31-04:00"
+
+  runtime:
+    schema: operable.yaml
+    aggregate_score: null
+    band: N/A
+    note: >
+      No execution traces found in ~/.agents/.traces/.
+      Run the skill to generate traces, then re-evaluate.
+    evaluated: "2026-10-31T18:01:31-04:00"
+
+history:
+  - date: "2026-10-31T18:01:31-04:00"
+    type: operable
+    score: 100
+    band: Operable
+    note: "skill-eval v2.0.0 — BMBT 4/4 pass, CECX N/A (no traces)"

@@ -26,6 +26,7 @@
 #     - LLM tool calls: inferred from response metadata
 #   Cost insight: "This skill costs N tokens per execution on 14B"
 
+_AGENTFS_TRACES_DIR="${HOME}/.agents/.traces"
 AGENTFS_TRACE="${AGENTFS_TRACE:-/tmp/agentfs-trace-$$.jsonl}"
 
 # Running token counters (accumulated across the trace session)
@@ -33,12 +34,44 @@ _TRACE_PROMPT_TOKENS=0
 _TRACE_COMPLETION_TOKENS=0
 _TRACE_TOTAL_TOKENS=0
 
+# Resolve the model from the current goose session.
+# Uses AGENT_SESSION_ID env var → goose session export to get the
+# actual provider+model for this session (not the config default).
+# Returns: "provider/model" or "unknown" if unavailable.
+_trace_resolve_model() {
+  local session_id="${AGENT_SESSION_ID:-}"
+  if [[ -n "$session_id" ]] && command -v goose &>/dev/null; then
+    local result
+    result=$(goose session export --session-id "$session_id" --format json 2>/dev/null \
+      | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    p = d.get('provider_name', '')
+    m = d.get('model_config', {}).get('model_name', '')
+    print(f'{p}/{m}' if p and m else '')
+except: pass
+" 2>/dev/null)
+    if [[ -n "$result" ]]; then
+      echo "$result"
+      return
+    fi
+  fi
+  echo "unknown"
+}
+
 # Initialize a new trace session.
 # Args: <skill-name> <skill-version>
 trace_init() {
   local skill="${1:-unknown}" version="${2:-0.0.0}"
-  printf '{"type":"init","ts":"%s","skill":"%s","version":"%s","pid":%d}\n' \
-    "$(date -Iseconds)" "$skill" "$version" "$$" > "$AGENTFS_TRACE"
+  # If AGENTFS_TRACE was not explicitly set, use .traces/ with skill name
+  if [[ "$AGENTFS_TRACE" == "/tmp/agentfs-trace-$$.jsonl" && -d "$_AGENTFS_TRACES_DIR" ]]; then
+    AGENTFS_TRACE="${_AGENTFS_TRACES_DIR}/${skill}-$(date +%Y%m%d-%H%M%S)-$$.jsonl"
+  fi
+  local model
+  model=$(_trace_resolve_model)
+  printf '{"type":"init","ts":"%s","skill":"%s","version":"%s","pid":%d,"model":"%s"}\n' \
+    "$(date -Iseconds)" "$skill" "$version" "$$" "$model" > "$AGENTFS_TRACE"
 }
 
 # Record a single execution step.
@@ -67,7 +100,9 @@ trace_tokens() {
 # Args: none (reads from trace file)
 trace_end() {
   local step_count
-  step_count=$(grep -c '"type":"step"' "$AGENTFS_TRACE" 2>/dev/null || echo 0)
+  step_count=$(grep -c '"type":"step"' "$AGENTFS_TRACE" 2>/dev/null || true)
+  step_count="${step_count:-0}"
+  step_count=$(echo "$step_count" | tr -d '[:space:]')
   local error_count
   error_count=$(grep '"type":"step"' "$AGENTFS_TRACE" 2>/dev/null \
     | grep -vc '"exit":0' 2>/dev/null || true)

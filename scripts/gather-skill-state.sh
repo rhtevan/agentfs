@@ -234,15 +234,40 @@ if [[ -d "$SKILL_DIR/scripts" ]]; then
 fi
 
 # --- Script coverage ---
-# Count action steps that reference a script call (bash/sh + scripts/)
+# Count action steps where the step's text block contains at least one
+# script reference. This is step-level coverage, not line-level counting.
+# A wrapper script that consolidates two commands into one still counts
+# as one scripted step — which is correct (the step is script-backed).
 SCRIPTED_STEPS=0
-if [[ "$SCRIPT_COUNT" -gt 0 ]]; then
-  SCRIPTED_STEPS=$(grep -cP '(bash|sh)\s+.*scripts/' "$SKILL_MD" 2>/dev/null || true)
-  SCRIPTED_STEPS="${SCRIPTED_STEPS:-0}"
-  # Cap at action step count
-  if [[ "$SCRIPTED_STEPS" -gt "$ACTION_STEPS" ]]; then
-    SCRIPTED_STEPS=$ACTION_STEPS
+if [[ "$SCRIPT_COUNT" -gt 0 && "$ACTION_STEPS" -gt 0 ]]; then
+  # Get line numbers of step headers
+  step_lines=()
+  while IFS= read -r ln; do
+    step_lines+=("$ln")
+  done < <(grep -nP '^\s*###\s+(Step\s+\d|[0-9]+\.)' "$SKILL_MD" | cut -d: -f1)
+  # Fallback to ## Step headers if ### pattern was the fallback
+  if [[ ${#step_lines[@]} -eq 0 ]]; then
+    while IFS= read -r ln; do
+      step_lines+=("$ln")
+    done < <(grep -nP '^\s*##\s+Step\s' "$SKILL_MD" | cut -d: -f1)
   fi
+
+  total_lines_file=$(wc -l < "$SKILL_MD")
+  for idx in "${!step_lines[@]}"; do
+    start=${step_lines[$idx]}
+    if [[ $((idx + 1)) -lt ${#step_lines[@]} ]]; then
+      end=$((${step_lines[$((idx + 1))]} - 1))
+    else
+      # Last step: extend to next ## heading or EOF
+      next_section=$(awk -v s="$((start + 1))" 'NR > s && /^##[^#]/ {print NR; exit}' "$SKILL_MD")
+      end=${next_section:-$total_lines_file}
+    fi
+    # Extract step block and check for script reference
+    block=$(sed -n "${start},${end}p" "$SKILL_MD")
+    if echo "$block" | grep -qP '(bash|sh)\s+.*scripts/'; then
+      SCRIPTED_STEPS=$((SCRIPTED_STEPS + 1))
+    fi
+  done
 fi
 
 if [[ "$ACTION_STEPS" -gt 0 ]]; then
@@ -345,6 +370,50 @@ if [[ "$SCRIPT_COUNT" -gt 0 ]]; then
   fi
 fi
 
+# --- Anti-fabrication rules ---
+HAS_ANTI_FABRICATION=false
+ANTI_FAB_RULES=0
+if grep -qiP '(do not|do NOT|never|must not).*(generat|fabricat|invent|make up|hallucin)' "$SKILL_MD" 2>/dev/null; then
+  HAS_ANTI_FABRICATION=true
+  ANTI_FAB_RULES=$(grep -ciP '(do not|do NOT|never|must not).*(generat|fabricat|invent|make up|hallucin)' "$SKILL_MD" 2>/dev/null || true)
+fi
+
+# --- CNL compliance analysis ---
+# Count action sentences (imperative lines in workflow/step sections)
+BODY=$(sed '/^---$/,/^---$/d' "$SKILL_MD")
+ACTION_SENTENCES=$(echo "$BODY" | grep -cP '^\s*(Run |Execute |Read |Write |Set |Check |Report |Present |If |Stop |Do NOT|Do not)' 2>/dev/null || true)
+ACTION_SENTENCES="${ACTION_SENTENCES:-0}"
+# Multi-action sentences (two verbs joined by 'and' or ';')
+MULTI_ACTION=$(echo "$BODY" | grep -cP '(Run|Execute|Read|Write|Check|Report).*(and|;)\s*(run|execute|read|write|check|report)' 2>/dev/null || true)
+MULTI_ACTION="${MULTI_ACTION:-0}"
+# CNL compliance ratio: 1.0 minus deductions
+if [[ "$ACTION_SENTENCES" -gt 0 ]]; then
+  CNL_VIOLATIONS=$((PASSIVE_VOICE + MULTI_ACTION))
+  CNL_COMPLIANT=$((ACTION_SENTENCES - CNL_VIOLATIONS))
+  if [[ "$CNL_COMPLIANT" -lt 0 ]]; then CNL_COMPLIANT=0; fi
+  CNL_RATIO=$(awk "BEGIN {printf \"%.2f\", $CNL_COMPLIANT / $ACTION_SENTENCES}")
+else
+  CNL_VIOLATIONS=0
+  CNL_RATIO="1.00"
+fi
+
+# --- SDM delegation ---
+HAS_SDM_DELEGATION=false
+SDM_SCRIPT_COUNT=0
+if [[ "$SCRIPT_COUNT" -gt 0 ]]; then
+  SDM_SCRIPT_COUNT=$(grep -rl 'sdm-call\|sdm-evaluate\|/v1/decisions\|/v1/systemone' "$SKILL_DIR/scripts/" 2>/dev/null | wc -l || true)
+  SDM_SCRIPT_COUNT="${SDM_SCRIPT_COUNT:-0}"
+  if [[ "$SDM_SCRIPT_COUNT" -gt 0 ]]; then
+    HAS_SDM_DELEGATION=true
+  fi
+fi
+# Also check SKILL.md for SDM references (skill may call sdm-evaluate.sh via orchestration)
+SDM_SKILL_REFS=$(grep -cP 'sdm-(call|evaluate)\.sh|/v1/decisions|/v1/systemone' "$SKILL_MD" 2>/dev/null || true)
+SDM_SKILL_REFS="${SDM_SKILL_REFS:-0}"
+if [[ "$SDM_SKILL_REFS" -gt 0 ]]; then
+  HAS_SDM_DELEGATION=true
+fi
+
 # --- Has operable.yaml (runtime execution correctness schema) ---
 HAS_OBS_SCHEMA=false
 if [[ -f "$SKILL_DIR/operable.yaml" ]]; then
@@ -375,6 +444,9 @@ Model assumptions detected: $MODEL_ASSUMPTIONS
 Conditional logic blocks: $CONDITIONAL_BLOCKS
 Passive voice instances: $PASSIVE_VOICE
 Trace instrumentation: $HAS_TRACE
+Anti-fabrication rules: $HAS_ANTI_FABRICATION (${ANTI_FAB_RULES} rules found)
+CNL compliance: ${CNL_RATIO} (${ACTION_SENTENCES} action sentences, ${CNL_VIOLATIONS} violations: ${PASSIVE_VOICE} passive, ${MULTI_ACTION} multi-action)
+SDM delegation: $HAS_SDM_DELEGATION (${SDM_SCRIPT_COUNT} scripts, ${SDM_SKILL_REFS} SKILL.md references)
 Has operable.yaml: $HAS_OBS_SCHEMA
 Has scores.yaml: $HAS_SCORES
 QOO qualified: $QOO_QUALIFIED

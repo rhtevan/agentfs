@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-31 20:37 | v4.0.0 — skill-gen v4.0.0: version bump for QOO factory (Phase 1 in progress); Phase 1.2: added trace instrumentation + QOO scores checklist items to Post-Creation Checklist; Phase 1.1: added Step 7 — Compute QOO Scores (gather-state + quality + observable SDM eval + scores.yaml persist); Phase 1.3: added Upgrade Skill Mode section — 'hey upgrade skill' re-evaluates Quality + Observable, persists to scores.yaml, ownership boundary documented; Phase 1.3: updated mode table and mode selection to include Upgrade mode (4 modes); Step 7d: qoo-qualified template changed from hardcoded true to <computed>; Step 7d: added deterministic qoo-qualified formula — same rule as skill-eval Step 8; Rename: 'upgrade skill' → 'score skill' across all references |
 | 2026-10-28 21:05 | v6.1.0 — Signal cleanup: 'upgrade skill' replaces 'edit skill'. Dropped 'check skill', 'skill check', 'audit skill' (eval territory) |
 | 2026-10-15 21:43 | v3.7.1 — Add CNL authoring checklist items: one instruction per sentence, active imperative voice, single vocabulary |
 

@@ -4,11 +4,12 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-10-31 21:29 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-10-31 20:37 |
+| [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-31 20:37 |
+| [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation | 2026-10-31 20:37 |
+| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, score skill, advanced skill | 2026-10-31 20:37 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-10-31 17:02 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-10-31 16:58 |
-| [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-10-31 15:43 |
-| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, upgrade skill, advanced skill | 2026-10-28 21:05 |
-| [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-27 23:46 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-10-27 20:58 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-10-26 10:33 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex | 2026-10-26 10:33 |
@@ -21,7 +22,6 @@
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-10-15 21:44 |
 | [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | setup goose skupper provider, teardown skupper provider, recreate skupper provider, test skupper provider, check skupper provider | 2026-10-15 09:47 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-10-12 14:42 |
-| [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit | check skill, eval skill, audit skill quality, check all skills, skill evaluation | 2026-10-02 15:08 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-09-29 17:07 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-09-29 16:25 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-09-16 11:56 |

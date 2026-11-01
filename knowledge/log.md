@@ -2,6 +2,38 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 21:43
+- Add Phase 6 reference — Quality Schema v2.0 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 21:42
+- Quality Schema v2.0 implementation plan — replace concern_count + accidental_complexity with step_clarity + prose_executability (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)
+
+## 2026-10-31 20:38
+- Rename: upgrade skill → score skill (6 refs) (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 19:19
+- Updated success criteria: Phase 1 now shows v4.0.0 deliverables (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated dependency graph: Phase 1 marked COMPLETE with sub-task details (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated status line to ALL PHASES COMPLETE (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 19:18
+- Phase 1 marked COMPLETE — all 3 sub-tasks delivered in skill-gen v4.0.0 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 19:05
+- Phase 1 updated: 1.3 revised to 'hey upgrade skill' signal (supersedes Skill Check audit), ownership model added to 1.1, unconditional tracing note in 1.2 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 19:03
+- Updated success criteria table (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated dependency graph and success criteria — Phase 4 complete, Phase 5 scores updated (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Phase 4 marked COMPLETE: 4.1-4.2 done, 4.3-4.4 dropped, infra fixes captured, skill eval vs agentfs eval design learning, CECX trace richness gap documented (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 17:40
+- Updated success criteria table: Phase 4 in progress, Phase 1 not started (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Updated dependency graph: Phase 4 before Phase 1, 4.1 marked complete (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
+## 2026-10-31 17:39
+- Phase 4.1 marked COMPLETE, dependency graph adjusted: Phase 4 before Phase 1 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+
 ## 2026-10-31 14:37
 - ES implementation patterns: deterministic, SDM-hybrid, benchmark (knowledge/executable-specification-first/es-implementation-patterns.md)
 

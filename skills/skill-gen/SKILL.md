@@ -1,12 +1,12 @@
 ---
 name: skill-gen
 description: >
-  create skill, new skill, upgrade skill, advanced skill
+  create skill, new skill, score skill, advanced skill
 argument-hint: "Describe what the skill should do. Add 'advanced' for full eval loop."
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "3.7.1"
+  version: "4.0.0"
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false
@@ -27,12 +27,13 @@ quality principles). Default mode is simple; use advanced when requesting
 "thorough", "with evals", or "production quality". Skill Check runs
 automatically after every creation or update (Post-Creation Checklist).
 
-This is a **proxy skill** that operates in three modes:
+This is a **proxy skill** that operates in four modes:
 
 | Mode | When | What Happens |
 |------|------|-------------|
-| **Simple** (default) | Quick utility skills, SOPs, small workflows | Scaffold + write + AgentFS post-creation checklist |
-| **Advanced** | "advanced", "thorough", "with evals", "production quality" | Full upstream eval/iterate/optimize loop + AgentFS checklist |
+| **Simple** (default) | Quick utility skills, SOPs, small workflows | Scaffold + write + QOO scores + AgentFS post-creation checklist |
+| **Advanced** | "advanced", "thorough", "with evals", "production quality" | Full upstream eval/iterate/optimize loop + QOO scores + AgentFS checklist |
+| **Score** | "score skill \<name\>" | Re-evaluate existing skill Quality + Observable scores |
 | **Skill Check** | "check skill", "skill check", "audit skill" | Audit existing skill against seven quality principles |
 
 ## Mode Selection
@@ -43,6 +44,8 @@ Detect mode from user's language:
   "turn this into a skill", "skill for this workflow"
 - **Advanced**: "create a skill, advanced", "thorough skill",
   "production quality skill", "with evals", "benchmark this skill"
+- **Score**: "score skill \<name\>", "refresh skill scores",
+  "re-evaluate skill QOO"
 - **Skill Check**: "skill check", "scan skill", "check skill",
   "audit skill", "skill scan", "verify skill quality"
 
@@ -479,6 +482,18 @@ this order:
       principles must pass or have explicit waivers logged per the
       gate above. Do NOT proceed to the remaining checklist items
       until the check passes.
+- [ ] **Trace instrumentation** — Every script under `scripts/`
+      MUST source `~/.agents/scripts/trace-lib.sh` and call
+      `trace_init("<skill-name>", "<script-name>")` unconditionally
+      at script start. Call `trace_step` for each action. Call
+      `trace_end` at script exit. Do NOT guard tracing behind an
+      `AGENTFS_TRACE` environment variable — tracing is always on.
+      Traces auto-route to `~/.agents/.traces/` when that directory
+      exists.
+- [ ] **QOO scores** — Run the QOO evaluation pipeline (Step 7
+      below). Target: ≥75 (Tunable band) on Quality and Observable.
+      Results persist to `scores.yaml`. If scores fall below Tunable,
+      review the failing dimensions and fix before proceeding.
 - [ ] **Changelog** — `CHANGELOG.md` exists with at least a v1.0 entry
 - [ ] **Index regeneration** — invoke the `skill-index` skill to
       regenerate `skills/index.md` at the appropriate scope
@@ -496,6 +511,124 @@ this order:
       or `./.agents/log.md` (PROJECT scope) with ISO 8601 timestamp.
       Use the comment line (`<!-- Append-only... -->`) as insertion
       anchor (see Guardrail #5, Root Log Format).
+
+### Step 7 — Compute QOO Scores
+
+Compute objective Quality and Observable scores for the newly
+created or updated skill. This step produces `scores.yaml` with
+build-time QOO metrics.
+
+**7a. Gather structural facts:**
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/skill-gen-evidence.txt
+```
+
+Read the output. It contains pre-computed metrics for all QOO
+dimensions (script coverage, CNL compliance, anti-fabrication rules,
+SDM delegation, trace instrumentation).
+
+**7b. Evaluate Quality (MCACS):**
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/quality.yaml \
+  --evidence /tmp/skill-gen-evidence.txt
+```
+
+Extract the aggregate score and per-dimension results from the
+JSON output. If `"band": "SDM_UNAVAILABLE"`, report: "⚠️ SDM
+unavailable — Quality score skipped."
+
+**7c. Evaluate Observable:**
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/observable.yaml \
+  --evidence /tmp/skill-gen-evidence.txt
+```
+
+Extract the aggregate score and per-dimension results.
+
+**7d. Persist to scores.yaml:**
+
+Write or update `$SKILL_DIR/scores.yaml` with this structure:
+
+```yaml
+skill: <skill-name>
+version: <metadata.version>
+qoo-qualified: <computed>
+
+quality:
+  aggregate_score: <score>
+  band: <band>
+  dimensions:
+    <dim_name>: { score: <n>, pass: <bool>, confidence: <n> }
+    # ... one per MCACS dimension
+  evaluated: <ISO 8601 timestamp>
+
+observable:
+  aggregate_score: <score>
+  band: <band>
+  dimensions:
+    <dim_name>: { score: <n>, pass: <bool>, confidence: <n> }
+    # ... one per observable dimension
+  evaluated: <ISO 8601 timestamp>
+
+history:
+  - date: <ISO 8601>
+    type: quality+observable
+    quality_score: <n>
+    quality_band: <band>
+    observable_score: <n>
+    observable_band: <band>
+    note: "Initial QOO scoring by skill-gen"
+```
+
+Compute `qoo-qualified` deterministically from all available scores:
+
+```
+qoo-qualified = quality.band ∈ {Tunable, Operable}
+             AND observable.band ∈ {Tunable, Operable}
+             AND operable.build.band ∈ {Tunable, Operable}
+```
+
+If `operable.build` has not been evaluated yet (section missing),
+set `qoo-qualified: false`. Runtime CECX is exempt — it is
+model-dependent and does not gate qualification.
+Do NOT set this field based on judgment. Compute it from band
+values only.
+
+Do NOT write an `operable:` section. That is owned by `skill-eval`
+and populated via `hey eval skill`.
+
+Preserve any existing `operable:` and `history:` entries if the
+file already exists.
+
+Immediately run post-write.sh after writing:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh \
+  "$SKILL_DIR/scores.yaml" "skill-gen: QOO scores (quality + observable)"
+```
+
+**7e. Report results:**
+
+Print a summary table:
+
+```
+### QOO Build-time Scores
+
+| Axis | Score | Band |
+|------|:-----:|------|
+| Quality (MCACS) | <score> | <band> |
+| Observable | <score> | <band> |
+
+Target: ≥75 (Tunable). Run `hey eval skill <name>` for Operable scoring.
+```
+
+If either axis is below 75, list the failing dimensions and
+suggest specific fixes before the skill is considered production-ready.
 
 ---
 
@@ -579,6 +712,107 @@ For both modes:
 4. In advanced mode, use the existing skill as the baseline for
    comparison in the eval loop
 5. Run the AgentFS Post-Creation Checklist (Step 6 / Step 4)
+6. Run the QOO evaluation pipeline (Step 7)
+
+---
+
+## Score Skill Mode
+
+**Trigger:** `hey score skill <name>`
+
+Re-evaluate an existing skill's Quality and Observable scores without
+modifying the skill itself. Use this to:
+- Refresh QOO scores after infrastructure changes (schema updates,
+  gather-state improvements)
+- Baseline a skill before making changes
+- Compare before/after scores across versions
+
+### Step 1 — Resolve Skill
+
+Resolve the skill path. Check USER scope first
+(`~/.agents/skills/<name>/`), then PROJECT scope
+(`./.agents/skills/<name>/`).
+
+Verify `SKILL.md` exists. If absent, report and stop.
+
+Set `SKILL_DIR` to the resolved absolute path.
+
+### Step 2 — Gather Structural Facts
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/skill-upgrade-evidence.txt
+```
+
+Read the output.
+
+### Step 3 — Evaluate Quality (MCACS)
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/quality.yaml \
+  --evidence /tmp/skill-upgrade-evidence.txt
+```
+
+### Step 4 — Evaluate Observable
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/observable.yaml \
+  --evidence /tmp/skill-upgrade-evidence.txt
+```
+
+### Step 5 — Persist Quality + Observable
+
+Update `$SKILL_DIR/scores.yaml` with the `quality:` and `observable:`
+sections from Steps 3 and 4. Follow the same structure as Step 7d
+in Simple Mode.
+
+Do NOT overwrite `operable:` — that section is owned by `skill-eval`.
+Preserve existing `operable:` and `history:` entries.
+
+Append a history entry:
+
+```yaml
+- date: <ISO 8601>
+  type: quality+observable
+  quality_score: <n>
+  quality_band: <band>
+  observable_score: <n>
+  observable_band: <band>
+  note: "Re-evaluation via hey score skill"
+```
+
+Immediately run post-write.sh:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh \
+  "$SKILL_DIR/scores.yaml" "skill-gen: upgrade quality + observable scores"
+```
+
+### Step 6 — Report
+
+Print the QOO summary table (same format as Step 7e in Simple Mode).
+
+If previous scores exist in `scores.yaml`, show a comparison:
+
+```
+### QOO Score Delta
+
+| Axis | Previous | Current | Δ |
+|------|:--------:|:-------:|:-:|
+| Quality | <old> | <new> | <diff> |
+| Observable | <old> | <new> | <diff> |
+```
+
+### Ownership Boundary
+
+`score skill` writes `quality:` and `observable:` only.
+`eval skill` (via `skill-eval`) writes `operable:` only.
+Both append to `history:`.
+
+This separation ensures build-time scoring (Quality, Observable)
+stays with the build tool (`skill-gen`), and runtime scoring
+(Operable BMBT + CECX) stays with the eval tool (`skill-eval`).
 
 ---
 

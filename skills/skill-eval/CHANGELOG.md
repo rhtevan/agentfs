@@ -2,7 +2,21 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-10-31 20:37 | v2.1.0 — Step 8: added deterministic qoo-qualified formula — Tunable+ on quality, observable, operable.build; runtime exempt; Bump frontmatter version to 2.1.0; Rename: 'upgrade skill' → 'score skill' in ownership table |
+| 2026-10-31 19:04 | v2.0.0 — skill-eval v2.0.0: QOO re-engineering — Tier 1 BMBT + Quality/Observable read + Tier 2 CECX runtime + eval skill dispatch + persist + consolidated report; Added --phase build flag to BMBT sdm-evaluate.sh call; Added model and trace fields to Step 8 persist — CECX scores are model-dependent |
 | 2026-10-02 15:06 | v1.0.0 — New skill: skill-eval v1.0.0 — deterministic checks S01-S22 (P1-P7), LLM rubrics S23-S26. Refactored out of agentfs-eval R4. |
+
+## 2026-10-31 v2.0.0
+
+- **BREAKING:** New eval sequence — `hey eval skill` now runs full QOO evaluation (Tier 0 + Tier 1 + Tier 2)
+- Added Quick Dispatch: `check skill` = Tier 0 only, `eval skill` = full eval
+- Added Tier 1: BMBT build-time operable via `gather-skill-state.sh` + `sdm-evaluate.sh operable.yaml`
+- Added Tier 1: Quality + Observable computed fresh for report (read-only, not persisted — owned by skill-gen)
+- Added Tier 2: CECX runtime operable from `.traces/` JSONL via `sdm-evaluate.sh operable.yaml`
+- Added Step 8: Persist `operable` section to `scores.yaml` (preserves quality/observable owned by skill-gen)
+- Added Step 9: Consolidated report with QOO Summary table (all axes, per-axis bands)
+- Added QOO Axis Ownership table documenting scores.yaml section ownership
+- Kept Tier 0 unchanged: S01-S22 deterministic + S23-S26 LLM rubric
 
 ## 2026-10-02 v1.0.0
 

@@ -21,17 +21,18 @@
 #   2 — Not in a git repository
 #
 # Trace integration:
-#   Sources trace-lib.sh if AGENTFS_TRACE is set.
+#   Always sources trace-lib.sh. Traces auto-route to ~/.agents/.traces/.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TRACE_LIB="${HOME}/.agents/scripts/trace-lib.sh"
 
-# --- Trace setup (optional) ---
+# --- Trace setup ---
 _trace=false
-if [[ -n "${AGENTFS_TRACE:-}" ]] && [[ -f "$TRACE_LIB" ]]; then
+if [[ -f "$TRACE_LIB" ]]; then
   source "$TRACE_LIB"
+  trace_init "agentfs-readme-audit" "gather-state"
   _trace=true
 fi
 
@@ -45,11 +46,12 @@ die() { echo "ERROR: $*" >&2; exit 2; }
 
 # --- Parse arguments ---
 SCOPE=""
+SCOPE_EXPLICIT=false
 REPO_ROOT_ARG=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --scope)  SCOPE="$2"; shift 2 ;;
+    --scope)  SCOPE="$2"; SCOPE_EXPLICIT=true; shift 2 ;;
     --repo-root) REPO_ROOT_ARG="$2"; shift 2 ;;
     -h|--help)
       echo "Usage: gather-state.sh [--scope user|project] [--repo-root <path>]"
@@ -94,11 +96,29 @@ case "$SCOPE" in
     elif [[ -f "${REPO_ROOT}/README.md" ]]; then
       README_PATH="${REPO_ROOT}/README.md"
     else
-      echo "=== SCOPE ==="
-      echo "Scope: PROJECT"
-      echo "Repo root: $REPO_ROOT"
-      echo "Result: NO README FOUND — skip audit"
-      exit 1
+      if [[ "$SCOPE_EXPLICIT" == "true" ]]; then
+        # User explicitly asked for PROJECT — do not fallback
+        echo "=== SCOPE ==="
+        echo "Scope: PROJECT"
+        echo "Repo root: $REPO_ROOT"
+        echo "Result: NO README FOUND — skip audit"
+        [[ "$(type -t trace_end)" == "function" ]] && trace_end 1
+        echo "❌ gather-state: no README found in PROJECT scope — audit skipped" >&2
+        exit 1
+      fi
+      # Auto-fallback: PROJECT has no README → try USER scope
+      echo "⚠️ gather-state: no README in PROJECT scope, falling back to USER scope" >&2
+      SCOPE="user"
+      AGENTS_ROOT="${HOME}/.agents"
+      README_PATH="${AGENTS_ROOT}/README.md"
+      if [[ ! -f "$README_PATH" ]]; then
+        echo "=== SCOPE ==="
+        echo "Scope: PROJECT (attempted) → USER (fallback)"
+        echo "Result: NO README FOUND in either scope — skip audit"
+        [[ "$(type -t trace_end)" == "function" ]] && trace_end 1
+        echo "❌ gather-state: no README found in PROJECT or USER scope — audit skipped" >&2
+        exit 1
+      fi
     fi
     ;;
   *)
@@ -282,3 +302,14 @@ echo "README path: $README_PATH"
 echo "README lines: $README_LINES"
 echo ""
 cat "$README_PATH"
+
+# --- Finalize trace ---
+[[ "$(type -t trace_end)" == "function" ]] && trace_end 0
+
+# --- Stderr summary for model feedback when stdout is redirected ---
+SCOPE_UPPER=$(echo "$SCOPE" | tr '[:lower:]' '[:upper:]')
+if [[ "$SCOPE" == "user" ]]; then
+  echo "✅ gather-state complete: scope=${SCOPE_UPPER}, ${SKILL_COUNT} skills, ${KNOWLEDGE_COUNT} bundles, README=${README_LINES} lines" >&2
+elif [[ "$SCOPE" == "project" ]]; then
+  echo "✅ gather-state complete: scope=${SCOPE_UPPER}, ${SKILL_COUNT} skills, ${PROFILE_COUNT} profiles, README=${README_LINES} lines" >&2
+fi

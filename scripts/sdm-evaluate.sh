@@ -41,12 +41,17 @@ command -v jq >/dev/null 2>&1 || die "jq is required but not found."
 
 # --- Arguments ---
 EVIDENCE_FILE=""
+PHASE_FILTER=""
 ARGS=()
 for arg in "$@"; do
   if [[ "$arg" == "--evidence" ]]; then
     EVIDENCE_FILE="__next__"
   elif [[ "$EVIDENCE_FILE" == "__next__" ]]; then
     EVIDENCE_FILE="$arg"
+  elif [[ "$arg" == "--phase" ]]; then
+    PHASE_FILTER="__next__"
+  elif [[ "$PHASE_FILTER" == "__next__" ]]; then
+    PHASE_FILTER="$arg"
   else
     ARGS+=("$arg")
   fi
@@ -186,6 +191,13 @@ DIMENSION_POLARITIES=()
 
 for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   name=$(yq -r ".dimensions[$i].name" "$SCHEMA")
+  phase=$(yq -r ".dimensions[$i].phase // \"\"" "$SCHEMA")
+
+  # Skip dimensions that don't match the phase filter
+  if [[ -n "$PHASE_FILTER" && -n "$phase" && "$phase" != "$PHASE_FILTER" ]]; then
+    continue
+  fi
+
   question=$(yq -r ".dimensions[$i].question" "$SCHEMA")
   metric=$(yq -r ".dimensions[$i].metric" "$SCHEMA")
   target=$(yq -r ".dimensions[$i].target // \"\"" "$SCHEMA")
@@ -235,6 +247,11 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   QUESTIONS=$(echo "$QUESTIONS" | jq --argjson q "$q" '. + $q')
 done
 
+EVALUATED_COUNT=${#DIMENSION_NAMES[@]}
+if [[ -n "$PHASE_FILTER" ]]; then
+  log "Phase filter: $PHASE_FILTER — evaluating $EVALUATED_COUNT of $DIMENSION_COUNT dimensions"
+fi
+
 # --- Call SDM ---
 
 SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/null) || {
@@ -243,7 +260,7 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
     log "WARNING: SDM endpoint unreachable. Returning SDM_UNAVAILABLE."
     # Build CECX JSON with all dimensions marked N/A
     UNAVAIL_DIMS="[]"
-    for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
+    for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
       dim=$(jq -n \
         --arg n "${DIMENSION_NAMES[$i]}" \
         --argjson w "${DIMENSION_WEIGHTS[$i]}" \
@@ -256,7 +273,7 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
       --arg schema_version "$SCHEMA_VERSION" \
       --arg ts "$(date -Iseconds)" \
       --argjson dims "$UNAVAIL_DIMS" \
-      --argjson total "$DIMENSION_COUNT" \
+      --argjson total "$EVALUATED_COUNT" \
       '{
         skill: $skill,
         schema_type: $schema_type,
@@ -286,7 +303,7 @@ TOTAL_PASS=0
 TOTAL_DIMS=0
 DIMENSIONS_JSON="[]"
 
-for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
+for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
   name="${DIMENSION_NAMES[$i]}"
   metric="${DIMENSION_METRICS[$i]}"
   target="${DIMENSION_TARGETS[$i]}"

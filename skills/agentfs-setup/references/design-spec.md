@@ -77,7 +77,7 @@ covers build-time design properties. `eval` covers operability
 |--------|----------|-------|---------|
 | `hey upgrade agentfs` | Quality (MCACS) | Build | Is the AGENTS.md design sound? |
 | `hey eval agentfs` | Operable (BMBT + CECX) | Build + Runtime | Does it work? (structure + benchmark) |
-| `hey upgrade skill` | Quality (MCACS) + Observable | Build | Is the skill well-designed and instrumented? |
+| `hey score skill` | Quality (MCACS) + Observable | Build | Is the skill well-designed and instrumented? |
 | `hey eval skill` | Operable (BMBT + CECX) | Build + Runtime | Does it run correctly? (structure + trace) |
 
 **Observable is always build-time** — it measures whether

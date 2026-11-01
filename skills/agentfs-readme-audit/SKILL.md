@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "3.1.0"
+  version: "3.3.0"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
@@ -18,9 +18,9 @@ AgentFS scope. Supports USER and PROJECT scopes.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 3.0.1 |
+| **Version** | 3.3.0 |
 | **Trigger** | Automatic during Git Push Safety, or explicit |
-| **Dependencies** | `scripts/gather-state.sh`, `scripts/extract-comparison.sh`, `sdm-evaluate.sh` |
+| **Dependencies** | `scripts/gather-state.sh`, `scripts/evaluate-alignment.sh` |
 
 ## Specification
 
@@ -37,6 +37,10 @@ Do NOT read README.md directly. Do NOT use `cat`, `shell`, `read_image`,
 or any tool to read the README file. The gather-state script reads it.
 All state comes from scripts. You orchestrate scripts, not files.
 
+Do NOT fabricate, generate, or invent data. Every fact in your report
+MUST come from script output. If a dimension cannot be evaluated from
+the available evidence, mark it N/A — do not guess.
+
 ## Workflow
 
 Execute these steps now. Run the scripts immediately. Do not explain
@@ -44,24 +48,17 @@ the steps to the user. Do not ask for confirmation before Step 1.
 
 ### Step 1: Gather State
 
-Determine which scope to audit. If the current working directory
-is inside `~/.agents`, the scope is USER. Otherwise, the scope
-is PROJECT.
-
-For USER scope, run:
-
-```bash
-bash ~/.agents/skills/agentfs-readme-audit/scripts/gather-state.sh --scope user > /tmp/readme-audit-state.txt
-```
-
-For PROJECT scope, run:
+Run the gather-state script. It auto-detects scope (PROJECT first,
+falls back to USER if no PROJECT README exists):
 
 ```bash
 bash ~/.agents/skills/agentfs-readme-audit/scripts/gather-state.sh > /tmp/readme-audit-state.txt
 ```
 
+To force a specific scope, add `--scope user` or `--scope project`.
+
 If the script exits 1, report to the user:
-"No README found in PROJECT scope. Audit skipped."
+"No README found. Audit skipped."
 Stop here.
 
 Read `/tmp/readme-audit-state.txt`. It contains the resolved scope,
@@ -70,73 +67,42 @@ of truth for this audit. Do not gather state by other means.
 
 ### Step 2: Evaluate Alignment
 
-Extract compact comparison evidence, then run SDM evaluation:
+Run the alignment evaluation script:
 
 ```bash
-bash ~/.agents/skills/agentfs-readme-audit/scripts/extract-comparison.sh /tmp/readme-audit-state.txt > /tmp/readme-comparison.txt
-
-bash ~/.agents/scripts/sdm-evaluate.sh /tmp/readme-comparison.txt \
-  ~/.agents/skills/schemas/readme-alignment.yaml \
-  --evidence /tmp/readme-comparison.txt
+bash ~/.agents/skills/agentfs-readme-audit/scripts/evaluate-alignment.sh /tmp/readme-audit-state.txt
 ```
 
-If `sdm-evaluate.sh` exits 2, SDM is unavailable. Skip this step.
-Fall through to Step 3 and perform the comparison using the facts
-from `/tmp/readme-audit-state.txt` directly.
+If the script exits 2, SDM is unavailable. Fall through to Step 3
+and perform the comparison using the facts from
+`/tmp/readme-audit-state.txt` directly.
 
 If it succeeds, read the CECX JSON output. Each dimension has
 `pass: true/false`, `score`, and `confidence`.
 
-### Step 3: Interpret Results
+### Step 3: Report
 
-Read the CECX JSON from Step 2. For each dimension:
+Interpret the CECX JSON from Step 2 and present a report.
+
+Load the dimension lookup table for the resolved scope:
+
+```
+load_skill(name: "agentfs-readme-audit/references/dimensions.md")
+```
+
+For each dimension, map the SDM result to a status:
 - `pass: true` with `confidence >= 0.7` → ✅ aligned
-- `pass: true` with `confidence < 0.7` → ⚠️ uncertain (verify manually)
-- `pass: false` with `score: 0` → ⚠️ DRIFT (SDM detected a factually incorrect claim)
-- `pass: false` with `score: 50` → ⚠️ uncertain (verify manually)
-- Dimensions with `informational: true` in the schema (D9/P8) → ℹ️ informational
+- `pass: true` with `confidence < 0.7` → ⚠️ uncertain
+- `pass: false` with `score: 0` → ⚠️ DRIFT
+- `pass: false` with `score: 50` → ⚠️ uncertain
+- Coverage Gaps (D9/P8) → ℹ️ informational
 
-Filter dimensions by scope: show only `D*` dimensions for USER scope,
-only `P*` dimensions for PROJECT scope.
+Filter dimensions by scope: `D*` for USER, `P*` for PROJECT.
 
-If SDM was unavailable in Step 2, perform the comparison manually
-using the `extract-comparison.sh` output or the raw gather-state facts.
+If SDM was unavailable in Step 2, compare the raw gather-state
+facts against the README content from `/tmp/readme-audit-state.txt`.
 
-#### USER scope dimensions
-
-| # | Dimension | Check |
-|---|-----------|-------|
-| D1 | Skill Count | Does README count match actual skill count? |
-| D2 | Skill Categories | Does category table match actual skills? |
-| D3 | Knowledge Bundles | Does bundle count or list match? |
-| D4 | Directory Structure | Does tree diagram match actual layout? |
-| D5 | Guardrail Summary | Do guardrail names and count match? |
-| D6 | Version References | Do version numbers match? |
-| D7 | Feature Descriptions | Do features reflect actual skills? |
-| D8 | Setup Instructions | Do paths and commands still work? |
-| D9 | Coverage Gaps | Does major content exist without mention? |
-
-#### PROJECT scope dimensions
-
-| # | Dimension | Check |
-|---|-----------|-------|
-| P1 | Project Skill Count | Does count match actual? |
-| P2 | Agent Profiles | Do profiles match actual? |
-| P3 | Agent Identity | Does identity match SOUL.md? |
-| P4 | Directory Structure | Does tree match actual layout? |
-| P5 | AGENTS.md References | Are references accurate? |
-| P6 | Feature Descriptions | Do features reflect actual content? |
-| P7 | Setup / Onboarding | Do instructions still work? |
-| P8 | Coverage Gaps | Does content exist without mention? |
-
-Absence of a claim is not drift. Drift occurs only when the README
-makes a claim that contradicts reality. Mark absent claims as N/A.
-
-Coverage Gaps (D9/P8) are informational. Mark as ℹ️, not ⚠️.
-
-### Step 4: Present Report
-
-Format the findings as a single report. Use this structure:
+Format as a single report:
 
 ```
 ## README Alignment Report (<SCOPE> scope)
@@ -153,8 +119,6 @@ Format the findings as a single report. Use this structure:
 ⚠️ DRIFT DETECTED — N dimension(s) misaligned.
 ```
 
-### Step 5: Recommend Fixes
-
 For each dimension with ⚠️ DRIFT, state the specific edit needed.
 Do not auto-apply fixes. Present them to the user for approval.
 
@@ -170,7 +134,7 @@ Do not auto-apply fixes. Present them to the user for approval.
 When triggered by `pre-push-scan.sh` emitting `README_AUDIT_REQUIRED`:
 
 1. Run Step 1 using the repo that Git Push Safety resolved.
-2. Run Steps 2-5 as normal.
+2. Run Steps 2-3 as normal.
 3. Present the alignment report alongside the pre-push security report.
 4. Drift is advisory, not blocking. The user decides whether to fix
    before pushing.
@@ -180,6 +144,29 @@ When triggered by `pre-push-scan.sh` emitting `README_AUDIT_REQUIRED`:
 - Does not auto-fix README.md.
 - Does not replace `pre-push-scan.sh`.
 - Does not check prose quality or grammar.
+
+## References
+
+- [`references/dimensions.md`](./references/dimensions.md) — USER (D1-D9) and PROJECT (P1-P8) dimension lookup tables
+
+## Supporting Files
+
+| File | Purpose |
+|------|---------|
+| `scripts/gather-state.sh` | Deterministic state gathering — scope resolution, filesystem facts, README content |
+| `scripts/extract-comparison.sh` | Extract compact comparison evidence from gathered state |
+| `scripts/evaluate-alignment.sh` | Wrapper: extract-comparison + sdm-evaluate in one call |
+| `scores.yaml` | QOO scores (quality, observable, operable) |
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Exit 1 + "no README found" | No README.md in PROJECT or USER scope | Create README.md or use `--scope user` |
+| Exit 2 + "not a git repository" | CWD is not inside a git repo | `cd` to a git repo or use `--scope user` |
+| Exit 2 + "SDM unavailable" | localhost:9000 not running | Start the LLM/SDM endpoint. Fall through to manual comparison. |
+| Empty report | `gather-state.sh` output redirected, model didn't read the file | Check stderr for `✅` confirmation. Read `/tmp/readme-audit-state.txt`. |
+| All dimensions N/A | Scope mismatch — USER dims shown for PROJECT or vice versa | Verify scope in gather-state output. Use `--scope` flag. |
 
 ## Changelog
 
