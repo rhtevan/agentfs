@@ -1,4 +1,4 @@
-schema-version: "1.0"
+schema-version: "2.0"
 schema-type: quality
 description: >
   MCACS quality standard for AgentFS skills. Evaluates skill design
@@ -29,27 +29,42 @@ dimensions:
     weight: 1.0
     mcacs: Modularity
 
-  - name: concern_count
+  - name: step_clarity
     question: >
-      How many distinct responsibility types are mixed in SKILL.md?
-      Count from: data gathering, scope resolution, semantic analysis,
-      user interaction, file mutation, formatting/reporting.
-    evidence_source: skill.md
-    metric: count
-    target: "<= 2"
+      Read each workflow step in this skill. For each step, check:
+      (1) does the step state exactly one action? (2) does the step
+      have an unambiguous completion criterion (exit code, file
+      created, output to read)? Rate the overall step clarity.
+    evidence_source: skill.md step excerpts
+    metric: score
+    criteria:
+      - "all steps are unclear or compound"
+      - "few steps are clear"
+      - "most steps are clear with completion criteria"
+      - "every step states one action with an unambiguous completion criterion"
+    target: ">= 2"
     weight: 1.0
+    polarity: positive
     mcacs: Cohesion
 
-  - name: accidental_complexity
+  - name: prose_executability
     question: >
-      What percentage of SKILL.md lines are dedicated to HOW (shell
-      commands, file paths, implementation details) versus WHAT
-      (decisions, judgments, orchestration logic)? Accidental complexity
-      is the HOW that should be in scripts, not prose.
-    evidence_source: skill.md
-    metric: ratio
-    target: "<= 0.20"
+      Read only the prose-only steps (marked [SCRIPTED: no]). Can
+      a model with basic instruction-following ability execute them
+      correctly without domain expertise, implicit context, or
+      multi-hop reasoning? A prose step is executable if it tells
+      the agent exactly what to do, what to look at, and what to
+      output.
+    evidence_source: skill.md prose-only step excerpts
+    metric: score
+    criteria:
+      - "prose steps require deep expertise or are ambiguous"
+      - "some prose steps need expertise or multi-hop reasoning"
+      - "most prose steps are self-contained and executable"
+      - "all prose steps are self-contained with explicit instructions"
+    target: ">= 2"
     weight: 1.0
+    polarity: positive
     mcacs: Separation of Concerns
 
   - name: model_portability

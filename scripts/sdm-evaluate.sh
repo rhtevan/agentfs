@@ -230,11 +230,18 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
       ;;
     choice)
       # SystemOne uses criteria dict: {option: null}
-      local criteria
       criteria=$(yq -r ".dimensions[$i].choices | .[] " "$SCHEMA" \
         | jq -R '{(.): null}' | jq -s 'add')
       q=$(jq -n --arg n "$name" --arg i "$question" --argjson c "$criteria" \
         '{($n): {type: "choice", instructions: $i, criteria: $c}}')
+      ;;
+    score)
+      # Ordinal score with criteria defined in schema YAML.
+      # Used for semantic dimensions (step_clarity, prose_executability).
+      score_criteria=$(yq -r ".dimensions[$i].criteria | .[]" "$SCHEMA" \
+        | jq -R '.' | jq -s '.')
+      q=$(jq -n --arg n "$name" --arg i "$question" --argjson c "$score_criteria" \
+        '{($n): {type: "score", instructions: $i, criteria: $c}}')
       ;;
     *)
       log "WARNING: Unknown metric type '$metric' for dimension '$name'. Using noul."
@@ -346,7 +353,7 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
         score_val=0
       fi
       ;;
-    count|ratio)
+    count|ratio|score)
       # Normalize scientific notation (e.g., 6.47E-7) to decimal for bc.
       # SystemOne returns expected value (probability-weighted ordinal average),
       # not a discrete bucket index. Round to nearest integer since ordinal
@@ -356,10 +363,15 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
       # SystemOne score type returns ordinal index (0-based) into criteria array.
       # count: ["0","1","2","3","4","5+"] → 6 buckets, max_scale=5
       # ratio: ["0-20%","20-40%","40-60%","60-80%","80-100%"] → 5 buckets, max_scale=4
+      # score: criteria from schema YAML → max_scale = len(criteria) - 1
       if [[ "$metric" == "count" ]]; then
         max_scale=5
-      else
+      elif [[ "$metric" == "ratio" ]]; then
         max_scale=4
+      else
+        # score metric: compute max_scale from schema criteria array length
+        max_scale=$(( $(yq -r ".dimensions[$i].criteria | length" "$SCHEMA") - 1 ))
+        [[ "$max_scale" -le 0 ]] && max_scale=1
       fi
 
       # Parse target value (strip operator)

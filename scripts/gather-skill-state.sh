@@ -22,7 +22,8 @@
 #   Action steps in SKILL.md: 6
 #   Scripts in scripts/ directory: 0
 #   Script coverage: 0 of 6 action steps backed by scripts (0%).
-#   Concern count: 4 (data gathering, scope resolution, semantic analysis, reporting)
+#   Step excerpts:
+#   --- Step 1: Gather State [SCRIPTED: yes] ---
 #   ...
 
 set -euo pipefail
@@ -276,63 +277,40 @@ else
   COVERAGE_PCT=0
 fi
 
-# --- Concern detection ---
-# Heuristic: detect distinct responsibility types in SKILL.md
-CONCERNS=""
-CONCERN_COUNT=0
-
-# Data gathering
-if grep -qiP '(gather|collect|count|list|ls |find |wc |grep )' "$SKILL_MD" 2>/dev/null; then
-  CONCERNS+="data gathering, "
-  CONCERN_COUNT=$((CONCERN_COUNT + 1))
+# --- Step excerpts ---
+# Extract each step's text with [SCRIPTED: yes/no] marker for SDM evidence.
+# Replaces concern_count and accidental_complexity heuristics (v2.0).
+# step_lines array is already computed in the script_coverage block above.
+STEP_EXCERPTS=""
+if [[ "$ACTION_STEPS" -gt 0 && ${#step_lines[@]} -gt 0 ]]; then
+  total_lines_file=${total_lines_file:-$(wc -l < "$SKILL_MD")}
+  for idx in "${!step_lines[@]}"; do
+    start=${step_lines[$idx]}
+    if [[ $((idx + 1)) -lt ${#step_lines[@]} ]]; then
+      end=$((${step_lines[$((idx + 1))]} - 1))
+    else
+      next_section=$(awk -v s="$((start + 1))" 'NR > s && /^##[^#]/ {print NR; exit}' "$SKILL_MD")
+      end=${next_section:-$total_lines_file}
+    fi
+    # Get step header
+    header=$(sed -n "${start}p" "$SKILL_MD" | sed 's/^### //')
+    # Extract block
+    block=$(sed -n "${start},${end}p" "$SKILL_MD")
+    # Check for script reference
+    if echo "$block" | grep -qP '(bash|sh)\s+.*scripts/'; then
+      scripted="yes"
+    else
+      scripted="no"
+    fi
+    # Strip code fence markers, cap at 20 lines for SDM context
+    clean_block=$(echo "$block" | grep -v '^```' | head -20)
+    STEP_EXCERPTS+="--- ${header} [SCRIPTED: ${scripted}] ---
+${clean_block}
+"
+  done
 fi
 
-# Scope resolution
-if grep -qiP '(scope|USER|PROJECT|resolve scope|git rev-parse)' "$SKILL_MD" 2>/dev/null; then
-  CONCERNS+="scope resolution, "
-  CONCERN_COUNT=$((CONCERN_COUNT + 1))
-fi
-
-# Semantic analysis
-if grep -qiP '(semantic|alignment|compare|assess|judge|evaluate|analys)' "$SKILL_MD" 2>/dev/null; then
-  CONCERNS+="semantic analysis, "
-  CONCERN_COUNT=$((CONCERN_COUNT + 1))
-fi
-
-# User interaction
-if grep -qiP '(ask the user|wait for|confirm|approval|WAIT|STOP)' "$SKILL_MD" 2>/dev/null; then
-  CONCERNS+="user interaction, "
-  CONCERN_COUNT=$((CONCERN_COUNT + 1))
-fi
-
-# File mutation
-if grep -qiP '(write|create|edit|delete|mkdir|mv |cp |rm )' "$SKILL_MD" 2>/dev/null; then
-  CONCERNS+="file mutation, "
-  CONCERN_COUNT=$((CONCERN_COUNT + 1))
-fi
-
-# Formatting/reporting
-if grep -qiP '(report|format|table|markdown|present|output)' "$SKILL_MD" 2>/dev/null; then
-  CONCERNS+="formatting/reporting, "
-  CONCERN_COUNT=$((CONCERN_COUNT + 1))
-fi
-
-CONCERNS=$(echo "$CONCERNS" | sed 's/, $//')
-
-# --- Accidental complexity ---
-# Count lines with inline shell commands (HOW) vs total content lines
 TOTAL_LINES=$(wc -l < "$SKILL_MD")
-# Lines that contain shell-like commands (backtick blocks, $(), pipes, redirects)
-SHELL_LINES=$(grep -cP '^\s*(```|.*\$\(|.*\|.*\||.*[<>]{1,2}\s|.*&&\s|^\s*#\s*(bash|sh))' "$SKILL_MD" 2>/dev/null || true)
-SHELL_LINES="${SHELL_LINES:-0}"
-# Lines inside code fences (rough estimate)
-CODE_FENCE_LINES=$(awk '/^```/{if(f){f=0;n+=NR-s}else{f=1;s=NR}}END{print n+0}' "$SKILL_MD")
-ACCIDENTAL_LINES=$((SHELL_LINES + CODE_FENCE_LINES))
-if [[ "$TOTAL_LINES" -gt 0 ]]; then
-  ACCIDENTAL_PCT=$((ACCIDENTAL_LINES * 100 / TOTAL_LINES))
-else
-  ACCIDENTAL_PCT=0
-fi
 
 # --- Model assumptions ---
 # Count patterns that assume frontier-class model capability
@@ -438,8 +416,6 @@ Scripts in scripts/ directory: $SCRIPT_COUNT
 Script list: ${SCRIPT_LIST:-none}
 Scripted action steps: $SCRIPTED_STEPS
 Script coverage: $SCRIPTED_STEPS of $ACTION_STEPS action steps backed by scripts (${COVERAGE_PCT}%).
-Concern count: $CONCERN_COUNT ($CONCERNS)
-Accidental complexity lines: $ACCIDENTAL_LINES of $TOTAL_LINES total (${ACCIDENTAL_PCT}%).
 Model assumptions detected: $MODEL_ASSUMPTIONS
 Conditional logic blocks: $CONDITIONAL_BLOCKS
 Passive voice instances: $PASSIVE_VOICE
@@ -451,3 +427,10 @@ Has operable.yaml: $HAS_OBS_SCHEMA
 Has scores.yaml: $HAS_SCORES
 QOO qualified: $QOO_QUALIFIED
 EOF
+
+# Append step excerpts after the structured facts
+if [[ -n "$STEP_EXCERPTS" ]]; then
+  echo ""
+  echo "Step excerpts:"
+  printf '%s' "$STEP_EXCERPTS"
+fi

@@ -9,8 +9,8 @@ tags: [implementation, plan, phases, SDM, skill-gen, evolution]
 # Implementation Plan
 
 - **Type:** Convention
-- **Status:** ✅ Phases 0-5 COMPLETE. Phase 6 🔲 NOT STARTED.
-- **Next:** Phase 6 — Quality Schema v2.0 (see [quality-schema-v2-plan.md](./quality-schema-v2-plan.md))
+- **Status:** ✅ ALL PHASES COMPLETE (0-6).
+- **Phase 6:** Quality Schema v2.0 — COMPLETE (see [quality-schema-v2-plan.md](./quality-schema-v2-plan.md))
 - **Source:** Session analysis — phased implementation of Goals G1–G3
 
 ## Context

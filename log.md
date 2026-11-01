@@ -2,6 +2,38 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-10-31 22:07
+- All phases (0-6) complete (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Phase 6 COMPLETE (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)
+- Add Phase 6 history entry for quality v2.0 (skills/crc-status/scores.yaml)
+
+## 2026-10-31 22:06
+- Phase 6: Add quality v2.0 scores — 59.8 Re-engineer (skills/crc-status/scores.yaml)
+- Phase 6: Update qoo-qualified to false — quality 59.8 Re-engineer (skills/crc-status/scores.yaml)
+- Add Phase 6 history entry (skills/agentfs-readme-audit/scores.yaml)
+- Phase 6: Quality v2.0 scores — 90.3 Operable, qoo-qualified: true (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-10-31 22:05
+- Fix: remove local keyword outside function scope in choice metric case (pre-existing bug) (scripts/sdm-evaluate.sh)
+
+## 2026-10-31 22:04
+- Fix: remove local keyword outside function scope in score metric case (scripts/sdm-evaluate.sh)
+- Phase 6: Add score metric to scoring case (count|ratio|score) with dynamic max_scale (scripts/sdm-evaluate.sh)
+- Phase 6: Add score metric type to question builder for semantic dimensions (scripts/sdm-evaluate.sh)
+
+## 2026-10-31 22:03
+- Update header comment to reflect v2.0 output format (scripts/gather-skill-state.sh)
+
+## 2026-10-31 22:02
+- Add step excerpt output section after EOF for SDM evidence (scripts/gather-skill-state.sh)
+- Remove concern_count and accidental_complexity output lines (scripts/gather-skill-state.sh)
+- Phase 6: Replace concern/complexity heuristics with step excerpt extraction (scripts/gather-skill-state.sh)
+
+## 2026-10-31 22:01
+- Replace accidental_complexity with prose_executability dimension (skills/schemas/quality.yaml)
+- Replace concern_count with step_clarity dimension (skills/schemas/quality.yaml)
+- Bump schema-version to 2.0 (skills/schemas/quality.yaml)
+
 ## 2026-10-31 21:43
 - Add Phase 6 reference — Quality Schema v2.0 (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 
