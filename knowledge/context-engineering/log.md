@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-02 11:40
+- New knowledge concept: Goose turn-message attention map — U-shaped attention analysis with zone classifications, strategic placement guidance, and R3 canary fix proposal (knowledge/context-engineering/goose-attention-map.md)
+
 ## 2026-10-29 15:15
 - New concept: Rule Trigger Classification — guard, inline constraint, effect taxonomy (knowledge/context-engineering/rule-trigger-classification.md)
 

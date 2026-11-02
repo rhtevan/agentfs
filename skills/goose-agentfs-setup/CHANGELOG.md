@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-02 18:15 | v1.6.0 — Create system-md-gen.sh: generates custom Goose system.md with AGENTS.md at primacy zone, SOUL.md via MOIM; Fix goose version parsing in system-md-gen.sh; Simplify: keep SOUL.md instruction in system.md as belt-and-suspenders with MOIM; Update version to 1.6.0, add sync goose agentfs trigger, add system prompt optimization docs; Add System Prompt Optimization section with architecture, sync signal, commands, profile design; Create activate-profile.sh: in-session profile switching via MOIM SOUL overwrite; Add sync overwrite protection: warn when non-default profile SOUL is active before overwriting; Add activate profile trigger to skill description; Replace future profile docs with full profile activation documentation |
 | 2026-09-29 16:21 | v1.5.1 — Update guardrail reference text to v7 rule names |
 | 2026-09-27 20:02 | v1.5.0 — v1.5.0: Added --plugin-check and --plugin-list commands for signal-dispatch plugin management |
 | 2026-07-14 19:17 | v1.4 — Moved full memory routing table to on-demand `references/memory-routing.md`; instructions.md stub now lists tool names to detect and loads full table only when memory tools are present; reduces auto-loaded context by ~57 lines per turn |

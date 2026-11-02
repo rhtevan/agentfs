@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-02 11:40
+- New knowledge concept: Goose turn-message attention map — U-shaped attention analysis with zone classifications, strategic placement guidance, and R3 canary fix proposal (knowledge/context-engineering/goose-attention-map.md)
+
 ## 2026-10-31 22:07
 - All phases (0-6) complete (knowledge/agentfs-engineering-evolution/implementation-plan.md)
 - Phase 6 COMPLETE (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)

@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-02 17:36 | v7.7.0 — Remove @import syntax from simple scope AGENTS.md template - make agent-agnostic; Remove @import syntax from project scope AGENTS.md template - make agent-agnostic; Bump version to 7.7.0 for agent-agnostic AGENTS.md template |
 | 2026-10-31 16:58 | v7.6.3 — Rule 1 CNL fix: add literal search_nodes(query:) syntax to Path B step 2, preventing weaker models from using wrong parameter name; Bump metadata version to 7.6.3 for Rule 1 CNL fix |
 | 2026-10-31 14:15 | v7.6.2 — Add --deleted flag to header comment; Add --deleted flag: log-only mode for file/dir deletions; Widen Rule 6 When clause to include deletions; add step 3 for --deleted; Bump version to 7.6.2 for Rule 6 deletion support |
 | 2026-10-29 22:53 | v7.6.1 — R6 Post-Write CNL tuning: add 'immediately' temporal anchor and blocking gate; Bump version to 7.6.1 for R6 Post-Write CNL tuning; Fix: validate --version before side effects to prevent duplicate log entries |

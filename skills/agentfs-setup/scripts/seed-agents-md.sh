@@ -164,11 +164,9 @@ Then proceed normally with the user's request.
 | Memories | [.agents/memories/](./.agents/memories/MEMORY.md) | Project observations |
 | Activity log | [.agents/log.md](./.agents/log.md) | Change history |
 
-<!-- Agent identity — inlined by Goose at session start via @import.
-     Other agents: the plain-text fallback below covers non-Goose harnesses. -->
-@.agents/SOUL.md
+<!-- Agent identity — read .agents/SOUL.md and adopt it at session start. -->
 
-**If `.agents/SOUL.md` was not loaded above, read it now and adopt it as your identity for this session.**
+**Read `.agents/SOUL.md` now and adopt it as your identity for this session.**
 
 ## Rules
 
@@ -207,11 +205,9 @@ cat > "$TARGET" << 'AGENTSEOF'
 <!-- agentfs-template-version: __TEMPLATE_VERSION__ agentfs-scope: project -->
 # AGENTS.md — Workspace Entry Point
 
-<!-- Agent identity — inlined by Goose at session start via @import.
-     Other agents: the plain-text fallback below covers non-Goose harnesses. -->
-@.agents/SOUL.md
+<!-- Agent identity — read .agents/SOUL.md and adopt it at session start. -->
 
-**If `.agents/SOUL.md` was not loaded above, read it now and adopt it as your identity for this session.**
+**Read `.agents/SOUL.md` now and adopt it as your identity for this session.**
 
 
 ## Rules

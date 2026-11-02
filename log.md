@@ -2,6 +2,41 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-02 18:42
+- Fix D6 drift: update template version marker 7.6.3 → 7.7.0 (README.md)
+- Fix D6 drift: update version references 7.6.3 → 7.7.0 (README.md)
+
+## 2026-11-02 18:15
+- Replace future profile docs with full profile activation documentation (skills/goose-agentfs-setup/SKILL.md)
+- Add activate profile trigger to skill description (skills/goose-agentfs-setup/SKILL.md)
+- Add sync overwrite protection: warn when non-default profile SOUL is active before overwriting (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-02 18:14
+- Create activate-profile.sh: in-session profile switching via MOIM SOUL overwrite
+
+## 2026-11-02 17:40
+- Add System Prompt Optimization section with architecture, sync signal, commands, profile design (skills/goose-agentfs-setup/SKILL.md)
+- Update version to 1.6.0, add sync goose agentfs trigger, add system prompt optimization docs (skills/goose-agentfs-setup/SKILL.md)
+
+## 2026-11-02 17:39
+- Simplify: keep SOUL.md instruction in system.md as belt-and-suspenders with MOIM (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-02 17:38
+- Fix goose version parsing in system-md-gen.sh
+- Create system-md-gen.sh: generates custom Goose system.md with AGENTS.md at primacy zone, SOUL.md via MOIM
+
+## 2026-11-02 17:37
+- Add metadata for pinned system.md base: version, date, sha256 (skills/goose-agentfs-setup/artifacts/system.md.base.meta)
+- Add version-pinned Goose v1.57.0 default system.md template as base for custom generation (skills/goose-agentfs-setup/artifacts/system.md.base)
+
+## 2026-11-02 17:36
+- Bump version to 7.7.0 for agent-agnostic AGENTS.md template (skills/agentfs-setup/SKILL.md)
+- Remove @import syntax from project scope AGENTS.md template - make agent-agnostic (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Remove @import syntax from simple scope AGENTS.md template - make agent-agnostic (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-02 11:40
+- New knowledge concept: Goose turn-message attention map — U-shaped attention analysis with zone classifications, strategic placement guidance, and R3 canary fix proposal (knowledge/context-engineering/goose-attention-map.md)
+
 ## 2026-10-31 22:55
 - Add explicit skill count (59) to fix D1 drift (README.md)
 

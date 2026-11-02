@@ -1,0 +1,4 @@
+goose_version: 1.57.0
+pinned_date: 2026-11-02
+source_url: https://raw.githubusercontent.com/aaif-goose/goose/refs/tags/v1.57.0/crates/goose/src/prompts/system.md
+sha256: e0a59861edd6791f3df404e27de8bc360d5e5053f535a14b2d775f7815fdb3f0

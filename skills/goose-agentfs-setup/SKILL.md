@@ -1,13 +1,13 @@
 ---
 name: goose-agentfs-setup
 description: >
-  configure goose agentfs, goose context files, goose agentfs
+  configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile
 argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, .cursorrules)"
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.5.1"
-  tags: [goose, agentfs, configuration, compatibility]
+  version: "1.6.0"
+  tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -328,6 +328,124 @@ bash ~/.agents/skills/goose-agentfs-setup/scripts/setup.sh --plugin-list
 Lists all plugins discovered from `~/.agents/plugins/` (USER scope)
 and `./.agents/plugins/` (PROJECT scope) with name, version, hooks
 status, and enabled/disabled state.
+
+## System Prompt Optimization (Primacy Zone)
+
+AgentFS rules in AGENTS.md normally land in the "dead zone" of Goose's system
+prompt (after skills and extensions, where attention decays). This feature
+promotes AGENTS.md content to the **primacy zone** (right after Goose identity,
+before extensions) via a custom `system.md` template.
+
+Additionally, SOUL.md identity is loaded via MOIM persistent instructions
+at the **recency peak** (last user message before model generates), reinforcing
+agent identity every turn.
+
+### Architecture
+
+```
+System prompt (system/developer role):
+  Position 0%:    Goose identity
+  Position 1-15%: AGENTS.md content (primacy zone) ← custom system.md
+  Position 15%:   MOIM Turn Context explanation
+  Position 15-60%: Extensions
+  Position 60%:   Response Guidelines
+
+Per-turn user message (recency peak):
+  <turn-context>
+    timestamp, working dir, budget
+    SOUL.md content ← MOIM persistent instructions
+  </turn-context>
+```
+
+### Sync Signal
+
+```
+hey sync goose agentfs
+```
+
+Runs the full sync: drift-checks the pinned Goose system.md base template,
+generates custom `~/.config/goose/prompts/system.md` with AGENTS.md at the
+primacy zone, writes SOUL.md to MOIM persistent instructions, then delegates
+to `agentfs-setup` to sync AGENTS.md at CWD.
+
+### Commands
+
+```bash
+# Check current status
+bash ~/.agents/skills/goose-agentfs-setup/scripts/system-md-gen.sh --check
+
+# Generate custom system.md + MOIM SOUL (with drift check)
+bash ~/.agents/skills/goose-agentfs-setup/scripts/system-md-gen.sh
+
+# Drift check only
+bash ~/.agents/skills/goose-agentfs-setup/scripts/system-md-gen.sh --drift-check
+
+# Reset to Goose default (remove custom system.md)
+bash ~/.agents/skills/goose-agentfs-setup/scripts/system-md-gen.sh --reset
+```
+
+### One-Time Setup
+
+Remove AGENTS.md from `CONTEXT_FILE_NAMES` to prevent double-loading:
+
+```yaml
+# ~/.config/goose/config.yaml
+CONTEXT_FILE_NAMES:
+  - .goosehints
+  # AGENTS.md removed — now in custom system.md
+```
+
+### Profile-Scoped SOUL
+
+Switch agent identity in-session by overwriting the MOIM SOUL section.
+Takes effect on the next turn (MOIM re-reads `instructions.md` every turn).
+
+Profile SOULs **overwrite** (not merge with) the default SOUL. Each profile
+SOUL should be self-contained, inheriting desired principles from the default
+at authoring time (copy-then-customize pattern).
+
+**Signal:**
+
+```
+hey activate profile <name>      Switch to named profile
+hey activate profile default     Restore project default SOUL
+```
+
+**Commands:**
+
+```bash
+# Activate a profile
+bash ~/.agents/skills/goose-agentfs-setup/scripts/activate-profile.sh sre
+
+# Restore default
+bash ~/.agents/skills/goose-agentfs-setup/scripts/activate-profile.sh default
+
+# List available profiles
+bash ~/.agents/skills/goose-agentfs-setup/scripts/activate-profile.sh --list
+
+# Show current SOUL
+bash ~/.agents/skills/goose-agentfs-setup/scripts/activate-profile.sh --current
+```
+
+**Behavior:**
+
+- Profile SOUL overwrites the `<!-- AGENTFS-SOUL -->` section in `instructions.md`
+- Change is **global** — affects all active Goose sessions
+- `hey sync goose agentfs` restores default SOUL (with warning if profile was active)
+- Desktop sessions always use whatever SOUL is in `instructions.md`
+
+**Pre-session isolation (env var):**
+
+For parallel sessions with different profiles, use `GOOSE_MOIM_MESSAGE_TEXT`
+(takes precedence over `instructions.md`, per-process scope):
+
+```bash
+# Terminal 1 — SRE
+GOOSE_MOIM_MESSAGE_TEXT=$(cat .agents/profiles/sre/SOUL.md) goose session
+
+# Terminal 2 — Developer
+GOOSE_MOIM_MESSAGE_TEXT=$(cat .agents/profiles/developer/SOUL.md) goose session
+```
 
 ## Changelog
 

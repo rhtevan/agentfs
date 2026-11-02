@@ -4,10 +4,11 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-02 18:15 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-02 17:36 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-31 22:49 |
 | [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-10-31 22:28 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-10-31 22:06 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-10-31 20:37 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, score skill, advanced skill | 2026-10-31 20:37 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-10-31 17:02 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-10-27 20:58 |
@@ -23,7 +24,6 @@
 | [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | setup goose skupper provider, teardown skupper provider, recreate skupper provider, test skupper provider, check skupper provider | 2026-10-15 09:47 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-10-12 14:42 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-09-29 17:07 |
-| [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility | configure goose agentfs, goose context files, goose agentfs | 2026-09-29 16:25 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-09-16 11:56 |
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | goose, headroom, custom-provider, context-optimization, compression, configuration | configure goose headroom, goose headroom provider | 2026-09-09 21:27 |
 | [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | configure goose litellm, goose litellm provider | 2026-09-09 21:27 |
