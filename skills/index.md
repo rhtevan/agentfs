@@ -4,7 +4,7 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-03 09:41 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-03 12:29 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-03 09:13 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-31 22:49 |
 | [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-10-31 22:28 |

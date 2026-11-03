@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-03 12:29
+- Added C4: Prose for Norms, Hooks for Constraints — quantified enforcement boundary from v7.7.0 Run 8 evidence (23.3% hook value on 14B) (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-11-03 11:35
+- Run 8: v7.7.0 primacy-zone benchmark. R3 100% (was 60%), R6 100% (was 60%), SDM 94.4 Operable. qoo-qualified stamped. (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-11-03 11:13
+- Fixed L2-param check: search for query parameter in the 5 lines after search_nodes call, not just the invocation line. Supports both JSON ('"query"') and YAML ('query:') trace formats. (scripts/check-dispatch-fidelity.sh)
+
 ## 2026-11-03 09:41
 - Added Observable N/A exemption ruling for AGENTS.md in QOO axis table (skills/agentfs-setup/references/design-spec.md)
 

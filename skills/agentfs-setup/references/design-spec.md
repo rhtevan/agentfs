@@ -179,6 +179,50 @@ candidates.
 **Decision:** No action on accidental_complexity until rule engine
 infrastructure exists. Current score (75) is acceptable.
 
+### C4. Prose for Norms, Hooks for Constraints (v7.7.0)
+
+AGENTS.md rule prose is effective for **behavioral norms** that
+require model judgment (when to pre-flight, canary format, scope
+decisions). It is insufficient for **deterministic ordering
+constraints** that models will shortcut when they can infer the
+answer directly.
+
+**Evidence (Run 8, v7.7.0):**
+
+| Enforcement Layer | What It Handles | 14B Compliance |
+|-------------------|----------------|----------------|
+| Prose (system.md primacy zone) | R3 Canary, R6 Post-Write | 100% |
+| Hooks (signal-dispatch plugin) | R1 Dispatch ordering | 0% strict → 100% corrected |
+
+The 14B model understands R1 (it recovers correctly when the plugin
+blocks the premature `load_skill` call). The failure is not
+comprehension — it is **execution priority**. The model has a strong
+generation prior to skip `search_nodes` when the skill name is
+semantically obvious from the signal phrase. No prose rewording
+overcomes a strong prior in a 14B model.
+
+**Quantified value of hooks:** Strict benchmark pass rate 76.7%.
+Plugin-corrected pass rate 100%. Hooks add **23.3 percentage points**
+of compliance that prose alone cannot achieve on 14B models.
+
+**Design rule:** If a rule enforces a deterministic constraint
+(tool call ordering, mandatory post-action steps, file scope
+checks), it should be backed by a **platform hook**. If a rule
+requires semantic judgment (complexity assessment, conflict
+detection, scope decisions), prose is the correct layer.
+
+**Three-layer enforcement architecture:**
+
+```
+Layer 1: Prose   (system.md primacy zone)  → behavioral norms
+Layer 2: Identity (MOIM recency peak)      → SOUL principles
+Layer 3: Hooks   (plugin PreToolUse)       → deterministic constraints
+```
+
+Each layer handles what it is good at. Further prose investment in
+hook-appropriate rules yields diminishing returns and risks
+regression in other rules.
+
 ## Core Philosophy
 
 Strict separation of **Identity**, **Capabilities**, **Semantic Context**,

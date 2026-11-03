@@ -43,14 +43,14 @@ if [[ "$first_tool" != "search_nodes" ]]; then
 fi
 
 # 2b: Was search_nodes called with the correct parameter name?
-# Extract the search_nodes call line and check for "query" vs wrong params
-search_call=$(grep '▸ search_nodes' "$OUTPUT" | head -1)
-if echo "$search_call" | grep -q '"query"'; then
-  : # correct parameter
-elif echo "$search_call" | grep -q '"keywords"'; then
+# Extract the search_nodes call line AND the next few lines (params may be on subsequent lines)
+search_block=$(grep -A5 '▸ search_nodes' "$OUTPUT" | head -6)
+if echo "$search_block" | grep -qE '"query"|^[[:space:]]+query:'; then
+  : # correct parameter (JSON style "query" or YAML style query:)
+elif echo "$search_block" | grep -qE '"keywords"|^[[:space:]]+keywords:'; then
   echo "FAIL [L2-param]: search_nodes called with wrong parameter 'keywords' instead of 'query'"
   exit 1
-elif echo "$search_call" | grep -q '"search"'; then
+elif echo "$search_block" | grep -qE '"search"|^[[:space:]]+search:'; then
   echo "FAIL [L2-param]: search_nodes called with wrong parameter 'search' instead of 'query'"
   exit 1
 else
