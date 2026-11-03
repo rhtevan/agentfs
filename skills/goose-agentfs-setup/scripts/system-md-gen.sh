@@ -27,6 +27,7 @@ BASE_META="${ARTIFACTS_DIR}/system.md.base.meta"
 CUSTOM_SYSTEM_MD="${HOME}/.config/goose/prompts/system.md"
 MOIM_FILE="${HOME}/.config/goose/instructions.md"
 GOOSE_CONFIG="${HOME}/.config/goose/config.yaml"
+SYNC_AGENTS_MD="${HOME}/.agents/skills/agentfs-setup/scripts/sync-agents-md.sh"
 
 # --- Injection markers (Jinja2 comments — invisible in rendered output) ---
 MARKER_BEGIN="{# AGENTFS:BEGIN #}"
@@ -162,6 +163,20 @@ EOF
 generate_system_md() {
     local agents_md_path soul_md_path
 
+    # Step 0: Delegate to sync-agents-md.sh to ensure project AGENTS.md
+    # is current before baking it into system.md. The true source of truth
+    # is seed-agents-md.sh — this prevents propagating a stale version.
+    agents_md_path=$(find_agents_md)
+    if [ -n "$agents_md_path" ] && [ -f "$SYNC_AGENTS_MD" ]; then
+        log_info "Syncing project AGENTS.md to latest template first..."
+        if bash "$SYNC_AGENTS_MD" "$(pwd)"; then
+            log_info "Project AGENTS.md is up to date"
+        else
+            log_warn "AGENTS.md sync returned non-zero — continuing with current file"
+        fi
+    fi
+
+    # Re-discover after sync (file may have been created or updated)
     agents_md_path=$(find_agents_md)
     if [ -z "$agents_md_path" ]; then
         log_error "No AGENTS.md found in CWD ($(pwd))"
@@ -233,6 +248,11 @@ generate_system_md() {
     else
         log_warn "No .agents/SOUL.md found — MOIM SOUL section not updated"
     fi
+
+    # Notify: system.md is read once at session start
+    echo ""
+    log_warn "⚡ system.md changes take effect in NEW sessions only."
+    log_warn "   Restart Goose Desktop or start a new CLI session to apply."
 }
 
 # --- Write SOUL.md to MOIM persistent instructions ---
@@ -347,6 +367,9 @@ reset_system_md() {
     if [ -f "$CUSTOM_SYSTEM_MD" ]; then
         rm "$CUSTOM_SYSTEM_MD"
         log_info "Removed custom system.md — Goose will use built-in default"
+        echo ""
+        log_warn "⚡ Reset takes effect in NEW sessions only."
+        log_warn "   Restart Goose Desktop or start a new CLI session to apply."
     else
         log_info "No custom system.md to remove"
     fi

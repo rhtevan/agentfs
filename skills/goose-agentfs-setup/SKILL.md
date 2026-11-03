@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.6.0"
+  version: "1.6.1"
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
 disable-model-invocation: false
@@ -363,10 +363,12 @@ Per-turn user message (recency peak):
 hey sync goose agentfs
 ```
 
-Runs the full sync: drift-checks the pinned Goose system.md base template,
-generates custom `~/.config/goose/prompts/system.md` with AGENTS.md at the
-primacy zone, writes SOUL.md to MOIM persistent instructions, then delegates
-to `agentfs-setup` to sync AGENTS.md at CWD.
+Runs the full sync: first delegates to `agentfs-setup` (`sync-agents-md.sh`)
+to ensure the project AGENTS.md is current against the template source of
+truth (`seed-agents-md.sh`), then drift-checks the pinned Goose system.md
+base template, generates custom `~/.config/goose/prompts/system.md` with
+the up-to-date AGENTS.md at the primacy zone, and writes SOUL.md to MOIM
+persistent instructions.
 
 ### Commands
 

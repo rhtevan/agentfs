@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-03 09:24
+- Added system prompt optimization to Agent Setup skill category table (README.md)
+
+## 2026-11-03 09:23
+- Expanded goose-agentfs-setup description in Step 2 to cover system prompt optimization, MOIM SOUL delivery, profile activation, and sync signal (README.md)
+
+## 2026-11-03 09:13
+- Added session restart warning to reset path as well (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+- Added session restart warning after system.md generation — system.md is read once at session start, changes require new session (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-03 09:05
+- Updated sync docs to reflect delegation-first order (sync-agents-md.sh runs before system.md generation) (skills/goose-agentfs-setup/SKILL.md)
+- Bumped version to 1.6.1 for sync delegation fix (skills/goose-agentfs-setup/SKILL.md)
+- Added sync delegation: generate_system_md now calls sync-agents-md.sh before reading AGENTS.md to prevent stale propagation (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+- Added SYNC_AGENTS_MD path variable and sync delegation in generate_system_md to prevent stale AGENTS.md propagation (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
 ## 2026-11-02 18:42
 - Fix D6 drift: update template version marker 7.6.3 → 7.7.0 (README.md)
 - Fix D6 drift: update version references 7.6.3 → 7.7.0 (README.md)

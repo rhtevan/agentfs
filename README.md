@@ -78,8 +78,22 @@ For a clean, empty `~/.agents/` where you cherry-pick skills:
 
 #### With Goose
 
-Load the `goose-agentfs-setup` skill to register AgentFS context files
-(`CLAUDE.md`, `AGENTS.md`, etc.) in Goose's `CONTEXT_FILE_NAMES`.
+Load the `goose-agentfs-setup` skill to configure Goose for AgentFS:
+
+- **Context files:** Registers `CLAUDE.md`, `.goosehints`, etc. in
+  Goose's `CONTEXT_FILE_NAMES`
+- **System prompt optimization:** Generates a custom `system.md` that
+  places AGENTS.md rules at the primacy zone (top of system prompt)
+  for improved compliance on smaller models. Includes drift detection
+  against upstream Goose template changes.
+- **MOIM SOUL delivery:** Writes `SOUL.md` content into Goose's
+  persistent instructions (`instructions.md`) for per-turn identity
+  reinforcement at the recency peak
+- **Profile activation:** `hey activate profile <name>` switches
+  the active SOUL identity in-session via MOIM file rewrite
+
+Run `hey sync goose agentfs` to perform a full sync (updates project
+AGENTS.md from template, then generates custom system.md and MOIM).
 
 #### With Hermes Agent
 
@@ -203,7 +217,7 @@ Skills cover topics like:
 
 | Category | Examples |
 |----------|----------|
-| **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`), session cleanup (`goose-recipe-session-cleanup`) |
+| **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`), session cleanup (`goose-recipe-session-cleanup`), Goose system prompt optimization (`goose-agentfs-setup`: primacy-zone AGENTS.md, MOIM SOUL delivery, profile activation, drift detection) |
 | **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes/DSH provider config, Headroom proxy, MaaS providers, Skupper provider (`goose-skupper-provider`) |
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB, NAD dynamic plugin), cluster lifecycle (start/stop/cleanup), cluster config, AAP demo |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation, KGM lifecycle (`goose-kgm`) |
