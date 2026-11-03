@@ -101,7 +101,13 @@ operable:
 observable:
   aggregate_score: null
   band: N/A
-  note: Not applicable. AGENTS.md is a passive document.
+  pass: true
+  note: >
+    Not applicable. AGENTS.md is a passive document with no runtime
+    to instrument — Observable (trace, CNL, anti-fab, SDM delegation)
+    serves as the build-time instrumentation basis for executable
+    skills, not declarative policy artifacts. N/A is ruled as PASS:
+    excluded from aggregate scoring and does not block QOO qualification.
 
 history:
   - date: "2026-10-28T21:07:01-04:00"

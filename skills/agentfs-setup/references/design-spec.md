@@ -77,6 +77,12 @@ covers build-time design properties. `eval` covers operability
 |--------|----------|-------|---------|
 | `hey upgrade agentfs` | Quality (MCACS) | Build | Is the AGENTS.md design sound? |
 | `hey eval agentfs` | Operable (BMBT + CECX) | Build + Runtime | Does it work? (structure + benchmark) |
+
+> **AGENTS.md Observable exemption:** Observable is N/A for AGENTS.md
+> (passive document, no runtime to instrument). N/A is ruled as PASS —
+> excluded from aggregate scoring and does not block QOO qualification.
+> Observable serves as the build-time instrumentation basis for
+> executable skills, not declarative policy artifacts.
 | `hey score skill` | Quality (MCACS) + Observable | Build | Is the skill well-designed and instrumented? |
 | `hey eval skill` | Operable (BMBT + CECX) | Build + Runtime | Does it run correctly? (structure + trace) |
 

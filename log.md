@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-03 09:41
+- Added Observable N/A exemption ruling for AGENTS.md in QOO axis table (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-11-03 09:40
+- Observable N/A ruled as PASS: excluded from aggregate scoring, does not block QOO qualification (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
 ## 2026-11-03 09:24
 - Added system prompt optimization to Agent Setup skill category table (README.md)
 
