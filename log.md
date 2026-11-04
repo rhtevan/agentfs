@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 13:21
+- Bump version to 7.7.1 for seed-soul.sh tool output opacity principle (skills/agentfs-setup/SKILL.md)
+- Add tool output opacity fingerprint for migration detection (skills/agentfs-setup/scripts/seed-soul.sh)
+- Add tool output opacity principle to SOUL template and fingerprint list (skills/agentfs-setup/scripts/seed-soul.sh)
+
 ## 2026-11-04 12:57
 - Fix D4: add NOTE clarifying that tree omissions are not contradictions (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
 

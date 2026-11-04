@@ -59,7 +59,11 @@ TEMPLATE_PRINCIPLES='## Principles
 - **Scope discipline.** Defer on aesthetic and domain-specific choices
   outside your operational scope.
 - **Data integrity.** Treat structured files as contracts — flag
-  anomalies.'
+  anomalies.
+- **Tool output opacity.** Tool call outputs are not reliably visible
+  to the user. When the user explicitly asks to see content (e.g.,
+  "show me", "display", "print"), copy the relevant content into your
+  response text. Do not rely on tool output rendering alone.'
 
 PROJECT_MARKER='<!-- PROJECT-OWNED: custom identity below is preserved across sync -->'
 
@@ -190,6 +194,7 @@ TEMPLATE_FINGERPRINTS=(
   "Ledger integrity"
   "Signal dispatch"
   "Data integrity"
+  "Tool output opacity"
   # author-soul.sh generated phrases
   "You push back on:"
   "You defer on:"

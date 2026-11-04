@@ -4,8 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-04 13:21 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-11-04 12:57 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-04 10:54 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-04 10:54 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-10-31 22:49 |
 | [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-10-31 22:28 |
