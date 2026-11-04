@@ -2,6 +2,49 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 12:57
+- Fix D4: add NOTE clarifying that tree omissions are not contradictions (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 12:56
+- Fix D4: correct nested path filter — only skip paths starting with lowercase word containing nested slashes (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+- Fix D4: skip nested example trees (skills/my-skill/) — only include top-level directory trees (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 12:55
+- Fix D4: rewrite tree extraction using temp-file approach for reliable scope-aware directory tree filtering (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 12:54
+- Fix D8: add filesystem validation and NOTE for setup instructions (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 12:53
+- Fix D8: add filesystem validation context and clarifying NOTE to distinguish setup instructions from state claims (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 12:52
+- Fix D4: scope-aware tree extraction — USER scope only shows USER trees, PROJECT scope only shows PROJECT trees (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 12:44
+- Bump version to 3.4.0 (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-11-04 12:41
+- Rewrite to use per-dimension SDM calls with isolated evidence to fix D1 evidence dilution on 14B models (skills/agentfs-readme-audit/scripts/evaluate-alignment.sh)
+
+## 2026-11-04 12:40
+- Add --scope passthrough to sdm-evaluate.sh for scope-filtered evaluation (skills/agentfs-readme-audit/scripts/evaluate-alignment.sh)
+
+## 2026-11-04 12:38
+- Add scope detection from state file for dimension filtering (skills/agentfs-readme-audit/scripts/evaluate-alignment.sh)
+- Add scope filter log line and dimension loop scope check (scripts/sdm-evaluate.sh)
+- Add scope filter logic in dimension loop alongside phase filter (scripts/sdm-evaluate.sh)
+
+## 2026-11-04 12:37
+- Add --scope flag for dimension filtering by scope field (parallel to existing --phase filter) (scripts/sdm-evaluate.sh)
+- Bump version to 3.4.0 for extract-comparison.sh code fence fix (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-11-04 12:36
+- Fix D6: strip fenced code blocks before version grep to prevent false matches on YAML examples (skills/agentfs-readme-audit/scripts/extract-comparison.sh)
+
+## 2026-11-04 11:46
+- Skill QOO Qualification Plan — full portfolio, tier classification, 8-phase execution plan (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
 ## 2026-11-04 11:20
 - Add required extensions prerequisite: tom, KGM, signal-dispatch plugin (README.md)
 

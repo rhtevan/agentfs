@@ -42,6 +42,7 @@ command -v jq >/dev/null 2>&1 || die "jq is required but not found."
 # --- Arguments ---
 EVIDENCE_FILE=""
 PHASE_FILTER=""
+SCOPE_FILTER=""
 ARGS=()
 for arg in "$@"; do
   if [[ "$arg" == "--evidence" ]]; then
@@ -52,6 +53,10 @@ for arg in "$@"; do
     PHASE_FILTER="__next__"
   elif [[ "$PHASE_FILTER" == "__next__" ]]; then
     PHASE_FILTER="$arg"
+  elif [[ "$arg" == "--scope" ]]; then
+    SCOPE_FILTER="__next__"
+  elif [[ "$SCOPE_FILTER" == "__next__" ]]; then
+    SCOPE_FILTER="$arg"
   else
     ARGS+=("$arg")
   fi
@@ -192,9 +197,15 @@ DIMENSION_POLARITIES=()
 for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   name=$(yq -r ".dimensions[$i].name" "$SCHEMA")
   phase=$(yq -r ".dimensions[$i].phase // \"\"" "$SCHEMA")
+  dim_scope=$(yq -r ".dimensions[$i].scope // \"\"" "$SCHEMA")
 
   # Skip dimensions that don't match the phase filter
   if [[ -n "$PHASE_FILTER" && -n "$phase" && "$phase" != "$PHASE_FILTER" ]]; then
+    continue
+  fi
+
+  # Skip dimensions that don't match the scope filter
+  if [[ -n "$SCOPE_FILTER" && -n "$dim_scope" && "$dim_scope" != "$SCOPE_FILTER" ]]; then
     continue
   fi
 
@@ -257,6 +268,9 @@ done
 EVALUATED_COUNT=${#DIMENSION_NAMES[@]}
 if [[ -n "$PHASE_FILTER" ]]; then
   log "Phase filter: $PHASE_FILTER — evaluating $EVALUATED_COUNT of $DIMENSION_COUNT dimensions"
+fi
+if [[ -n "$SCOPE_FILTER" ]]; then
+  log "Scope filter: $SCOPE_FILTER — evaluating $EVALUATED_COUNT of $DIMENSION_COUNT dimensions"
 fi
 
 # --- Call SDM ---

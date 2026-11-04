@@ -41,6 +41,8 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [Tokenomics Alignment](./tokenomics-alignment.md) | Reference | AI tokenomics convergence with QOO — multi-tier model routing, showback/ROI metrics, token cost tracking |
 | [Artifact QOO Separation](./artifact-qoo-separation.md) | Pattern | Sub-artifact directory pattern for skills that produce independently-consumed artifacts (e.g., agentfs-setup → AGENTS.md) |
 | [Benchmark Results](./benchmark-results.md) | Evidence | Stochastic benchmark results: frontier 100%, 14B 85% skill operability after QOO conversions |
+| [Quality Schema v2.0 Plan](./quality-schema-v2-plan.md) | Convention | Replace broken concern_count + accidental_complexity heuristics with step_clarity + prose_executability semantic dimensions |
+| [Skill QOO Qualification Plan](./skill-qoo-qualification-plan.md) | Convention | Full portfolio plan: 4-tier model classification (T1-T4), tier-aware qualification targets, 8-phase execution (A-H), 59 skills classified |
 
 ## Source
 

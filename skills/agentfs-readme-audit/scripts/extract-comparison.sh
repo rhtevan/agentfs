@@ -69,11 +69,44 @@ CATEGORY_TABLE=$(echo "$README" | sed -n '/| Category | Examples/,/^$/p' | head 
 BUNDLE_LIST_README=$(echo "$README" | sed -n '/Current bundles:/,/^See/p' | head -25)
 
 # D6: Version references — ALL version-like strings with surrounding context
-VERSION_EXCERPTS=$(echo "$README" | grep -n 'v[0-9]\+\.[0-9]\+\.[0-9]\+\|[0-9]\+\.[0-9]\+\.[0-9]\+' 2>/dev/null \
+# Strip fenced code blocks (```...```) before grepping to avoid matching
+# version numbers inside YAML/HTML examples (e.g., version: "1.0.0" in a
+# SKILL.md template example). awk preserves original line numbers.
+VERSION_EXCERPTS=$(echo "$README" | awk '/^```/{skip=!skip; next} !skip{print NR":"$0}' \
+  | grep 'v[0-9]\+\.[0-9]\+\.[0-9]\+\|[0-9]\+\.[0-9]\+\.[0-9]\+' 2>/dev/null \
   | grep -v 'http\|Copyright\|semver\|e\.g\.\|example' | head -10 || true)
 
 # D4: Directory structure — tree diagrams in README
-README_TREES=$(echo "$README" | sed -n '/^```/,/^```/p' | grep -A20 '├──\|└──' | head -25)
+# Scope-aware: USER scope → only tree blocks without "AGENTS.md" (USER layout)
+#              PROJECT scope → only tree blocks with "AGENTS.md" (PROJECT layout)
+# Uses temp files because awk record splitting doesn't handle multi-line blocks
+# reliably across shell variable expansion.
+_D4_TMPDIR=$(mktemp -d)
+echo "$README" | awk -v dir="$_D4_TMPDIR" '
+  /^```/ { inside=!inside; if(inside){ n++; file=dir"/block_"n }; next }
+  inside { print >> file }
+'
+README_TREES=""
+for _f in "$_D4_TMPDIR"/block_*; do
+  [[ -f "$_f" ]] || continue
+  # Only directory-listing blocks (├── followed by a path-like entry)
+  if grep -qP '[├└]── \S+[/.]' "$_f"; then
+    # Only top-level directory trees — keep paths starting with ~, ., / or <name>/
+    # Skip nested example trees like "skills/my-skill/" that show internal structure
+    _first_line=$(head -1 "$_f" | sed 's/^[[:space:]]*//')
+    if echo "$_first_line" | grep -qP '^[a-z].*/.+/' ; then
+      # Starts with lowercase word and has nested path (e.g., skills/my-skill/) — skip
+      continue
+    fi
+    if [[ "$SCOPE" == "user" ]]; then
+      grep -q 'AGENTS\.md' "$_f" || README_TREES="${README_TREES}$(cat "$_f")"$'\n'
+    else
+      grep -q 'AGENTS\.md' "$_f" && README_TREES="${README_TREES}$(cat "$_f")"$'\n'
+    fi
+  fi
+done
+rm -rf "$_D4_TMPDIR"
+README_TREES=$(echo "$README_TREES" | head -20)
 
 # D5: Guardrail summary — rule table
 RULE_TABLE=$(echo "$README" | sed -n '/| # | Name | When | Do/,/^$/p' | head -15)
@@ -95,6 +128,23 @@ done
 
 # D8: Setup instructions — paths and commands
 SETUP_SECTION=$(echo "$README" | sed -n '/## Getting Started/,/## Directory Structure/p' | head -40)
+
+# D8 filesystem validation: check key paths and URLs referenced in setup
+# This gives the SDM factual context to distinguish "instruction to create"
+# from "claim about current state"
+AGENTS_ROOT=$(echo "$INPUT" | grep '^Agents root:' | head -1 | awk '{print $3}')
+AGENTS_ROOT="${AGENTS_ROOT:-${HOME}/.agents}"
+D8_VALIDATIONS=""
+if [[ -d "$AGENTS_ROOT" ]]; then
+  D8_VALIDATIONS="~/.agents/ directory: EXISTS"
+else
+  D8_VALIDATIONS="~/.agents/ directory: MISSING"
+fi
+if [[ -d "$AGENTS_ROOT/.git" ]]; then
+  ACTUAL_REMOTE=$(git -C "$AGENTS_ROOT" remote get-url origin 2>/dev/null || echo "unknown")
+  D8_VALIDATIONS="${D8_VALIDATIONS}
+Git remote origin: $ACTUAL_REMOTE"
+fi
 
 # ── Output structured evidence ─────────────────────────────────────
 
@@ -135,6 +185,9 @@ fi
 echo ""
 
 echo "--- D4: DIRECTORY STRUCTURE ---"
+echo "NOTE: The README tree may omit some files (e.g., LICENSE, README.md, _config.yml)."
+echo "Omission is NOT a contradiction. Only flag if the README shows directories or files"
+echo "that do NOT exist in the filesystem, or claims a structure that is structurally wrong."
 echo "Filesystem:"
 echo "$DIR_TREE"
 if [[ -n "$README_TREES" ]]; then
@@ -178,6 +231,14 @@ fi
 echo ""
 
 echo "--- D8: SETUP INSTRUCTIONS ---"
+echo "NOTE: Setup instructions describe actions for NEW users to take."
+echo "Paths like ~/repos/agentfs are SUGGESTIONS, not claims about current state."
+echo "Only flag paths/commands that are structurally wrong (broken syntax, impossible paths)."
+if [[ -n "$D8_VALIDATIONS" ]]; then
+  echo "Filesystem validation of key setup paths:"
+  echo "$D8_VALIDATIONS"
+fi
+echo ""
 if [[ -n "$SETUP_SECTION" ]]; then
   echo "README setup section (first 40 lines):"
   echo "$SETUP_SECTION"

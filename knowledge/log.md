@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 11:46
+- Skill QOO Qualification Plan — full portfolio, tier classification, 8-phase execution plan (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
 ## 2026-11-04 10:55
 - Correct: MOIM delivers via tom extension at recency peak, not system prompt. Source-code verified. (knowledge/context-engineering/moim-persistent-instructions-reality.md)
 

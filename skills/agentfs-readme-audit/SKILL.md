@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "3.3.0"
+  version: "3.4.0"
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
 disable-model-invocation: false
