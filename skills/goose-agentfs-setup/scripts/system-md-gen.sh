@@ -4,8 +4,11 @@
 #
 # Injects AGENTS.md content into Goose's system.md template, positioning it
 # at the primacy zone (after identity, before extensions) for improved
-# attention with weaker models. Also writes SOUL.md into MOIM persistent
-# instructions for recency-peak reinforcement.
+# attention with weaker models.
+#
+# SOUL.md identity is delivered separately by the tom (Top Of Mind) extension,
+# which reads instructions.md and injects its content into <turn-context>
+# per turn (recency peak). The tom extension MUST be enabled for this to work.
 #
 # Usage:
 #   system-md-gen.sh [--check|--generate|--drift-check|--reset]
@@ -13,9 +16,9 @@
 # Sync signal: hey sync goose agentfs
 #
 # Architecture:
-#   Layer 1: Custom system.md  → primacy zone (system role)
-#   Layer 3: AGENTS.md on disk → dead zone fallback (agent-agnostic)
-#   SOUL.md: MOIM instructions → recency peak (user role, per-turn)
+#   Layer 1: AGENTS.md rules   → primacy zone (system prompt, system.md)
+#   Layer 2: SOUL.md identity  → recency peak (per-turn <turn-context>, tom extension)
+#   Layer 3: Plugin hooks      → recency peak (PreToolUse, deterministic constraints)
 
 set -euo pipefail
 
@@ -194,11 +197,23 @@ generate_system_md() {
     base=$(cat "$BASE_TEMPLATE")
 
     # Read AGENTS.md content as-is
-    # SOUL.md read instruction kept (belt-and-suspenders with MOIM delivery)
     local agents_content
     agents_content=$(cat "$agents_md_path")
 
-    # Split base at injection point: after identity, before MOIM block
+    # Split base at injection point: after identity, before MOIM explanation block
+    # AGENTS.md is injected between identity and the Turn Context explanation.
+    #
+    # Base template layout:
+    #   identity lines → MOIM explanation block → extensions → response guidelines
+    #
+    # Generated layout:
+    #   identity → AGENTS.md (primacy zone) → MOIM explanation → extensions
+    #
+    # SOUL.md delivery is handled separately by the tom extension, which
+    # injects instructions.md content into <turn-context> per turn (recency peak).
+    # The {{ moim_system_prompt_block }} in the base template is the Turn Context
+    # explanation text, NOT SOUL content.
+
     local identity_end="goose is being developed as an open-source software project."
     local moim_start="{% if moim_system_prompt_block is defined %}"
 
@@ -224,6 +239,42 @@ generate_system_md() {
     log_info "Generated ${CUSTOM_SYSTEM_MD}"
     log_info "  AGENTS.md: ${agents_md_path} ($(wc -c < "$agents_md_path") bytes)"
     log_info "  Base: Goose v$(get_pinned_version)"
+    log_info "  Layout: identity → AGENTS.md (primacy) → Turn Context explanation → extensions"
+
+    # Ensure tom (Top Of Mind) extension is enabled — required to populate
+    # moim_system_prompt_block in the Jinja template context. Without this,
+    # the MOIM block renders empty and SOUL content never reaches the model.
+    if [ -f "$GOOSE_CONFIG" ]; then
+        if python3 -c "
+import yaml, sys
+with open('$GOOSE_CONFIG') as f:
+    cfg = yaml.safe_load(f)
+exts = cfg.get('extensions', {})
+tom = exts.get('tom', {})
+if not tom.get('enabled', False):
+    tom['enabled'] = True
+    exts['tom'] = tom
+    cfg['extensions'] = exts
+    with open('$GOOSE_CONFIG', 'w') as f:
+        yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
+    print('enabled')
+else:
+    print('already_enabled')
+" 2>/dev/null; then
+            local tom_status
+            tom_status=$(python3 -c "
+import yaml
+with open('$GOOSE_CONFIG') as f:
+    cfg = yaml.safe_load(f)
+print('enabled' if cfg.get('extensions',{}).get('tom',{}).get('enabled') else 'disabled')
+" 2>/dev/null)
+            if [ "$tom_status" = "enabled" ]; then
+                log_info "tom (Top Of Mind) extension: enabled ✅"
+            else
+                log_warn "Could not enable tom extension — MOIM/SOUL may not render"
+            fi
+        fi
+    fi
 
     # Write SOUL.md to MOIM (with overwrite protection)
     if [ -n "$soul_md_path" ]; then
@@ -339,6 +390,23 @@ check_status() {
         log_info "MOIM SOUL section: present"
     else
         log_info "MOIM SOUL section: not installed"
+    fi
+
+    # tom extension (required for MOIM rendering)
+    if [ -f "$GOOSE_CONFIG" ]; then
+        local tom_enabled
+        tom_enabled=$(python3 -c "
+import yaml
+with open('$GOOSE_CONFIG') as f:
+    cfg = yaml.safe_load(f)
+print('yes' if cfg.get('extensions',{}).get('tom',{}).get('enabled') else 'no')
+" 2>/dev/null || echo "unknown")
+        if [ "$tom_enabled" = "yes" ]; then
+            log_info "tom (Top Of Mind) extension: enabled ✅"
+        else
+            log_warn "tom (Top Of Mind) extension: DISABLED ⚠️  — MOIM/SOUL will NOT render!"
+            log_warn "  Run --generate to auto-enable, or set extensions.tom.enabled: true in config.yaml"
+        fi
     fi
 
     # CONTEXT_FILE_NAMES

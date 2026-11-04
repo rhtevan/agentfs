@@ -87,10 +87,16 @@ Load the `goose-agentfs-setup` skill to configure Goose for AgentFS:
   for improved compliance on smaller models. Includes drift detection
   against upstream Goose template changes.
 - **MOIM SOUL delivery:** Writes `SOUL.md` content into Goose's
-  persistent instructions (`instructions.md`) for per-turn identity
-  reinforcement at the recency peak
+  persistent instructions (`instructions.md`), delivered per-turn at
+  the recency peak via the tom (Top Of Mind) extension into `<turn-context>`
 - **Profile activation:** `hey activate profile <name>` switches
   the active SOUL identity in-session via MOIM file rewrite
+
+**Required extensions:** The `tom` (Top Of Mind) and `knowledgegraphmemory`
+(KGM) extensions must be enabled in `~/.config/goose/config.yaml`.
+`tom` delivers SOUL.md identity per turn; KGM enables signal dispatch
+skill lookup. The `signal-dispatch` plugin must also be registered.
+`hey sync goose agentfs` auto-enables `tom` and verifies all three.
 
 Run `hey sync goose agentfs` to perform a full sync (updates project
 AGENTS.md from template, then generates custom system.md and MOIM).

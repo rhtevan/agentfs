@@ -215,7 +215,7 @@ detection, scope decisions), prose is the correct layer.
 
 ```
 Layer 1: Prose   (system.md primacy zone)  → behavioral norms
-Layer 2: Identity (MOIM recency peak)      → SOUL principles
+Layer 2: Identity (tom recency peak)       → SOUL principles
 Layer 3: Hooks   (plugin PreToolUse)       → deterministic constraints
 ```
 

@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 10:55
+- Correct: MOIM delivers via tom extension at recency peak, not system prompt. Source-code verified. (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+
 ## 2026-11-02 11:40
 - New knowledge concept: Goose turn-message attention map — U-shaped attention analysis with zone classifications, strategic placement guidance, and R3 canary fix proposal (knowledge/context-engineering/goose-attention-map.md)
 

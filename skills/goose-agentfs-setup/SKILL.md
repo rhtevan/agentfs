@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.6.1"
+  version: "1.7.0"
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
 disable-model-invocation: false
@@ -333,29 +333,39 @@ status, and enabled/disabled state.
 
 AgentFS rules in AGENTS.md normally land in the "dead zone" of Goose's system
 prompt (after skills and extensions, where attention decays). This feature
-promotes AGENTS.md content to the **primacy zone** (right after Goose identity,
+promotes AGENTS.md rules to the **primacy zone** (right after Goose identity,
 before extensions) via a custom `system.md` template.
 
-Additionally, SOUL.md identity is loaded via MOIM persistent instructions
-at the **recency peak** (last user message before model generates), reinforcing
-agent identity every turn.
+SOUL.md identity is delivered separately by the **tom (Top Of Mind) extension**,
+which reads `instructions.md` and injects its content into `<turn-context>`
+every turn (**recency peak**). The tom extension must be enabled — without it,
+SOUL content never reaches the model and weaker models will confabulate identity.
 
 ### Architecture
 
 ```
-System prompt (system/developer role):
-  Position 0%:    Goose identity
-  Position 1-15%: AGENTS.md content (primacy zone) ← custom system.md
-  Position 15%:   MOIM Turn Context explanation
-  Position 15-60%: Extensions
-  Position 60%:   Response Guidelines
+System prompt (system role — read once at session start):
+  Position 0%:     Goose identity (2 lines)
+  Position 1-40%:  AGENTS.md rules (primacy zone) ← custom system.md
+  Position 40%:    Turn Context explanation ({{ moim_system_prompt_block }})
+  Position 40-80%: Extensions
+  Position 80%:    Response Guidelines
 
-Per-turn user message (recency peak):
+Per-turn user message (recency peak — every turn):
   <turn-context>
-    timestamp, working dir, budget
-    SOUL.md content ← MOIM persistent instructions
+    current-time, working-directory
+    SOUL.md content ← tom extension reads instructions.md
+    turn-budget (when applicable)
   </turn-context>
 ```
+
+### Dependencies
+
+| Extension | Required | Purpose |
+|-----------|:--------:|---------|
+| **tom** (Top Of Mind) | ✅ | Reads `instructions.md`, injects SOUL into `<turn-context>` per turn |
+| **KGM** (Knowledge Graph Memory) | ✅ | Signal dispatch skill/knowledge lookup via `search_nodes` |
+| **signal-dispatch** plugin | ✅ | Deterministic `hey` prefix enforcement via lifecycle hooks |
 
 ### Sync Signal
 

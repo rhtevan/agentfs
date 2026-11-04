@@ -2,6 +2,47 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 11:20
+- Add required extensions prerequisite: tom, KGM, signal-dispatch plugin (README.md)
+
+## 2026-11-04 10:55
+- Correct: MOIM delivers via tom extension at recency peak, not system prompt. Source-code verified. (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+
+## 2026-11-04 10:54
+- Correct MOIM SOUL delivery: recency peak via tom extension (README.md)
+- Correct: AGENTS at primacy, SOUL via tom recency peak (README.md)
+- Correct Layer 2: tom recency peak (not MOIM primacy top) (skills/agentfs-setup/references/design-spec.md)
+- Correct architecture: AGENTS primacy, SOUL recency via tom. Add dependencies table. (skills/goose-agentfs-setup/SKILL.md)
+
+## 2026-11-04 10:53
+- Correct header: AGENTS primacy, SOUL recency via tom, tom dependency documented (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+- Revert position swap: AGENTS before MOIM explanation (original ordering). Correct header docs. (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-04 10:16
+- Add tom extension status to --check output (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+- Auto-enable tom extension during generate — required for MOIM/SOUL rendering (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-04 10:08
+- Correct MOIM SOUL delivery description: primacy zone top via Jinja block (README.md)
+- Correct SOUL delivery description: primacy zone top, not recency peak (README.md)
+
+## 2026-11-04 10:07
+- Correct Layer 2 position: MOIM primacy top (not recency peak) (skills/agentfs-setup/references/design-spec.md)
+
+## 2026-11-04 10:01
+- Update architecture docs: MOIM/SOUL at primacy top, not recency peak (skills/goose-agentfs-setup/SKILL.md)
+- Fix: move MOIM Jinja block before AGENTS injection (no inline SOUL duplication) (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-04 10:00
+- Rewrite injection: MOIM before AGENTS (primacy swap) (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-04 09:49
+- Bump version 1.6.1 → 1.7.0 for SOUL primacy swap (skills/goose-agentfs-setup/SKILL.md)
+- Swap Layer 1/2: SOUL.md at primacy top, AGENTS.md below in generate_system_md() (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-04 09:48
+- Swap Layer 1/2 positioning: SOUL.md at primacy top, AGENTS.md below (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
 ## 2026-11-03 12:29
 - Added C4: Prose for Norms, Hooks for Constraints — quantified enforcement boundary from v7.7.0 Run 8 evidence (23.3% hook value on 14B) (skills/agentfs-setup/references/design-spec.md)
 
