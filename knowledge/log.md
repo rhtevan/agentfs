@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 21:20
+- Escape Go template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/skupper-v2-concepts/platform-details/linux-systemd-architecture.md)
+- Escape second Jinja2 template occurrence (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- Escape Jinja2 template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- Escape Jinja2 template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/context-engineering/goose-attention-map.md)
+
 ## 2026-11-04 11:46
 - Skill QOO Qualification Plan — full portfolio, tier classification, 8-phase execution plan (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 

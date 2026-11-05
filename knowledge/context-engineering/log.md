@@ -2,6 +2,11 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 21:20
+- Escape second Jinja2 template occurrence (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- Escape Jinja2 template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- Escape Jinja2 template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/context-engineering/goose-attention-map.md)
+
 ## 2026-11-04 10:55
 - Correct: MOIM delivers via tom extension at recency peak, not system prompt. Source-code verified. (knowledge/context-engineering/moim-persistent-instructions-reality.md)
 

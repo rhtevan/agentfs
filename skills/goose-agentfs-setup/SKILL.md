@@ -347,7 +347,7 @@ SOUL content never reaches the model and weaker models will confabulate identity
 System prompt (system role — read once at session start):
   Position 0%:     Goose identity (2 lines)
   Position 1-40%:  AGENTS.md rules (primacy zone) ← custom system.md
-  Position 40%:    Turn Context explanation ({{ moim_system_prompt_block }})
+  Position 40%:    Turn Context explanation ({% raw %}{{ moim_system_prompt_block }}{% endraw %})
   Position 40-80%: Extensions
   Position 80%:    Response Guidelines
 

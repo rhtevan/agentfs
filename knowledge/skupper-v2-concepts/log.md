@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-04 21:20
+- Escape Go template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/skupper-v2-concepts/platform-details/linux-systemd-architecture.md)
+
 ## 2026-07-22 19:06
 
 * **Creation**: Added `migration/v1-to-v2-changes.md` — V1 deprecated concepts, changed commands, and new V2 features.

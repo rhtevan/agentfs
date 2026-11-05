@@ -267,7 +267,7 @@ You are a general-purpose AI agent called goose...
 
 **Turn 1 rule: Start your FIRST response with `🐦 word-word` (random canary). Read `.agents/memories/USER.md`.**
 
-{% if moim_system_prompt_block is defined %}
+{% raw %}{% if moim_system_prompt_block is defined %}{% endraw %}
 ...rest of template...
 ```
 

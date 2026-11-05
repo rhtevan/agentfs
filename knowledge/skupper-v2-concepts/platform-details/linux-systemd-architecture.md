@@ -25,21 +25,25 @@ Skupper uses different templates based on platform:
 
 ### Linux template (`systemd_service.template`)
 
+{% raw %}
 ```ini
 [Service]
 ExecStart=skrouterd -c {{.SiteConfigPath}}/skrouterd.json
 Environment="SKUPPER_SITE_ID={{.SiteId}}"
 ```
+{% endraw %}
 
 Runs the router binary **directly** — no container.
 
 ### Container template (`systemd_container_service.template`)
 
+{% raw %}
 ```ini
 [Service]
 ExecStart=/bin/bash {{.SiteScriptPath}}/start.sh
 ExecStop=/bin/bash {{.SiteScriptPath}}/stop.sh
 ```
+{% endraw %}
 
 Runs scripts that manage a **container**.
 

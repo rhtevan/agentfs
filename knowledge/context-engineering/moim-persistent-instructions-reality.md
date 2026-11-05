@@ -16,7 +16,7 @@ delivery mechanism is critical for SOUL.md identity delivery.
 
 Two separate mechanisms share the "MOIM" name:
 
-### 1. `{{ moim_system_prompt_block }}` in system.md
+### 1. `{% raw %}{{ moim_system_prompt_block }}{% endraw %}` in system.md
 
 `moim::system_prompt_block()` in `prompt_manager.rs` returns a
 **hardcoded explanation template** — the "# Turn Context" text that
@@ -44,7 +44,7 @@ block — a **user-role message** injected **every turn** at the
 | Requires | `tom` extension `enabled: true` in config.yaml |
 | Without tom | Content never reaches the model — zero delivery |
 
-## What {{ moim_system_prompt_block }} Actually Is
+## What {% raw %}{{ moim_system_prompt_block }}{% endraw %} Actually Is
 
 It is NOT instructions.md content. It is a hardcoded Goose platform
 text explaining what `<turn-context>` blocks are:
