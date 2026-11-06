@@ -129,6 +129,38 @@ rewritten for CNL compliance:
 Net result: ~15% more lines in rules section. All rules follow consistent
 `When: / Do:` + numbered list format. Template version 7.3.7.
 
+## State-Locking Keywords (v7.7.2, 2026-11-06)
+
+When a rule requires the model to persist a generated value across
+turns (e.g., session canary), weaker models misinterpret "random"
+as "generate fresh each time" rather than "generate once, keep
+forever." The model can *see* the prior value in conversation
+history but chooses to regenerate.
+
+**Diagnostic method:** Check the model's thinking blocks. If the
+model mentions prior values but generates a new one, the failure
+is comprehension (rule ambiguity), not retrieval (attention loss).
+Token position analysis alone is insufficient — it shows what the
+model CAN attend to, not what it DOES with what it attends to.
+
+**Fix: LOCKED keyword.** Declaring a value "LOCKED" with an
+explicit negative constraint ("do NOT generate a replacement")
+changed 14B model behavior from 0% persistence to 100%:
+
+| Prose | 14B Behavior |
+|-------|-------------|
+| "Keep the canary in memory for this session" | ❌ Generated new canary each turn |
+| "This canary is now LOCKED — do NOT generate a replacement" | ✅ Reused Turn 1 canary correctly |
+
+The model's reasoning chain shifted from *"Let me pick another one"*
+to *"That's the locked one."* The keyword creates a strong semantic
+anchor that overrides the model's tendency to treat "random" as a
+per-invocation directive.
+
+**When to use:** Any rule where the model must persist a self-generated
+value across turns. Pair with an explicit negative: generate once,
+then LOCK + "do NOT [verb] a replacement/new/different [noun]."
+
 ## Implications
 
 - CNL is a necessary but insufficient condition for weak-model

@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-06 12:22
+- Add State-Locking Keywords section: LOCKED keyword technique for persisting model-generated values across turns, diagnostic method using thinking blocks (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-11-04 21:20
 - Escape second Jinja2 template occurrence (knowledge/context-engineering/moim-persistent-instructions-reality.md)
 - Escape Jinja2 template syntax with Jekyll raw tags to fix GitHub Pages build (knowledge/context-engineering/moim-persistent-instructions-reality.md)

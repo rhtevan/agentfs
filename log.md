@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-06 12:55
+- Bump metadata version 9.0.0→9.1.0 to match CHANGELOG (skills/skupper-model-provider/SKILL.md)
+
+## 2026-11-06 12:50
+- Add t1_multi to default test list (scripts/benchmark.sh)
+- Add t1_multi two-phase execution in run_test: Phase 1 creates named session, Phase 2 resumes with --resume for canary persistence test (scripts/benchmark.sh)
+- Add check_t1_multi checker function for canary persistence validation (scripts/benchmark.sh)
+
+## 2026-11-06 12:49
+- Add t1_multi test definition and check_t1_multi checker for multi-turn canary persistence validation (scripts/benchmark.sh)
+
+## 2026-11-06 12:22
+- Add State-Locking Keywords section: LOCKED keyword technique for persisting model-generated values across turns, diagnostic method using thinking blocks (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-11-06 12:17
 - Update template version comment 7.7.0→7.7.2 (README.md)
 - Update version references 7.7.1→7.7.2 to fix D6 README drift (README.md)

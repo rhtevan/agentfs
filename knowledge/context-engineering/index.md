@@ -11,7 +11,7 @@
 | [Rule Ordering by Frequency](rule-ordering-by-frequency.md) | Lesson | Ordering rules by operational frequency improves adherence over lifecycle-based ordering |
 | [Goose Message Role Mapping](goose-message-role-mapping.md) | Reference | How Goose maps its internal concepts to OpenAI Chat Completions API message roles |
 | [Generation Prior Conflict](generation-prior-conflict.md) | Pattern | How pretraining priors override system prompt rules at generation time |
-| [CNL Authoring for Weak Models](cnl-authoring-for-weak-models.md) | Convention | Controlled Natural Language principles for agent instruction authoring |
+| [CNL Authoring for Weak Models](cnl-authoring-for-weak-models.md) | Convention | Controlled Natural Language principles for agent instruction authoring. Includes State-Locking Keywords (LOCKED technique for persisting model-generated values across turns). |
 | [Assistant Prefix as Continuation](assistant-prefix-continuation.md) | Lesson | Assistant-role prefix messages shift model from generation to continuation mode |
 | [Rule Trigger Classification](rule-trigger-classification.md) | Pattern | Guard / inline constraint / effect taxonomy — effect rules are 0% enforceable, litmus test and conversion pattern |
 | [Goose Turn-Message Attention Map](goose-attention-map.md) | Reference | U-shaped attention analysis of Goose's per-turn message structure with zone classifications and strategic placement guidance |

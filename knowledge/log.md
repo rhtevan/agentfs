@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-06 12:22
+- Add State-Locking Keywords section: LOCKED keyword technique for persisting model-generated values across turns, diagnostic method using thinking blocks (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-11-05 19:32
 - Mark Phase A as complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 - Update status: Phase A complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)

@@ -87,6 +87,15 @@ TEST_CWD[t1]="$BENCHMARK_PROJECT_CWD"
 TEST_MAXTURN[t1]=5
 TEST_SAFETY[t1]="read-only"
 
+# T1_MULTI — Session Canary Persistence (multi-turn)
+# Phase 1: send "hello", extract canary from Turn 1
+# Phase 2: resume session, send "hello" again, verify SAME canary
+# This catches the bug where weaker models regenerate canaries
+TEST_PROMPT[t1_multi]="hello"
+TEST_CWD[t1_multi]="$BENCHMARK_PROJECT_CWD"
+TEST_MAXTURN[t1_multi]=3
+TEST_SAFETY[t1_multi]="read-only"
+
 # --- AGENTS.md rule coverage tests ---
 # These test rule compliance, not skill operability.
 # Write-contained tests use a sandbox project.
@@ -151,7 +160,7 @@ if [[ "$TESTS" == "t1,t3,t9" ]]; then
   # Replace old default with dynamic discovery
   QOO_TESTS=$(printf '%s\n' "${!TEST_PROMPT[@]}" | grep '^qoo_' | sort | tr '\n' ',')
   RULE_TESTS="t_r2,t_r3,t_r7"
-  TESTS="t1,${QOO_TESTS%,},${RULE_TESTS}"
+  TESTS="t1,t1_multi,${QOO_TESTS%,},${RULE_TESTS}"
   log "Default tests (auto-discovered): $TESTS"
 fi
 
@@ -229,6 +238,39 @@ check_t1() {
     return 0
   else
     echo "FAIL: no canary pattern (🐦 word-word) found in response"
+    return 1
+  fi
+}
+
+check_t1_multi() {
+  local output="$1"
+  # T1_MULTI: Both phases must have canaries, and they must match.
+  # Phase outputs are in separate files created by run_test special handling.
+  local phase1_file="${output%.txt}_phase1.txt"
+  local phase2_file="${output%.txt}_phase2.txt"
+
+  if [[ ! -f "$phase1_file" || ! -f "$phase2_file" ]]; then
+    echo "FAIL: phase output files not found (phase1: $phase1_file, phase2: $phase2_file)"
+    return 1
+  fi
+
+  local canary1 canary2
+  canary1=$(grep -oP '🐦\s+\S+' "$phase1_file" | head -1)
+  canary2=$(grep -oP '🐦\s+\S+' "$phase2_file" | head -1)
+
+  if [[ -z "$canary1" ]]; then
+    echo "FAIL: no canary in Phase 1 response"
+    return 1
+  fi
+  if [[ -z "$canary2" ]]; then
+    echo "FAIL: no canary in Phase 2 response (model did not emit canary on subsequent turn)"
+    return 1
+  fi
+  if [[ "$canary1" == "$canary2" ]]; then
+    echo "PASS: canary persisted across turns: $canary1"
+    return 0
+  else
+    echo "FAIL: canary changed — Phase 1: $canary1, Phase 2: $canary2 (model regenerated)"
     return 1
   fi
 }
@@ -466,14 +508,53 @@ run_test() {
   log "  Running $test_id (run $run_num) from $cwd..."
   cd "$cwd" 2>/dev/null || { echo "FAIL: cannot cd to $cwd" > "$outfile"; return 1; }
 
-  goose run \
-    --provider "$PROVIDER" \
-    --model "$MODEL" \
-    --text "$prompt" \
-    --no-session \
-    --quiet \
-    --max-turns "$max_turns" \
-    > "$outfile" 2>&1 || true
+  # Multi-turn tests: special handling with named sessions
+  if [[ "$test_id" == "t1_multi" ]]; then
+    local session_name="benchmark_${test_id}_run${run_num}_${TIMESTAMP}"
+    local phase1_file="${outfile%.txt}_phase1.txt"
+    local phase2_file="${outfile%.txt}_phase2.txt"
+
+    # Phase 1: "hello" in a new named session
+    log "    Phase 1: new session '$session_name'..."
+    goose run \
+      --provider "$PROVIDER" \
+      --model "$MODEL" \
+      --text "$prompt" \
+      --name "$session_name" \
+      --quiet \
+      --max-turns "$max_turns" \
+      > "$phase1_file" 2>&1 || true
+
+    # Phase 2: "hello" again, resuming the same session
+    log "    Phase 2: resume session '$session_name'..."
+    goose run \
+      --provider "$PROVIDER" \
+      --model "$MODEL" \
+      --text "hello" \
+      --name "$session_name" \
+      --resume \
+      --quiet \
+      --max-turns "$max_turns" \
+      > "$phase2_file" 2>&1 || true
+
+    # Combine for the main outfile
+    {
+      echo "=== PHASE 1 ==="
+      cat "$phase1_file"
+      echo ""
+      echo "=== PHASE 2 ==="
+      cat "$phase2_file"
+    } > "$outfile"
+  else
+    goose run \
+      --provider "$PROVIDER" \
+      --model "$MODEL" \
+      --text "$prompt" \
+      --no-session \
+      --quiet \
+      --max-turns "$max_turns" \
+      > "$outfile" 2>&1 || true
+  fi
 
   # Check pass criteria
   # Try specific checker first, then dispatch fidelity for QOO tests
