@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v3.2.1 — Add model-tier to frontmatter |
 | 2026-09-29 16:21 | v3.2.1 — Update guardrail reference text to v7 rule names |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-07-20 17:33 | v3.2 — Added Phase 7c: USER scope log.md entry. Fixes omission where changes to `~/.agents/knowledge/` were logged in the bundle's own log.md but not in the USER-scope root `~/.agents/log.md` per Guardrail #5 (Filesystem Integrity). Phase 7 heading updated from "both levels" to "all three levels". |

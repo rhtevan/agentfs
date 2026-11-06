@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "1.1.0"
+  model-tier: T2
   tags: [headroom, proxy, status, health, systemd, compression, context-optimization]
   related_skills: [litellm-proxy-status, goose-litellm-provider]
 ---

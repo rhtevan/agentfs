@@ -8,6 +8,7 @@ compatibility: "podman (for verify), bash"
 metadata:
   author: agentfs
   version: "1.0.0"
+  model-tier: T2
   tags: [openshift, containerfile, container-image, security, scc, ubi, audit]
 user-invocable: true
 disable-model-invocation: false

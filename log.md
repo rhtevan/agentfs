@@ -2,6 +2,81 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-06 12:17
+- Update template version comment 7.7.0→7.7.2 (README.md)
+- Update version references 7.7.1→7.7.2 to fix D6 README drift (README.md)
+
+## 2026-11-06 11:55
+- Session Canary rule prose optimization: LOCKED keyword, purpose statement, explicit no-replacement constraint for weaker model comprehension (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- Bump template version 7.7.1 → 7.7.2 for Session Canary rule prose optimization (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-05 19:32
+- Mark Phase A as complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Update status: Phase A complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Add model-tier to frontmatter (skills/spec-kit-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/skupper-model-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/skill-merge/SKILL.md)
+- Add model-tier to frontmatter (skills/skill-index/SKILL.md)
+- Add model-tier to frontmatter (skills/skill-harvest/SKILL.md)
+- Add model-tier to frontmatter (skills/skill-gen/SKILL.md)
+
+## 2026-11-05 19:31
+- Add model-tier to frontmatter (skills/skill-eval/SKILL.md)
+- Add model-tier to frontmatter (skills/okf-bundle-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/okf-bundle-index/SKILL.md)
+- Add model-tier to frontmatter (skills/okf-bundle-harvest/SKILL.md)
+- Add model-tier to frontmatter (skills/okf-bundle-gen/SKILL.md)
+- Add model-tier to frontmatter (skills/ocp-containerfile/SKILL.md)
+- Add model-tier to frontmatter (skills/litellm-vertex-ai-proxy/SKILL.md)
+- Add model-tier to frontmatter (skills/litellm-proxy-status/SKILL.md)
+- Add model-tier to frontmatter (skills/hosted-model-ctl/SKILL.md)
+- Add model-tier to frontmatter (skills/hermes-litellm-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/hermes-headroom-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/hermes-desktop-fixes/SKILL.md)
+- Add model-tier to frontmatter (skills/hermes-agentfs-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/headroom-proxy-status/SKILL.md)
+- Add model-tier to frontmatter (skills/headroom-litellm-proxy/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-skupper-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-recipe-session-cleanup/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-nextai-drawio/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-maas-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-litellm-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-kgm/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-headroom-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-desktop-env-fix/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-cli-fix/SKILL.md)
+- Add model-tier to frontmatter (skills/goose-agentfs-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/fedora-window-list/SKILL.md)
+- Add model-tier to frontmatter (skills/fedora-obsidian-fix/SKILL.md)
+- Add model-tier to frontmatter (skills/fedora-nm-boot-slow/SKILL.md)
+- Add model-tier to frontmatter (skills/fedora-dns-cache/SKILL.md)
+
+## 2026-11-05 19:30
+- Add model-tier to frontmatter (skills/fedora-desktop-wmclass-fix/SKILL.md)
+- Add model-tier to frontmatter (skills/dsh-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/dsh-litellm-provider/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-status/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-post-setup-config/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-ovn-frr-metallb-config/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-ols/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-noo-config/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-nmstate-config/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-nad-dynamic-plugin-config/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-ctl/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-coo-config/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-cmd/SKILL.md)
+- Add model-tier to frontmatter (skills/crc-aap-demo-config/SKILL.md)
+- Add model-tier to frontmatter (skills/bash-completion-gen/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-setup/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-readme-audit/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-profile/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-git-push/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-eval/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-ctx-chk/SKILL.md)
+- Add model-tier to frontmatter (skills/agentfs-archify/SKILL.md)
+- Add model-tier to frontmatter (skills/agentflow-fuseki/SKILL.md)
+
 ## 2026-11-04 21:21
 - Revert exclude additions - using raw/endraw in md files instead (_config.yml)
 

@@ -8,6 +8,7 @@ compatibility: "Fedora 40+ with NetworkManager and systemd"
 metadata:
   author: agentfs
   version: "1.1.0"
+  model-tier: T3
   tags: [fedora, network, boot, networkmanager, performance]
 user-invocable: true
 disable-model-invocation: false

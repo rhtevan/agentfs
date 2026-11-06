@@ -9,6 +9,7 @@ compatibility: "goose CLI or Desktop, skupper-model-provider running"
 metadata:
   author: agentfs
   version: "5.5.0"
+  model-tier: T2
   tags: [goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false

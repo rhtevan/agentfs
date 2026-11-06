@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v1.1.3 — Add model-tier to frontmatter |
 | 2026-08-31 14:39 | v1.1.3 — Updated related_skills and prose reference: archify → agentfs-archify |
 | 2026-08-28 20:43 | v1.1.2 — Cleanup: removed undocumented 'cwd: null' and 'bundled: null' fields from config schema, SKILL.md, and manage.sh setup script |
 | 2026-08-28 20:41 | v1.1.1 — Fix: remove period from extension name ('Next AI Draw.io' → 'Next AI Drawio') — period in name field broke Goose Desktop Extensions menu toggle |

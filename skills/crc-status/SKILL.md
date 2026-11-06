@@ -5,6 +5,7 @@ description: >
 metadata:
   author: agentfs
   version: "2.1.0"
+  model-tier: T1
   tags: [openshift, crc, status, console]
 user-invocable: true
 disable-model-invocation: false

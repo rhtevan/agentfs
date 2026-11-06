@@ -4,6 +4,7 @@ description: >
   setup ovn frr, setup metallb, bgp metallb
 metadata:
   version: "1.1.0"
+  model-tier: T2
   tags: [openshift, crc, networking, ovn, bgp, metallb]
 ---
 

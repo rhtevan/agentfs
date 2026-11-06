@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v2.2.0 — Add model-tier to frontmatter |
 | 2026-10-31 22:28 | v2.2.0 — Add assess skill mode — chains score+eval into single comprehensive assessment; Bump metadata version to 2.2.0; Add Assess mode to Quick Dispatch; Add Assess Sequence — 11-step comprehensive assessment mode |
 | 2026-10-31 20:37 | v2.1.0 — Step 8: added deterministic qoo-qualified formula — Tunable+ on quality, observable, operable.build; runtime exempt; Bump frontmatter version to 2.1.0; Rename: 'upgrade skill' → 'score skill' in ownership table |
 | 2026-10-31 19:04 | v2.0.0 — skill-eval v2.0.0: QOO re-engineering — Tier 1 BMBT + Quality/Observable read + Tier 2 CECX runtime + eval skill dispatch + persist + consolidated report; Added --phase build flag to BMBT sdm-evaluate.sh call; Added model and trace fields to Step 8 persist — CECX scores are model-dependent |

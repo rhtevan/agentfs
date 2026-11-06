@@ -11,6 +11,7 @@ compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts, CRC/Op
 metadata:
   author: agentfs
   version: "9.0.0"
+  model-tier: T2
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false

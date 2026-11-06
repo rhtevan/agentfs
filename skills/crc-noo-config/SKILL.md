@@ -4,6 +4,7 @@ description: >
   install noo, configure noo, network observability
 metadata:
   version: "1.0.0"
+  model-tier: T1
   tags: [openshift, crc, networking, observability, operator, ebpf]
 ---
 

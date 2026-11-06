@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:30 | v1.3.1 — Add model-tier to frontmatter |
 | 2026-08-31 10:03 | v1.3.1 — Added version check to status.sh — compares installed vs registry latest, recommends update when behind |
 | 2026-08-31 09:59 | v1.3.0 — Replaced ambiguous 'dsh launcher' and 'dsh desktop' signals with 'dsh status'; added status.sh script showing backend state and desktop path |
 | 2026-08-24 19:26 | v1.2.1 — Separate Chrome profile (`--user-data-dir`) for security isolation + maximized window + trackable process; replaced TCP connection monitoring with simple `wait $CHROME_PID`; fixed WMClass to `chrome-127.0.0.1__-Default` for GNOME icon matching on Wayland |

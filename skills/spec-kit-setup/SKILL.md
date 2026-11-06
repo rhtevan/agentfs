@@ -4,6 +4,7 @@ description: >
   install spec-kit, setup specify, upgrade spec-kit
 metadata:
   version: "1.0.0"
+  model-tier: T2
   tags: [speckit, specify, cli, setup, installation]
 ---
 

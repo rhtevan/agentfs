@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v1.5.0 — Add model-tier to frontmatter |
 | 2026-10-22 21:48 | v1.5.0 — New script: self-healing symlink enforcement for MCP server memory.jsonl |
 | 2026-09-24 20:46 | v1.4.0 — Document AgentSkill entity type, staleness guard, anti-pattern moved from AGENTS.md |
 | 2026-09-24 19:24 | v1.3.0 — Separate knowledge/skills KGM indexes, merge into combined .kgm-index.jsonl |

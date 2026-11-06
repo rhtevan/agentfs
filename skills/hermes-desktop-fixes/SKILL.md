@@ -4,6 +4,7 @@ description: >
   fix hermes desktop, hermes electron fix, hermes identity fix
 metadata:
   version: "3.2.1"
+  model-tier: T3
   tags: [hermes, desktop, electron, fix, provider]
 ---
 

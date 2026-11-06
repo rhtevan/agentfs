@@ -1,5 +1,9 @@
 # goose-recipe-session-cleanup Changelog
 
+| Updated | Change |
+|---------|--------|
+| 2026-11-05 19:31 | v3.0.0 — Add model-tier to frontmatter |
+
 
 | Date | Change |
 |------|--------|

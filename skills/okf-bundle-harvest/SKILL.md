@@ -7,6 +7,7 @@ compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md file
 metadata:
   author: agentfs
   version: "7.2.0"
+  model-tier: T3
   tags: [agentfs, okf, knowledge, memory, distillation, graduation]
 user-invocable: true
 disable-model-invocation: false

@@ -8,6 +8,7 @@ compatibility: "Requires crcstart/crcstop wrappers installed via crc-cmd skill"
 metadata:
   author: agentfs
   version: "2.0.0"
+  model-tier: T2
   tags: [crc, openshift, openshift-local, cluster, operations, cleanup]
 user-invocable: true
 disable-model-invocation: false

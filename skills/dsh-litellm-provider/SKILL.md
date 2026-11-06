@@ -8,6 +8,7 @@ writes-files: true
 metadata:
   author: agentfs
   version: "1.1.0"
+  model-tier: T2
   tags: [dsh, deepseek-harness, litellm, custom-provider, configuration]
   related_skills: [dsh-setup, litellm-vertex-ai-proxy, litellm-proxy-status]
 user-invocable: true

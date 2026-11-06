@@ -7,6 +7,7 @@ compatibility: "Requires Hermes Agent, Headroom proxy, and LiteLLM proxy"
 metadata:
   author: agentfs
   version: "1.2.1"
+  model-tier: T1
   tags: [hermes, headroom, proxy, provider, llm]
 user-invocable: true
 disable-model-invocation: false

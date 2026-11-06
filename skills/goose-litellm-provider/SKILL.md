@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "1.7.0"
+  model-tier: T3
   tags: [goose, litellm, custom-provider, redhat, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
 user-invocable: true

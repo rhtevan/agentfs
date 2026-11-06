@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:30 | v1.1.0 — Add model-tier to frontmatter |
 | 2026-09-04 11:12 | v1.1.0 — Added gotchas for competing .desktop files and --ozone-platform=x11 WM_CLASS behavior |
 
 ## v1.1.0 — 2026-09-04

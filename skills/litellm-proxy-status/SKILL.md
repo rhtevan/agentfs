@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "1.0.0"
+  model-tier: T2
   tags: [litellm, proxy, status, health, systemd]
   related_skills: [litellm-vertex-ai-proxy, hermes-litellm-provider]
 ---

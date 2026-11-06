@@ -4,6 +4,7 @@ description: >
   toggle window list, taskbar toggle, gnome taskbar
 metadata:
   version: "1.0.0"
+  model-tier: T1
   tags: [fedora, gnome, desktop, taskbar]
 ---
 

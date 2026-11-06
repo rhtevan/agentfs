@@ -7,6 +7,7 @@ compatibility: "Fedora 40+ with systemd-resolved"
 metadata:
   author: agentfs
   version: "1.0.0"
+  model-tier: T2
   tags: [fedora, dns, network, systemd, terminal, offline]
 user-invocable: true
 disable-model-invocation: false

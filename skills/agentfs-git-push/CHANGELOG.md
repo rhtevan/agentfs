@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:30 | v2.0.1 — Add model-tier to frontmatter |
 | 2026-10-15 21:44 | v2.0.1 — Sync frontmatter version to match CHANGELOG latest (2.0.0 → 2.0.1) |
 | 2026-09-29 21:46 | v2.0.1 — Step 6: explicit instruction to render tool output in response message |
 | 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |

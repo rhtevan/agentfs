@@ -1,5 +1,9 @@
 # goose-setup Changelog
 
+| Updated | Change |
+|---------|--------|
+| 2026-11-05 19:31 | v1.4.0 — Add model-tier to frontmatter |
+
 
 | Date | Change |
 |------|--------|

@@ -4,6 +4,7 @@ description: >
   refresh skill index, index skills, regenerate skill index
 metadata:
   version: "4.0.0"
+  model-tier: T1
   tags: [agentfs, skills, index, discovery]
 user-invocable: true
 disable-model-invocation: false

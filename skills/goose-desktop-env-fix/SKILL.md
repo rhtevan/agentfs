@@ -4,6 +4,7 @@ description: >
   fix goose desktop, goose shell environment, goose env fix
 metadata:
   version: "1.4.0"
+  model-tier: T3
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---
 

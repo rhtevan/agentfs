@@ -8,6 +8,7 @@ writes-files: true
 metadata:
   author: agentfs
   version: "1.3.1"
+  model-tier: T2
   tags: [dsh, deepseek-harness, agent-harness, setup, launcher]
   related_skills: [dsh-litellm-provider]
 user-invocable: true

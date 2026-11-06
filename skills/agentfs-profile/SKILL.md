@@ -4,6 +4,7 @@ description: >
   create profile, new agent profile, add agent
 metadata:
   version: "1.10.0"
+  model-tier: T2
   tags: [agentfs, profiles, multi-agent, identity]
 ---
 

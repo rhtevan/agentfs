@@ -9,7 +9,7 @@ tags: [qoo, qualification, model-tier, skill, portfolio, plan]
 # Skill QOO Qualification Plan — Full Portfolio
 
 - **Type:** Convention
-- **Status:** 🔲 NOT STARTED
+- **Status:** 🟡 IN PROGRESS — Phase A complete
 - **Predecessor:** Implementation Plan Phases 0-6 (all complete)
 - **Source:** Session analysis — tiered model classification and
   portfolio-wide QOO qualification strategy
@@ -302,7 +302,7 @@ and scoring scripts can read it.
 
 ## Execution Phases
 
-### Phase A — Tier Classification (no scoring)
+### Phase A — Tier Classification (no scoring) ✅ COMPLETE
 
 **Goal:** Set `model-tier` in every SKILL.md frontmatter. Pure metadata.
 

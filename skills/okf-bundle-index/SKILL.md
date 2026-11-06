@@ -4,6 +4,7 @@ description: >
   fix knowledge index, check knowledge links, okf index fix
 metadata:
   version: "1.4.1"
+  model-tier: T2
   tags: [agentfs, okf, knowledge, index, links]
 ---
 

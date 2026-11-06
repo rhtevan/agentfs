@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:32 | v4.0.0 — Add model-tier to frontmatter |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-08-16 16:22 | v4.0.0 — Replaced 180-line procedural prose with invocation of canonical `regen-skill-index.py` script (DRY with `post-edit.sh`). SKILL.md 175→57 lines. |
 | 2026-08-13 12:35 | v3.0.0 — Breaking: index columns changed from `Skill \| Tags \| Signals \| Updated` to `Skill \| Tags \| Description \| Updated`; Description column populated from `description` frontmatter field (signal phrases) instead of `metadata.signals`; removed `metadata.signals` extraction code (state machine parser); added Step 5 to warn on legacy `metadata.signals` field; updated verification checklist |

@@ -7,6 +7,7 @@ argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL |
 metadata:
   author: agentfs
   version: "3.3.2"
+  model-tier: T3
   tags: [openshift, crc, lightspeed, ols, llm, provider-management]
 user-invocable: true
 disable-model-invocation: false

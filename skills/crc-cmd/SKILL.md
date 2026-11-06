@@ -4,6 +4,7 @@ description: >
   install crcstart, install crcstop, crc wrapper
 metadata:
   version: "1.0.0"
+  model-tier: T2
   tags: [openshift, crc, wrapper, shell]
 ---
 

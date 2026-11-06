@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:30 | v3.3.2 — Add model-tier to frontmatter |
 | 2026-10-26 10:33 | v3.3.2 — Wire select-sa.sh into Phase 2: GCP credential setup uses deterministic SA selection instead of manual path |
 | 2026-10-26 10:19 | v3.3.1 — Fix GCP SA tip: replace fallback-to-default-compute advice with fix-dedicated-SA-permissions guidance |
 | 2026-10-23 14:02 | vv6.1.1 — Update Skupper provider detection pattern and docs for naming convention alignment (listener- prefix) |

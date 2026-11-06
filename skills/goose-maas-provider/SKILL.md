@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "1.4.0"
+  model-tier: T4
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
   related_skills: [goose-litellm-provider, litellm-proxy-status]
 ---

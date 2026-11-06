@@ -4,6 +4,7 @@ description: >
   fix goose cli, goose projects.json, goose parse error
 metadata:
   version: "1.0.0"
+  model-tier: T1
   tags: [goose, cli, fix, json]
 ---
 

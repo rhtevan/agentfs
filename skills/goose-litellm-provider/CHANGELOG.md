@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v1.7.0 — Add model-tier to frontmatter |
 | 2026-09-09 21:27 | vv1.7.0 — Changed base_url from localhost:4000 to host.containers.internal:4000 in restore.sh, verify.sh, and SKILL.md. Enables dual-resolution for host and container environments. |
 | 2026-08-10 15:39 | v1.6.0 — Removed claude-sonnet-4-5; fixed context_limit (opus/sonnet: 1M, haiku: 200k); fixed config.yaml default model to claude-opus-4-6 |
 | 2026-08-10 15:25 | v1.5.0 — Added claude-haiku-4-5 to models; changed fast_model from claude-sonnet-4-6 to claude-haiku-4-5; updated Vertex AI region from global to us-east5 in LiteLLM config |

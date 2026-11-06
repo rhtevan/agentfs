@@ -7,6 +7,7 @@ compatibility: "Linux with systemd user sessions, Java 17+"
 metadata:
   author: agentfs
   version: "1.0.1"
+  model-tier: T1
   tags: [fuseki, jena, sparql, rdf, infrastructure, service]
 user-invocable: true
 disable-model-invocation: false

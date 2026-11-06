@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "2.2.0"
+  model-tier: T2
   tags: [hermes, litellm, custom-provider, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, hermes-headroom-provider]
 user-invocable: true

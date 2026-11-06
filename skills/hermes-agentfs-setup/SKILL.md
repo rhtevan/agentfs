@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "1.1.0"
+  model-tier: T2
   tags: [hermes, agentfs, configuration, skills, compatibility]
   related_skills: [agentfs-setup, hermes-litellm-provider, hermes-desktop-fixes]
 ---

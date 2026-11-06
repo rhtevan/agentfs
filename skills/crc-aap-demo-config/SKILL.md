@@ -4,6 +4,7 @@ description: >
   configure aap demo, setup aap demo, aap demo
 metadata:
   version: "1.0.0"
+  model-tier: T2
   tags: [openshift, crc, aap-demo, configuration, safety, preflight]
 ---
 

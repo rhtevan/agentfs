@@ -8,6 +8,7 @@ compatibility: "Fedora/GNOME on Wayland with Electron apps"
 metadata:
   author: agentfs
   version: "1.1.0"
+  model-tier: T1
   tags: [fedora, gnome, wayland, electron, desktop, wmclass]
 user-invocable: true
 disable-model-invocation: false

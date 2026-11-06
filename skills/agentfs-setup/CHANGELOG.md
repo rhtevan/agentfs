@@ -2,6 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-06 11:55 | v7.7.2 — Bump template version 7.7.1 → 7.7.2 for Session Canary rule prose optimization; Session Canary rule prose optimization: LOCKED keyword, purpose statement, explicit no-replacement constraint for weaker model comprehension |
+| 2026-11-05 19:30 | v7.7.1 — Add model-tier to frontmatter |
 | 2026-11-04 13:21 | v7.7.1 — Add tool output opacity principle to SOUL template and fingerprint list; Add tool output opacity fingerprint for migration detection; Bump version to 7.7.1 for seed-soul.sh tool output opacity principle |
 | 2026-11-02 17:36 | v7.7.0 — Remove @import syntax from simple scope AGENTS.md template - make agent-agnostic; Remove @import syntax from project scope AGENTS.md template - make agent-agnostic; Bump version to 7.7.0 for agent-agnostic AGENTS.md template |
 | 2026-10-31 16:58 | v7.6.3 — Rule 1 CNL fix: add literal search_nodes(query:) syntax to Path B step 2, preventing weaker models from using wrong parameter name; Bump metadata version to 7.6.3 for Rule 1 CNL fix |

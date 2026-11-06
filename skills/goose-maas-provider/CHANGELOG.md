@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v1.4.0 — Add model-tier to frontmatter |
 | 2026-08-10 22:22 | v1.4 — Added `qwen36-35b-a3b` (Qwen 3.6 35B-A3B MoE) and `deepseek-r1-distill-qwen-14b` to model list in provider JSON, reference configuration, recovery script, and model compatibility matrix |
 | 2026-07-06 20:06 | v1.3 — **Goose Desktop is incompatible with MaaS** — tool calling fails under all tested Desktop configurations (streaming on/off, toolshim on/off); CLI with `GOOSE_TOOLSHIM: true` is the only working approach; updated Desktop section, troubleshooting |
 | 2026-07-06 20:00 | v1.2 — Added `GOOSE_TOOLSHIM: true` requirement; `supports_streaming: false` for Desktop; documented Desktop vs CLI differences |

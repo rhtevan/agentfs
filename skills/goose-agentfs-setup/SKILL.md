@@ -7,6 +7,7 @@ compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
   version: "1.7.0"
+  model-tier: T2
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
 disable-model-invocation: false

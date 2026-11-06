@@ -280,14 +280,19 @@ multi-phase, or user explicitly requests structured execution):
 
 **When:** Turn 1 of any session, or every 10 turns, or after compaction.
 
+**Purpose:** Forces attention to earlier turns — a primacy-zone
+instruction that creates a retrieval obligation into conversation
+history. A changed canary signals dead-zone attention loss.
+
 **Do:**
-1. Write a random two-word canary at the top of your response.
-   Use this format: \`🐦 word-word\` (example: \`🐦 cobalt-heron\`).
+1. Turn 1: generate a random two-word canary (\`🐦 word-word\`).
+   Write it at the top of your response. This canary is now LOCKED
+   for the entire session — do NOT generate a replacement.
 2. Read \`.agents/memories/USER.md\`. Apply any preferences found.
-3. Keep the canary in memory for this session. Do not write it to any file.
-4. On every 10th turn and after every compaction: re-read \`MEMORY.md\`
-   and \`USER.md\`. Run a silent self-check against all rules.
-   Report only if you find a violation.
+3. Every 10th turn and after compaction: write the SAME canary
+   (from Turn 1) at the top of your response. Re-read \`MEMORY.md\`
+   and \`USER.md\`. Silent self-check. Report only violations.
+4. Never write the canary to any file.
 
 ### 4. Conflict Resolution
 

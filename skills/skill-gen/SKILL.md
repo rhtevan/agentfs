@@ -7,6 +7,7 @@ compatibility: "Any agent with file write capability. Advanced mode benefits fro
 metadata:
   author: agentfs
   version: "4.0.0"
+  model-tier: T4
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
 disable-model-invocation: false

@@ -8,6 +8,7 @@ compatibility: "bash, shellcheck (optional), yq, jq"
 metadata:
   author: agentfs
   version: "2.2.0"
+  model-tier: T4
   tags: [agentfs, skills, evaluation, quality, audit, qoo, operable]
 user-invocable: true
 disable-model-invocation: false

@@ -5,6 +5,7 @@ description: >
 platforms: ['linux']
 metadata:
   version: "3.1.2"
+  model-tier: T2
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   related_skills: [litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
 user-invocable: true

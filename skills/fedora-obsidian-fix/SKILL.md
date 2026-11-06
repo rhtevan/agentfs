@@ -8,6 +8,7 @@ compatibility: "Fedora with GNOME/Wayland, Obsidian installed via Snap (classic)
 metadata:
   author: agentfs
   version: "1.1.0"
+  model-tier: T1
   tags: [fedora, obsidian, wayland, snap, desktop-fix]
 user-invocable: true
 disable-model-invocation: false

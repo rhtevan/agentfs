@@ -8,6 +8,7 @@ description: >
 license: MIT
 metadata:
   version: "2.15"
+  model-tier: T2
   author: tt-a1i
   based_on: Cocoon-AI/architecture-diagram-generator (MIT, v1.0)
   tags: [visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html]

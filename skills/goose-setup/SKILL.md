@@ -4,6 +4,7 @@ description: >
   setup goose, goose global instructions, goose persistent instructions
 metadata:
   version: "1.4.0"
+  model-tier: T2
   tags: [goose, config, instructions, persistent]
 ---
 

@@ -4,6 +4,7 @@ description: >
   audit context, check context, context audit
 metadata:
   version: "1.2.0"
+  model-tier: T3
   tags: [agentfs, context, audit, optimization, guardrails]
 user-invocable: true
 disable-model-invocation: false

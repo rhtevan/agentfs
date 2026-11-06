@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-05 19:31 | v1.2.1 — Add model-tier to frontmatter |
 | 2026-07-13 13:40 | v1.2.1 — Added YAML frontmatter with metadata tags |
 | 2026-07-06 22:17 | v1.2 — Added `service_tier: fast` incompatibility warning and troubleshooting; `speed` kwarg rejected by OpenAI-compat transport |
 | 2026-07-06 22:06 | v1.1 — Aligned config structure with actual Hermes `providers:` map format (not `custom_providers` list); provider named `headroom-proxy` |

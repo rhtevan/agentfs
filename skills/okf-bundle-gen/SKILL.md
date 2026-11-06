@@ -4,6 +4,7 @@ description: >
   generate knowledge bundle, create knowledge bundle, okf generate
 metadata:
   version: "3.2.1"
+  model-tier: T3
   tags: [agentfs, okf, knowledge, generation, session]
 ---
 
