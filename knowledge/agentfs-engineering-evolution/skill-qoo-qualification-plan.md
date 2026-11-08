@@ -26,13 +26,26 @@ compositional judgment (e.g., skill-gen) will never be reliably
 operable on a 14B model — and forcing it would degrade the skill's
 value. QOO qualification must be tier-aware.
 
-## Design Principle
+## Design Principles
 
 > QOO measures skill quality relative to its intended model class.
 > A T3 skill scoring 55 on Quality is acceptable — the prose
 > complexity is a feature, not a defect. A T1 skill scoring 55
 > is a problem — there's no reason a mechanical skill should be
 > unclear.
+
+> **No skill left behind.** Every skill must either qualify at its
+> tier or be reclassified until it does. Two levers exist before
+> declaring a skill unqualified:
+>
+> 1. **Re-engineer the skill** — fix structural gaps (add scripts,
+>    steps, output contracts) so it meets its current tier's thresholds.
+> 2. **Reclassify the tier** — if the skill's cognitive demand was
+>    underestimated, move it to the correct tier (e.g., T2→T3 or
+>    T3→T4) where its complexity is a feature, not a defect.
+>
+> Only skills that are genuinely not workflow skills (stubs,
+> pointers, config snippets) may be exempted as `model-tier: n/a`.
 
 ## Model Tier Classification
 
@@ -388,17 +401,17 @@ qualification, batch signals.
    b. Apply the appropriate fix pattern from the table above.
    c. Re-score: `hey score skill <name>`.
    d. If Quality + Observable + Build all pass → qualified.
-   e. Bump version, commit.
-3. Run `qoo-report.sh` after each batch of fixes.
+   e. If still failing after fixes → apply Reclassification Protocol
+      (see below). Move to T2 if cognitive demand was underestimated.
+   f. Bump version, commit.
+3. For stub/utility skills too minimal for workflow evaluation,
+   either expand to a proper skill or mark `model-tier: n/a` with
+   documented justification.
+4. Run `qoo-report.sh` after each batch of fixes.
 
 **Effort:** ~2-3 hours total (14 skills, ~10-15 min each on average).
 
-**Deliverable:** ≥12/14 T1 skills qualified.
-
-**Expected exceptions:** `hermes-headroom-provider` (22 lines, stub)
-and `goose-cli-fix` (73 lines, diagnostic) may be too minimal to
-meaningfully evaluate. Options: qualify with minimal structure, or
-mark as `model-tier: n/a` (utility, not a workflow skill).
+**Deliverable:** 14/14 T1 skills qualified or reclassified. ≤2 exempt as n/a.
 
 ### Phase E — T2 Systematic Fixes
 
@@ -422,16 +435,13 @@ structural improvements for larger skills.
 1. Sort T2 skills by Quality score (highest first).
 2. Batch 1: Fix scripted T2 skills (expect 10-15 to pass quickly).
 3. Batch 2: Fix prose T2 skills (expect some to need script extraction).
-4. Re-score after each batch. Push.
+4. For skills still failing after fixes → apply Reclassification
+   Protocol. Move to T3 or T4 if cognitive demand was underestimated.
+5. Re-score after each batch. Push.
 
 **Effort:** ~4-6 hours across 2-3 sessions.
 
-**Deliverable:** ≥20/26 T2 skills qualified.
-
-**Expected exceptions:** `crc-ovn-frr-metallb-config` (356 lines,
-all prose, deep networking domain) may resist qualification without
-major script extraction. `goose-agentfs-setup` (464 lines, 26 steps)
-may need restructuring.
+**Deliverable:** 26/26 T2 skills qualified or reclassified.
 
 ### Phase F — T3 Targeted Improvements
 
@@ -449,15 +459,13 @@ may need restructuring.
    b. If Build fails, add scripts for the mechanical steps.
    c. If Quality < 50 (Redesign), identify the 1-2 worst dimensions
       and fix those. Don't try to fix everything.
+   d. If still failing after fixes → apply Reclassification Protocol.
+      Move to T4 if the skill genuinely requires frontier reasoning.
 3. Re-score. Push.
 
 **Effort:** ~2-3 hours.
 
-**Deliverable:** ≥10/14 T3 skills qualified.
-
-**Expected exceptions:** `goose-desktop-env-fix` (all prose, 13 steps,
-10 conditionals) and `goose-recipe-session-cleanup` (all prose, 11
-conditionals) may need script extraction to reach even Re-engineer.
+**Deliverable:** 14/14 T3 skills qualified or reclassified.
 
 ### Phase G — T4 Build Verification
 
@@ -497,6 +505,40 @@ Observable are scored for informational purposes.
 **Deliverable:** Portfolio report, all skills classified and scored,
 qualification status documented.
 
+## Reclassification Protocol
+
+When a skill fails qualification at its current tier after
+re-engineering fixes have been applied, use this protocol:
+
+1. **Confirm the failure is structural, not fixable.** The skill
+   must have already gone through the fix patterns for its tier.
+   Reclassification is not an escape hatch for skipping fixes.
+
+2. **Assess cognitive demand.** Re-evaluate the four classification
+   axes (cognitive load, generative demand, domain expertise, script
+   coverage). If the skill genuinely demands a higher model class
+   than its current tier, reclassification is correct.
+
+3. **Reclassify.** Update `model-tier` in SKILL.md frontmatter to
+   the next tier. Update the classification table in this plan.
+
+4. **Re-score.** Run QOO evaluation against the new tier's thresholds.
+
+5. **Document.** Add a note in the skill's scores.yaml:
+   ```yaml
+   reclassified_from: T2
+   reclassification_reason: "Deep networking domain expertise + 10 conditional branches require T3 judgment"
+   ```
+
+**Reclassification direction:** Only upward (T1→T2, T2→T3, T3→T4).
+Downward reclassification means the skill was over-engineered —
+simplify it instead.
+
+**Exempt classification (`model-tier: n/a`):** Reserved for skills
+that are not workflow skills — stubs, config pointers, utility
+fragments. Must have documented justification. Target: ≤3 across
+the entire portfolio.
+
 ## Dependency Graph
 
 ```
@@ -525,14 +567,15 @@ Phase A and B can be done in parallel.
 | A | 30 min | 59 (metadata only) | — |
 | B | 2-3 hours | infrastructure | — |
 | C | 30 min | 57 (scoring) | ~5-10 pass as-is |
-| D | 2-3 hours | 14 T1 | ≥12 |
-| E | 4-6 hours | 26 T2 | ≥20 |
-| F | 2-3 hours | 14 T3 | ≥10 |
-| G | 1 hour | 5 T4 | ≥4 |
+| D | 2-3 hours | 14 T1 | 14 (qualified or reclassified, ≤2 n/a) |
+| E | 4-6 hours | 26 T2 | 26 (qualified or reclassified) |
+| F | 2-3 hours | 14 T3 | 14 (qualified or reclassified) |
+| G | 1 hour | 5 T4 | 5 (build-qualified) |
 | H | 30 min | documentation | — |
-| **Total** | **~13-17 hours** | **59 skills** | **≥48/59 (81%)** |
+| **Total** | **~13-17 hours** | **59 skills** | **≥56/59 (95%)** |
 
 Across 4-6 sessions. Not a sprint — a sustainable pace.
+≤3 skills may be exempt as `model-tier: n/a` (stubs/utilities).
 
 ## Success Criteria
 
@@ -540,11 +583,11 @@ Across 4-6 sessions. Not a sprint — a sustainable pace.
 |-----------|--------|
 | All skills have `model-tier` in frontmatter | 59/59 |
 | All skills have `scores.yaml` | 59/59 |
-| T1 qualification rate | ≥85% (12/14) |
-| T2 qualification rate | ≥77% (20/26) |
-| T3 qualification rate | ≥71% (10/14) |
-| T4 build-qualification rate | ≥80% (4/5) |
-| Portfolio-wide qualification rate | ≥78% (46/59) |
+| T1 qualification rate | 100% (14/14 qualified + reclassified, ≤2 exempt as n/a) |
+| T2 qualification rate | 100% (26/26 qualified + reclassified) |
+| T3 qualification rate | 100% (14/14 qualified + reclassified) |
+| T4 build-qualification rate | 100% (5/5) |
+| Portfolio-wide qualification | ≥95% (≥56/59, ≤3 exempt as n/a) |
 | Portfolio report script exists | `qoo-report.sh` working |
 | Batch scoring script exists | `score-all.sh` working |
 
@@ -553,10 +596,10 @@ Across 4-6 sessions. Not a sprint — a sustainable pace.
 | Risk | Likelihood | Impact | Mitigation |
 |------|:----------:|:------:|------------|
 | SDM variance inflates/deflates scores | High | Medium | Multi-run averaging or confidence gating |
-| Stub skills (hermes-headroom-provider, 22 lines) can't meaningfully score | Medium | Low | Classify as utility, exempt from QOO |
-| Script extraction for prose-only skills is more work than estimated | Medium | Medium | Accept Re-engineer band for T3 prose skills |
+| Stub skills too minimal for workflow evaluation | Medium | Low | Expand to proper skill or exempt as `model-tier: n/a` (≤3 total) |
+| Script extraction for prose-only skills is more work than estimated | Medium | Medium | Reclassify tier upward if cognitive demand was underestimated |
 | `score-all.sh` SDM endpoint saturation | Low | Medium | Add rate limiting (sleep between skills) |
-| Tier misclassification | Low | Low | Tier is a human decision — reclassify if scoring reveals miscategorization |
+| Tier misclassification | Medium | Low | Expected and handled — Reclassification Protocol formalizes upward reclassification after fix attempts |
 
 ## How to Resume
 
