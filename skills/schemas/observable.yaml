@@ -46,12 +46,14 @@ dimensions:
 
   - name: sdm_delegation
     question: >
-      For skills that require semantic judgment (Pattern C: prose-only
-      analysis, evaluation, or alignment checking), are those judgments
+      Does this skill require semantic judgment (evaluation, alignment
+      checking, qualitative analysis)? If NO — the skill is purely
+      mechanical (status checks, setup, config) and this dimension
+      does not apply, answer YES (pass). If YES — are those judgments
       delegated to SDM via scripts rather than requiring the agent to
       perform multi-hop qualitative reasoning inline?
     evidence_source: skill.md + scripts/
     metric: boolean
     target: "true"
     weight: 1.0
-    applies_to: [pattern_c]
+    exempt_when: "no_semantic_judgment"

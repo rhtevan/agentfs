@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 18:30 | v2.5.0 — Simplify qualification: Build+Observable gated, Quality informational; Update Step 10 with simplified qualification formula |
 | 2026-11-08 18:06 | v2.4.0 — Add Rules section with anti-fabrication rules; Add trace-lib.sh sourcing for trace instrumentation |
 | 2026-11-08 16:57 | v2.3.0 — Add tier-aware qoo-qualified computation; Update Step 10 with tier-aware qualification formula |
 | 2026-11-05 19:31 | v2.2.0 — Add model-tier to frontmatter |

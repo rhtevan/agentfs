@@ -49,13 +49,16 @@ bash ~/.agents/skills/headroom-proxy-status/scripts/check-status.sh
 
 The script gathers all status facts: systemd service state, health
 endpoint, compression statistics, stats history, service config,
-and provider config. Read the output — it contains all the data
-needed for the report.
+provider config.
+
+Read the output — it contains all the data needed for the report.
 
 ### Step 2 — Report the results
 
-Read the script output. Build the summary table defined in the
-Output Contract below. Include:
+Read the script output.
+
+Build the summary table defined in the Output Contract below.
+Include:
 
 - Service state (active/inactive) and uptime
 - Proxy health status and operating mode
@@ -65,7 +68,7 @@ Output Contract below. Include:
 
 ### Step 3 — Check logs (conditional)
 
-Run only if Step 1 shows the service is inactive or unhealthy:
+Run only if Step 1 output indicates an inactive or unhealthy state:
 
 ```bash
 journalctl --user -u headroom-proxy --no-pager -n 20
@@ -83,10 +86,10 @@ Present a summary table:
 | Mode | token/cache |
 | Upstream | OpenAI API URL (e.g. LiteLLM on :4000) |
 | Optimize | enabled/disabled |
-| Kompress ML | enabled/disabled (`disable_kompress` field) |
-| Target ratio | value (e.g. 0.5 = keep ~50%) or unset |
-| Compression | requests compressed, avg compression %, tokens saved |
-| Uncompressed reasons | prefix_frozen count, no_compressible_content count |
+| Kompress ML | enabled/disabled |
+| Target ratio | compression target value or unset |
+| Compression | requests compressed, average compression %, tokens saved |
+| Uncompressed reasons | count by reason category |
 | Cost savings | USD saved, savings % |
 | Port | 8787 |
 | Key flags | target-ratio, intercept-tool-results, ccr, rate-limit, memory, etc. |
@@ -121,7 +124,7 @@ If the service fails to start, check logs:
 journalctl --user -u headroom-proxy --no-pager -n 50
 ```
 
-If health shows unhealthy upstream, verify LiteLLM is running:
+If health endpoint reports an unhealthy upstream, verify LiteLLM:
 ```bash
 systemctl --user status litellm-proxy
 curl -s http://127.0.0.1:4000/health | python3 -m json.tool
@@ -133,12 +136,11 @@ cat ~/.config/goose/custom_providers/custom_headroom.json
 grep custom_headroom ~/.config/goose/config.yaml
 ```
 
-If compression is showing 0% despite long conversations:
-- Check that `--lossless` is NOT set (it restricts to format-native compaction only)
-- Verify `target_ratio` is set (without it, Kompress uses a very conservative auto threshold)
-- Check `uncompressed_requests` in stats for why requests were skipped
-- Verify `disable_kompress` is `false` in the health config
-- Ensure conversations are long enough — `min_tokens_to_crush` (default 500) must be exceeded
+If compression shows 0% despite long conversations, review the
+health and stats output from the script for compression configuration
+and thresholds. Common causes: lossless mode enabled, compression
+target not configured, or conversations below the minimum token
+threshold.
 
 
 ## Changelog

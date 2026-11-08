@@ -245,27 +245,18 @@ Steps 5 and 7:
    score (build aggregate), band, and a one-line note.
 
 9. **`qoo-qualified`** — compute deterministically from all
-   available scores in the file. Read `model-tier` from SKILL.md
-   frontmatter and apply the tier-appropriate formula:
+   available scores in the file. Formula applies uniformly:
    ```
-   T1/T2 (or unknown):
-     qoo-qualified = quality.band ∈ {Tunable, Operable}
-                  AND observable.band ∈ {Tunable, Operable}
-                  AND operable.build.band ∈ {Tunable, Operable}
-   T3:
-     qoo-qualified = quality.band ∈ {Re-engineer, Tunable, Operable}
-                  AND observable.band ∈ {Re-engineer, Tunable, Operable}
-                  AND operable.build.band ∈ {Tunable, Operable}
-   T4:
-     qoo-qualified = operable.build.band ∈ {Tunable, Operable}
-     (quality and observable are informational — not gated)
+   qoo-qualified = observable.band ∈ {Tunable, Operable}
+                AND operable.build.band ∈ {Tunable, Operable}
    ```
-   Persist `model_tier` and `qualification_rule` in scores.yaml.
+   Quality is informational — scored but not gated.
+   Persist `model_tier` and `qualification_rule: build+observable`.
    If any required axis has not been evaluated yet (section missing),
    set `qoo-qualified: false`. Runtime CECX is exempt — it is
    model-dependent and does not gate qualification.
    Do NOT set this field based on judgment. Compute it from
-   the band values and model tier only.
+   the band values only.
 
 Do NOT overwrite the entire file. Preserve the `quality` and
 `observable` sections (owned by `skill-gen`), the `skill`,
@@ -438,16 +429,14 @@ Update `$SKILL_DIR/scores.yaml` with `operable.build` and
 `operable.runtime` from Steps 8 and 9. Same rules as Full Eval
 Step 8.
 
-Compute `qoo-qualified` deterministically using the tier-aware
-formula (read `model-tier` from SKILL.md frontmatter):
+Compute `qoo-qualified` deterministically:
 
 ```
-T1/T2: Q ∈ {Tunable,Operable} AND O ∈ {Tunable,Operable} AND B ∈ {Tunable,Operable}
-T3:    Q ∈ {Re-engineer,Tunable,Operable} AND O ∈ {Re-engineer,Tunable,Operable} AND B ∈ {Tunable,Operable}
-T4:    B ∈ {Tunable,Operable} (Q and O informational)
+qoo-qualified = O ∈ {Tunable,Operable} AND B ∈ {Tunable,Operable}
 ```
 
-Persist `model_tier` and `qualification_rule` in scores.yaml.
+Quality is informational — scored but not gated.
+Persist `model_tier` and `qualification_rule: build+observable`.
 Runtime CECX is exempt. Append a history entry with type `assess`.
 
 Immediately run post-write.sh after writing.

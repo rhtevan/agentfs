@@ -156,28 +156,12 @@ for skill_dir in "$SKILLS_DIR"/*/; do
       | grep 'band:' | head -1 | sed 's/.*band: *//' || echo "not-evaluated")
   fi
 
+  # Simplified qualification: Build + Observable gated, Quality informational
   if [[ "$build_band" != "not-evaluated" ]]; then
-    case "$model_tier" in
-      T1|T2)
-        if [[ "$quality_band" =~ ^(Tunable|Operable)$ ]] && \
-           [[ "$observable_band" =~ ^(Tunable|Operable)$ ]] && \
-           [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
-          qoo_qualified="true"
-        fi
-        ;;
-      T3)
-        if [[ "$quality_band" =~ ^(Re-engineer|Tunable|Operable)$ ]] && \
-           [[ "$observable_band" =~ ^(Re-engineer|Tunable|Operable)$ ]] && \
-           [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
-          qoo_qualified="true"
-        fi
-        ;;
-      T4)
-        if [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
-          qoo_qualified="true"
-        fi
-        ;;
-    esac
+    if [[ "$observable_band" =~ ^(Tunable|Operable)$ ]] && \
+       [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
+      qoo_qualified="true"
+    fi
   fi
 
   # Step 5: Write scores.yaml

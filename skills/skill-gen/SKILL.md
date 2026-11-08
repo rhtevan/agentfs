@@ -626,36 +626,35 @@ history:
 ```
 
 Compute `qoo-qualified` deterministically from all available scores.
-Read `model-tier` from SKILL.md frontmatter (T1, T2, T3, or T4)
-and apply the tier-appropriate formula:
+The formula applies uniformly across all tiers:
 
 ```
-T1/T2 (or unknown):
-  qoo-qualified = quality.band ∈ {Tunable, Operable}
-               AND observable.band ∈ {Tunable, Operable}
-               AND operable.build.band ∈ {Tunable, Operable}
-
-T3:
-  qoo-qualified = quality.band ∈ {Re-engineer, Tunable, Operable}
-               AND observable.band ∈ {Re-engineer, Tunable, Operable}
-               AND operable.build.band ∈ {Tunable, Operable}
-
-T4:
-  qoo-qualified = operable.build.band ∈ {Tunable, Operable}
-  (quality and observable are informational — scored but not gated)
+qoo-qualified = observable.band ∈ {Tunable, Operable}
+             AND operable.build.band ∈ {Tunable, Operable}
 ```
+
+**Quality is informational** — scored and tracked but does not gate
+qualification. It measures prose improvement opportunities.
+
+**Observable is gated** — ensures skills are traceable (trace_step),
+well-written (CNL), and have anti-fabrication rules. The
+sdm_delegation dimension auto-exempts for purely mechanical skills
+(no semantic judgment).
+
+**Build is gated** — ensures skills have structural prerequisites
+(scripts, orchestration prose, test harness).
 
 Persist `model_tier` and `qualification_rule` in scores.yaml:
 ```yaml
 model_tier: T2
-qualification_rule: T2
+qualification_rule: build+observable
 ```
 
 If `operable.build` has not been evaluated yet (section missing),
 set `qoo-qualified: false`. Runtime CECX is exempt — it is
 model-dependent and does not gate qualification.
 Do NOT set this field based on judgment. Compute it from band
-values and model tier only.
+values only.
 
 Do NOT write an `operable:` section. That is owned by `skill-eval`
 and populated via `hey eval skill`.

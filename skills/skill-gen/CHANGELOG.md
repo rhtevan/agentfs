@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 18:30 | v4.3.0 — Simplify qualification: Build+Observable gated, Quality informational |
 | 2026-11-08 18:06 | v4.2.0 — Update Create Skill template for QOO compliance: add model-tier, Specification, Rules, Output Contract, Error Handling, Troubleshooting; Add Upgrade Skill for QOO mode with gap analysis and fix patterns; Add trace-lib.sh sourcing for trace instrumentation |
 | 2026-11-08 16:57 | v4.1.0 — Add tier-aware qoo-qualified computation |
 | 2026-11-05 19:32 | v4.0.0 — Add model-tier to frontmatter |

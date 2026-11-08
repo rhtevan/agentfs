@@ -2,6 +2,35 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 18:31
+- Simplify qualification logic: Build+Observable, Quality informational (scripts/score-all.sh)
+
+## 2026-11-08 18:30
+- Update Step 10 with simplified qualification formula (skills/skill-eval/SKILL.md)
+- Simplify qualification: Build+Observable gated, Quality informational (skills/skill-eval/SKILL.md)
+- Simplify qualification: Build+Observable gated, Quality informational (skills/skill-gen/SKILL.md)
+
+## 2026-11-08 18:29
+- Fix sdm_delegation evidence: emit true (exempt) for mechanical skills (scripts/gather-skill-state.sh)
+
+## 2026-11-08 18:28
+- Add semantic judgment detection for sdm_delegation exemption (scripts/gather-skill-state.sh)
+- Fix sdm_delegation: self-exempting question for skills with no semantic judgment (skills/schemas/observable.yaml)
+
+## 2026-11-08 18:16
+- Fix interface opacity: remove implementation field names from Troubleshooting (skills/headroom-proxy-status/SKILL.md)
+- Fix interface opacity: remove internal field names from Output Contract (skills/headroom-proxy-status/SKILL.md)
+
+## 2026-11-08 18:15
+- Fix CNL multi-action in Step 1 description (skills/headroom-proxy-status/SKILL.md)
+
+## 2026-11-08 18:14
+- Fix last CNL multi-action violation: split compound sentence (skills/headroom-proxy-status/SKILL.md)
+
+## 2026-11-08 18:13
+- Fix CNL passive voice in Troubleshooting (skills/headroom-proxy-status/SKILL.md)
+- Fix CNL passive voice in Step 3 (skills/headroom-proxy-status/SKILL.md)
+
 ## 2026-11-08 18:06
 - Add trace-lib.sh sourcing for trace instrumentation (skills/skill-eval/scripts/skill-check.sh)
 - Add trace-lib.sh sourcing for trace instrumentation (skills/skill-gen/scripts/fetch-upstream.sh)
