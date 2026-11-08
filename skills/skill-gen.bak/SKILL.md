@@ -1,0 +1,1176 @@
+---
+name: skill-gen
+description: >
+  create skill, new skill, score skill, advanced skill
+argument-hint: "Describe what the skill should do. Add 'advanced' for full eval loop."
+compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
+metadata:
+  author: agentfs
+  version: "4.0.0"
+  model-tier: T4
+  tags: [agentfs, skills, creation, scaffolding, evaluation]
+user-invocable: true
+disable-model-invocation: false
+---
+
+# Skill Gen
+
+> **Scope guard:** This skill is not available in LITE scope projects.
+> LITE scope does not support skills or knowledge bundles. If the
+> target project's AGENTS.md contains `agentfs-scope: lite`, refuse
+> with a clear message.
+
+Create new skills, modify and improve existing ones with built-in AgentFS
+conventions. Operates in three modes: **simple** (quick scaffold),
+**advanced** (full eval/iterate/optimize loop using upstream Anthropic
+skill-creator), and **skill check** (audit existing skills against seven
+quality principles). Default mode is simple; use advanced when requesting
+"thorough", "with evals", or "production quality". Skill Check runs
+automatically after every creation or update (Post-Creation Checklist).
+
+This is a **proxy skill** that operates in four modes:
+
+| Mode | When | What Happens |
+|------|------|-------------|
+| **Simple** (default) | Quick utility skills, SOPs, small workflows | Scaffold + write + QOO scores + AgentFS post-creation checklist |
+| **Advanced** | "advanced", "thorough", "with evals", "production quality" | Full upstream eval/iterate/optimize loop + QOO scores + AgentFS checklist |
+| **Score** | "score skill \<name\>" | Re-evaluate existing skill Quality + Observable scores |
+| **Skill Check** | "check skill", "skill check", "audit skill" | Audit existing skill against seven quality principles |
+
+## Mode Selection
+
+Detect mode from user's language:
+
+- **Simple** (default): "create a skill", "make this reusable",
+  "turn this into a skill", "skill for this workflow"
+- **Advanced**: "create a skill, advanced", "thorough skill",
+  "production quality skill", "with evals", "benchmark this skill"
+- **Score**: "score skill \<name\>", "refresh skill scores",
+  "re-evaluate skill QOO"
+- **Skill Check**: "skill check", "scan skill", "check skill",
+  "audit skill", "skill scan", "verify skill quality"
+
+When in doubt, ask: *"Do you want a quick skill scaffold, or a
+thorough process with test cases and evaluation?"*
+
+---
+
+## Skill Design Principles
+
+Before creating any skill, understand the three foundational principles
+that govern skill architecture. These apply to both Simple and Advanced
+modes.
+
+### Non-Interactive Scripts
+
+Scripts under `scripts/` MUST be non-interactive — they MUST NOT use
+`read`, `select`, interactive prompts, or any mechanism that blocks
+waiting for stdin. All inputs MUST be accepted via CLI arguments,
+environment variables, or input files.
+
+- **Why:** Skills can be triggered by scheduled jobs, other skills,
+  or automated pipelines where no human is at the terminal. A
+  blocking `read` call will hang or fail.
+- **How:** Use positional args (`$1`, `$2`) or named flags
+  (`--name "$NAME"`). Validate inputs with usage errors (exit 2)
+  rather than interactive fallbacks.
+
+### Agent-as-Orchestrator
+
+Skills implement a three-layer separation of concerns:
+
+| Layer | Responsibility | Interactive? |
+|---|---|---|
+| **SKILL.md** | Defines the process — steps, decision points, gates | N/A (blueprint) |
+| **Agent** | Orchestrates flow, mediates user interaction, feeds data between steps | ✅ Conversationally |
+| **Scripts** | Execute deterministic, repeatable actions | ❌ Never |
+
+The agent handles ambiguous inputs, clarifications, approvals, and
+error explanations. Scripts handle validation, API calls, and data
+transformations. SKILL.md is the contract between them.
+
+**Rule of thumb:** *Loose steps → write instructions; fragile steps
+→ write code.* When logic is approximate and benefits from model
+judgment, describe it in SKILL.md prose. When logic is precise,
+fragile, or must be consistent across runs, implement it as a script.
+
+**Corollary — lower the cognitive bar for model callers:**
+- When a model fails to follow prose instructions reliably (wrong
+  script, missing arguments, wrong tool), convert the prose to a
+  single wrapper script the model can call with zero or minimal args.
+- Wrapper scripts should auto-detect context (provider, model, paths)
+  from config files rather than requiring the model to supply them.
+- Avoid similar script names within the same skill directory — models
+  confuse `agentfs-behavior.sh` with `agents-md-behavioral.sh`.
+
+### Business Process Modeling
+
+Skills can model multi-step processes with human interaction points.
+Interactivity belongs in the **agent ↔ user conversation**, not in
+script execution. A process skill defines:
+
+- **Action steps** — deterministic scripts the agent runs
+- **Interaction steps** — the agent gathers input, presents results,
+  or requests approval from the user
+- **Decision points** — branching based on script exit codes or
+  user responses
+- **External gates** — steps that wait for external input
+  (approvals, reference numbers, third-party data)
+- **Privilege gates** — steps requiring elevated privileges
+  (`sudo`, root access) that the agent cannot provide
+
+**Privilege Gate pattern:**
+
+Some steps require `sudo` or system-level access. The agent cannot
+execute these directly. Mark them in SKILL.md with the 🔒 icon and
+prescribe the exact interaction:
+
+```markdown
+### Step N — Description (🔒 Privilege Gate)
+
+This step requires `sudo`. The agent cannot execute this directly.
+
+**Agent action:** Present the command to the user and request
+manual execution. Wait for confirmation before proceeding.
+
+` ` `bash
+sudo dnf install -y example-package
+` ` `
+
+**Gate condition:** User confirms completion.
+**Verification:** Run `scripts/verify.sh` to confirm.
+```
+
+Scripts that detect missing privileges MUST exit with code **3**
+(see Error Contract below) and print a human-readable message
+with the exact command to run:
+
+```bash
+if ! sudo -n true 2>/dev/null; then
+  echo "🔒 Privilege gate: this operation requires sudo."
+  echo "   Run manually:"
+  echo "     sudo dnf install -y example-package"
+  exit 3
+fi
+```
+
+This preserves all guardrails — scripts stay idempotent
+(Guardrail #6), the SKILL.md *is* the process documentation,
+each script is independently testable, and the same scripts can
+be reused by other skills or automated jobs with pre-known inputs.
+
+---
+
+## Simple Mode
+
+### Step 1 — Capture Intent
+
+Understand what the skill should do. The current conversation may
+already contain the workflow to capture. Extract:
+
+1. What should this skill enable the agent to do?
+2. What are the steps involved?
+3. What inputs does it accept?
+4. What does success look like?
+5. Are there scripts to generate or reference docs to include?
+
+**Anti-pattern: Generic Mush.** Do NOT instruct the agent to do
+things it already knows from base training (standard error handling,
+basic input validation, common patterns). A skill's value comes from
+**domain expertise the model cannot access on its own**.
+
+**Sources of real expertise:**
+- Manual execution logs — what actually worked, including corrections
+- Existing runbooks, SOPs, review comments, post-mortems
+- Environment-specific anomalies and historical edge cases
+
+**Gotchas section.** Include a "Gotchas" or "Known Issues" section
+in SKILL.md capturing environment-specific anomalies, historical
+corrections, and non-obvious behaviors discovered during development
+or usage. This is often the highest-value section in a skill —
+hard-won factual knowledge that prevents the agent from repeating
+past mistakes.
+
+### Step 2 — Determine Scope
+
+Scope governs **discovery and context loading**, not what the
+skill operates on. A skill managing system infrastructure can
+live at PROJECT scope if only one project needs to discover it.
+USER-scope skill signals load into every session on the machine;
+PROJECT-scope signals load only when working in that project.
+
+| Criterion | → USER | → PROJECT |
+|-----------|:------:|:---------:|
+| Every session on this machine needs this skill | ✅ | |
+| Skill is tied to a specific project or workflow | | ✅ |
+| Proven reusable across multiple projects | ✅ | |
+| Signals would be noise in unrelated sessions | | ✅ |
+
+**Default: PROJECT** (`./.agents/skills/<skill-name>/`).
+Promote to USER (`~/.agents/skills/<skill-name>/`) when
+cross-project demand is demonstrated. Starting at PROJECT
+avoids signal phrase bloat in unrelated sessions.
+
+USER scope when **explicit**: user says "user skill", "shared
+skill", "global skill", or the skill clearly serves every
+session (e.g., `skill-gen`, `agentfs-setup`, `agentfs-eval`).
+
+### Step 3 — Create Directory Structure
+
+```bash
+SKILL_DIR="$HOME/.agents/skills/<skill-name>"  # or ./.agents/skills/ for PROJECT
+mkdir -p "$SKILL_DIR/scripts"
+# mkdir -p "$SKILL_DIR/references"  # only if needed
+```
+
+### Step 4 — Write SKILL.md
+
+Generate a SKILL.md with this exact structure:
+
+```markdown
+---
+name: <skill-name>
+description: >
+  <signal phrase 1>, <signal phrase 2>, <signal phrase 3>,
+  <signal phrase 4>, <signal phrase 5>
+argument-hint: "<usage hint>"
+compatibility: "<requirements, if any>"
+metadata:
+  author: agentfs
+  version: "1.0.0"
+  tags: [<relevant-tags>]
+user-invocable: true
+disable-model-invocation: false
+---
+
+# <Title>
+
+<Opening paragraph — human-readable explanation of what this skill does,
+why it exists, and when to use it. This is the hydrated context that
+the signal-phrase description cannot convey.>
+
+## Prerequisites
+
+- <List of requirements>
+
+## Steps
+
+1. **Step name**
+   Description and commands.
+
+2. **Step name**
+   Description and commands.
+
+## Gotchas
+
+- <Environment-specific anomalies, historical corrections,
+  non-obvious behaviors discovered during development or usage>
+
+## Verification
+
+- [ ] <How to confirm success>
+
+## Changelog
+
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.
+```
+
+**Description as signal phrases:**
+
+The `description` field contains **signal phrases** — the trigger
+phrases the LLM uses to match user intent to this skill. It is
+loaded into every session via the built-in skills listing, making
+it the only metadata always in the agent's context.
+
+- **Follow the canonical schema** — see
+  [`references/skill-schema.md`](./references/skill-schema.md) for
+  the full Signal Phrase Rules, required/optional fields, version
+  format, and changelog rules.
+- **Command pattern** (`verb + noun(s)`) — for actions that change
+  state: `setup agentfs`, `create skill`, `start crc`
+- **Query pattern** (`noun(s)`) — for retrieval/status/inspection:
+  `crc status`, `litellm health`, `skupper model topology`
+- **Three quality principles** — each phrase must be **concise**
+  (2-4 words), **non-redundant** (no two phrases matching the same
+  intent), and the set must be **complete** (every functional mode
+  covered)
+- **Smell test** — if 15+ phrases are needed, the skill may carry
+  too much responsibility; consider splitting per Separation of
+  Concerns
+
+**Opening paragraph:**
+
+Since the `description` field contains signal phrases (not prose),
+the SKILL.md body MUST include a **hydrated opening paragraph**
+immediately after the `# Title` heading. This paragraph provides
+the rich human-readable context: what the skill does, why it exists,
+and when to use it.
+
+**Writing guidance:**
+
+- **Explain the why** — don't just say MUST/NEVER; explain reasoning
+  so the agent can generalize beyond the literal instructions
+- **Imperative form** — "Run the script" not "You should run the script"
+- **Defensive file templates** — when a skill writes or modifies
+  external files (configs, JSON, YAML), include the exact template
+  inline with a warning block:
+  ```
+  > ⚠️ **Use this exact schema.** Do NOT write from memory or
+  > improvise field names. Copy this template and substitute only
+  > the marked placeholders.
+  ```
+  This prevents agents from bypassing the skill and writing
+  malformed files from stale context or hallucinated schemas.
+- **Context economy** — SKILL.md is loaded in full on every
+  `load_skill` call. Every line consumes context budget. A soft
+  threshold of **300 lines** triggers a two-step audit:
+  (1) Can content move to `references/` without degrading execution
+  quality? If yes, extract. (2) If SKILL.md is still large after
+  step 1, is this a skill scope problem? If yes, decompose into
+  smaller skills. If neither applies, the size is justified.
+  See Principle 6 (Context Economy) in Skill Check for details.
+- **`references/` directory** — for supporting documentation the
+  agent loads on demand: design specs, architecture context,
+  extended troubleshooting, research findings. Create a
+  `## References` section in SKILL.md linking to these files.
+  The agent loads them via
+  `load_skill(name: "skill-name/references/file.md")`.
+- **Progressive disclosure** — signal phrases always in context;
+  opening paragraph + body loaded on trigger; reference files
+  loaded on demand
+
+### Step 5 — Write Scripts (if applicable)
+
+Generate executable scripts under `scripts/`:
+
+- **Idempotent**: Check preconditions before acting; safe to re-run
+  after failure without corrupting state
+- **Semantic exit codes**: See Error Contract table below
+- **Portable**: Use `$HOME` not hardcoded paths; use `$(uname)` for
+  platform-specific commands
+- **Documented**: Header comment with usage
+- **Diagnostic output**: Write structured output to stdout using
+  `✅`/`❌`/`⚠️`/`🔒` markers. Be specific about **what failed**
+  and **what state was left** (e.g., "Config write failed — backup
+  restored" not bare "Error").
+- **Clean up on failure**: Restore backups, remove partial state,
+  or document in SKILL.md that manual cleanup is required.
+
+**Error Contract — exit codes:**
+
+| Exit Code | Meaning | Agent Behavior |
+|:---------:|---------|----------------|
+| 0 | Success | Continue to next step |
+| 1 | Failure | Read stdout. Match against Troubleshooting table. If match → follow prescribed fix. If no match → present full output to user, do NOT improvise recovery. |
+| 2 | Usage error | Fix invocation (wrong args). Retry once. If still exit 2 → stop and ask user. |
+| 3 | Privilege gate | Present the script's output (contains the manual command) to user. Wait for confirmation. Then proceed to verification. |
+
+Exit codes 0–3 are reserved across all skills. Scripts MUST NOT
+use these codes for other meanings.
+
+**SKILL.md error handling obligations:**
+
+Every skill with scripts MUST include:
+1. **Idempotency declaration** per script — mark each script as
+   idempotent (safe to retry) or not in an Error Handling table
+2. **Recovery path** per workflow step — what to do on exit 1
+3. **Troubleshooting table** — known failure modes with
+   symptom → cause → fix columns
+
+```markdown
+## Error Handling
+
+| Script | Idempotent | On Failure |
+|--------|:----------:|------------|
+| `setup.sh` | ✅ | Safe to retry. Restores backup on validation failure. |
+| `teardown.sh` | ✅ | Safe to retry. Partial teardown is cleanable. |
+| `verify.sh` | ✅ (read-only) | Never modifies state. Report failing checks. |
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| exit 1 + "port in use" | Another process on port | `ss -tlnp \| grep PORT`, kill or use `--port` |
+| exit 1 + "backup restored" | JSON validation failed | Check upstream API; re-run |
+```
+
+```bash
+#!/usr/bin/env bash
+# <script-name>.sh — <one-line description>
+# Usage: bash <script-name>.sh [args]
+set -euo pipefail
+# ... implementation ...
+```
+
+#### Script Comment Separation of Concerns
+
+Comments in scripts under `scripts/` serve exactly one purpose:
+explain **how the code works internally** — algorithms, edge cases,
+non-obvious implementation logic.
+
+Comments MUST NOT:
+- Prescribe input format conventions (belongs in the owning SKILL.md)
+- Describe expected usage patterns (belongs in the owning SKILL.md)
+- Define output format expectations (belongs in the owning SKILL.md)
+
+The owning SKILL.md is the single source of truth for how a script
+is called, what inputs it expects, and what outputs it produces.
+Script comments complement the SKILL prose with implementation
+detail — they never substitute for it or contradict it.
+
+**Why this matters:** Scripts are frequently called by skills other
+than their owner (cross-skill execution). When the calling skill
+provides no input format guidance, the agent falls back to reading
+script comments. If those comments prescribe conventions that belong
+in SKILL.md prose, the agent may follow stale or inconsistent
+guidance — because the comment was never updated when the SKILL
+prose changed, or because the owning skill never formally adopted
+the convention the comment describes.
+
+**Cross-skill execution priority order:** When executing a script
+owned by a different skill, the agent resolves input conventions in
+this order:
+1. **Calling skill's prose** — if it specifies the format, use it
+2. **Existing output patterns** — check the target file/resource
+   for established conventions
+3. **Owning skill's prose** — load the owning SKILL.md if needed
+4. **Script comments** — last resort, implementation hints only
+
+### Step 6 — AgentFS Post-Creation Checklist
+
+**MUST complete ALL of these after creating/updating the skill:**
+
+> ⛔ **GATE — Principle waiver requires explicit permission.**
+> If you believe a principle (P4 Spec/Tests, P5 Security, P6 Context
+> Economy, P7 Error Contract) does not apply to this skill, you MUST:
+> 1. State your reasoning clearly to the user
+> 2. Get **explicit confirmation** before omitting the section
+> 3. Log the waiver in the skill's `CHANGELOG.md` entry
+>
+> Do NOT silently skip. A rationalization in your own reasoning is
+> not a substitute for user confirmation.
+
+- [ ] **Scope verification** — skill is in the correct directory
+      (USER `~/.agents/skills/` or PROJECT `./.agents/skills/`)
+- [ ] **Frontmatter validation** — YAML frontmatter includes:
+      `name`, `description` (signal phrases), `metadata.version`
+      (quoted 3-part semver, e.g., `version: "1.0.0"`),
+      `metadata.tags` (bracket notation, e.g.,
+      `tags: [domain, function, artifact]`), `user-invocable`.
+      A skill without tags is invisible to tag-based discovery
+      (Guardrail #5, Index Currency).
+      See [`skill-gen/references/skill-schema.md`](~/.agents/skills/skill-gen/references/skill-schema.md)
+      for the full canonical schema.
+- [ ] **Signal phrase quality** — The `description` field contains
+      signal phrases following Command (`verb+noun(s)`) or Query
+      (`noun(s)`) patterns. Verify the three principles:
+      (1) **Concise** — each phrase is 2-4 words;
+      (2) **No redundant** — no two phrases matching the same intent;
+      (3) **Complete** — every functional mode has at least one phrase.
+      Smell test: 15+ phrases suggests the skill should be split.
+- [ ] **Opening paragraph** — SKILL.md body has a hydrated
+      human-readable paragraph immediately after the `# Title`
+      heading, explaining what the skill does, why, and when to use it.
+- [ ] **Name consistency** — The `name` field in the YAML frontmatter
+      MUST exactly match the skill's parent directory name. This is
+      required by the Agent Skills open standard
+      ([agentskills.io/specification](https://agentskills.io/specification)).
+      For example, a skill in `crc-ols/SKILL.md` must have `name: crc-ols`.
+      The name must be lowercase alphanumeric + hyphens only, no
+      consecutive hyphens, and must not start or end with a hyphen.
+- [ ] **Skill Check (P1–P7)** — Run the Skill Check procedure
+      (below) against the created or updated skill. All seven
+      principles must pass or have explicit waivers logged per the
+      gate above. Do NOT proceed to the remaining checklist items
+      until the check passes.
+- [ ] **Trace instrumentation** — Every script under `scripts/`
+      MUST source `~/.agents/scripts/trace-lib.sh` and call
+      `trace_init("<skill-name>", "<script-name>")` unconditionally
+      at script start. Call `trace_step` for each action. Call
+      `trace_end` at script exit. Do NOT guard tracing behind an
+      `AGENTFS_TRACE` environment variable — tracing is always on.
+      Traces auto-route to `~/.agents/.traces/` when that directory
+      exists.
+- [ ] **QOO scores** — Run the QOO evaluation pipeline (Step 7
+      below). Target: ≥75 (Tunable band) on Quality and Observable.
+      Results persist to `scores.yaml`. If scores fall below Tunable,
+      review the failing dimensions and fix before proceeding.
+- [ ] **Changelog** — `CHANGELOG.md` exists with at least a v1.0 entry
+- [ ] **Index regeneration** — invoke the `skill-index` skill to
+      regenerate `skills/index.md` at the appropriate scope
+- [ ] **KGM registration** — if `knowledgegraphmemory` tools are
+      available, register the skill as a KGM entity so `hey` signal
+      dispatch can find it. Use `create_entities` with:
+      - `name`: `skill:<skill-name>` (e.g., `skill:my-new-skill`)
+      - `entityType`: `AgentSkill`
+      - `observations`: signals list from the `description` field,
+        and the `load_skill` action.
+      If the entity already exists, `create_entities` will skip it
+      (no harm). This step is best-effort — if KGM is unavailable,
+      log a warning and continue.
+- [ ] **Log update** — append entry to `~/.agents/log.md` (USER scope)
+      or `./.agents/log.md` (PROJECT scope) with ISO 8601 timestamp.
+      Use the comment line (`<!-- Append-only... -->`) as insertion
+      anchor (see Guardrail #5, Root Log Format).
+
+### Step 7 — Compute QOO Scores
+
+Compute objective Quality and Observable scores for the newly
+created or updated skill. This step produces `scores.yaml` with
+build-time QOO metrics.
+
+**7a. Gather structural facts:**
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/skill-gen-evidence.txt
+```
+
+Read the output. It contains pre-computed metrics for all QOO
+dimensions (script coverage, CNL compliance, anti-fabrication rules,
+SDM delegation, trace instrumentation).
+
+**7b. Evaluate Quality (MCACS):**
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/quality.yaml \
+  --evidence /tmp/skill-gen-evidence.txt
+```
+
+Extract the aggregate score and per-dimension results from the
+JSON output. If `"band": "SDM_UNAVAILABLE"`, report: "⚠️ SDM
+unavailable — Quality score skipped."
+
+**7c. Evaluate Observable:**
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/observable.yaml \
+  --evidence /tmp/skill-gen-evidence.txt
+```
+
+Extract the aggregate score and per-dimension results.
+
+**7d. Persist to scores.yaml:**
+
+Write or update `$SKILL_DIR/scores.yaml` with this structure:
+
+```yaml
+skill: <skill-name>
+version: <metadata.version>
+qoo-qualified: <computed>
+
+quality:
+  aggregate_score: <score>
+  band: <band>
+  dimensions:
+    <dim_name>: { score: <n>, pass: <bool>, confidence: <n> }
+    # ... one per MCACS dimension
+  evaluated: <ISO 8601 timestamp>
+
+observable:
+  aggregate_score: <score>
+  band: <band>
+  dimensions:
+    <dim_name>: { score: <n>, pass: <bool>, confidence: <n> }
+    # ... one per observable dimension
+  evaluated: <ISO 8601 timestamp>
+
+history:
+  - date: <ISO 8601>
+    type: quality+observable
+    quality_score: <n>
+    quality_band: <band>
+    observable_score: <n>
+    observable_band: <band>
+    note: "Initial QOO scoring by skill-gen"
+```
+
+Compute `qoo-qualified` deterministically from all available scores.
+Read `model-tier` from SKILL.md frontmatter (T1, T2, T3, or T4)
+and apply the tier-appropriate formula:
+
+```
+T1/T2 (or unknown):
+  qoo-qualified = quality.band ∈ {Tunable, Operable}
+               AND observable.band ∈ {Tunable, Operable}
+               AND operable.build.band ∈ {Tunable, Operable}
+
+T3:
+  qoo-qualified = quality.band ∈ {Re-engineer, Tunable, Operable}
+               AND observable.band ∈ {Re-engineer, Tunable, Operable}
+               AND operable.build.band ∈ {Tunable, Operable}
+
+T4:
+  qoo-qualified = operable.build.band ∈ {Tunable, Operable}
+  (quality and observable are informational — scored but not gated)
+```
+
+Persist `model_tier` and `qualification_rule` in scores.yaml:
+```yaml
+model_tier: T2
+qualification_rule: T2
+```
+
+If `operable.build` has not been evaluated yet (section missing),
+set `qoo-qualified: false`. Runtime CECX is exempt — it is
+model-dependent and does not gate qualification.
+Do NOT set this field based on judgment. Compute it from band
+values and model tier only.
+
+Do NOT write an `operable:` section. That is owned by `skill-eval`
+and populated via `hey eval skill`.
+
+Preserve any existing `operable:` and `history:` entries if the
+file already exists.
+
+Immediately run post-write.sh after writing:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh \
+  "$SKILL_DIR/scores.yaml" "skill-gen: QOO scores (quality + observable)"
+```
+
+**7e. Report results:**
+
+Print a summary table:
+
+```
+### QOO Build-time Scores
+
+| Axis | Score | Band |
+|------|:-----:|------|
+| Quality (MCACS) | <score> | <band> |
+| Observable | <score> | <band> |
+
+Target: ≥75 (Tunable). Run `hey eval skill <name>` for Operable scoring.
+```
+
+If either axis is below 75, list the failing dimensions and
+suggest specific fixes before the skill is considered production-ready.
+
+---
+
+## Advanced Mode
+
+Advanced mode uses the full **Anthropic skill-creator** workflow:
+draft → test → evaluate → iterate → optimize.
+
+### Step 1 — Fetch Upstream
+
+Ensure the upstream skill-creator is cached locally:
+
+```bash
+bash ~/.agents/skills/skill-gen/scripts/fetch-upstream.sh
+```
+
+This downloads the complete Anthropic skill-creator file structure
+into `~/.agents/skills/skill-gen/.cache/upstream/`.
+
+### Step 2 — Load Upstream Instructions
+
+Load the full upstream SKILL.md for detailed instructions:
+
+```
+load_skill(name: "skill-gen/.cache/upstream/SKILL.md")
+```
+
+### Step 3 — Follow Upstream Workflow
+
+Follow the upstream instructions for the full lifecycle:
+
+1. **Capture intent** — interview the user
+2. **Write SKILL.md draft** — using upstream's writing guide
+3. **Create test cases** — 2-3 realistic test prompts
+4. **Run tests** — execute and collect results
+5. **Evaluate** — qualitative (user review) + quantitative (assertions)
+6. **Iterate** — improve based on feedback, repeat
+7. **Optimize description** — triggering accuracy loop (if available)
+
+### Agent Compatibility Notes for Upstream
+
+The upstream skill-creator was written for Claude Code. When using
+with a different agent, apply these adaptations:
+
+| Upstream Feature | Claude Code | Goose / Other Agents |
+|-----------------|-------------|---------------------|
+| Subagents | `spawn subagent` | Use Goose `orchestrator` extension if available, otherwise run test cases sequentially |
+| `claude -p` CLI | Native | Skip description optimization (`run_eval.py`, `run_loop.py`, `improve_description.py`). These scripts hardcode `claude -p`. |
+| `.claude/commands/` | Native skill discovery | Not applicable — skills discovered via `.agents/skills/` |
+| Browser viewer | `open <file>` | Use `--static <path>` flag to generate HTML file, then open manually or with `xdg-open` |
+| Cowork | Claude-specific | Not applicable |
+| `present_files` tool | Claude-specific | Not applicable — skip packaging step |
+
+**What works everywhere:**
+- Skill writing guide (anatomy, progressive disclosure, writing patterns)
+- Intent capture and interview process
+- Test case design and manual evaluation
+- Iteration loop (draft → test → review → improve)
+- `scripts/aggregate_benchmark.py` (pure Python)
+- `scripts/package_skill.py` (pure Python)
+- `scripts/generate_report.py` (pure Python)
+- `eval-viewer/generate_review.py` with `--static` flag (pure Python)
+- `agents/grader.md`, `agents/analyzer.md` (agent instructions, agent-agnostic)
+
+### Step 4 — AgentFS Post-Creation Checklist
+
+**Same as Simple Mode Step 6** — apply the AgentFS post-creation
+checklist after the upstream workflow completes. The upstream does NOT
+handle AgentFS conventions (scoping, indexing, logging), so this step
+is essential.
+
+---
+
+## Updating an Existing Skill
+
+For both modes:
+
+1. Read the existing SKILL.md first
+2. Preserve the original `name` field — do not rename
+3. Add a new changelog entry to `CHANGELOG.md` (do not remove existing entries)
+4. In advanced mode, use the existing skill as the baseline for
+   comparison in the eval loop
+5. Run the AgentFS Post-Creation Checklist (Step 6 / Step 4)
+6. Run the QOO evaluation pipeline (Step 7)
+
+---
+
+## Score Skill Mode
+
+**Trigger:** `hey score skill <name>`
+
+Re-evaluate an existing skill's Quality and Observable scores without
+modifying the skill itself. Use this to:
+- Refresh QOO scores after infrastructure changes (schema updates,
+  gather-state improvements)
+- Baseline a skill before making changes
+- Compare before/after scores across versions
+
+### Step 1 — Resolve Skill
+
+Resolve the skill path. Check USER scope first
+(`~/.agents/skills/<name>/`), then PROJECT scope
+(`./.agents/skills/<name>/`).
+
+Verify `SKILL.md` exists. If absent, report and stop.
+
+Set `SKILL_DIR` to the resolved absolute path.
+
+### Step 2 — Gather Structural Facts
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/skill-upgrade-evidence.txt
+```
+
+Read the output.
+
+### Step 3 — Evaluate Quality (MCACS)
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/quality.yaml \
+  --evidence /tmp/skill-upgrade-evidence.txt
+```
+
+### Step 4 — Evaluate Observable
+
+```bash
+bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
+  ~/.agents/skills/schemas/observable.yaml \
+  --evidence /tmp/skill-upgrade-evidence.txt
+```
+
+### Step 5 — Persist Quality + Observable
+
+Update `$SKILL_DIR/scores.yaml` with the `quality:` and `observable:`
+sections from Steps 3 and 4. Follow the same structure as Step 7d
+in Simple Mode.
+
+Do NOT overwrite `operable:` — that section is owned by `skill-eval`.
+Preserve existing `operable:` and `history:` entries.
+
+Append a history entry:
+
+```yaml
+- date: <ISO 8601>
+  type: quality+observable
+  quality_score: <n>
+  quality_band: <band>
+  observable_score: <n>
+  observable_band: <band>
+  note: "Re-evaluation via hey score skill"
+```
+
+Immediately run post-write.sh:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh \
+  "$SKILL_DIR/scores.yaml" "skill-gen: upgrade quality + observable scores"
+```
+
+### Step 6 — Report
+
+Print the QOO summary table (same format as Step 7e in Simple Mode).
+
+If previous scores exist in `scores.yaml`, show a comparison:
+
+```
+### QOO Score Delta
+
+| Axis | Previous | Current | Δ |
+|------|:--------:|:-------:|:-:|
+| Quality | <old> | <new> | <diff> |
+| Observable | <old> | <new> | <diff> |
+```
+
+### Ownership Boundary
+
+`score skill` writes `quality:` and `observable:` only.
+`eval skill` (via `skill-eval`) writes `operable:` only.
+Both append to `history:`.
+
+This separation ensures build-time scoring (Quality, Observable)
+stays with the build tool (`skill-gen`), and runtime scoring
+(Operable BMBT + CECX) stays with the eval tool (`skill-eval`).
+
+---
+
+## Skill Check Mode
+
+Audit one or more skills against seven quality principles. Skill
+Check runs automatically as part of the Post-Creation Checklist
+after every skill creation or update. It can also be triggered
+independently for periodic audits.
+
+**When to run independently:**
+- A skill has undergone significant changes across sessions
+- Scripts may be stale after architecture changes
+- Pre-flight check before committing skill updates
+- Validating a skill works autonomously in a fresh session
+
+**Trigger phrases:** "skill check", "scan skill", "check skill",
+"audit skill", "verify skill quality"
+
+### Seven Principles
+
+#### Principle 1 — Accuracy, Consistency & Testability (Code-First)
+
+> Skills are procedural memory — prescriptive SOPs verified by
+> execution, auditable traces, and deterministic outcomes. Prefer
+> and leverage deterministic scripts and code as the primary vehicle
+> for accuracy (no ambiguity), consistency (same inputs → same
+> outputs), conciseness (denser than prose), and testability
+> (independently executable). Natural language serves as
+> orchestration glue — connecting, contextualizing, and sequencing
+> the deterministic pieces. Declarative, methodological, and
+> philosophical content belongs in knowledge bundles, not skills.
+
+**Inline code boundary:** Code in SKILL.md serves two distinct roles:
+- **Reference** — templates, examples, manual fallbacks, one-liner
+  diagnostics, interactive wizard guidance. These belong inline in
+  SKILL.md as documentation.
+- **Execution** — multi-step operations, verification, discovery,
+  anything with conditionals/loops. These belong in `scripts/`.
+
+*Rule of thumb:* If the agent would `bash -c` it during execution,
+it should be a script. If it shows the user what something looks
+like or provides a manual alternative, it stays inline.
+
+**Check for:**
+- [ ] Operations are implemented as **scripts** (not inline commands
+      that the agent must interpret and may vary between sessions)
+- [ ] Operations that **could** be scripts but are expressed as
+      prose instructions → flag as 🟡 (move to `scripts/`)
+- [ ] Inline code that is **reference/documentation** (templates,
+      examples, one-liners, manual fallbacks) is acceptable in
+      SKILL.md — do NOT flag these as 🟡
+- [ ] Scripts match the documented procedures in SKILL.md
+- [ ] All ports, hostnames, container names, routing keys in scripts
+      match SKILL.md tables and inline YAML/JSON
+- [ ] Model IDs, aliases, and context limits are consistent across
+      all tables, scripts, and supporting files
+- [ ] No hardcoded values that contradict configurable parameters
+- [ ] Declarative/philosophical content that doesn't drive execution
+      is flagged for extraction to a knowledge bundle
+- [ ] **Gotchas/Known Issues** section captures environment-specific
+      anomalies, historical corrections, and non-obvious behaviors
+      discovered during development or usage
+- [ ] **Signal phrase quality** — `description` field contains signal
+      phrases (not prose). Each phrase follows Command (`verb+noun(s)`)
+      or Query (`noun(s)`) pattern. Three principles met: concise,
+      non-redundant, complete (all modes covered). No `metadata.signals`
+      field present (removed in schema v2.0.0)
+- [ ] **Opening paragraph** — SKILL.md body has a hydrated paragraph
+      after `# Title` explaining what, why, when
+- [ ] **Weak-model compatibility** — instructions use formatting
+      directives ("start your response with", "first line must be")
+      not abstract verbs ("emit", "produce", "generate"). Include
+      one concrete example showing the exact tool call or output
+      format. Do not reference files by name if the content is
+      already in the model's context — say "these rules" or "the
+      steps above", not "see AGENTS.md". Prefer single wrapper
+      scripts over multi-step prose procedures — weaker models
+      over-tool when given prose steps.
+- [ ] **One instruction per sentence** — each sentence in a
+      procedural step states exactly one action. Split sentences
+      that contain "and", "then", or "also" into separate lines.
+      No compound instructions.
+- [ ] **Active imperative voice** — all action steps use active
+      imperative mood ("Call `search_nodes`", "Write the canary",
+      "Read the file"). No passive voice ("the canary should be
+      emitted"), no modal hedging ("you may want to call").
+- [ ] **Single vocabulary** — one term per concept throughout the
+      skill. Do not mix synonyms (e.g., "rules/guardrails",
+      "emit/produce/generate", "session/conversation"). Pick one
+      word per concept and use it everywhere in this skill.
+
+#### Principle 2 — Autonomous & Currency
+
+> Skill MUST NOT rely on current session history. It must function
+> in a fresh NEW session without glitches. No obsolete scripts,
+> code, instructions, or content.
+
+**Check for:**
+- [ ] Scripts are self-contained (no session-context dependencies)
+- [ ] No references to deleted/renamed files, old namespaces, or
+      deprecated platform modes
+- [ ] All container commands use current image tags and flags
+- [ ] Platform references are current (e.g., no linux/systemd if
+      migrated to podman)
+- [ ] Environment assumptions are documented in Prerequisites
+- [ ] Scripts have proper error handling and exit codes
+
+#### Principle 3 — Traceable & Well-Formatted
+
+> No redundant, conflicting, or obsolete instructions or scripts.
+> Historical content must be distilled to knowledge bundles with
+> links from the skill's changelog.
+
+**Check for:**
+- [ ] No duplicate instructions (same procedure in two places)
+- [ ] No conflicting instructions (two procedures that contradict)
+- [ ] No obsolete content (old procedures kept "just in case")
+- [ ] Historical lessons distilled to knowledge bundles with links
+- [ ] `CHANGELOG.md` is current and version matches `metadata.version`
+- [ ] Markdown renders correctly (tables, code blocks, YAML blocks)
+
+#### Principle 4 — Verifiable Specification & Test
+
+> A description of purpose is not sufficient. The skill MUST have
+> a list of verifiable specification items that clearly and concisely
+> prescribe what the skill can do. Associated with each spec item
+> are testcases — preferably deterministic scripts/code, or at
+> minimum unambiguous instructions with expected results.
+
+**Check for:**
+- [ ] A **Specification** section exists listing each capability
+      with a unique ID (e.g., S1, S2, S3)
+- [ ] Each spec item has a **verifiable criterion** (not vague
+      descriptions like "works correctly")
+- [ ] A **Tests** section exists with testcases mapped to spec IDs
+- [ ] Testcases are implemented as **scripts** where possible
+      (e.g., `scripts/test.sh <alias>` → expected HTTP code + model ID)
+- [ ] Where scripts aren't feasible, testcases have **unambiguous
+      instructions** and **concrete expected results**
+- [ ] Test coverage: every spec item has at least one testcase
+
+**Example Specification section:**
+
+```markdown
+## Specification
+
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | List all model containers on both hosts | `scripts/list.sh` outputs status table |
+| S2 | Start model by alias on correct host/port | `scripts/start.sh g350m` → HTTP 200 on port 10000 |
+| S3 | Stop model by alias | `scripts/stop.sh g350m` → container status Exited |
+
+## Tests
+
+| Test | Spec | Command | Expected Result |
+|:----:|:----:|---------|----------------|
+| T1 | S1 | `scripts/list.sh` | Table showing 5 models with status |
+| T2 | S2 | `scripts/start.sh g350m && scripts/test.sh g350m` | HTTP 200, model=granite-4.0-350m |
+| T3 | S3 | `scripts/stop.sh g350m && scripts/status.sh g350m` | Container Exited |
+```
+
+#### Principle 5 — Security & Trust Boundary
+
+> Skills execute local scripts that can read the filesystem, access
+> API keys, and make network calls. Treat third-party skills as
+> external software dependencies. Author-created skills must also
+> minimize their attack surface.
+
+**Check for:**
+- [ ] Scripts do not access files or directories **beyond** the
+      skill's scope (no blanket `find /` or `cat ~/.ssh/*`)
+- [ ] API keys and secrets are read from environment variables or
+      secure stores — never hardcoded in scripts or SKILL.md
+- [ ] Network calls target only **documented, expected endpoints**
+      — no unexpected outbound connections
+- [ ] No `eval`, `source`, or dynamic execution of **untrusted input**
+- [ ] SKILL.md content contains no **prompt injection patterns**
+      (hidden instructions, role overrides, "ignore previous
+      instructions")
+- [ ] For imported/third-party skills: full audit completed before
+      first execution
+
+#### Principle 6 — Context Economy
+
+> SKILL.md is loaded into the agent's context window in full on
+> every `load_skill` call. Every line consumed is context budget
+> spent. SKILL.md MUST contain what the agent needs to execute the
+> skill. Supporting material that the agent does NOT need during
+> execution belongs in `references/`.
+
+**The separation rule:**
+
+| Belongs in SKILL.md | Belongs in references/ |
+|---------------------|----------------------|
+| Workflow steps the agent executes | Design rationale / DSD |
+| Decision points and branching logic | Architecture context |
+| Spec and Test tables (S1–Sn, T1–Tn) | Extended troubleshooting |
+| Gotchas that affect execution | Research findings |
+| Prerequisites checklist | Investigation notes |
+| Signal routing table | API reference / protocol details |
+| Privilege gates and interaction points | Migration plans |
+| Error Handling and Troubleshooting tables | Evaluation data |
+
+**Standard reference files:**
+
+| File | Purpose | When to create |
+|------|---------|---------------|
+| `references/design-spec.md` | Design decisions, constraints, threat model | Complex skills with non-obvious tradeoffs |
+| `references/troubleshooting.md` | Extended diagnostics | When Troubleshooting table exceeds ~10 rows |
+| `references/architecture.md` | System architecture, data flow | Skills integrating multiple external systems |
+
+The agent loads reference files on demand via
+`load_skill(name: "skill-name/references/file.md")`. SKILL.md
+MUST include a `## References` section linking to these files
+when the `references/` directory exists.
+
+**Soft threshold:** 300 lines triggers a two-step audit:
+1. Can content move to `references/` without degrading execution
+   quality? If yes, extract. If no, leave it.
+2. If SKILL.md is still large after step 1, is this a skill scope
+   problem? If yes, decompose into smaller skills. If neither
+   applies, the size is justified and the audit documents why.
+
+There is no hard maximum. Size is a warning signal, not a rule.
+
+**Check for:**
+- [ ] SKILL.md contains only content the agent needs during
+      execution — no design rationale, research narrative, or
+      investigation logs in the body
+- [ ] Content that supports understanding but isn't step-by-step
+      instructions lives in `references/`
+- [ ] `## References` section exists if `references/` directory
+      exists, with links to each file
+- [ ] If SKILL.md exceeds 300 lines, the two-step audit has been
+      applied and the result documented (either content extracted,
+      skill split, or size justified)
+
+#### Principle 7 — Error Contract
+
+> Scripts communicate outcomes to the agent through exit codes
+> and structured diagnostic output. The agent's response to
+> failures MUST be prescribed by the skill, not improvised.
+> The three-party contract (script → SKILL.md → agent) ensures
+> deterministic error handling.
+
+**Script obligations:**
+- Exit with semantic codes: 0 (success), 1 (failure), 2 (usage
+  error), 3 (privilege gate)
+- Write diagnostic output to stdout with structured markers
+  (`✅`/`❌`/`⚠️`/`🔒`)
+- Be specific: what failed, what state was left, whether cleanup
+  occurred
+- Be idempotent — safe to re-run after failure
+- Clean up partial state on failure or document that manual
+  cleanup is required
+
+**SKILL.md obligations:**
+- Error Handling table declaring idempotency per script
+- Recovery path per workflow step
+- Troubleshooting table mapping symptoms to causes and fixes
+
+**Agent obligations (enforced by SKILL.md prose):**
+
+| Exit Code | Agent Behavior |
+|:---------:|----------------|
+| 0 | Continue to next step |
+| 1 | Read stdout. Match against Troubleshooting table. If match → follow prescribed fix. If no match → present full output to user, do NOT improvise. |
+| 2 | Fix invocation. Retry once. If still 2 → ask user. |
+| 3 | Present script output (contains manual command) to user. Wait for confirmation. Proceed to verification. |
+| Other | Present full output to user. Do NOT retry without approval. |
+
+**Check for:**
+- [ ] Every script uses semantic exit codes (0/1/2/3)
+- [ ] Scripts produce structured diagnostic output (not bare
+      "Error" messages)
+- [ ] Error Handling table exists declaring idempotency per script
+- [ ] Troubleshooting table exists with symptom → cause → fix
+- [ ] Recovery paths are prescribed for each workflow step that
+      can fail
+- [ ] Scripts that require `sudo` detect it early and exit 3 with
+      a human-readable message containing the exact command to run
+- [ ] No improvised error recovery — agent behavior on failure is
+      fully prescribed by SKILL.md prose
+- [ ] **Script composition safety** — scripts invoked by other
+      scripts must survive non-zero exits from subcommands. Use
+      `cmd || true` or `EXIT=0; cmd || EXIT=$?` patterns. Never
+      rely on `set -euo pipefail` surviving composition with
+      `head`, `grep -c`, or command substitutions that may SIGPIPE.
+
+### Skill Check Procedure
+
+1. **Load the target skill** — `load_skill(name: "<skill-name>")`
+2. **Read all supporting files** — scripts, references, templates
+3. **Apply Principle 1** — verify scripts exist and match SKILL.md;
+   flag inline-only operations as 🔴 critical; flag could-be-script
+   prose as 🟡; flag non-procedural content for knowledge extraction
+4. **Apply Principle 2** — check for session dependencies, obsolete
+   references; verify scripts are self-contained
+5. **Apply Principle 3** — scan for redundancy, conflicts, obsolete
+   content; check Markdown rendering
+6. **Apply Principle 4** — verify Specification and Tests sections
+   exist; check spec coverage and test determinism
+7. **Apply Principle 5** — audit scripts for scope overreach, secret
+   handling, unexpected network calls, and prompt injection
+8. **Apply Principle 6** — check SKILL.md line count; if >300 lines,
+   apply two-step audit (extract to references → decompose skill);
+   verify `## References` section if `references/` directory exists
+9. **Apply Principle 7** — verify exit codes are semantic (0/1/2/3);
+   verify Error Handling table exists; verify Troubleshooting table
+   exists; verify privilege gates use exit 3 with human-readable
+   output; verify no improvised recovery paths
+10. **Report findings** — table of issues with severity (🔴 critical,
+    🟡 warning, 🟢 info) and recommended fix
+11. **Fix** — apply fixes with user approval; version bump; changelog
+
+### Report Format
+
+```markdown
+## Skill Check Report: <skill-name>
+
+| # | Principle | Severity | Finding | Fix |
+|:-:|:---------:|:--------:|---------|-----|
+| 1 | P1 Accuracy | 🔴 | ... | ... |
+| 2 | P4 Spec/Test | 🟡 | ... | ... |
+| 3 | P5 Security | 🟡 | ... | ... |
+```
+
+## Upstream Source
+
+| Item | Value |
+|------|-------|
+| Repository | [anthropics/skills](https://github.com/anthropics/skills) |
+| Path | `skills/skill-creator/` |
+| License | See `LICENSE.txt` in cached upstream |
+| Cache location | `~/.agents/skills/skill-gen/.cache/upstream/` |
+| Cache refresh | Every 7 days, or `fetch-upstream.sh --force` |
+
+
+## Changelog
+
+> See [CHANGELOG.md](./CHANGELOG.md) for version history.

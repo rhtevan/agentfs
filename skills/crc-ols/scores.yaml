@@ -1,0 +1,68 @@
+# scores.yaml — crc-ols
+# Batch-scored by score-all.sh
+
+skill: crc-ols
+version: 3.3.2
+model_tier: T3
+qualification_rule: T3
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 54
+  band: Re-engineer
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9924374132389585
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9702272391578596
+    prose_executability:
+      score: 67
+      pass: true
+      confidence: 0.47873844437490953
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 0.9999998807907245
+    interface_opacity:
+      score: 50
+      pass: false
+      confidence: 0.6791786964925157
+  evaluated: '2026-11-08T17:05:18-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9999971389852361
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999938011552556
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999785427891018
+  evaluated: '2026-11-08T17:05:18-05:00'
+history:
+- date: '2026-11-08T17:05:18-05:00'
+  type: quality+observable
+  quality_score: 54
+  quality_band: Re-engineer
+  observable_score: 25
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

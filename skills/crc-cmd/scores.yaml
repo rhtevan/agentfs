@@ -1,0 +1,68 @@
+# scores.yaml — crc-cmd
+# Batch-scored by score-all.sh
+
+skill: crc-cmd
+version: 1.0.0
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 13.333333333333334
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9958983314421306
+    step_clarity:
+      score: 0
+      pass: false
+      confidence: 0.9990868569532384
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.9999998807907248
+    model_portability:
+      score: 40
+      pass: false
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9933071486460124
+  evaluated: '2026-11-08T17:04:43-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9524195967263912
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9980732443617327
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999952316511551
+  evaluated: '2026-11-08T17:04:43-05:00'
+history:
+- date: '2026-11-08T17:04:43-05:00'
+  type: quality+observable
+  quality_score: 13.333333333333334
+  quality_band: Redesign
+  observable_score: 25
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

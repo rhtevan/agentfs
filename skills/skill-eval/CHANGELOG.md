@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 16:57 | v2.3.0 — Add tier-aware qoo-qualified computation; Update Step 10 with tier-aware qualification formula |
 | 2026-11-05 19:31 | v2.2.0 — Add model-tier to frontmatter |
 | 2026-10-31 22:28 | v2.2.0 — Add assess skill mode — chains score+eval into single comprehensive assessment; Bump metadata version to 2.2.0; Add Assess mode to Quick Dispatch; Add Assess Sequence — 11-step comprehensive assessment mode |
 | 2026-10-31 20:37 | v2.1.0 — Step 8: added deterministic qoo-qualified formula — Tunable+ on quality, observable, operable.build; runtime exempt; Bump frontmatter version to 2.1.0; Rename: 'upgrade skill' → 'score skill' in ownership table |

@@ -2,6 +2,26 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 17:00
+- Update status to Phases A+B complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Mark Phase B as complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Fix band extraction depth and qoo-qualified matching (scripts/qoo-report.sh)
+
+## 2026-11-08 16:59
+- Create portfolio QOO dashboard script (scripts/qoo-report.sh)
+
+## 2026-11-08 16:58
+- Create batch scoring script for QOO qualification (scripts/score-all.sh)
+
+## 2026-11-08 16:57
+- Update Step 10 with tier-aware qualification formula (skills/skill-eval/SKILL.md)
+- Add tier-aware qoo-qualified computation (skills/skill-eval/SKILL.md)
+- Add tier-aware qoo-qualified computation (skills/skill-gen/SKILL.md)
+
+## 2026-11-08 16:56
+- Add Model tier output line (scripts/gather-skill-state.sh)
+- Add model-tier extraction from SKILL.md frontmatter (scripts/gather-skill-state.sh)
+
 ## 2026-11-08 16:52
 - Update risk assessment for reclassification (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 - Update success criteria and effort table to 95% target (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)

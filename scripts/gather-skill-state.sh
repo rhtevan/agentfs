@@ -216,6 +216,13 @@ if [[ "$VERSION" == "unknown" ]]; then
   fi
 fi
 
+# --- Model tier ---
+MODEL_TIER="unknown"
+_tier_line=$(grep -oP 'model-tier:\s*\K\S+' "$SKILL_MD" 2>/dev/null || true)
+if [[ -n "$_tier_line" ]]; then
+  MODEL_TIER="$_tier_line"
+fi
+
 # --- Action step count ---
 # Count lines that look like step headers: ### Step N, ### N., numbered steps
 ACTION_STEPS=$(grep -cP '^\s*###\s+(Step\s+\d|[0-9]+\.)' "$SKILL_MD" 2>/dev/null || true)
@@ -410,6 +417,7 @@ fi
 cat <<EOF
 Skill: $SKILL_NAME
 Version: $VERSION
+Model tier: $MODEL_TIER
 Total lines in SKILL.md: $TOTAL_LINES
 Action steps in SKILL.md: $ACTION_STEPS
 Scripts in scripts/ directory: $SCRIPT_COUNT

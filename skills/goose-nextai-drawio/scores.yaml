@@ -1,0 +1,68 @@
+# scores.yaml — goose-nextai-drawio
+# Batch-scored by score-all.sh
+
+skill: goose-nextai-drawio
+version: 1.1.3
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 33.333333333333336
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 100
+      pass: true
+      confidence: 0.8807627390661146
+    step_clarity:
+      score: 0
+      pass: false
+      confidence: 0.8498462454954713
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.9999958276922101
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999724634116024
+  evaluated: '2026-11-08T17:07:11-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9999998807907247
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999417100552707
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9998415959451854
+  evaluated: '2026-11-08T17:07:11-05:00'
+history:
+- date: '2026-11-08T17:07:11-05:00'
+  type: quality+observable
+  quality_score: 33.333333333333336
+  quality_band: Redesign
+  observable_score: 25
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

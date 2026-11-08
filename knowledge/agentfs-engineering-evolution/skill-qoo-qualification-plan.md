@@ -9,7 +9,7 @@ tags: [qoo, qualification, model-tier, skill, portfolio, plan]
 # Skill QOO Qualification Plan — Full Portfolio
 
 - **Type:** Convention
-- **Status:** 🟡 IN PROGRESS — Phase A complete
+- **Status:** 🟡 IN PROGRESS — Phases A+B complete
 - **Predecessor:** Implementation Plan Phases 0-6 (all complete)
 - **Source:** Session analysis — tiered model classification and
   portfolio-wide QOO qualification strategy
@@ -332,7 +332,7 @@ and scoring scripts can read it.
 
 **Validation:** `grep -r 'model-tier' ~/.agents/skills/*/SKILL.md | wc -l` = 59.
 
-### Phase B — Infrastructure Build
+### Phase B — Infrastructure Build ✅ COMPLETE
 
 **Goal:** Build the batch scoring and reporting tools.
 

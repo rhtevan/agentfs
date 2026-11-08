@@ -1,0 +1,68 @@
+# scores.yaml — crc-ovn-frr-metallb-config
+# Batch-scored by score-all.sh
+
+skill: crc-ovn-frr-metallb-config
+version: 1.1.0
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 23.333333333333332
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9968109827229411
+    step_clarity:
+      score: 0
+      pass: false
+      confidence: 0.9982955944802853
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.9999995231630691
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999870063564402
+  evaluated: '2026-11-08T17:05:26-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 18.75
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 75
+      pass: false
+      confidence: 0.5210370393876902
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999251421693931
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999996423722521
+  evaluated: '2026-11-08T17:05:26-05:00'
+history:
+- date: '2026-11-08T17:05:26-05:00'
+  type: quality+observable
+  quality_score: 23.333333333333332
+  quality_band: Redesign
+  observable_score: 18.75
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

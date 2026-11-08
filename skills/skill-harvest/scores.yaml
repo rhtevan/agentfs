@@ -1,0 +1,68 @@
+# scores.yaml — skill-harvest
+# Batch-scored by score-all.sh
+
+skill: skill-harvest
+version: 7.2.0
+model_tier: T4
+qualification_rule: T4
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 23.333333333333332
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9819858234837303
+    step_clarity:
+      score: 0
+      pass: false
+      confidence: 0.9961160463565795
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.9999985694905718
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.8519528492100928
+  evaluated: '2026-11-08T17:09:36-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 0
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 0
+      pass: false
+      confidence: 0.9998379016459485
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9998766336062261
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999994039539002
+  evaluated: '2026-11-08T17:09:36-05:00'
+history:
+- date: '2026-11-08T17:09:36-05:00'
+  type: quality+observable
+  quality_score: 23.333333333333332
+  quality_band: Redesign
+  observable_score: 0
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

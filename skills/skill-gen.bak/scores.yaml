@@ -1,0 +1,68 @@
+# scores.yaml — skill-gen
+# Batch-scored by score-all.sh
+
+skill: skill-gen
+version: 4.0.0
+model_tier: T4
+qualification_rule: T4
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 42
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 25
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 60
+      pass: false
+      confidence: 0.5746286272685964
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9948694643111041
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.8796308979134283
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999995231630692
+  evaluated: '2026-11-08T17:09:27-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 43.75
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 75
+      pass: false
+      confidence: 0.9986196761849335
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9998415959451854
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9999994039539002
+  evaluated: '2026-11-08T17:09:27-05:00'
+history:
+- date: '2026-11-08T17:09:27-05:00'
+  type: quality+observable
+  quality_score: 42
+  quality_band: Redesign
+  observable_score: 43.75
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

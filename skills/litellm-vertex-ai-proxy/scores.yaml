@@ -1,0 +1,68 @@
+# scores.yaml — litellm-vertex-ai-proxy
+# Batch-scored by score-all.sh
+
+skill: litellm-vertex-ai-proxy
+version: 3.1.2
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 79.16666666666667
+  band: Tunable
+  dimensions:
+    script_coverage:
+      score: 75
+      pass: true
+      confidence: 0.998498789497875
+    inference_hop_count:
+      score: 100
+      pass: true
+      confidence: 0.8621206450429502
+    step_clarity:
+      score: 100
+      pass: true
+      confidence: 0.9984987894978749
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.9618044088867872
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 100
+      pass: true
+      confidence: 0.9999998807907248
+  evaluated: '2026-11-08T17:08:24-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 0.9999994039539002
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 1.0
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 1.0
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999417100552707
+  evaluated: '2026-11-08T17:08:24-05:00'
+history:
+- date: '2026-11-08T17:08:24-05:00'
+  type: quality+observable
+  quality_score: 79.16666666666667
+  quality_band: Tunable
+  observable_score: 25
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

@@ -1,0 +1,68 @@
+# scores.yaml — dsh-setup
+# Batch-scored by score-all.sh
+
+skill: dsh-setup
+version: 1.3.1
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 26.666666666666668
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 60
+      pass: false
+      confidence: 0.8807918625635757
+    step_clarity:
+      score: 0
+      pass: false
+      confidence: 0.9999997615814777
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 1.0
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9968273290569476
+  evaluated: '2026-11-08T17:05:52-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 0.9999998807907248
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9999643576942728
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999982118638472
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999985694905716
+  evaluated: '2026-11-08T17:05:52-05:00'
+history:
+- date: '2026-11-08T17:05:52-05:00'
+  type: quality+observable
+  quality_score: 26.666666666666668
+  quality_band: Redesign
+  observable_score: 25
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

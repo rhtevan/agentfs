@@ -1,0 +1,35 @@
+# S23: Prose operations that should be scripts
+#
+# Checks P1 (Accuracy) — operations implemented as prose instructions
+# that should be deterministic scripts.
+
+id: prose-to-script
+version: 1
+principle: P1
+check_id: S23
+severity: warn
+target: "SKILL.md code blocks and prose instructions"
+
+prompt_template: |
+  You are a technical reviewer. Read the following skill excerpt
+  and answer ONLY the question below.
+
+  SKILL EXCERPT:
+  "{entry}"
+
+  QUESTION: Does this excerpt contain a multi-step operation
+  (conditionals, loops, or sequences of 3+ commands) described in
+  prose or inline code that should be a standalone script?
+
+  A) No — operations are either already scripted, single commands,
+     reference examples, or manual fallbacks
+  B) Yes — at least one multi-step operation is described in prose
+     that should be a script under scripts/
+
+  Answer with ONLY the letter (A or B).
+
+pass_answers: ["A"]
+fail_answers: ["B"]
+fail_routing:
+  B: "Multi-step operation in prose should be extracted to scripts/"
+vote_count: 1

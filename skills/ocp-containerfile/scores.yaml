@@ -1,0 +1,68 @@
+# scores.yaml — ocp-containerfile
+# Batch-scored by score-all.sh
+
+skill: ocp-containerfile
+version: 1.0.0
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 61.166666666666664
+  band: Re-engineer
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 0.9999997615814776
+    inference_hop_count:
+      score: 100
+      pass: true
+      confidence: 0.5238936917378543
+    step_clarity:
+      score: 100
+      pass: true
+      confidence: 0.7772529349110883
+    prose_executability:
+      score: 67
+      pass: true
+      confidence: 0.8293248889283693
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999977350285647
+  evaluated: '2026-11-08T17:08:32-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 43.75
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 0.9992903742048809
+    cnl_compliance:
+      score: 75
+      pass: false
+      confidence: 0.5620254673060198
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999898673126559
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.77729988964086
+  evaluated: '2026-11-08T17:08:32-05:00'
+history:
+- date: '2026-11-08T17:08:32-05:00'
+  type: quality+observable
+  quality_score: 61.166666666666664
+  quality_band: Re-engineer
+  observable_score: 43.75
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

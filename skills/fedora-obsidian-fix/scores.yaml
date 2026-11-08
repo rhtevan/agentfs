@@ -1,0 +1,68 @@
+# scores.yaml — fedora-obsidian-fix
+# Batch-scored by score-all.sh
+
+skill: fedora-obsidian-fix
+version: 1.1.0
+model_tier: T1
+qualification_rule: T1
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 23.333333333333332
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9241350853952635
+    step_clarity:
+      score: 0
+      pass: false
+      confidence: 0.9998461244924995
+    prose_executability:
+      score: 0
+      pass: false
+      confidence: 0.9999976158197798
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999724634116024
+  evaluated: '2026-11-08T17:06:18-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9999994039539004
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999938011552556
+    sdm_delegation:
+      score: 0
+      pass: false
+      confidence: 0.9999870063564402
+  evaluated: '2026-11-08T17:06:18-05:00'
+history:
+- date: '2026-11-08T17:06:18-05:00'
+  type: quality+observable
+  quality_score: 23.333333333333332
+  quality_band: Redesign
+  observable_score: 25
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'

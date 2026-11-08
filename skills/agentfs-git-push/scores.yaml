@@ -1,0 +1,68 @@
+# scores.yaml — agentfs-git-push
+# Batch-scored by score-all.sh
+
+skill: agentfs-git-push
+version: 2.0.1
+model_tier: T2
+qualification_rule: T2
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 83.33333333333333
+  band: Tunable
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 100
+      pass: true
+      confidence: 0.47690374206157654
+    step_clarity:
+      score: 100
+      pass: true
+      confidence: 0.7772956503948518
+    prose_executability:
+      score: 100
+      pass: true
+      confidence: 0.8518597485313256
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 100
+      pass: true
+      confidence: 0.9706877714009488
+  evaluated: '2026-11-08T17:04:08-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 37.5
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9999545833252357
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999991655356624
+    sdm_delegation:
+      score: 50
+      pass: false
+      confidence: 0.6791786964925157
+  evaluated: '2026-11-08T17:04:08-05:00'
+history:
+- date: '2026-11-08T17:04:08-05:00'
+  type: quality+observable
+  quality_score: 83.33333333333333
+  quality_band: Tunable
+  observable_score: 37.5
+  observable_band: Redesign
+  note: 'Batch scored by score-all.sh'
