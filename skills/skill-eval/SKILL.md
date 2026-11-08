@@ -33,6 +33,16 @@ skill internals.
 - SDM endpoint at localhost:9000 (required for Tier 1 QOO — skipped
   if unavailable)
 
+## Rules
+
+Do NOT fabricate evaluation scores or dimension results. Every
+score MUST come from `gather-skill-state.sh` evidence and
+`sdm-evaluate.sh` output. If SDM is unavailable, report dimensions
+as N/A — do not estimate or guess scores.
+
+Do NOT overwrite existing scores.yaml sections owned by other
+skills. Preserve `quality` and `observable` when writing `operable`.
+
 ## Quick Dispatch
 
 | User says | Run |

@@ -4,11 +4,13 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-08 18:06 |
+| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, score skill, advanced skill | 2026-11-08 18:06 |
+| [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health | 2026-11-08 18:04 |
 | [headroom-proxy-status](./headroom-proxy-status/SKILL.md) | headroom, proxy, status, health, systemd, compression, context-optimization | headroom status, check headroom, headroom health | 2026-11-08 17:48 |
 | [spec-kit-setup](./spec-kit-setup/SKILL.md) | speckit, specify, cli, setup, installation | install spec-kit, setup specify, upgrade spec-kit | 2026-11-08 17:45 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-11-08 17:44 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | configure hermes litellm, hermes litellm provider | 2026-11-08 17:44 |
-| [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health | 2026-11-08 17:44 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex | 2026-11-08 17:44 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-11-08 17:44 |
 | [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-11-08 17:44 |
@@ -30,11 +32,9 @@
 | [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-11-08 17:41 |
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | generate bash completion, bash completion, tab completion | 2026-11-08 17:41 |
 | [crc-aap-demo-config](./crc-aap-demo-config/SKILL.md) | openshift, crc, aap-demo, configuration, safety, preflight | configure aap demo, setup aap demo, aap demo | 2026-11-08 17:41 |
-| [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, score skill, advanced skill | 2026-11-08 17:31 |
 | [skill-eval](./skill-eval.bak/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-08 17:29 |
 | [skill-gen](./skill-gen.bak/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, score skill, advanced skill | 2026-11-08 17:29 |
 | [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | agentfs, okf, knowledge, scaffolding, setup | setup knowledge bundle, scaffold knowledge bundle, okf setup | 2026-11-08 17:09 |
-| [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-08 17:09 |
 | [skill-harvest](./skill-harvest/SKILL.md) | agentfs, skills, memory, procedural, graduation, harvest | harvest skills, harvest procedures, graduate skills | 2026-11-08 17:09 |
 | [skill-index](./skill-index/SKILL.md) | agentfs, skills, index, discovery | refresh skill index, index skills, regenerate skill index | 2026-11-08 17:09 |
 | [skill-merge](./skill-merge/SKILL.md) | agentfs, skills, merge, project, user | merge skills, copy skills to user, promote skills | 2026-11-08 17:09 |

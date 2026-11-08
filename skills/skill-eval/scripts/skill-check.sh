@@ -10,6 +10,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 SKILL_DIR="${1:?Usage: skill-check.sh <skill-dir>}"
 SKILL_DIR="$(cd "$SKILL_DIR" && pwd)"
 SKILL_MD="$SKILL_DIR/SKILL.md"

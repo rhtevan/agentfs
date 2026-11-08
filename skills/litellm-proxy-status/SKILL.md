@@ -4,7 +4,7 @@ description: >
   litellm status, check litellm, litellm health
 platforms: ['linux']
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   model-tier: T2
   tags: [litellm, proxy, status, health, systemd]
   related_skills: [litellm-vertex-ai-proxy, hermes-litellm-provider]
@@ -12,51 +12,69 @@ metadata:
 
 # LiteLLM Proxy Status Check
 
-Check the health, configuration, and runtime status of the local LiteLLM proxy.
+Check the health, configuration, and runtime status of the local
+LiteLLM proxy. Queries systemd service state, health and model
+endpoints, and proxy configuration files.
 
-## Steps
+## Overview
 
-1. **Check systemd service status**
-   ```bash
-   systemctl --user status litellm-proxy
-   ```
-   Confirm it shows `active (running)`. Note uptime, memory usage, and PID.
+| Property | Value |
+|----------|-------|
+| **Version** | 1.1.0 |
+| **Trigger** | `hey litellm status` / `hey check litellm` |
+| **Dependencies** | systemd, curl, litellm-proxy service |
 
-2. **Check health endpoint**
-   ```bash
-   curl -s http://127.0.0.1:4000/health | python3 -m json.tool
-   ```
-   Verify all models show as healthy with zero unhealthy endpoints.
+## Specification
 
-3. **List available models**
-   ```bash
-   curl -s http://127.0.0.1:4000/v1/models | python3 -m json.tool
-   ```
-   List all model IDs the proxy is serving.
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | Report systemd service status | `systemctl --user status litellm-proxy` shows active/inactive |
+| S2 | Report health endpoint state | `/health` returns healthy/unhealthy endpoint counts |
+| S3 | List available models | `/v1/models` returns model ID list |
+| S4 | Display proxy and service configuration | Config files read successfully |
 
-4. **Show configuration**
-   ```bash
-   cat ~/.config/litellm/config.yaml
-   ```
-   Display the current model list, project, location, and settings.
+## Rules
 
-5. **Show service configuration**
-   ```bash
-   cat ~/.config/systemd/user/litellm-proxy.service
-   ```
-   Display the systemd unit including the credentials path and startup command.
+Do NOT fabricate health or model data. Every value in the report
+MUST come from actual command or HTTP endpoint output. If an
+endpoint is unreachable, report "unreachable" — do not guess values.
 
-6. **Check recent logs** (only if there are issues)
-   ```bash
-   journalctl --user -u litellm-proxy --no-pager -n 20
-   ```
+## Workflow
 
-## Report Format
+### Step 1 — Run the status script
+
+```bash
+bash ~/.agents/skills/litellm-proxy-status/scripts/check-status.sh
+```
+
+The script gathers all status facts: systemd service state, health
+endpoint, model list, LiteLLM config, and service config. Read the
+output — it contains all the data needed for the report.
+
+### Step 2 — Report the results
+
+Read the script output. Build the summary table defined in the
+Output Contract below. Include:
+
+- Service state (active/inactive) and uptime
+- Health status and endpoint counts (healthy vs unhealthy)
+- List of model IDs the proxy serves
+- Port, credentials path, and config file location
+
+### Step 3 — Check logs (conditional)
+
+Run only if Step 1 shows the service is inactive or unhealthy:
+
+```bash
+journalctl --user -u litellm-proxy --no-pager -n 20
+```
+
+## Output Contract
 
 Present a summary table:
 
 | Item | Status |
-|---|---|
+|------|--------|
 | Service | active/inactive, uptime |
 | Health | healthy/unhealthy endpoint count |
 | Models | list of model names |
@@ -64,18 +82,21 @@ Present a summary table:
 | Credentials | service account email from key file |
 | Config | ~/.config/litellm/config.yaml |
 
+## Error Handling
+
+| Step | Command | On Failure |
+|:----:|---------|------------|
+| 1 | `check-status.sh` | Script exits 0 even if service is down. Parse output for state. |
+| 3 | `journalctl` | No logs → report "no recent log entries" |
+
 ## Troubleshooting
 
-If the service is not running:
-```bash
-systemctl --user start litellm-proxy
-```
-
-If the service fails to start, check logs:
-```bash
-journalctl --user -u litellm-proxy --no-pager -n 50
-```
-
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Service not running | Stopped or crashed | `systemctl --user start litellm-proxy` |
+| Service fails to start | Config error or missing credentials | Check logs: `journalctl --user -u litellm-proxy -n 50` |
+| Health shows unhealthy models | Backend unreachable (Vertex AI) | Verify credentials and network connectivity |
+| Models endpoint empty | No models configured | Check `~/.config/litellm/config.yaml` model_list |
 
 ## Changelog
 

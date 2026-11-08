@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 18:06
+- Add trace-lib.sh sourcing for trace instrumentation (skills/skill-eval/scripts/skill-check.sh)
+- Add trace-lib.sh sourcing for trace instrumentation (skills/skill-gen/scripts/fetch-upstream.sh)
+- Add Rules section with anti-fabrication rules (skills/skill-eval/SKILL.md)
+
+## 2026-11-08 18:04
+- Full QOO upgrade: Overview, Specification, Rules, Workflow with script, Output Contract, Error Handling, Troubleshooting (skills/litellm-proxy-status/SKILL.md)
+- Create check-status.sh with trace instrumentation
+
 ## 2026-11-08 17:48
 - Fix CNL violations: passive voice in Step 2 descriptions (skills/headroom-proxy-status/SKILL.md)
 

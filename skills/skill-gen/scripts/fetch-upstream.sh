@@ -9,6 +9,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CACHE_DIR="$SKILL_DIR/.cache/upstream"
 MARKER_FILE="$CACHE_DIR/.fetched"
