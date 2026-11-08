@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 18:36
+- Persist full QOO scores: qualified (Build+Observable) (skills/litellm-proxy-status/scores.yaml)
+- Persist full QOO scores: qualified (Build+Observable) (skills/headroom-proxy-status/scores.yaml)
+
 ## 2026-11-08 18:31
 - Simplify qualification logic: Build+Observable, Quality informational (scripts/score-all.sh)
 

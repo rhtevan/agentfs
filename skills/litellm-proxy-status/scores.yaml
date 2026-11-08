@@ -1,68 +1,48 @@
 # scores.yaml — litellm-proxy-status
-# Batch-scored by score-all.sh
+# QOO qualification: Build+Observable gated, Quality informational
 
 skill: litellm-proxy-status
-version: 1.0.0
+version: 1.1.0
 model_tier: T2
-qualification_rule: T2
-qoo-qualified: false
+qualification_rule: build+observable
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 26.666666666666668
-  band: Redesign
+  aggregate_score: 76.5
+  band: Tunable
   dimensions:
-    script_coverage:
-      score: 0
-      pass: false
-      confidence: 1.0
-    inference_hop_count:
-      score: 60
-      pass: false
-      confidence: 0.851312089971104
-    step_clarity:
-      score: 0
-      pass: false
-      confidence: 0.827376153290323
-    prose_executability:
-      score: 0
-      pass: false
-      confidence: 0.9965327024016307
-    model_portability:
-      score: 100
-      pass: true
-      confidence: 1.0
-    interface_opacity:
-      score: 0
-      pass: false
-      confidence: 0.9933071486460124
-  evaluated: '2026-11-08T17:44:22-05:00'
+    script_coverage: { score: 25, pass: false, confidence: 0.9999998807907245 }
+    inference_hop_count: { score: 100, pass: true, confidence: 0.5598870961035316 }
+    step_clarity: { score: 67, pass: true, confidence: 0.8519197918455936 }
+    prose_executability: { score: 67, pass: true, confidence: 0.6791189271469935 }
+    model_portability: { score: 100, pass: true, confidence: 0.9999991655356624 }
+    interface_opacity: { score: 100, pass: true, confidence: 0.9770226476651187 }  evaluated: '2026-11-08T18:36:42-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 12.5
-  band: Redesign
+  aggregate_score: 93.75
+  band: Operable
   dimensions:
-    trace_instrumentation:
-      score: 0
-      pass: false
-      confidence: 1.0
-    cnl_compliance:
-      score: 50
-      pass: false
-      confidence: 0.3789155441271484
-    anti_fabrication:
-      score: 0
-      pass: false
-      confidence: 0.9992903742048809
-    sdm_delegation:
-      score: 0
-      pass: false
-      confidence: 0.9999870063564402
-  evaluated: '2026-11-08T17:44:22-05:00'
+    trace_instrumentation: { score: 100, pass: true, confidence: 0.994779918752388 }
+    cnl_compliance: { score: 75, pass: false, confidence: 0.9746512601857457 }
+    anti_fabrication: { score: 100, pass: true, confidence: 1.0 }
+    sdm_delegation: { score: 100, pass: true, confidence: 0.8175742724963552 }  evaluated: '2026-11-08T18:36:42-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 100
+    band: Operable
+    dimensions:
+      has_bones: { score: 100, pass: true, confidence: 1.0 }
+      has_muscle: { score: 100, pass: true, confidence: 1.0 }
+      has_brain: { score: 100, pass: true, confidence: 0.9999997615814777 }
+      has_harness: { score: 100, pass: true, confidence: 0.9999995231630692 }    evaluated: '2026-11-08T18:36:42-05:00'
 history:
-- date: '2026-11-08T17:08:14-05:00'
-  type: quality+observable
-  quality_score: 26.666666666666668
-  quality_band: Redesign
-  observable_score: 18.75
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+- date: '2026-11-08T18:36:42-05:00'
+  type: full
+  quality_score: 76.5
+  quality_band: Tunable
+  observable_score: 93.75
+  observable_band: Operable
+  build_score: 100
+  build_band: Operable
+  note: 'Factory upgrade + pragmatic scoring. Build+Observable qualified.'
