@@ -8,7 +8,7 @@ qualification_rule: T2
 qoo-qualified: false
 quality:
   schema: quality.yaml
-  aggregate_score: 26.666666666666668
+  aggregate_score: 30
   band: Redesign
   dimensions:
     script_coverage:
@@ -16,17 +16,17 @@ quality:
       pass: false
       confidence: 1.0
     inference_hop_count:
-      score: 60
+      score: 80
       pass: false
-      confidence: 0.731050713303907
+      confidence: 0.6224508336962838
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9999324129015864
+      confidence: 0.9997795114417571
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999998807907249
+      confidence: 0.999998807908497
     model_portability:
       score: 100
       pass: true
@@ -34,8 +34,8 @@ quality:
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9999994039539002
-  evaluated: '2026-11-08T17:06:09-05:00'
+      confidence: 0.9999952316511551
+  evaluated: '2026-11-08T17:42:57-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 25
@@ -48,16 +48,16 @@ observable:
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999997615814776
+      confidence: 0.9999998807907248
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999997615814777
+      confidence: 0.9999998807907248
     sdm_delegation:
       score: 0
       pass: false
-      confidence: 0.9999985694905716
-  evaluated: '2026-11-08T17:06:09-05:00'
+      confidence: 0.999998927117538
+  evaluated: '2026-11-08T17:42:57-05:00'
 history:
 - date: '2026-11-08T17:06:09-05:00'
   type: quality+observable

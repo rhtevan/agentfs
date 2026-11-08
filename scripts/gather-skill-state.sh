@@ -287,7 +287,20 @@ fi
 # --- Step excerpts ---
 # Extract each step's text with [SCRIPTED: yes/no] marker for SDM evidence.
 # Replaces concern_count and accidental_complexity heuristics (v2.0).
-# step_lines array is already computed in the script_coverage block above.
+# step_lines array may not exist if SCRIPT_COUNT was 0 — initialize if needed.
+if [[ -z "${step_lines+x}" ]]; then
+  step_lines=()
+  if [[ "$ACTION_STEPS" -gt 0 ]]; then
+    while IFS= read -r ln; do
+      step_lines+=("$ln")
+    done < <(grep -nP '^\s*###\s+(Step\s+\d|[0-9]+\.)' "$SKILL_MD" | cut -d: -f1)
+    if [[ ${#step_lines[@]} -eq 0 ]]; then
+      while IFS= read -r ln; do
+        step_lines+=("$ln")
+      done < <(grep -nP '^\s*##\s+Step\s' "$SKILL_MD" | cut -d: -f1)
+    fi
+  fi
+fi
 STEP_EXCERPTS=""
 if [[ "$ACTION_STEPS" -gt 0 && ${#step_lines[@]} -gt 0 ]]; then
   total_lines_file=${total_lines_file:-$(wc -l < "$SKILL_MD")}

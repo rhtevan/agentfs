@@ -2,6 +2,33 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 17:48
+- Fix CNL violations: passive voice in Step 2 descriptions (skills/headroom-proxy-status/SKILL.md)
+
+## 2026-11-08 17:47
+- Fix interface opacity: replace script output section refs with human-readable descriptions (skills/headroom-proxy-status/SKILL.md)
+
+## 2026-11-08 17:46
+- Consolidate steps: script does all gathering, agent reports and conditionally checks logs (skills/headroom-proxy-status/SKILL.md)
+- Replace inline commands Steps 1-3 with check-status.sh script reference (skills/headroom-proxy-status/SKILL.md)
+- Create check-status.sh with trace instrumentation
+
+## 2026-11-08 17:36
+- Fix unbound step_lines variable when SCRIPT_COUNT=0 (scripts/gather-skill-state.sh)
+
+## 2026-11-08 17:32
+- Add Error Handling table (skills/headroom-proxy-status/SKILL.md)
+- Rename Report Format to Output Contract (skills/headroom-proxy-status/SKILL.md)
+- Convert remaining numbered steps to ### Step N headings (skills/headroom-proxy-status/SKILL.md)
+- Convert numbered steps to ### Step N headings (skills/headroom-proxy-status/SKILL.md)
+
+## 2026-11-08 17:31
+- Add Overview, Specification, Rules, Workflow sections for QOO compliance (skills/headroom-proxy-status/SKILL.md)
+- Add Upgrade Skill for QOO mode with gap analysis and fix patterns (skills/skill-gen/SKILL.md)
+
+## 2026-11-08 17:30
+- Update Create Skill template for QOO compliance: add model-tier, Specification, Rules, Output Contract, Error Handling, Troubleshooting (skills/skill-gen/SKILL.md)
+
 ## 2026-11-08 17:00
 - Update status to Phases A+B complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 - Mark Phase B as complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)

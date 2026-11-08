@@ -14,19 +14,19 @@ quality:
     script_coverage:
       score: 50
       pass: false
-      confidence: 0.9999417100552708
+      confidence: 0.9998766336062261
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.3543425414969659
+      confidence: 0.33395633964001276
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.995666056696256
+      confidence: 0.9930446924545876
     prose_executability:
       score: 33
       pass: false
-      confidence: 0.5320710919640383
+      confidence: 0.5320710285362253
     model_portability:
       score: 100
       pass: true
@@ -34,8 +34,8 @@ quality:
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9859363803758086
-  evaluated: '2026-11-08T17:07:56-05:00'
+      confidence: 0.9959299004209012
+  evaluated: '2026-11-08T17:44:13-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 12.5
@@ -44,20 +44,20 @@ observable:
     trace_instrumentation:
       score: 0
       pass: false
-      confidence: 0.9999998807907248
+      confidence: 0.9999998807907247
     cnl_compliance:
       score: 50
       pass: false
-      confidence: 0.9715988920573339
+      confidence: 0.9727934451127157
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9998766336062261
+      confidence: 0.9999417100552707
     sdm_delegation:
       score: 0
       pass: false
-      confidence: 0.9999995231630692
-  evaluated: '2026-11-08T17:07:56-05:00'
+      confidence: 0.9999994039539002
+  evaluated: '2026-11-08T17:44:13-05:00'
 history:
 - date: '2026-11-08T17:07:56-05:00'
   type: quality+observable

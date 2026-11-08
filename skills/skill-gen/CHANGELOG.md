@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 17:31 | v4.2.0 — Update Create Skill template for QOO compliance: add model-tier, Specification, Rules, Output Contract, Error Handling, Troubleshooting; Add Upgrade Skill for QOO mode with gap analysis and fix patterns |
 | 2026-11-08 16:57 | v4.1.0 — Add tier-aware qoo-qualified computation |
 | 2026-11-05 19:32 | v4.0.0 — Add model-tier to frontmatter |
 | 2026-10-31 20:37 | v4.0.0 — skill-gen v4.0.0: version bump for QOO factory (Phase 1 in progress); Phase 1.2: added trace instrumentation + QOO scores checklist items to Post-Creation Checklist; Phase 1.1: added Step 7 — Compute QOO Scores (gather-state + quality + observable SDM eval + scores.yaml persist); Phase 1.3: added Upgrade Skill Mode section — 'hey upgrade skill' re-evaluates Quality + Observable, persists to scores.yaml, ownership boundary documented; Phase 1.3: updated mode table and mode selection to include Upgrade mode (4 modes); Step 7d: qoo-qualified template changed from hardcoded true to <computed>; Step 7d: added deterministic qoo-qualified formula — same rule as skill-eval Step 8; Rename: 'upgrade skill' → 'score skill' across all references |

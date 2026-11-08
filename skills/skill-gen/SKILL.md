@@ -238,6 +238,7 @@ compatibility: "<requirements, if any>"
 metadata:
   author: agentfs
   version: "1.0.0"
+  model-tier: <T1|T2|T3|T4>
   tags: [<relevant-tags>]
 user-invocable: true
 disable-model-invocation: false
@@ -249,26 +250,64 @@ disable-model-invocation: false
 why it exists, and when to use it. This is the hydrated context that
 the signal-phrase description cannot convey.>
 
+## Overview
+
+| Property | Value |
+|----------|-------|
+| **Version** | 1.0.0 |
+| **Trigger** | <How this skill is invoked> |
+| **Dependencies** | <Scripts, external tools, or other skills> |
+
+## Specification
+
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | <What this skill can do — first capability> | <How to verify> |
+| S2 | <Second capability> | <How to verify> |
+
+## Rules
+
+Do NOT fabricate, generate, or invent data. Every fact in your
+output MUST come from script output or verifiable state. If
+information is unavailable, say so — do not guess.
+
+<Add skill-specific rules here.>
+
 ## Prerequisites
 
 - <List of requirements>
 
-## Steps
+## Workflow
 
-1. **Step name**
-   Description and commands.
+### Step 1 — <Step name>
 
-2. **Step name**
-   Description and commands.
+<Description. Use imperative form: "Run the script", not "You should
+run the script".>
 
-## Gotchas
+```bash
+<command or script invocation>
+```
 
-- <Environment-specific anomalies, historical corrections,
-  non-obvious behaviors discovered during development or usage>
+### Step 2 — <Step name>
 
-## Verification
+<Description.>
 
-- [ ] <How to confirm success>
+## Output Contract
+
+<Document the expected output format. If the skill reports results,
+show the exact template. If it writes a file, show the schema.>
+
+## Error Handling
+
+| Step | Script/Command | On Failure |
+|:----:|----------------|------------|
+| 1 | <what runs> | <what to do if it fails> |
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| <problem> | <why> | <how to fix> |
 
 ## Changelog
 
@@ -732,6 +771,91 @@ For both modes:
    comparison in the eval loop
 5. Run the AgentFS Post-Creation Checklist (Step 6 / Step 4)
 6. Run the QOO evaluation pipeline (Step 7)
+
+## Upgrade Skill for QOO Mode
+
+**Trigger:** `hey upgrade skill <name>` or `hey upgrade skill <name> for qoo`
+
+This mode reads the skill's `scores.yaml` to identify failing QOO
+dimensions, then applies targeted fix patterns to bring the skill
+to qualification at its model-tier.
+
+### Upgrade Step 1 — Read Current State
+
+```bash
+bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/upgrade-evidence.txt
+```
+
+Read `scores.yaml` if it exists. Identify:
+- Model tier (from SKILL.md frontmatter `model-tier`)
+- Quality score and failing dimensions
+- Observable score and failing dimensions
+- Build score (if evaluated)
+
+If no `scores.yaml` exists, run Score Skill Mode first.
+
+### Upgrade Step 2 — Identify Gaps
+
+Compare the skill's current structure against the QOO-compliant
+template (from Create Skill Step 4). For each missing element:
+
+| Missing Element | Quality Impact | Observable Impact |
+|-----------------|:--------------:|:-----------------:|
+| No `model-tier` in frontmatter | — | — (metadata) |
+| No Specification table | step_clarity ↓ | — |
+| No `### Step N` headings | step_clarity ↓, prose_executability ↓ | — |
+| No Output Contract | interface_opacity ↓ | — |
+| No anti-fabrication rules | — | anti_fabrication ↓ |
+| No trace_step() in scripts | — | trace_instrumentation ↓ |
+| Non-imperative prose (passive voice) | — | cnl_compliance ↓ |
+| No SDM delegation | — | sdm_delegation ↓ |
+| No Error Handling table | prose_executability ↓ | — |
+| No Troubleshooting table | prose_executability ↓ | — |
+| No Overview table | step_clarity ↓ | — |
+| Script internals referenced in prose | interface_opacity ↓ | — |
+
+### Upgrade Step 3 — Apply Fixes
+
+For each gap identified in Step 2, apply the fix. Order matters —
+structural fixes first, then content fixes:
+
+1. **Add `model-tier`** to frontmatter if missing
+2. **Add Overview table** after opening paragraph if missing
+3. **Add Specification table** with S1-SN capabilities if missing
+4. **Add Rules section** with anti-fabrication rule if missing
+5. **Rename "Steps" to "Workflow"** and add `### Step N —` headings
+6. **Add Output Contract** section if missing
+7. **Add Error Handling** table if missing
+8. **Add Troubleshooting** table if missing
+9. **Fix passive voice** — rewrite to imperative form
+10. **Fix interface opacity** — remove script-internal references
+    from prose (use human-readable descriptions instead)
+11. **Add `source trace-lib.sh` + `trace_step()`** to scripts if
+    they exist and lack trace instrumentation
+
+Do NOT change the skill's functional behavior. These are structural
+and observability improvements only. Preserve all existing commands,
+scripts, logic, and domain content.
+
+### Upgrade Step 4 — Re-score
+
+Run Score Skill Mode (Step 1-6 of Score Skill Mode) to verify
+the fixes improved the scores.
+
+### Upgrade Step 5 — Report
+
+Present a before/after comparison:
+
+```
+## Upgrade Report: <skill-name>
+
+| Dimension | Before | After | Delta |
+|-----------|:------:|:-----:|:-----:|
+| Quality   | 23.3 Redesign | 75.0 Tunable | +51.7 |
+| Observable | 0 Redesign | 75.0 Tunable | +75.0 |
+
+Qualification: ❌ → ✅ (T2 thresholds met)
+```
 
 ---
 

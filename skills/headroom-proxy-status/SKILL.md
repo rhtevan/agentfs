@@ -12,66 +12,66 @@ metadata:
 
 # Headroom Proxy Status Check
 
-Check the health, configuration, and runtime status of the local Headroom context-optimization proxy.
+Check the health, configuration, and runtime status of the local
+Headroom context-optimization proxy. Queries systemd service state,
+health and stats HTTP endpoints, and Goose provider configuration.
 
-## Steps
+## Overview
 
-1. **Check systemd service status**
-   ```bash
-   systemctl --user status headroom-proxy
-   ```
-   Confirm it shows `active (running)`. Note uptime, memory usage, and PID.
+| Property | Value |
+|----------|-------|
+| **Version** | 1.1.0 |
+| **Trigger** | `hey headroom status` / `hey check headroom` |
+| **Dependencies** | systemd, curl, headroom-proxy service |
 
-2. **Check health endpoint**
-   ```bash
-   curl -s http://127.0.0.1:8787/health | python3 -m json.tool
-   ```
-   Verify status is `healthy` and `ready` is `true`. Note the backend,
-   optimization mode, and whether memory/learning are enabled.
+## Specification
 
-3. **Check compression stats**
-   ```bash
-   curl -s http://127.0.0.1:8787/stats | python3 -m json.tool
-   ```
-   Report the summary: total API requests, compression percentage,
-   tokens saved, cost savings, and the primary model in use.
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | Report systemd service status | `systemctl --user status headroom-proxy` shows active/inactive |
+| S2 | Report health endpoint state | `/health` returns healthy/unhealthy |
+| S3 | Report compression statistics | `/stats` returns compression metrics |
+| S4 | Display service and provider configuration | Config files read successfully |
 
-   Key fields to extract from the stats response:
-   - `summary.compression.requests_compressed` — how many requests had compression applied
-   - `summary.compression.avg_compression_pct` — average compression percentage
-   - `summary.compression.total_tokens_removed` — total tokens saved by compression
-   - `summary.cost.total_saved_usd` — dollar savings
-   - `summary.cost.savings_pct` — savings percentage
-   - `config.target_ratio` — the configured compression target (e.g. 0.5 = keep ~50%)
-   - `config.min_tokens_to_crush` — minimum token threshold before compression kicks in
-   - `config.force_kompress` — whether Kompress is forced on all content
-   - `summary.uncompressed_requests` — breakdown of why requests were NOT compressed
-     (e.g. `prefix_frozen`, `no_compressible_content`)
+## Rules
 
-4. **Check stats history** (optional, for trend data)
-   ```bash
-   curl -s http://127.0.0.1:8787/stats-history | python3 -m json.tool
-   ```
-   Show durable compression history if available.
+Do NOT fabricate health or stats data. Every value in the report
+MUST come from actual command or HTTP endpoint output. If an
+endpoint is unreachable, report "unreachable" — do not guess values.
 
-5. **Show service configuration**
-   ```bash
-   cat ~/.config/systemd/user/headroom-proxy.service
-   ```
-   Display the systemd unit including upstream URL, flags, and startup command.
+## Workflow
 
-6. **Show Goose custom provider configuration**
-   ```bash
-   cat ~/.config/goose/custom_providers/custom_headroom.json
-   ```
-   Display the Goose provider definition (base URL, models, settings).
+### Step 1 — Run the status script
 
-7. **Check recent logs** (only if there are issues)
-   ```bash
-   journalctl --user -u headroom-proxy --no-pager -n 20
-   ```
+```bash
+bash ~/.agents/skills/headroom-proxy-status/scripts/check-status.sh
+```
 
-## Report Format
+The script gathers all status facts: systemd service state, health
+endpoint, compression statistics, stats history, service config,
+and provider config. Read the output — it contains all the data
+needed for the report.
+
+### Step 2 — Report the results
+
+Read the script output. Build the summary table defined in the
+Output Contract below. Include:
+
+- Service state (active/inactive) and uptime
+- Proxy health status and operating mode
+- Compression effectiveness: percentage, tokens saved, cost savings
+- Upstream connection target and key runtime flags
+- Goose provider configuration details
+
+### Step 3 — Check logs (conditional)
+
+Run only if Step 1 shows the service is inactive or unhealthy:
+
+```bash
+journalctl --user -u headroom-proxy --no-pager -n 20
+```
+
+## Output Contract
 
 Present a summary table:
 
@@ -98,6 +98,16 @@ Present a summary table:
 Goose (custom_headroom) → Headroom Proxy (:8787) → LiteLLM (:4000) → Vertex AI (Claude)
                            ↑ context compression        ↑ routing
 ```
+
+## Error Handling
+
+| Step | Command | On Failure |
+|:----:|---------|------------|
+| 1 | `systemctl --user status` | Service not found → report "not installed" |
+| 2 | `curl /health` | Connection refused → report "proxy not running" |
+| 3 | `curl /stats` | Connection refused → skip, note "stats unavailable" |
+| 5 | `cat service file` | File missing → report "service not configured" |
+| 6 | `cat provider config` | File missing → report "provider not configured" |
 
 ## Troubleshooting
 
