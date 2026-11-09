@@ -2,6 +2,27 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 23:02
+- Create setup script for persistent instructions (skills/goose-setup/scripts/setup.sh)
+
+## 2026-11-08 23:01
+- Bump version to 1.3.0 (skills/crc-nmstate-config/SKILL.md)
+- Create setup script extracting inline oc commands (skills/crc-nmstate-config/scripts/setup.sh)
+
+## 2026-11-08 23:00
+- Bump version to 1.3.0 (skills/crc-post-setup-config/SKILL.md)
+- Create setup script extracting inline oc commands (skills/crc-post-setup-config/scripts/setup.sh)
+
+## 2026-11-08 22:58
+- CNL restructure Operations, remove internal descriptions (skills/goose-skupper-provider/SKILL.md)
+
+## 2026-11-08 22:57
+- CNL restructure Operations to Step workflow, remove internal descriptions (skills/skupper-model-provider/SKILL.md)
+- Remove internal descriptions from operation steps (skills/goose-kgm/SKILL.md)
+
+## 2026-11-08 22:56
+- CNL restructure Operations to Step workflow format (skills/goose-kgm/SKILL.md)
+
 ## 2026-11-08 22:52
 - Add Rules + trace (skills/agentfs-ctx-chk/SKILL.md)
 - Add Rules + trace (skills/fedora-nm-boot-slow/SKILL.md)

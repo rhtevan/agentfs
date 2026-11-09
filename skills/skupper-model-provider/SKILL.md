@@ -46,60 +46,43 @@ availability, startup/shutdown order), see
 | `status.sh` | Full health check | Troubleshooting |
 | `test-model.sh SITE_OR_PROFILE` | E2E connectivity test | Verification |
 
-## Operations
+## Workflow
 
-### Precheck / Show Topology
+The agent MUST select the appropriate operation based on the user's
+request and run the corresponding script. The agent MUST report
+the script output verbatim.
 
-```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/setup.sh --check
-```
+### Step 1 — Precheck
 
-### First-Time Setup
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/setup.sh --check`
 
-```bash
-cp ~/.agents/skills/skupper-model-provider/topology.env.example \
-   ~/.agents/skills/skupper-model-provider/topology.env
-# Edit topology.env with actual IPs, hostnames, SANs
-bash ~/.agents/skills/skupper-model-provider/scripts/setup.sh
-```
+### Step 2 — Setup
 
-### Upgrade (align podman sites to CRC baseline)
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/setup.sh`
 
-```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/upgrade.sh
-```
+### Step 3 — Upgrade
 
-### Start / Stop VAN
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/upgrade.sh`
 
-```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh               # all sites
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh rhel-ai       # specific provider
-bash ~/.agents/skills/skupper-model-provider/scripts/up.sh crc           # CRC site only
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh             # all sites
-bash ~/.agents/skills/skupper-model-provider/scripts/down.sh rhel-ai     # specific provider
-```
+### Step 4 — Start
 
-### Status
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/up.sh [SITE]`
 
-```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/status.sh
-```
+### Step 5 — Stop
 
-Agent runs `hosted-model-ctl list.sh` for model container status and
-presents a combined 5-section report (VAN infra, CRC links, localhost
-listeners, CRC listeners, model containers).
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/down.sh [SITE]`
 
-### Teardown
+### Step 6 — Status
 
-```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/teardown.sh
-```
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/status.sh`
 
-### Test
+### Step 7 — Teardown
 
-```bash
-bash ~/.agents/skills/skupper-model-provider/scripts/test-model.sh rhtevan-work
-```
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/teardown.sh`
+
+### Step 8 — Test
+
+The agent MUST run: `bash ~/.agents/skills/skupper-model-provider/scripts/test-model.sh [SITE]`
 
 ## Error Handling
 

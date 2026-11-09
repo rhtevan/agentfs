@@ -4,14 +4,19 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-11-08 23:02 |
+| [crc-nmstate-config](./crc-nmstate-config/SKILL.md) | openshift, crc, networking, nmstate, operator | install nmstate, configure nmstate, nmstate operator | 2026-11-08 23:01 |
+| [crc-post-setup-config](./crc-post-setup-config/SKILL.md) | openshift, crc, monitoring, configuration, alerts | crc post setup, configure crc monitoring, crc tune | 2026-11-08 23:00 |
+| [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | setup goose skupper provider, teardown skupper provider, recreate skupper provider, test skupper provider, check skupper provider | 2026-11-08 22:59 |
+| [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | agentfs, okf, knowledge, scaffolding, setup | setup knowledge bundle, scaffold knowledge bundle, okf setup | 2026-11-08 22:59 |
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-11-08 22:58 |
+| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-08 22:57 |
 | [agentfs-ctx-chk](./agentfs-ctx-chk/SKILL.md) | agentfs, context, audit, optimization, guardrails | audit context, check context, context audit | 2026-11-08 22:52 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-11-08 22:52 |
 | [fedora-nm-boot-slow](./fedora-nm-boot-slow/SKILL.md) | fedora, network, boot, networkmanager, performance | slow boot network, nm-wait-online slow, network boot delay, diagnose boot network, fix nm-wait-online | 2026-11-08 22:52 |
-| [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-11-08 22:51 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, provider | fix hermes desktop, hermes electron fix, hermes identity fix | 2026-11-08 22:51 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-11-08 22:51 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | agentfs, okf, knowledge, memory, distillation, graduation | harvest knowledge, harvest concepts, graduate knowledge | 2026-11-08 22:51 |
-| [okf-bundle-setup](./okf-bundle-setup/SKILL.md) | agentfs, okf, knowledge, scaffolding, setup | setup knowledge bundle, scaffold knowledge bundle, okf setup | 2026-11-08 22:51 |
 | [dsh-litellm-provider](./dsh-litellm-provider/SKILL.md) | dsh, deepseek-harness, litellm, custom-provider, configuration | configure dsh litellm, dsh litellm provider, dsh custom provider | 2026-11-08 22:50 |
 | [dsh-setup](./dsh-setup/SKILL.md) | dsh, deepseek-harness, agent-harness, setup, launcher | setup dsh, install dsh, update dsh, teardown dsh, dsh status | 2026-11-08 22:50 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-11-08 22:50 |
@@ -28,16 +33,11 @@
 | [crc-cmd](./crc-cmd/SKILL.md) | openshift, crc, wrapper, shell | install crcstart, install crcstop, crc wrapper | 2026-11-08 22:36 |
 | [crc-coo-config](./crc-coo-config/SKILL.md) | openshift, crc, observability, operator, perses | install coo, configure coo, cluster observability | 2026-11-08 22:36 |
 | [crc-nad-dynamic-plugin-config](./crc-nad-dynamic-plugin-config/SKILL.md) | openshift, crc, networking, console-plugin, helm | install nad plugin, nad console plugin, network attachment | 2026-11-08 22:36 |
-| [crc-nmstate-config](./crc-nmstate-config/SKILL.md) | openshift, crc, networking, nmstate, operator | install nmstate, configure nmstate, nmstate operator | 2026-11-08 22:36 |
 | [crc-noo-config](./crc-noo-config/SKILL.md) | openshift, crc, networking, observability, operator, ebpf | install noo, configure noo, network observability | 2026-11-08 22:36 |
 | [crc-ovn-frr-metallb-config](./crc-ovn-frr-metallb-config/SKILL.md) | openshift, crc, networking, ovn, bgp, metallb | setup ovn frr, setup metallb, bgp metallb | 2026-11-08 22:36 |
-| [crc-post-setup-config](./crc-post-setup-config/SKILL.md) | openshift, crc, monitoring, configuration, alerts | crc post setup, configure crc monitoring, crc tune | 2026-11-08 22:36 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-08 22:36 |
-| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-08 22:36 |
-| [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | setup goose skupper provider, teardown skupper provider, recreate skupper provider, test skupper provider, check skupper provider | 2026-11-08 22:36 |
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | headroom, proxy, litellm, systemd, compression, context-optimization, installation | install headroom, setup headroom proxy, headroom service | 2026-11-08 22:36 |
 | [okf-bundle-index](./okf-bundle-index/SKILL.md) | agentfs, okf, knowledge, index, links | fix knowledge index, check knowledge links, okf index fix | 2026-11-08 22:36 |
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-11-08 22:36 |
 | [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-11-08 22:32 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-11-08 22:31 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-11-08 22:25 |

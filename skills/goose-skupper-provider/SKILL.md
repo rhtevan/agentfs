@@ -79,51 +79,44 @@ Default target: `rhel-ai`.
 | S5 | API-driven model discovery | `setup.sh` queries `/v1/models` for model ID + context |
 | S6 | Poison-JSON prevention | `setup.sh` validates JSON pre- and post-write; restores backup on failure |
 
-## Operations
+## Workflow
 
-All operations are implemented as scripts in `scripts/`.
+The agent MUST select the appropriate operation based on the user's
+request and run the corresponding script. The agent MUST report
+the script output verbatim.
 
-### Setup
+### Step 1 — Setup
+
+The agent MUST run:
 
 ```bash
-bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhel-ai
-bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhtevan-work
-bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh g8b-fp8-spec-128k
+bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh <HOST>
 ```
 
-7-step process: discover model from API → backup existing → write
-JSON (via Python with round-trip validation) → post-write validation
-→ update config.yaml → verify → test chat.
+### Step 2 — Teardown
 
-> ⚠️ **The JSON schema is Goose-specific.** The script uses the exact
-> template with all 22 required fields via `json.dumps`. Do NOT write
-> the JSON manually — see [Poison-JSON Safeguard](#poison-json-safeguard).
-
-### Teardown
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/goose-skupper-provider/scripts/teardown.sh
 ```
 
-Backups existing files, removes JSON and config.yaml entry, verifies.
+### Step 3 — Recreate
 
-### Recreate
+The agent MUST run teardown then setup sequentially:
 
 ```bash
 bash ~/.agents/skills/goose-skupper-provider/scripts/teardown.sh
-bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh rhel-ai
+bash ~/.agents/skills/goose-skupper-provider/scripts/setup.sh <HOST>
 ```
 
-Run teardown then setup sequentially. Useful when switching hosts/models.
+### Step 4 — Test
 
-### Test
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/goose-skupper-provider/scripts/test.sh
 ```
-
-6 checks: JSON exists, schema valid, model/port correct,
-config.yaml matches, endpoint health, chat completion.
 
 ## Tests
 

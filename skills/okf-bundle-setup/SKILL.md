@@ -4,7 +4,7 @@ description: >
   setup knowledge bundle, scaffold knowledge bundle, okf setup
 metadata:
   version: "1.2.0"
-  model-tier: T3
+  model-tier: T4
   tags: [agentfs, okf, knowledge, scaffolding, setup]
 ---
 

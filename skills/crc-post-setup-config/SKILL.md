@@ -3,7 +3,7 @@ name: crc-post-setup-config
 description: >
   crc post setup, configure crc monitoring, crc tune
 metadata:
-  version: "1.1.0"
+  version: "1.3.0"
   model-tier: T3
   tags: [openshift, crc, monitoring, configuration, alerts]
 ---

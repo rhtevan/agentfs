@@ -54,97 +54,75 @@ extension manager tool for session-scoped activation.
 | JSONL path | `~/.agents/knowledge/.kgm-index.jsonl` |
 | Config file | `~/.config/goose/config.yaml` |
 
-## Operations
+## Workflow
 
-### Setup
+The agent MUST select the appropriate operation based on the user's
+request and run the corresponding script. The agent MUST report
+the script output verbatim.
+
+### Step 1 — Setup
 
 > Signal: "setup goose kgm"
+
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/goose-kgm/scripts/setup-kgm.sh
 ```
 
-Adds the `knowledgegraphmemory` extension entry to Goose config
-with `enabled: false`. Creates the JSONL directory if needed.
-Idempotent — skips if entry already exists.
-
-### Teardown
+### Step 2 — Teardown
 
 > Signal: "teardown goose kgm"
+
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/goose-kgm/scripts/teardown-kgm.sh
 ```
 
-Removes the `knowledgegraphmemory` extension entry from Goose
-config and deletes the JSONL file. Idempotent.
-
-### Enable (Session-scoped)
+### Step 3 — Enable (Session-scoped)
 
 > Signal: "enable kgm"
 
-**Do not edit config.yaml.** Use the extension manager tool:
+The agent MUST use the extension manager tool:
 
 ```
 extensionmanager__manage_extensions(action: "enable", extension_name: "knowledgegraphmemory")
 ```
 
-This activates KGM tools (`search_nodes`, `read_graph`, etc.) for
-the current session only. The global config retains `enabled: false`.
-Requires setup to have been run first (extension entry must exist).
-
-### Disable (Session-scoped)
+### Step 4 — Disable (Session-scoped)
 
 > Signal: "disable kgm"
 
-**Do not edit config.yaml.** Use the extension manager tool:
+The agent MUST use the extension manager tool:
 
 ```
 extensionmanager__manage_extensions(action: "disable", extension_name: "knowledgegraphmemory")
 ```
 
-Deactivates KGM tools for the current session. The JSONL index file
-is preserved on disk for future sessions.
-
-### Status
+### Step 5 — Status
 
 > Signal: "kgm status"
 
-Two-part check:
-
-**1. Infrastructure status** (JSONL file, config entry):
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/goose-kgm/scripts/status-kgm.sh
 ```
 
-**2. Session status** (agent self-check):
+The agent MUST report the script output verbatim.
 
-The agent verifies whether `knowledgegraphmemory` tools are available
-in the current session by inspecting its active tool set. Report:
-
-- Session active: yes/no (are KGM tools available right now?)
-- Config entry: yes/no (is the extension configured in `config.yaml`?)
-- JSONL: exists/missing, bundle count, concept count, last reindex
-
-### Reindex
+### Step 6 — Reindex
 
 > Signal: "reindex kgm", "sync kgm"
+
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh
 ```
 
-Rebuilds the JSONL index from scratch by parsing OKF knowledge
-bundle indexes. Use after adding, removing, or modifying knowledge
-bundles to keep KGM in sync.
-
-Also runs automatically as part of `sync agentfs` (via `agentfs-setup`)
-when KGM is configured — pass `--check-enabled` flag to conditionally
-skip when disabled in config.
-
-**Manual reindex does not require KGM to be enabled** — the JSONL
-file can be rebuilt at any time regardless of session state.
+The agent MUST report the script output verbatim.
 
 ## Agent Usage (when KGM is enabled)
 
