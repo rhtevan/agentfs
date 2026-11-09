@@ -3,7 +3,7 @@ name: skill-merge
 description: >
   merge skills, copy skills to user, promote skills
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   model-tier: T1
   tags: [agentfs, skills, merge, project, user]
 ---
@@ -12,6 +12,15 @@ metadata:
 
 Copy project-scoped skills into the shared USER skills directory so
 they become available across all projects and agents.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Natural-Language Signals
 
@@ -36,66 +45,26 @@ they become available across all projects and agents.
 - `~/.agents/skills/` must exist (run `agentfs-setup` in USER scope
   if not).
 
-## Steps
+## Workflow
 
-1. **Resolve paths**
-   - Source: `<project_root>/.agents/skills/`
-   - Destination: `~/.agents/skills/`
+### Step 1 — Merge skills
 
-2. **Build skill list**
-   - If `skill_names` is empty: discover all immediate subdirectories
-     of the source that contain a `SKILL.md` file.
-   - If `skill_names` is provided: validate each name exists as a
-     subdirectory with a `SKILL.md` in the source. Report and skip
-     any that don't exist.
-
-3. **Copy each skill**
-   For each skill in the list:
-
-   a. Check if `~/.agents/skills/<name>/` already exists.
-      - If it exists and `force` is `false`:
-        **Skip** — print a warning and do not overwrite.
-      - If it exists and `force` is `true`:
-        **Overwrite** — remove the existing directory first, then copy.
-      - If it does not exist: proceed with copy.
-
-   b. Copy the entire skill directory recursively:
-      ```bash
-      cp -r <source>/<name> ~/.agents/skills/<name>
-      ```
-
-   c. Report the result: copied, skipped (already exists), or error.
-
-4. **Refresh USER skills index**
-   After all copies are complete, regenerate `~/.agents/skills/index.md`
-   using the `skill-index` skill (USER scope — the default).
-   This is mandatory per the **Index Currency** guardrail (AGENTS.md §6):
-   `skills/index.md` MUST stay current whenever skills are added, renamed,
-   moved, or deleted in either scope.
-
-5. **Report summary**
-   Print a table of results:
-   ```
-   Skill       | Status
-   ------------|--------
-   my-skill    | ✓ copied
-   other-skill | ⊘ skipped (already exists)
-   bad-name    | ✗ not found in project
-   ```
-
-## Example Usage
+The agent MUST run the merge script:
 
 ```bash
-# From an agent console — the agent runs these steps:
+bash ~/.agents/skills/skill-merge/scripts/merge-skills.sh [--force] [--project-root DIR] [SKILL_NAME ...]
+```
 
-# 1. Discover what's available
-ls .agents/skills/
+The agent MUST report the script output verbatim, including the
+per-skill status table.
 
-# 2. Copy all project skills to USER
-# (agent iterates and runs cp -r for each)
+### Step 2 — Refresh index
 
-# 3. Copy specific skills only
-# (agent copies only the named directories)
+If any skills were copied, the agent MUST run post-write to refresh
+the USER skills index:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh ~/.agents/skills/index.md "Skills merged from project scope"
 ```
 
 ## Safety

@@ -2,6 +2,71 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 22:10
+- Add trace_step and trace_end calls (skills/fedora-window-list/scripts/toggle-window-list.sh)
+- Add trace-lib.sh instrumentation (skills/fedora-window-list/scripts/toggle-window-list.sh)
+- Restructure for Quality: single-step CNL, add Output Contract, remove internal references (skills/fedora-window-list/SKILL.md)
+
+## 2026-11-08 22:08
+- Remove internal file path from Step 2, add Output Contract for interface_opacity (skills/goose-cli-fix/SKILL.md)
+- Add trace_step 1 for diagnose phase (skills/goose-cli-fix/scripts/fix-projects-json.sh)
+- Add trace_step and trace_end calls for full trace instrumentation (skills/goose-cli-fix/scripts/fix-projects-json.sh)
+
+## 2026-11-08 22:07
+- Add trace-lib.sh sourcing and trace_init (skills/goose-cli-fix/scripts/fix-projects-json.sh)
+- Add no-semantic-judgment rule for sdm_delegation (skills/goose-cli-fix/SKILL.md)
+
+## 2026-11-08 22:06
+- Add frontmatter fields and bump version to 1.2.0 (skills/goose-cli-fix/SKILL.md)
+- Remove internal script details from Step 1 for interface_opacity compliance (skills/goose-cli-fix/SKILL.md)
+
+## 2026-11-08 22:05
+- Add explicit no-semantic-judgment rule for sdm_delegation clarity (skills/fedora-desktop-wmclass-fix/SKILL.md)
+
+## 2026-11-08 22:04
+- Add trace_step and trace_end calls for full trace instrumentation (skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh)
+- Fix trace_init version to 1.3.0 (skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh)
+
+## 2026-11-08 22:03
+- Bump version to 1.3.0 (skills/fedora-desktop-wmclass-fix/SKILL.md)
+- Add trace-lib.sh sourcing and trace_init for Observable trace_instrumentation (skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh)
+
+## 2026-11-08 21:34
+- Restructure to script-driven CNL workflow for Build+Quality qualification (skills/fedora-window-list/SKILL.md)
+- New script: toggle GNOME window list extension (enable/disable/status) (skills/fedora-window-list/scripts/toggle-window-list.sh)
+- Restructure to CNL workflow for Quality+Observable qualification (skills/fedora-desktop-wmclass-fix/SKILL.md)
+
+## 2026-11-08 21:33
+- Restructure to script-driven CNL workflow for Build+Quality qualification (skills/skill-merge/SKILL.md)
+- New script: copy project skills to USER scope with force/selective options (skills/skill-merge/scripts/merge-skills.sh)
+
+## 2026-11-08 21:32
+- Restructure to script-driven CNL workflow for Quality+Build qualification (skills/goose-cli-fix/SKILL.md)
+- New script: diagnose and repair projects.json parse errors (skills/goose-cli-fix/scripts/fix-projects-json.sh)
+
+## 2026-11-08 21:31
+- Restructure steps to CNL workflow format for Quality qualification (skills/fedora-obsidian-fix/SKILL.md)
+
+## 2026-11-08 21:20
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/skill-merge/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/skill-index/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/hermes-headroom-provider/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/goose-cli-fix/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/fedora-window-list/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/fedora-obsidian-fix/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/fedora-desktop-wmclass-fix/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/crc-post-setup-config/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/crc-noo-config/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/crc-nmstate-config/SKILL.md)
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/crc-nad-dynamic-plugin-config/SKILL.md)
+
+## 2026-11-08 21:19
+- Add anti-fabrication rules and CNL compliance for Observable qualification (skills/goose-kgm/SKILL.md)
+- Add CNL compliance (MUST/SHALL steps), anti-fabrication rules for Observable qualification (skills/agentflow-fuseki/SKILL.md)
+
+## 2026-11-08 21:18
+- Add anti-fabrication rules section for Observable qualification (skills/agentflow-fuseki/SKILL.md)
+
 ## 2026-11-08 21:11
 - Bump version to 1.5.0 — added scripts/ for Build qualification (skills/goose-maas-provider/SKILL.md)
 - New script: test model reasoning_content compatibility with Goose streaming parser (skills/goose-maas-provider/scripts/test-model-compat.sh)

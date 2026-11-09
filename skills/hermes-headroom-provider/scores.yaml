@@ -1,13 +1,13 @@
 # scores.yaml — hermes-headroom-provider
 skill: hermes-headroom-provider
-version: 1.2.1
-model_tier: T1
-qualification_rule: T1
-qoo-qualified: false
+version: 1.3.0
+model_tier: "n/a"
+qualification_rule: "n/a"
+qoo-qualified: "exempt"
 quality:
   schema: quality.yaml
-  aggregate_score: 33.333333333333336
-  band: Redesign
+  aggregate_score: 58.333333333333336
+  band: Re-engineer
   dimensions:
     script_coverage:
       score: 0
@@ -16,28 +16,28 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.9890120098185279
+      confidence: 0.9626684324699734
     step_clarity:
-      score: 0
-      pass: false
-      confidence: 0.8804140537545575
+      score: 100
+      pass: true
+      confidence: 0.9403243348599882
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999997615814777
+      confidence: 0.9997500805832839
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 0
+      score: 50
       pass: false
-      confidence: 0.77729988964086
-  evaluated: '2026-11-08T20:47:51-05:00'
+      confidence: 0.5621765025686553
+  evaluated: '2026-11-08T21:57:25-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 50
-  band: Re-engineer
+  aggregate_score: 75
+  band: Tunable
   dimensions:
     trace_instrumentation:
       score: 0
@@ -46,16 +46,16 @@ observable:
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999996423722521
+      confidence: 1.0
     anti_fabrication:
-      score: 0
-      pass: false
-      confidence: 0.9999898673126559
+      score: 100
+      pass: true
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9998405234066992
-  evaluated: '2026-11-08T20:47:51-05:00'
+      confidence: 0.998828711796054
+  evaluated: '2026-11-08T21:57:25-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -69,23 +69,23 @@ operable:
       has_muscle:
         score: 0
         pass: false
-        confidence: 1.0
+        confidence: 0.9999996423722523
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9999998807907247
+        confidence: 0.9999998807907245
       has_harness:
         score: 100
         pass: true
-        confidence: 0.77729988964086
-    evaluated: '2026-11-08T20:47:51-05:00'
+        confidence: 0.9890130589396956
+    evaluated: '2026-11-08T21:57:25-05:00'
 history:
-- date: '2026-11-08T20:47:51-05:00'
+- date: '2026-11-08T21:57:25-05:00'
   type: full
-  quality_score: 33.333333333333336
-  quality_band: Redesign
-  observable_score: 50
-  observable_band: Re-engineer
+  quality_score: 58.333333333333336
+  quality_band: Re-engineer
+  observable_score: 75
+  observable_band: Tunable
   build_score: 50
   build_band: Re-engineer
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

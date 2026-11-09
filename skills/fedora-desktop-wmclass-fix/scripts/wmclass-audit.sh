@@ -6,6 +6,11 @@
 #           Without --app, scans all .desktop files in both system and user dirs
 set -euo pipefail
 
+# Trace instrumentation for Observable scoring
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "fedora-desktop-wmclass-fix" "1.3.0" 2>/dev/null || true
+
 FIX_MODE=false
 TARGET_APP=""
 
@@ -107,6 +112,8 @@ get_current_wmclass() {
   grep -m1 '^StartupWMClass=' "$desktop_file" 2>/dev/null | sed 's/^StartupWMClass=//' || true
 }
 
+trace_step 1 "collect_desktop_files" 0 "count=${#DESKTOP_FILES[@]}" 2>/dev/null || true
+
 # Report header
 printf '\n%-40s %-12s %-20s %-20s %s\n' "DESKTOP FILE" "ELECTRON?" "CURRENT WMClass" "EXPECTED WMClass" "STATUS"
 printf '%-40s %-12s %-20s %-20s %s\n' "$(printf '%0.s-' {1..40})" "$(printf '%0.s-' {1..12})" "$(printf '%0.s-' {1..20})" "$(printf '%0.s-' {1..20})" "$(printf '%0.s-' {1..10})"
@@ -163,6 +170,8 @@ for df in "${DESKTOP_FILES[@]}"; do
   fi
 done
 
+trace_step 2 "audit_electron_apps" 0 "issues=$ISSUES_FOUND,fixed=$FIXED" 2>/dev/null || true
+
 echo
 if [[ $ISSUES_FOUND -eq 0 ]]; then
   echo "✅ All Electron .desktop files have correct StartupWMClass."
@@ -177,4 +186,5 @@ else
   fi
 fi
 
+trace_end 2>/dev/null || true
 exit $ISSUES_FOUND

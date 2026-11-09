@@ -7,7 +7,7 @@ argument-hint: "No arguments required — run the skill to diagnose and fix"
 compatibility: "Fedora with GNOME/Wayland, Obsidian installed via Snap (classic)"
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T1
   tags: [fedora, obsidian, wayland, snap, desktop-fix]
 user-invocable: true
@@ -43,53 +43,64 @@ when `--ozone-platform=wayland` is active (auto-detected). The
 portal denial causes the dialog promise to silently fail — no
 dialog, no error visible to the user.
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
+
 ## Prerequisites
 
 - Fedora with GNOME and Wayland session
 - Obsidian installed via Snap (`snap list obsidian`)
 - `xdg-desktop-portal` and `xdg-desktop-portal-gnome` installed
 
-## Steps
+## Workflow
 
-1. **Diagnose**
+### Step 1 — Diagnose
 
-   Run the diagnostic script to confirm the issue applies:
+The agent MUST run the diagnostic script to confirm the issue applies:
 
-   ```bash
-   bash ~/.agents/skills/fedora-obsidian-fix/scripts/diagnose.sh
-   ```
+```bash
+bash ~/.agents/skills/fedora-obsidian-fix/scripts/diagnose.sh
+```
 
-   The script checks: Snap installation, Wayland session, portal
-   services, and the portal error condition.
+The agent MUST report the script output verbatim. The script checks:
+Snap installation, Wayland session, portal services, and the portal
+error condition.
 
-2. **Apply the fix**
+### Step 2 — Apply the fix
 
-   Run the fix script to create the wrapper and desktop override:
+The agent MUST run the fix script:
 
-   ```bash
-   bash ~/.agents/skills/fedora-obsidian-fix/scripts/fix.sh
-   ```
+```bash
+bash ~/.agents/skills/fedora-obsidian-fix/scripts/fix.sh
+```
 
-   This creates:
-   - `~/.local/bin/obsidian-wrapper.sh` — sets
-     `BAMF_DESKTOP_FILE_HINT`, `SNAP_DESKTOP_FILE`, `GTK_USE_PORTAL=1`,
-     and passes `--ozone-platform=x11 --class=md.obsidian.Obsidian`
-     to Obsidian
-   - `~/.local/share/applications/obsidian_md.obsidian.Obsidian.desktop`
-     — user-local `.desktop` override that launches via the wrapper
-   - `~/.local/share/applications/obsidian_obsidian.desktop`
-     — shadows the Snap-provided default `.desktop` to prevent
-     duplicate icon on the GNOME Dash
+The agent MUST report what the script created. Do NOT describe what
+the script will do before running it — run it first, then report
+the actual output.
 
-3. **Restart Obsidian**
+### Step 3 — Restart Obsidian
 
-   Quit Obsidian completely and relaunch from the Dash (or run
-   `~/.local/bin/obsidian-wrapper.sh` from terminal).
+The agent MUST instruct the user to quit Obsidian completely and
+relaunch from the Dash (or run `~/.local/bin/obsidian-wrapper.sh`).
 
-4. **Verify**
+### Step 4 — Verify
 
-   Click "Open folder as vault" → the GNOME file picker should
-   appear and the "Open" button should respond.
+The agent MUST confirm the fix by checking:
+
+```bash
+test -x ~/.local/bin/obsidian-wrapper.sh && echo "✅ Wrapper exists"
+test -f ~/.local/share/applications/obsidian_md.obsidian.Obsidian.desktop && echo "✅ Desktop override exists"
+test -f ~/.local/share/applications/obsidian_obsidian.desktop && echo "✅ Shadow file exists"
+```
+
+The agent MUST instruct the user to click "Open folder as vault" →
+the GNOME file picker MUST appear.
 
 ## Gotchas
 

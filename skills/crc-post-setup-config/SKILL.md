@@ -3,8 +3,8 @@ name: crc-post-setup-config
 description: >
   crc post setup, configure crc monitoring, crc tune
 metadata:
-  version: "1.0.0"
-  model-tier: T1
+  version: "1.1.0"
+  model-tier: T2
   tags: [openshift, crc, monitoring, configuration, alerts]
 ---
 
@@ -19,6 +19,15 @@ Apply post-setup configuration to an OpenShift Local (CRC) cluster. This skill c
 | **Cluster Monitoring** | Enables the monitoring stack with aggressive Prometheus retention (`24h` / `4GB`) | CRC disables monitoring by default; without retention limits Prometheus fills the VM disk |
 | **System Reserved Resources** | Overrides kubelet `--system-reserved` to `memory=1Gi, cpu=500m, ephemeral-storage=1Gi` via a MachineConfig | CRC's default reservation (350Mi memory) is too low and triggers the `SystemMemoryExceedsReservation` alert |
 | **Alert Silences** | Silences `AlertmanagerReceiversNotConfigured` for 1 year | Expected on a dev cluster with no external notification receivers configured |
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Steps
 

@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 21:20 | v4.1.0 — Add anti-fabrication rules and CNL compliance for Observable qualification |
 | 2026-11-05 19:32 | v4.0.0 — Add model-tier to frontmatter |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-08-16 16:22 | v4.0.0 — Replaced 180-line procedural prose with invocation of canonical `regen-skill-index.py` script (DRY with `post-edit.sh`). SKILL.md 175→57 lines. |

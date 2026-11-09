@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 21:20 | v1.3.0 — Add anti-fabrication rules and CNL compliance for Observable qualification |
 | 2026-11-05 19:31 | v1.2.1 — Add model-tier to frontmatter |
 | 2026-07-13 13:40 | v1.2.1 — Added YAML frontmatter with metadata tags |
 | 2026-07-06 22:17 | v1.2 — Added `service_tier: fast` incompatibility warning and troubleshooting; `speed` kwarg rejected by OpenAI-compat transport |

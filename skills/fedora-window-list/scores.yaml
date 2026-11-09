@@ -1,91 +1,91 @@
 # scores.yaml — fedora-window-list
 skill: fedora-window-list
-version: 1.0.0
+version: 1.2.0
 model_tier: T1
 qualification_rule: T1
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 55.5
-  band: Re-engineer
+  aggregate_score: 83.33333333333333
+  band: Tunable
   dimensions:
     script_coverage:
-      score: 0
-      pass: false
-      confidence: 1.0
+      score: 100
+      pass: true
+      confidence: 0.9999996423722523
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.9706705860675893
+      confidence: 0.7310329353207002
     step_clarity:
-      score: 33
-      pass: false
-      confidence: 0.6605489630855271
+      score: 100
+      pass: true
+      confidence: 0.8518051673724503
     prose_executability:
-      score: 0
-      pass: false
-      confidence: 0.995911218710362
+      score: 100
+      pass: true
+      confidence: 0.9840598092874773
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 100
-      pass: true
-      confidence: 0.9999251421693931
-  evaluated: '2026-11-08T20:44:43-05:00'
+      score: 0
+      pass: false
+      confidence: 0.9626730730490257
+  evaluated: '2026-11-08T21:56:47-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 25
-  band: Redesign
+  aggregate_score: 100
+  band: Operable
   dimensions:
     trace_instrumentation:
-      score: 0
-      pass: false
+      score: 100
+      pass: true
       confidence: 1.0
     cnl_compliance:
-      score: 0
-      pass: false
-      confidence: 0.9988635594658378
+      score: 100
+      pass: true
+      confidence: 1.0
     anti_fabrication:
-      score: 0
-      pass: false
-      confidence: 0.9999938011552556
+      score: 100
+      pass: true
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9998407617436356
-  evaluated: '2026-11-08T20:44:43-05:00'
+      confidence: 0.9820109975876377
+  evaluated: '2026-11-08T21:56:47-05:00'
 operable:
   build:
     schema: operable.yaml
-    aggregate_score: 50
-    band: Re-engineer
+    aggregate_score: 100
+    band: Operable
     dimensions:
       has_bones:
-        score: 0
-        pass: false
+        score: 100
+        pass: true
         confidence: 1.0
       has_muscle:
-        score: 0
-        pass: false
-        confidence: 0.9999998807907245
+        score: 100
+        pass: true
+        confidence: 1.0
       has_brain:
         score: 100
         pass: true
-        confidence: 1.0
+        confidence: 0.9999997615814777
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9990889988442551
-    evaluated: '2026-11-08T20:44:43-05:00'
+        confidence: 0.9997387615048174
+    evaluated: '2026-11-08T21:56:47-05:00'
 history:
-- date: '2026-11-08T20:44:43-05:00'
+- date: '2026-11-08T21:56:47-05:00'
   type: full
-  quality_score: 55.5
-  quality_band: Re-engineer
-  observable_score: 25
-  observable_band: Redesign
-  build_score: 50
-  build_band: Re-engineer
+  quality_score: 83.33333333333333
+  quality_band: Tunable
+  observable_score: 100
+  observable_band: Operable
+  build_score: 100
+  build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

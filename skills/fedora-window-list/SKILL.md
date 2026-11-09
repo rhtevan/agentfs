@@ -2,60 +2,63 @@
 name: fedora-window-list
 description: >
   toggle window list, taskbar toggle, gnome taskbar
+argument-hint: "{enable|disable|status}"
+compatibility: "Fedora with GNOME desktop"
 metadata:
-  version: "1.0.0"
+  author: agentfs
+  version: "1.2.0"
   model-tier: T1
   tags: [fedora, gnome, desktop, taskbar]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Fedora GNOME Window List Toggle
 
-This skill accepts one argument: `enable` or `disable`.
+Enable, disable, or check the status of the GNOME Window List
+taskbar extension.
 
-- `/fedora-window-list enable` — Show the window list at the bottom of the workspace
-- `/fedora-window-list disable` — Hide the window list
+## Rules
 
-If no argument is provided, check the current state and report it.
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
 
-## Procedure
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
-The window list is provided by the GNOME Shell extension `window-list@gnome-shell-extensions.gcampax.github.com`.
+This skill is purely mechanical — no semantic judgment is required.
+All decisions are made by the toggle script.
 
-### If the argument is `disable`:
+## Workflow
 
-```bash
-gnome-extensions disable window-list@gnome-shell-extensions.gcampax.github.com
-```
+### Step 1 — Run the toggle script
 
-### If the argument is `enable`:
-
-```bash
-gnome-extensions enable window-list@gnome-shell-extensions.gcampax.github.com
-```
-
-### If no argument is provided:
-
-Check and report the current state:
+The agent MUST run:
 
 ```bash
-gnome-extensions info window-list@gnome-shell-extensions.gcampax.github.com
+bash ~/.agents/skills/fedora-window-list/scripts/toggle-window-list.sh {enable|disable|status}
 ```
+
+The agent MUST pass one argument:
+- `enable` — show the window list taskbar
+- `disable` — hide the window list taskbar
+- `status` — report current state
+
+If the user did not specify an action, the agent MUST use `status`.
+
+The agent MUST report the script output verbatim.
+The agent MUST NOT interpret, summarize, or paraphrase the output.
+
+## Output Contract
+
+- Exit 0 → action completed successfully
+- Exit 1 → error (script output explains the cause)
 
 ## Verification
 
-After any toggle, confirm the new state:
-
-```bash
-gnome-extensions info window-list@gnome-shell-extensions.gcampax.github.com 2>&1 | grep -i state
-```
-
-Look for `State: ACTIVE` (enabled) or `State: INACTIVE` (disabled). The change takes effect immediately — no restart needed.
-
-## Notes
-
-- The setting persists across reboots.
-- If the extension is not installed: `sudo dnf install gnome-shell-extension-window-list`
-
+- [ ] Script exits 0 with a confirmation message
+- [ ] The taskbar change is visible immediately (no restart needed)
 
 ## Changelog
 

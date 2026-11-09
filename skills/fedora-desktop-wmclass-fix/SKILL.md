@@ -7,7 +7,7 @@ argument-hint: "[--fix] [--app <name>]"
 compatibility: "Fedora/GNOME on Wayland with Electron apps"
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "1.3.0"
   model-tier: T1
   tags: [fedora, gnome, wayland, electron, desktop, wmclass]
 user-invocable: true
@@ -23,6 +23,19 @@ to its pinned launcher icon, causing a duplicate generic icon to
 appear on the taskbar (Window List) or dock. This skill detects
 the problem across all installed Electron apps and can fix them
 automatically.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
+
+This skill is purely mechanical — no semantic judgment is required.
+All decisions are made by the audit script. The agent MUST NOT
+interpret or evaluate results beyond what the script reports.
 
 ## Prerequisites
 
@@ -53,43 +66,33 @@ This is a recurring problem because app reinstalls or updates often
 overwrite the system `.desktop` file with a default that lacks
 `StartupWMClass` or uses the original (wrong-cased) value.
 
-## Steps
+## Workflow
 
-1. **Audit all Electron apps** (dry-run)
+### Step 1 — Audit
 
-   Scan all `.desktop` files and report which Electron apps have
-   missing or mismatched `StartupWMClass`:
+The agent MUST run the audit script to detect WMClass mismatches:
 
-   ```bash
-   bash ~/.agents/skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh
-   ```
+```bash
+bash ~/.agents/skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh [--app NAME]
+```
 
-2. **Audit a specific app**
+The agent MUST report the script output verbatim. Do NOT guess which
+apps have issues — the script detects them.
 
-   Check a single app by name (the `.desktop` basename without
-   extension):
+### Step 2 — Fix
 
-   ```bash
-   bash ~/.agents/skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh --app Goose
-   ```
+If mismatches are found, the agent MUST run the fix:
 
-3. **Fix all issues**
+```bash
+bash ~/.agents/skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh --fix [--app NAME]
+```
 
-   Apply corrections automatically. For system-level `.desktop` files,
-   the script copies them to `~/.local/share/applications/` first
-   (user override), then sets the correct `StartupWMClass`:
+The agent MUST report which files were modified.
 
-   ```bash
-   bash ~/.agents/skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh --fix
-   ```
+### Step 3 — Verify
 
-4. **Fix a specific app**
-
-   ```bash
-   bash ~/.agents/skills/fedora-desktop-wmclass-fix/scripts/wmclass-audit.sh --fix --app Goose
-   ```
-
-5. **Restart the affected app** to see the fix take effect.
+The agent MUST instruct the user to restart the affected app(s) to
+confirm the duplicate icon is gone.
 
 ## How the Script Works
 

@@ -1,9 +1,9 @@
 # scores.yaml — agentflow-fuseki
 skill: agentflow-fuseki
-version: 1.0.1
+version: 1.1.0
 model_tier: T1
 qualification_rule: T1
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
   aggregate_score: 83.33333333333333
@@ -20,11 +20,11 @@ quality:
     step_clarity:
       score: 100
       pass: true
-      confidence: 0.9999985694905716
+      confidence: 0.9999998807907245
     prose_executability:
       score: 100
       pass: true
-      confidence: 0.9998959411180355
+      confidence: 0.9993653751472834
     model_portability:
       score: 100
       pass: true
@@ -33,11 +33,11 @@ quality:
       score: 0
       pass: false
       confidence: 1.0
-  evaluated: '2026-11-08T20:39:16-05:00'
+  evaluated: '2026-11-08T21:55:08-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 50
-  band: Re-engineer
+  aggregate_score: 75
+  band: Tunable
   dimensions:
     trace_instrumentation:
       score: 0
@@ -48,14 +48,14 @@ observable:
       pass: true
       confidence: 1.0
     anti_fabrication:
-      score: 0
-      pass: false
+      score: 100
+      pass: true
       confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9959237518302597
-  evaluated: '2026-11-08T20:39:16-05:00'
+      confidence: 0.9626475537272052
+  evaluated: '2026-11-08T21:55:08-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -78,14 +78,14 @@ operable:
         score: 100
         pass: true
         confidence: 1.0
-    evaluated: '2026-11-08T20:39:16-05:00'
+    evaluated: '2026-11-08T21:55:08-05:00'
 history:
-- date: '2026-11-08T20:39:16-05:00'
+- date: '2026-11-08T21:55:08-05:00'
   type: full
   quality_score: 83.33333333333333
   quality_band: Tunable
-  observable_score: 50
-  observable_band: Re-engineer
+  observable_score: 75
+  observable_band: Tunable
   build_score: 100
   build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

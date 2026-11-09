@@ -3,14 +3,23 @@ name: crc-nmstate-config
 description: >
   install nmstate, configure nmstate, nmstate operator
 metadata:
-  version: "1.0.0"
-  model-tier: T1
+  version: "1.1.0"
+  model-tier: T2
   tags: [openshift, crc, networking, nmstate, operator]
 ---
 
 # CRC NMState Operator Configuration
 
 Install the NMState Operator on OpenShift Local (CRC) and verify that the console plugin and networking menu items are working correctly.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

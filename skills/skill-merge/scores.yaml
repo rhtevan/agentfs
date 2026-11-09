@@ -1,75 +1,75 @@
 # scores.yaml — skill-merge
 skill: skill-merge
-version: 1.2.0
+version: 1.3.0
 model_tier: T1
 qualification_rule: T1
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 61.166666666666664
-  band: Re-engineer
+  aggregate_score: 83.33333333333333
+  band: Tunable
   dimensions:
     script_coverage:
-      score: 0
-      pass: false
+      score: 100
+      pass: true
       confidence: 1.0
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.9626684324699734
+      confidence: 1.0
     step_clarity:
-      score: 67
+      score: 100
       pass: true
-      confidence: 0.7678884730196982
+      confidence: 0.9999996423722521
     prose_executability:
-      score: 0
-      pass: false
-      confidence: 0.9999953508594286
+      score: 100
+      pass: true
+      confidence: 0.999290136130017
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 100
-      pass: true
-      confidence: 0.9046505126460354
-  evaluated: '2026-11-08T20:50:48-05:00'
+      score: 0
+      pass: false
+      confidence: 0.9999994039539002
+  evaluated: '2026-11-08T21:57:50-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 50
-  band: Re-engineer
+  aggregate_score: 75
+  band: Tunable
   dimensions:
     trace_instrumentation:
       score: 0
       pass: false
-      confidence: 1.0
+      confidence: 0.9990889988442551
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999949932351058
+      confidence: 1.0
     anti_fabrication:
-      score: 0
-      pass: false
-      confidence: 0.9999870063564402
+      score: 100
+      pass: true
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9998405234066992
-  evaluated: '2026-11-08T20:50:48-05:00'
+      confidence: 0.9992885886157026
+  evaluated: '2026-11-08T21:57:50-05:00'
 operable:
   build:
     schema: operable.yaml
-    aggregate_score: 50
-    band: Re-engineer
+    aggregate_score: 100
+    band: Operable
     dimensions:
       has_bones:
-        score: 0
-        pass: false
+        score: 100
+        pass: true
         confidence: 1.0
       has_muscle:
-        score: 0
-        pass: false
-        confidence: 0.9999998807907248
+        score: 100
+        pass: true
+        confidence: 1.0
       has_brain:
         score: 100
         pass: true
@@ -77,15 +77,15 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9990889988442551
-    evaluated: '2026-11-08T20:50:48-05:00'
+        confidence: 0.9999997615814777
+    evaluated: '2026-11-08T21:57:50-05:00'
 history:
-- date: '2026-11-08T20:50:48-05:00'
+- date: '2026-11-08T21:57:50-05:00'
   type: full
-  quality_score: 61.166666666666664
-  quality_band: Re-engineer
-  observable_score: 50
-  observable_band: Re-engineer
-  build_score: 50
-  build_band: Re-engineer
+  quality_score: 83.33333333333333
+  quality_band: Tunable
+  observable_score: 75
+  observable_band: Tunable
+  build_score: 100
+  build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

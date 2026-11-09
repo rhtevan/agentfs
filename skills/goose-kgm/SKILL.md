@@ -3,8 +3,8 @@ name: goose-kgm
 description: >
   setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm
 metadata:
-  version: "1.5.0"
-  model-tier: T1
+  version: "1.6.0"
+  model-tier: T2
   tags: [goose, kgm, knowledge-graph, mcp, knowledge]
 ---
 
@@ -29,6 +29,18 @@ replacement for OKF progressive discovery.
   from OKF — not guardrails, not memories, not skill content.
 - **Derived artifact.** The JSONL file is regenerated from OKF indexes.
   It is gitignored and never hand-edited.
+
+## Rules
+
+Do NOT fabricate KGM status. Every status report MUST come from
+actual script output or tool introspection. If a script fails,
+report the actual error.
+
+Do NOT edit the JSONL index file directly. All changes MUST go
+through the reindex script.
+
+Do NOT edit `config.yaml` to enable/disable KGM. MUST use the
+extension manager tool for session-scoped activation.
 
 ## Configuration
 

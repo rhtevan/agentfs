@@ -2,6 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:05 | v1.3.0 — Add trace-lib.sh sourcing and trace_init for Observable trace_instrumentation; Bump version to 1.3.0; Fix trace_init version to 1.3.0; Add trace_step and trace_end calls for full trace instrumentation; Add explicit no-semantic-judgment rule for sdm_delegation clarity |
+| 2026-11-08 21:34 | v1.2.0 — Add anti-fabrication rules and CNL compliance for Observable qualification; Restructure to CNL workflow for Quality+Observable qualification |
 | 2026-11-05 19:30 | v1.1.0 — Add model-tier to frontmatter |
 | 2026-09-04 11:12 | v1.1.0 — Added gotchas for competing .desktop files and --ozone-platform=x11 WM_CLASS behavior |
 

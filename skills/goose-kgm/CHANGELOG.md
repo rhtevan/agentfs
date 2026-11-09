@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 21:19 | v1.6.0 — Add anti-fabrication rules and CNL compliance for Observable qualification |
 | 2026-11-05 19:31 | v1.5.0 — Add model-tier to frontmatter |
 | 2026-10-22 21:48 | v1.5.0 — New script: self-healing symlink enforcement for MCP server memory.jsonl |
 | 2026-09-24 20:46 | v1.4.0 — Document AgentSkill entity type, staleness guard, anti-pattern moved from AGENTS.md |

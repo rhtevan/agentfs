@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 21:19 | v1.1.0 — Add anti-fabrication rules section for Observable qualification; Add CNL compliance (MUST/SHALL steps), anti-fabrication rules for Observable qualification |
 | 2026-11-05 19:30 | v1.0.1 — Add model-tier to frontmatter |
 | 2026-08-31 14:39 | v1.0.1 — Renamed skill from fuseki to agentflow-fuseki (AgentFLOW collection prefix) |
 | 2026-08-04 18:59 | v1.1 — Fix: stop now disables auto-start; start re-enables it. Prevents Fuseki from restarting on login after explicit stop. |

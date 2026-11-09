@@ -2,70 +2,63 @@
 name: goose-cli-fix
 description: >
   fix goose cli, goose projects.json, goose parse error
+argument-hint: "(no arguments)"
+compatibility: "Any OS with Goose CLI installed"
 metadata:
-  version: "1.0.0"
+  author: agentfs
+  version: "1.2.0"
   model-tier: T1
   tags: [goose, cli, fix, json]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Fix Goose CLI projects.json Parse Error
 
 Fix the warning `Failed to update project tracker with instruction: Failed to parse projects.json file` that can occur after updating Goose CLI, caused by malformed JSON in the project tracker file.
 
-## Steps
+## Rules
 
-1. **Locate the projects.json file**
-   The project tracker file is at:
-   ```
-   ~/.local/share/goose/projects.json
-   ```
-   Verify it exists:
-   ```
-   ls -la ~/.local/share/goose/projects.json
-   ```
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
 
-2. **Validate the JSON**
-   Check whether the file contains valid JSON:
-   ```
-   python3 -m json.tool ~/.local/share/goose/projects.json > /dev/null
-   ```
-   If this reports an error, the file is malformed and needs repair.
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
-3. **Inspect the file for common issues**
-   Read the file and look for:
-   - Extra trailing closing braces `}` at the end of the file (most common cause)
-   - Duplicate keys or other JSON syntax errors
-   - Truncated or corrupted content
+This skill is purely mechanical — no semantic judgment is required.
+All decisions are made by the repair script.
 
-4. **Repair the JSON**
-   Fix the identified issues. The most common problem is extra `}}` or `}` appended to the end of the file after an update. Remove the extra braces so the file ends with a single closing `}` matching the opening `{` of the root object. The correct structure is:
-   ```json
-   {
-     "projects": {
-       "/path/to/project": {
-         "path": "/path/to/project",
-         "last_accessed": "...",
-         "last_instruction": "...",
-         "last_session_id": "..."
-       }
-     }
-   }
-   ```
+## Workflow
 
-5. **Validate the fix**
-   Confirm the repaired file is valid JSON:
-   ```
-   python3 -m json.tool ~/.local/share/goose/projects.json > /dev/null
-   ```
+### Step 1 — Run the repair script
 
-## Notes
+The agent MUST run the repair script:
 
-- If the file is too corrupted to repair, it is safe to replace it with an empty project tracker: `{"projects": {}}`. Goose will repopulate it as you use different project directories.
-- Do **not** leave backup files behind after the fix — clean up any `.bak` copies.
+```bash
+bash ~/.agents/skills/goose-cli-fix/scripts/fix-projects-json.sh
+```
+
+The script handles diagnosis and repair automatically.
+The agent MUST report the script output verbatim.
+The agent MUST NOT interpret, summarize, or paraphrase the output.
+
+### Step 2 — Verify
+
+The repair script performs its own validation. The agent MUST check the
+script exit code: 0 means success, 1 means repair failed.
+
+If the script exits 0, the fix is complete. If it exits 1, the agent
+MUST report the script output and stop — do not attempt manual repair.
+
+## Output Contract
+
+- Exit 0 from the repair script → repair succeeded
+- Exit 1 from the repair script → manual inspection required
 
 ## Verification
 
-- [ ] `python3 -m json.tool ~/.local/share/goose/projects.json` exits with no errors
+- [ ] Repair script exits 0 with a success message
 - [ ] The Goose CLI warning no longer appears on next session start
 
 

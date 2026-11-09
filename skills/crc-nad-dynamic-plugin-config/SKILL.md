@@ -3,8 +3,8 @@ name: crc-nad-dynamic-plugin-config
 description: >
   install nad plugin, nad console plugin, network attachment
 metadata:
-  version: "1.0.0"
-  model-tier: T1
+  version: "1.1.0"
+  model-tier: T2
   tags: [openshift, crc, networking, console-plugin, helm]
 ---
 
@@ -19,6 +19,15 @@ The `networking-console-plugin` (built into OCP 4.21+) already has a full NAD UI
 - `KUBEVIRT_DYNAMIC` — normally set by the KubeVirt plugin, absent in CRC
 
 This plugin sets `KUBEVIRT_DYNAMIC=true` via a `console.flag/model` extension (7 lines of JSON, no custom JS code) whenever the `NetworkAttachmentDefinition` CRD is present in the cluster.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

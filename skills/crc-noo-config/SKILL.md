@@ -3,14 +3,23 @@ name: crc-noo-config
 description: >
   install noo, configure noo, network observability
 metadata:
-  version: "1.0.0"
-  model-tier: T1
+  version: "1.1.0"
+  model-tier: T2
   tags: [openshift, crc, networking, observability, operator, ebpf]
 ---
 
 # Install and Configure Network Observability Operator on CRC
 
 Install the Network Observability Operator on an OpenShift Local (CRC) cluster with demo Loki for full flow log and topology support, and enable all non-Tech-Preview eBPF features.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

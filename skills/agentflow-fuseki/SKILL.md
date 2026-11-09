@@ -6,7 +6,7 @@ argument-hint: "fuseki {setup|start|stop|status}"
 compatibility: "Linux with systemd user sessions, Java 17+"
 metadata:
   author: agentfs
-  version: "1.0.1"
+  version: "1.1.0"
   model-tier: T1
   tags: [fuseki, jena, sparql, rdf, infrastructure, service]
 user-invocable: true
@@ -38,6 +38,15 @@ with associated CLI tools (`riot`, `shacl`, etc.).
 | "fuseki stop" | Stop the fuseki systemd user service |
 | "fuseki status" | Check service status, port, and dataset health |
 
+## Rules
+
+Do NOT fabricate or invent command output. Every status report MUST
+come from actual script execution. If a script fails, report the
+actual error — do not guess what the output should be.
+
+Do NOT modify Fuseki configuration files directly. All changes MUST
+go through the setup script.
+
 ## Prerequisites
 
 - Linux with systemd user sessions (`systemctl --user` must work)
@@ -47,61 +56,47 @@ with associated CLI tools (`riot`, `shacl`, etc.).
 
 ## Steps
 
-### 1. Setup (install + configure)
+### Step 1 — Setup (install + configure)
 
-Run the setup script. It is idempotent — safe to run multiple times.
+The agent MUST run the setup script. It is idempotent — safe to run
+multiple times.
 
 ```bash
 bash ~/.agents/skills/fuseki/scripts/setup-fuseki.sh
 ```
 
-This script:
-1. Checks Java 17+ is available
-2. Downloads Apache Jena and Jena Fuseki binaries (skips if already installed)
-3. Creates stable symlinks (`~/.local/share/apache-jena`, `~/.local/share/apache-jena-fuseki`)
-4. Adds `JENA_HOME`, `FUSEKI_HOME`, and PATH entries to `~/.bashrc` (skips if already present)
-5. Creates `~/.local/share/fuseki-data/` for persistent data
-6. Installs a systemd user service unit (`fuseki.service`)
-7. Enables the service (does NOT start it automatically)
+The agent MUST report the script output verbatim. Do NOT summarize
+or paraphrase what the script does.
 
-### 2. Start
+### Step 2 — Start
 
-Run the start script:
+The agent MUST run the start script:
 
 ```bash
 bash ~/.agents/skills/fuseki/scripts/start-fuseki.sh
 ```
 
-This script:
-1. Starts the `fuseki.service` systemd user service
-2. Waits for Fuseki to become healthy (polls `/$/ping`)
-3. Reports the endpoint URL and available datasets
+The agent MUST wait for the script to complete and report the
+endpoint URL and available datasets from the actual output.
 
-### 3. Stop
+### Step 3 — Stop
 
-Run the stop script:
+The agent MUST run the stop script:
 
 ```bash
 bash ~/.agents/skills/fuseki/scripts/stop-fuseki.sh
 ```
 
-This script:
-1. Stops the `fuseki.service` systemd user service
-2. Confirms the port is released
+### Step 4 — Status
 
-### 4. Status
-
-Run the status script:
+The agent MUST run the status script:
 
 ```bash
 bash ~/.agents/skills/fuseki/scripts/status-fuseki.sh
 ```
 
-This script:
-1. Checks whether Jena and Fuseki binaries are installed
-2. Checks systemd service state
-3. If running, queries the Fuseki API for datasets and health
-4. Reports versions of all Jena CLI tools
+The agent MUST report the actual output. Do NOT fabricate service
+state or dataset information.
 
 ## Verification
 

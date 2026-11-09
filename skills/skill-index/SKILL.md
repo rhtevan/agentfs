@@ -3,8 +3,8 @@ name: skill-index
 description: >
   refresh skill index, index skills, regenerate skill index
 metadata:
-  version: "4.0.0"
-  model-tier: T1
+  version: "4.1.0"
+  model-tier: "n/a"
   tags: [agentfs, skills, index, discovery]
 user-invocable: true
 disable-model-invocation: false
@@ -18,6 +18,15 @@ disable-model-invocation: false
 > with a clear message.
 
 Regenerate `index.md` for a skills directory by scanning all `SKILL.md` files.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Skill Location Selection
 
