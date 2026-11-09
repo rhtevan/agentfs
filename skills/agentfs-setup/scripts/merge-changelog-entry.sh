@@ -28,6 +28,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 CHANGELOG_FILE="${1:?Usage: merge-changelog-entry.sh <CHANGELOG_FILE> <VERSION> <DESCRIPTION>}"
 VERSION="${2:?Usage: merge-changelog-entry.sh <CHANGELOG_FILE> <VERSION> <DESCRIPTION>}"
 DESCRIPTION="${3:?Usage: merge-changelog-entry.sh <CHANGELOG_FILE> <VERSION> <DESCRIPTION>}"

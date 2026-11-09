@@ -9,6 +9,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 ROOT="${1:-.}"
 ROOT="$(cd "$ROOT" && pwd)"
 

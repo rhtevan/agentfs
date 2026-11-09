@@ -45,6 +45,13 @@ AgentFS operates in two scopes. These definitions are canonical.
 | `index.md` | ✅ | ✅ |
 | `log.md` | ✅ | ✅ |
 
+## Rules
+
+Do NOT fabricate directory structures, file contents, or
+configuration state. Every fact in setup output MUST come from
+actual filesystem operations and script results. If a setup step
+fails, report the error — do not simulate success.
+
 ## Prerequisites: USER Scope Setup
 
 Before running PROJECT scope, `~/.agents/` must exist. There are two

@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 18:41 | v2.6.0 — Add Rules section with anti-fabrication rules, add trace to all 6 scripts |
 | 2026-11-05 19:30 | v2.5.0 — Add model-tier to frontmatter |
 | 2026-10-31 17:02 | v2.5.0 — Restructure SKILL.md: move Session Audit Mode before Full Eval Sequence, add ROUTING STOP and END signals for weaker model comprehension; Remove duplicate Session Audit Mode section from old position (now relocated above Full Eval Sequence); Bump metadata version to 2.5.0 |
 | 2026-10-29 21:42 | v2.4.0 — Step 9: wired to operable-agents-md.yaml adapted schema with BMBT+benchmark evidence composition; Bumped version to 2.4.0 in frontmatter; Step 9: hybrid evidence architecture — frontier semantic extraction + SDM scoring; Fixed stale 'pending Stream 2 retrofit' note — adapted schemas are wired and working; Step 11: explicit merge instructions for scores.yaml — preserves quality section, appends to history |

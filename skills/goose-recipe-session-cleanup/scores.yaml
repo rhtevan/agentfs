@@ -1,0 +1,119 @@
+# scores.yaml — goose-recipe-session-cleanup
+skill: goose-recipe-session-cleanup
+version: 3.0.0
+model_tier: T3
+qualification_rule: build+observable
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 62.333333333333336
+  band: Re-engineer
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.8403919070945882
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9948078778851988
+    prose_executability:
+      score: 67
+      pass: true
+      confidence: 0.8774322812319345
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 0.9999998807907247
+    interface_opacity:
+      score: 100
+      pass: true
+      confidence: 0.9999938011552556
+  evaluated: '2026-11-08T20:11:29-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 31.25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 25
+      pass: false
+      confidence: 0.509848274297436
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9998415959451854
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9997951212202002
+  evaluated: '2026-11-08T20:11:29-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 65.04237288135593
+    band: Re-engineer
+    dimensions:
+      has_bones:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_muscle:
+        score: 50
+        pass: false
+        confidence: 0.6224593298742985
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.9999998807907248
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9706877714009488
+      step_completion:
+        score: 0
+        pass: false
+        confidence: 0.9820137577607905
+      no_fabrication:
+        score: 100
+        pass: true
+        confidence: 0.8175744308728489
+      minimal_inference_hops:
+        score: 100
+        pass: true
+        confidence: 0.995081535860333
+      token_efficiency:
+        score: 75
+        pass: false
+        confidence: 0.5680050597351264
+      correct_sequence:
+        score: 100
+        pass: true
+        confidence: 1.0
+      scope_resolution:
+        score: 100
+        pass: true
+        confidence: 0.9984987894978749
+      no_improvised_recovery:
+        score: 0
+        pass: false
+        confidence: 0.9399133253553882
+    evaluated: '2026-11-08T20:11:29-05:00'
+history:
+- date: '2026-11-08T20:11:29-05:00'
+  type: full
+  quality_score: 62.333333333333336
+  quality_band: Re-engineer
+  observable_score: 31.25
+  observable_band: Redesign
+  build_score: 65.04237288135593
+  build_band: Re-engineer
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

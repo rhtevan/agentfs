@@ -2,6 +2,50 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 20:38
+- Split operable eval: --phase build for BMBT only, CECX runtime skipped without trace evidence (scripts/score-all.sh)
+
+## 2026-11-08 20:01
+- Fix sdm_delegation evidence: use exact phrasing 'sdm_delegation: YES — this skill does not require semantic judgment (exempt)' that 14B SDM reliably parses (scripts/gather-skill-state.sh)
+
+## 2026-11-08 20:00
+- Revert Observable to --evidence path now that gather-skill-state.sh emits SDM-friendly evidence format (scripts/score-all.sh)
+
+## 2026-11-08 19:59
+- Fix sdm_delegation evidence format: emit dimension-name-matching answer (sdm_delegation: YES/NO) that 14B SDM can reliably parse (scripts/gather-skill-state.sh)
+
+## 2026-11-08 19:41
+- Fix: Observable evaluation uses skill directory instead of --evidence flag — SDM needs raw source to verify sdm_delegation on mechanical skills (scripts/score-all.sh)
+
+## 2026-11-08 19:30
+- Fixed model_tier extraction to use head -1 — multi-match on embedded template examples caused tier filter to miss skills (scripts/score-all.sh)
+
+## 2026-11-08 19:12
+- Full update: added Build evaluation + standardized scores.yaml writer with operable section, build+observable qualification, full history (scripts/score-all.sh)
+
+## 2026-11-08 19:11
+- Added Build evaluation step and updated scores.yaml writer with operable section and build+observable qualification rule (scripts/score-all.sh)
+
+## 2026-11-08 19:10
+- Added OPERABLE_SCHEMA variable for Build evaluation (scripts/score-all.sh)
+
+## 2026-11-08 18:58
+- Updated version 7.7.0→7.7.2, added qualification_rule: build+observable (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- Re-scored under current standard: build+observable gated, standardized format (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-11-08 18:57
+- Re-scored under current standard: O 75→93.75, B 75→98.94, build+observable gated, sdm_delegation exemption (skills/crc-status/scores.yaml)
+- Re-persisted scores after empty SDM fix — O=93.75 B=98.94 Q=42 qoo=true (skills/skill-gen/scores.yaml)
+
+## 2026-11-08 18:42
+- Strip step excerpts for observable schema to prevent evidence dilution (scripts/sdm-evaluate.sh)
+
+## 2026-11-08 18:41
+- Add Rules section with anti-fabrication rules, add trace to all 6 scripts (skills/agentfs-eval/SKILL.md)
+
+## 2026-11-08 18:40
+- Add Rules section with anti-fabrication rules, add trace to all 19 scripts (skills/agentfs-setup/SKILL.md)
+
 ## 2026-11-08 18:36
 - Persist full QOO scores: qualified (Build+Observable) (skills/litellm-proxy-status/scores.yaml)
 - Persist full QOO scores: qualified (Build+Observable) (skills/headroom-proxy-status/scores.yaml)

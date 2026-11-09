@@ -1,0 +1,91 @@
+# scores.yaml — crc-nad-dynamic-plugin-config
+skill: crc-nad-dynamic-plugin-config
+version: 1.0.0
+model_tier: T1
+qualification_rule: build+observable
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 45.666666666666664
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9860435816039572
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9769027235019997
+    prose_executability:
+      score: 67
+      pass: true
+      confidence: 0.9753797264476572
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 0.9999985694905716
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999977350285647
+  evaluated: '2026-11-08T20:42:00-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 0
+      pass: false
+      confidence: 0.8101459874076877
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.999998927117538
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9997957170137677
+  evaluated: '2026-11-08T20:42:00-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 50
+    band: Re-engineer
+    dimensions:
+      has_bones:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999998807907248
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9959299004209012
+    evaluated: '2026-11-08T20:42:00-05:00'
+history:
+- date: '2026-11-08T20:42:00-05:00'
+  type: full
+  quality_score: 45.666666666666664
+  quality_band: Redesign
+  observable_score: 25
+  observable_band: Redesign
+  build_score: 50
+  build_band: Re-engineer
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

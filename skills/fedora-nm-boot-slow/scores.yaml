@@ -1,0 +1,91 @@
+# scores.yaml — fedora-nm-boot-slow
+skill: fedora-nm-boot-slow
+version: 1.1.0
+model_tier: T3
+qualification_rule: build+observable
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 45.666666666666664
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9969534985107797
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9706601394139515
+    prose_executability:
+      score: 67
+      pass: true
+      confidence: 0.9910918079178531
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 0.6614860260016074
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 1.0
+  evaluated: '2026-11-08T20:44:18-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 37.5
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 50
+      pass: false
+      confidence: 0.6235909131049747
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.999998927117538
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9968259074947758
+  evaluated: '2026-11-08T20:44:18-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 50
+    band: Re-engineer
+    dimensions:
+      has_bones:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.9999870063564402
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9997965511486371
+    evaluated: '2026-11-08T20:44:18-05:00'
+history:
+- date: '2026-11-08T20:44:18-05:00'
+  type: full
+  quality_score: 45.666666666666664
+  quality_band: Redesign
+  observable_score: 37.5
+  observable_band: Redesign
+  build_score: 50
+  build_band: Re-engineer
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

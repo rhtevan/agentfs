@@ -1,14 +1,12 @@
 # scores.yaml — dsh-setup
-# Batch-scored by score-all.sh
-
 skill: dsh-setup
 version: 1.3.1
 model_tier: T2
-qualification_rule: T2
+qualification_rule: build+observable
 qoo-qualified: false
 quality:
   schema: quality.yaml
-  aggregate_score: 26.666666666666668
+  aggregate_score: 46.666666666666664
   band: Redesign
   dimensions:
     script_coverage:
@@ -16,13 +14,13 @@ quality:
       pass: false
       confidence: 1.0
     inference_hop_count:
-      score: 60
+      score: 80
       pass: false
-      confidence: 0.8519452321921022
+      confidence: 0.5621733527943898
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9999992847447459
+      confidence: 0.9999973774024794
     prose_executability:
       score: 0
       pass: false
@@ -32,37 +30,62 @@ quality:
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 0
-      pass: false
-      confidence: 0.9820137577607905
-  evaluated: '2026-11-08T17:42:48-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9984987894978749
+  evaluated: '2026-11-08T20:43:41-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 25
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     trace_instrumentation:
       score: 0
       pass: false
-      confidence: 0.9999996423722521
+      confidence: 0.9999996423722523
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999543449247885
+      confidence: 0.9994470555870667
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999991655356624
+      confidence: 0.9999971389852362
     sdm_delegation:
-      score: 0
-      pass: false
-      confidence: 0.9999995231630692
-  evaluated: '2026-11-08T17:42:48-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9980724130153453
+  evaluated: '2026-11-08T20:43:41-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 62.5
+    band: Re-engineer
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 0.9999417100552707
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999938011552556
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 50
+        pass: false
+        confidence: 0.49999999904767284
+    evaluated: '2026-11-08T20:43:41-05:00'
 history:
-- date: '2026-11-08T17:05:52-05:00'
-  type: quality+observable
-  quality_score: 26.666666666666668
+- date: '2026-11-08T20:43:41-05:00'
+  type: full
+  quality_score: 46.666666666666664
   quality_band: Redesign
-  observable_score: 25
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+  observable_score: 50
+  observable_band: Re-engineer
+  build_score: 62.5
+  build_band: Re-engineer
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

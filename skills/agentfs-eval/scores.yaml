@@ -1,11 +1,9 @@
 # scores.yaml — agentfs-eval
-# Batch-scored by score-all.sh
-
 skill: agentfs-eval
 version: 2.5.0
 model_tier: T4
-qualification_rule: T4
-qoo-qualified: false
+qualification_rule: build+observable
+qoo-qualified: true
 quality:
   schema: quality.yaml
   aggregate_score: 59.833333333333336
@@ -14,55 +12,80 @@ quality:
     script_coverage:
       score: 25
       pass: false
-      confidence: 0.9999982118638471
+      confidence: 0.9999991655356623
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.3433043419651654
+      confidence: 0.3435109938739618
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9024606300832961
+      confidence: 0.5618648274889866
     prose_executability:
       score: 67
       pass: true
-      confidence: 0.6307952181970112
+      confidence: 0.6010985582528549
     model_portability:
       score: 100
       pass: true
-      confidence: 0.9999977350285646
+      confidence: 0.9999957084838798
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9995694822610256
-  evaluated: '2026-11-08T17:03:59-05:00'
+      confidence: 0.9996646575567589
+  evaluated: '2026-11-08T20:39:54-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 37.5
-  band: Redesign
+  aggregate_score: 100
+  band: Operable
   dimensions:
     trace_instrumentation:
-      score: 0
-      pass: false
-      confidence: 0.9998766336062261
+      score: 100
+      pass: true
+      confidence: 0.9999039265409295
     cnl_compliance:
-      score: 50
-      pass: false
-      confidence: 0.6093537791897139
+      score: 100
+      pass: true
+      confidence: 1.0
     anti_fabrication:
-      score: 0
-      pass: false
-      confidence: 0.9999985694905716
+      score: 100
+      pass: true
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9999952316511551
-  evaluated: '2026-11-08T17:03:59-05:00'
+      confidence: 1.0
+  evaluated: '2026-11-08T20:39:54-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 100
+    band: Operable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_muscle:
+        score: 100
+        pass: true
+        confidence: 0.9999997615814777
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.9999998807907248
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9999997615814777
+    evaluated: '2026-11-08T20:39:54-05:00'
 history:
-- date: '2026-11-08T17:03:59-05:00'
-  type: quality+observable
+- date: '2026-11-08T20:39:54-05:00'
+  type: full
   quality_score: 59.833333333333336
   quality_band: Re-engineer
-  observable_score: 37.5
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+  observable_score: 100
+  observable_band: Operable
+  build_score: 100
+  build_band: Operable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

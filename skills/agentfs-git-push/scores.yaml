@@ -1,10 +1,8 @@
 # scores.yaml — agentfs-git-push
-# Batch-scored by score-all.sh
-
 skill: agentfs-git-push
 version: 2.0.1
 model_tier: T2
-qualification_rule: T2
+qualification_rule: build+observable
 qoo-qualified: false
 quality:
   schema: quality.yaml
@@ -18,15 +16,15 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.5103969142627274
+      confidence: 0.6624590265017128
     step_clarity:
       score: 100
       pass: true
-      confidence: 0.7772957893861577
+      confidence: 0.851950424451977
     prose_executability:
       score: 100
       pass: true
-      confidence: 0.8807196396319584
+      confidence: 0.9046324626466803
     model_portability:
       score: 100
       pass: true
@@ -34,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9859363803758086
-  evaluated: '2026-11-08T17:41:25-05:00'
+      confidence: 0.9998415959451854
+  evaluated: '2026-11-08T20:40:07-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 50
@@ -48,21 +46,46 @@ observable:
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999039265409297
+      confidence: 0.9999914170043661
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999996423722521
+      confidence: 0.9999998807907245
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.77729988964086
-  evaluated: '2026-11-08T17:41:25-05:00'
+      confidence: 0.9994470555870669
+  evaluated: '2026-11-08T20:40:07-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 100
+    band: Operable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_muscle:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.9999998807907247
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9999833109787882
+    evaluated: '2026-11-08T20:40:07-05:00'
 history:
-- date: '2026-11-08T17:04:08-05:00'
-  type: quality+observable
+- date: '2026-11-08T20:40:07-05:00'
+  type: full
   quality_score: 83.33333333333333
   quality_band: Tunable
-  observable_score: 37.5
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+  observable_score: 50
+  observable_band: Re-engineer
+  build_score: 100
+  build_band: Operable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

@@ -1,68 +1,91 @@
 # scores.yaml — skill-eval
-# Batch-scored by score-all.sh
-
 skill: skill-eval
 version: 2.2.0
 model_tier: T4
-qualification_rule: T4
-qoo-qualified: false
+qualification_rule: build+observable
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 56.833333333333336
+  aggregate_score: 52.666666666666664
   band: Re-engineer
   dimensions:
     script_coverage:
-      score: 75
-      pass: true
-      confidence: 0.002772177734966704
+      score: 50
+      pass: false
+      confidence: 0.0479411643931882
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.001093182961683811
+      confidence: 0.0013698143712057155
     step_clarity:
       score: 33
       pass: false
-      confidence: 0.0003975997255059152
+      confidence: 0.0005756114087049687
     prose_executability:
       score: 33
       pass: false
-      confidence: 0.00033842692952253144
+      confidence: 0.00007879343492658718
     model_portability:
       score: 100
       pass: true
-      confidence: 0.0014515305904280373
+      confidence: 0.002456916451468405
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9996698992746561
-  evaluated: '2026-11-08T17:09:17-05:00'
+      confidence: 0.9999746090656422
+  evaluated: '2026-11-08T20:49:57-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 31.25
-  band: Redesign
+  aggregate_score: 93.75
+  band: Operable
   dimensions:
     trace_instrumentation:
-      score: 0
-      pass: false
-      confidence: 0.9398904716691326
+      score: 100
+      pass: true
+      confidence: 0.9820137577607905
     cnl_compliance:
-      score: 25
+      score: 75
       pass: false
-      confidence: 0.0008389097699479087
+      confidence: 0.9981601771546876
     anti_fabrication:
-      score: 0
-      pass: false
-      confidence: 0.9977294618270289
+      score: 100
+      pass: true
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9976414174491668
-  evaluated: '2026-11-08T17:09:17-05:00'
+      confidence: 0.9999417100552707
+  evaluated: '2026-11-08T20:49:57-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 87.5
+    band: Tunable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 0.9996805019931951
+      has_muscle:
+        score: 50
+        pass: false
+        confidence: 0.5646801742365906
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.999794882894143
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.0022088768805814726
+    evaluated: '2026-11-08T20:49:57-05:00'
 history:
-- date: '2026-11-08T17:09:17-05:00'
-  type: quality+observable
-  quality_score: 56.833333333333336
+- date: '2026-11-08T20:49:57-05:00'
+  type: full
+  quality_score: 52.666666666666664
   quality_band: Re-engineer
-  observable_score: 31.25
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+  observable_score: 93.75
+  observable_band: Operable
+  build_score: 87.5
+  build_band: Tunable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

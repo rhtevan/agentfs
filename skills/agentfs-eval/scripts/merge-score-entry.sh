@@ -24,6 +24,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 SCORE_FILE="$HOME/.agents/skills/agentfs-eval/references/template-scores.md"
 
 VERSION="${1:?Usage: merge-score-entry.sh <VERSION> <MODEL> [--template-score N] [--behavioral N/M] [--notes \"text\"]}"

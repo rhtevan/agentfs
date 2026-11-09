@@ -43,6 +43,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")"; pwd)"
 SEED_SCRIPT="$SCRIPT_DIR/seed-agents-md.sh"
 SKILL_FILE="$SCRIPT_DIR/../SKILL.md"

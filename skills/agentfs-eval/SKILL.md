@@ -14,6 +14,13 @@ metadata:
 Assess the health and maturity of an AgentFS workspace through
 three layers of progressively deeper verification.
 
+## Rules
+
+Do NOT fabricate evaluation scores, maturity ratings, or violation
+counts. Every metric MUST come from script output or verifiable
+filesystem state. If a check cannot be performed, report N/A —
+do not estimate.
+
 ## Quick Dispatch
 
 | User says                                          | Run                                                                                               |

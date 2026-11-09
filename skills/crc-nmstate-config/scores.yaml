@@ -1,0 +1,91 @@
+# scores.yaml — crc-nmstate-config
+skill: crc-nmstate-config
+version: 1.0.0
+model_tier: T1
+qualification_rule: build+observable
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 56.666666666666664
+  band: Re-engineer
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9887356194416076
+    step_clarity:
+      score: 100
+      pass: true
+      confidence: 0.8519490406925849
+    prose_executability:
+      score: 100
+      pass: true
+      confidence: 0.9238627276000682
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 1.0
+  evaluated: '2026-11-08T20:42:13-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 43.75
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 75
+      pass: false
+      confidence: 0.8241652687318718
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999991655356624
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9890128259039057
+  evaluated: '2026-11-08T20:42:13-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 50
+    band: Re-engineer
+    dimensions:
+      has_bones:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999998807907248
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.9999997615814777
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.77729988964086
+    evaluated: '2026-11-08T20:42:13-05:00'
+history:
+- date: '2026-11-08T20:42:13-05:00'
+  type: full
+  quality_score: 56.666666666666664
+  quality_band: Re-engineer
+  observable_score: 43.75
+  observable_band: Redesign
+  build_score: 50
+  build_band: Re-engineer
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

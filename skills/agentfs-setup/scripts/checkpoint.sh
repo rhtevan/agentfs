@@ -16,6 +16,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 # ── Find .agents/ root ─────────────────────────────────────────────
 find_agents_root() {
   if [[ -d "./.agents" ]]; then

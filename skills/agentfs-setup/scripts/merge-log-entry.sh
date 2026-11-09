@@ -13,6 +13,13 @@
 
 set -euo pipefail
 
+# Source trace library if available
+if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
+  source "$HOME/.agents/scripts/trace-lib.sh"
+else
+  trace_step() { echo "[trace] $*" >&2; }
+fi
+
 LOG_FILE="${1:?Usage: merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>}"
 ENTRY_TEXT_RAW="${2:?Usage: merge-log-entry.sh <LOG_FILE> <ENTRY_TEXT>}"
 # Interpret \n escape sequences so callers can pass multi-line entries

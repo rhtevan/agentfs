@@ -1,45 +1,43 @@
 # scores.yaml — okf-bundle-index
-# Batch-scored by score-all.sh
-
 skill: okf-bundle-index
 version: 1.4.1
 model_tier: T2
-qualification_rule: T2
+qualification_rule: build+observable
 qoo-qualified: false
 quality:
   schema: quality.yaml
-  aggregate_score: 23.333333333333332
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     script_coverage:
       score: 0
       pass: false
       confidence: 1.0
     inference_hop_count:
-      score: 40
-      pass: false
-      confidence: 0.9046391016075587
+      score: 100
+      pass: true
+      confidence: 0.7772979437545758
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9986829246597122
+      confidence: 0.9969339492123618
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999991655356624
+      confidence: 0.9999992847447459
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 0
-      pass: false
-      confidence: 0.9999545833252356
-  evaluated: '2026-11-08T17:44:50-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9992903742048809
+  evaluated: '2026-11-08T20:49:32-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 25
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     trace_instrumentation:
       score: 0
@@ -52,17 +50,42 @@ observable:
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999977350285647
+      confidence: 0.999998927117538
     sdm_delegation:
-      score: 0
-      pass: false
-      confidence: 0.9999997615814777
-  evaluated: '2026-11-08T17:44:50-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9975269357220583
+  evaluated: '2026-11-08T20:49:32-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 75
+    band: Tunable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 0.9999833109787882
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999977350285647
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.994779918752388
+    evaluated: '2026-11-08T20:49:32-05:00'
 history:
-- date: '2026-11-08T17:08:58-05:00'
-  type: quality+observable
-  quality_score: 23.333333333333332
-  quality_band: Redesign
-  observable_score: 25
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+- date: '2026-11-08T20:49:32-05:00'
+  type: full
+  quality_score: 50
+  quality_band: Re-engineer
+  observable_score: 50
+  observable_band: Re-engineer
+  build_score: 75
+  build_band: Tunable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

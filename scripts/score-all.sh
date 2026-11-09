@@ -28,6 +28,7 @@ SCRIPTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$HOME/.agents/skills"
 QUALITY_SCHEMA="$SKILLS_DIR/schemas/quality.yaml"
 OBSERVABLE_SCHEMA="$SKILLS_DIR/schemas/observable.yaml"
+OPERABLE_SCHEMA="$SKILLS_DIR/schemas/operable.yaml"
 
 # --- Argument parsing ---
 FORCE=false
@@ -75,7 +76,7 @@ for skill_dir in "$SKILLS_DIR"/*/; do
   [[ "$skill_name" == "schemas" ]] && continue
 
   # Read model-tier from frontmatter
-  model_tier=$(grep -oP 'model-tier:\s*\K\S+' "$skill_dir/SKILL.md" 2>/dev/null || echo "unknown")
+  model_tier=$(grep -oP 'model-tier:\s*\K\S+' "$skill_dir/SKILL.md" 2>/dev/null | head -1 || echo "unknown")
 
   # Apply tier filter
   if [[ -n "$TIER_FILTER" && "$model_tier" != "$TIER_FILTER" ]]; then
@@ -131,6 +132,10 @@ for skill_dir in "$SKILLS_DIR"/*/; do
   quality_band=$(echo "$quality_json" | jq -r '.band // "Unknown"')
 
   # Step 3: Observable evaluation
+  # Uses --evidence with stripped gather output. The sdm_delegation evidence line
+  # is formatted as "sdm_delegation: YES/NO" to match what the 14B SDM expects.
+  # Raw SKILL.md evidence causes false negatives on meta-skills (skill-eval, etc.)
+  # whose domain content mentions trace/SDM/fabrication.
   echo "  Evaluating Observable..."
   observable_json=$(bash "$SCRIPTS_DIR/sdm-evaluate.sh" "$skill_dir" \
     "$OBSERVABLE_SCHEMA" \
@@ -144,19 +149,27 @@ for skill_dir in "$SKILLS_DIR"/*/; do
   observable_score=$(echo "$observable_json" | jq -r '.aggregate_score // 0')
   observable_band=$(echo "$observable_json" | jq -r '.band // "Unknown"')
 
-  # Step 4: Compute tier-aware qoo-qualified
-  # Note: Build axis requires hey eval skill (not done here)
-  # So qoo-qualified stays false until build is evaluated
-  qoo_qualified="false"
+  # Step 3b: Operable (Build) evaluation — BMBT only
+  # Runtime CECX dimensions require trace evidence from actual execution.
+  # Without traces, CECX scores are unreliable (SDM guesses from static analysis).
+  # --phase build restricts to BMBT (has_bones, has_muscle, has_brain, has_harness).
+  echo "  Evaluating Operable (Build)..."
+  build_json=$(bash "$SCRIPTS_DIR/sdm-evaluate.sh" "$evidence_file" \
+    "$OPERABLE_SCHEMA" \
+    --phase build 2>/dev/null) || {
+    echo "  ⚠️  Operable SDM evaluation failed for $skill_name (continuing with Q+O only)"
+    build_json=""
+  }
 
-  # Read existing build score if available
+  build_score=""
   build_band="not-evaluated"
-  if [[ -f "$skill_dir/scores.yaml" ]]; then
-    build_band=$(grep -A5 '  build:' "$skill_dir/scores.yaml" 2>/dev/null \
-      | grep 'band:' | head -1 | sed 's/.*band: *//' || echo "not-evaluated")
+  if [[ -n "$build_json" ]]; then
+    build_score=$(echo "$build_json" | jq -r '.aggregate_score // 0')
+    build_band=$(echo "$build_json" | jq -r '.band // "Unknown"')
   fi
 
-  # Simplified qualification: Build + Observable gated, Quality informational
+  # Step 4: Compute qoo-qualified (Build + Observable gated, Quality informational)
+  qoo_qualified="false"
   if [[ "$build_band" != "not-evaluated" ]]; then
     if [[ "$observable_band" =~ ^(Tunable|Operable)$ ]] && \
        [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
@@ -198,26 +211,29 @@ for skill_dir in "$SKILLS_DIR"/*/; do
 "
   done
 
-  # Preserve existing operable section if present
-  operable_section=""
-  if [[ -f "$skill_dir/scores.yaml" ]] && grep -q '^operable:' "$skill_dir/scores.yaml"; then
-    operable_section=$(sed -n '/^operable:/,/^[a-z]/p' "$skill_dir/scores.yaml" | head -n -1)
-  fi
-
-  # Preserve existing history
-  history_section=""
-  if [[ -f "$skill_dir/scores.yaml" ]] && grep -q '^history:' "$skill_dir/scores.yaml"; then
-    history_section=$(sed -n '/^history:/,$p' "$skill_dir/scores.yaml")
+  # Build operable dimensions YAML
+  build_dims=""
+  if [[ -n "$build_json" ]]; then
+    dim_count=$(echo "$build_json" | jq '.dimensions | length')
+    for ((i=0; i<dim_count; i++)); do
+      dim_name=$(echo "$build_json" | jq -r ".dimensions[$i].name")
+      dim_score=$(echo "$build_json" | jq -r ".dimensions[$i].score")
+      dim_pass=$(echo "$build_json" | jq -r ".dimensions[$i].pass")
+      dim_conf=$(echo "$build_json" | jq -r ".dimensions[$i].confidence")
+      build_dims="${build_dims}      ${dim_name}:
+        score: ${dim_score}
+        pass: ${dim_pass}
+        confidence: ${dim_conf}
+"
+    done
   fi
 
   cat > "$skill_dir/scores.yaml" <<SCORES_EOF
 # scores.yaml — $skill_name
-# Batch-scored by score-all.sh
-
 skill: $skill_name
 version: $version
 model_tier: $model_tier
-qualification_rule: $model_tier
+qualification_rule: build+observable
 qoo-qualified: $qoo_qualified
 quality:
   schema: quality.yaml
@@ -231,29 +247,26 @@ observable:
   band: $observable_band
   dimensions:
 ${observable_dims}  evaluated: '$timestamp'
-SCORES_EOF
-
-  # Append preserved sections
-  if [[ -n "$operable_section" ]]; then
-    echo "$operable_section" >> "$skill_dir/scores.yaml"
-  fi
-
-  if [[ -n "$history_section" ]]; then
-    echo "$history_section" >> "$skill_dir/scores.yaml"
-  else
-    cat >> "$skill_dir/scores.yaml" <<HIST_EOF
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: $build_score
+    band: $build_band
+    dimensions:
+${build_dims}    evaluated: '$timestamp'
 history:
 - date: '$timestamp'
-  type: quality+observable
+  type: full
   quality_score: $quality_score
   quality_band: $quality_band
   observable_score: $observable_score
   observable_band: $observable_band
-  note: 'Batch scored by score-all.sh'
-HIST_EOF
-  fi
+  build_score: $build_score
+  build_band: $build_band
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'
+SCORES_EOF
 
-  echo "  ✅ Quality: $quality_score ($quality_band) | Observable: $observable_score ($observable_band) | qoo-qualified: $qoo_qualified"
+  echo "  ✅ $skill_name: Q=$quality_score($quality_band) O=$observable_score($observable_band) B=$build_score($build_band) qoo=$qoo_qualified"
   SCORED=$((SCORED + 1))
 
   # Rate limiting

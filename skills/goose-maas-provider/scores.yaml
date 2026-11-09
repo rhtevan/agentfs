@@ -1,0 +1,91 @@
+# scores.yaml — goose-maas-provider
+skill: goose-maas-provider
+version: 1.4.0
+model_tier: T4
+qualification_rule: build+observable
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 71.16666666666667
+  band: Re-engineer
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 60
+      pass: false
+      confidence: 0.00015841569329750474
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9045700318376155
+    prose_executability:
+      score: 100
+      pass: true
+      confidence: 0.9240795016933955
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 1.0
+    interface_opacity:
+      score: 100
+      pass: true
+      confidence: 0.9995694822610256
+  evaluated: '2026-11-08T20:46:11-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 50
+  band: Re-engineer
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 100
+      pass: true
+      confidence: 0.9999977350285647
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999833109787882
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9997961936663362
+  evaluated: '2026-11-08T20:46:11-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 50
+    band: Re-engineer
+    dimensions:
+      has_bones:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999963045256736
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.999998927117538
+    evaluated: '2026-11-08T20:46:11-05:00'
+history:
+- date: '2026-11-08T20:46:11-05:00'
+  type: full
+  quality_score: 71.16666666666667
+  quality_band: Re-engineer
+  observable_score: 50
+  observable_band: Re-engineer
+  build_score: 50
+  build_band: Re-engineer
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

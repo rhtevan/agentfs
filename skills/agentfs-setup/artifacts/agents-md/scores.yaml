@@ -5,7 +5,8 @@
 
 artifact: AGENTS.md
 source_skill: agentfs-setup
-version: "7.7.0"
+version: "7.7.2"
+qualification_rule: build+observable
 qoo-qualified: true
 qoo-qualified-date: "2026-11-03"
 

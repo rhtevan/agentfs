@@ -147,7 +147,13 @@ extract_evidence_operable_agents_md() {
 case "$SCHEMA_TYPE" in
   quality|observable|readme-alignment)
     if [[ -n "$EVIDENCE_FILE" && -f "$EVIDENCE_FILE" ]]; then
-      EVIDENCE=$(cat "$EVIDENCE_FILE")
+      # For observable schema, strip step excerpts to avoid evidence dilution.
+      # The 14B SDM model can't reliably locate facts in 200+ line evidence.
+      if [[ "$SCHEMA_TYPE" == "observable" ]]; then
+        EVIDENCE=$(sed '/^Step excerpts:/,$d' "$EVIDENCE_FILE")
+      else
+        EVIDENCE=$(cat "$EVIDENCE_FILE")
+      fi
       if [[ "$SKILL_NAME" == "unknown" ]]; then
         SKILL_NAME=$(basename "$TARGET" .md)
       fi

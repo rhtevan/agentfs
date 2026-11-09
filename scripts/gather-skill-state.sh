@@ -443,7 +443,7 @@ Passive voice instances: $PASSIVE_VOICE
 Trace instrumentation: $HAS_TRACE
 Anti-fabrication rules: $HAS_ANTI_FABRICATION (${ANTI_FAB_RULES} rules found)
 CNL compliance: ${CNL_RATIO} (${ACTION_SENTENCES} action sentences, ${CNL_VIOLATIONS} violations: ${PASSIVE_VOICE} passive, ${MULTI_ACTION} multi-action)
-SDM delegation: $(if [[ "$HAS_SDM_DELEGATION" == "true" ]]; then echo "true (${SDM_SCRIPT_COUNT} scripts, ${SDM_SKILL_REFS} SKILL.md references)"; elif [[ "$CONDITIONAL_BLOCKS" -le 2 && "$MODEL_ASSUMPTIONS" -eq 0 ]]; then echo "true (exempt — skill is purely mechanical with no semantic judgment requirements, SDM delegation not applicable)"; else echo "false (${SDM_SCRIPT_COUNT} scripts, ${SDM_SKILL_REFS} SKILL.md references)"; fi)
+sdm_delegation: $(if [[ "$HAS_SDM_DELEGATION" == "true" ]]; then echo "YES — judgment delegated to SDM via ${SDM_SCRIPT_COUNT} scripts (${SDM_SKILL_REFS} SKILL.md references)"; elif [[ "$CONDITIONAL_BLOCKS" -le 2 && "$MODEL_ASSUMPTIONS" -eq 0 ]]; then echo "YES — this skill does not require semantic judgment (exempt)"; else echo "NO — semantic judgment is handled inline by agent, not delegated to SDM (${SDM_SCRIPT_COUNT} scripts, ${SDM_SKILL_REFS} SKILL.md references)"; fi)
 Has operable.yaml: $HAS_OBS_SCHEMA
 Has scores.yaml: $HAS_SCORES
 QOO qualified: $QOO_QUALIFIED

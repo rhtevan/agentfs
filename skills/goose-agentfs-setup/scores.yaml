@@ -1,28 +1,26 @@
 # scores.yaml — goose-agentfs-setup
-# Batch-scored by score-all.sh
-
 skill: goose-agentfs-setup
 version: 1.7.0
 model_tier: T2
-qualification_rule: T2
+qualification_rule: build+observable
 qoo-qualified: false
 quality:
   schema: quality.yaml
-  aggregate_score: 26.666666666666668
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     script_coverage:
       score: 0
       pass: false
       confidence: 1.0
     inference_hop_count:
-      score: 60
-      pass: false
-      confidence: 0.8519480885658681
+      score: 100
+      pass: true
+      confidence: 0.7310566829687576
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9999903441405487
+      confidence: 0.9999847414437658
     prose_executability:
       score: 0
       pass: false
@@ -32,37 +30,62 @@ quality:
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 0
-      pass: false
-      confidence: 0.9399133253553882
-  evaluated: '2026-11-08T17:43:07-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9999645960934691
+  evaluated: '2026-11-08T20:44:56-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 25
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     trace_instrumentation:
       score: 0
       pass: false
-      confidence: 0.9999995231630692
+      confidence: 0.9999998807907248
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999976158197796
+      confidence: 0.999998211863847
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999977350285647
+      confidence: 0.9999724634116024
     sdm_delegation:
-      score: 0
-      pass: false
-      confidence: 0.9999982118638472
-  evaluated: '2026-11-08T17:43:07-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9980727693729644
+  evaluated: '2026-11-08T20:44:56-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 75
+    band: Tunable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 0.9914224771982877
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999996423722521
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.7310586002437232
+    evaluated: '2026-11-08T20:44:56-05:00'
 history:
-- date: '2026-11-08T17:06:35-05:00'
-  type: quality+observable
-  quality_score: 23.333333333333332
-  quality_band: Redesign
-  observable_score: 25
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+- date: '2026-11-08T20:44:56-05:00'
+  type: full
+  quality_score: 50
+  quality_band: Re-engineer
+  observable_score: 50
+  observable_band: Re-engineer
+  build_score: 75
+  build_band: Tunable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

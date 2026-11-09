@@ -1,44 +1,42 @@
 # scores.yaml — goose-litellm-provider
-# Batch-scored by score-all.sh
-
 skill: goose-litellm-provider
 version: 1.7.0
 model_tier: T3
-qualification_rule: T3
+qualification_rule: build+observable
 qoo-qualified: false
 quality:
   schema: quality.yaml
-  aggregate_score: 72.33333333333333
-  band: Re-engineer
+  aggregate_score: 80.66666666666667
+  band: Tunable
   dimensions:
     script_coverage:
       score: 50
       pass: false
-      confidence: 0.9999921322487635
+      confidence: 0.9999724634116024
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.40822268799325956
+      confidence: 0.6827381795822299
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9954863402642447
+      confidence: 0.9954861038489528
     prose_executability:
       score: 67
       pass: true
-      confidence: 0.7141731083521288
+      confidence: 0.7684478453247285
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 50
-      pass: false
-      confidence: 0.6791786964925157
-  evaluated: '2026-11-08T17:07:02-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9984987894978749
+  evaluated: '2026-11-08T20:45:58-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 0
+  aggregate_score: 25
   band: Redesign
   dimensions:
     trace_instrumentation:
@@ -48,21 +46,46 @@ observable:
     cnl_compliance:
       score: 0
       pass: false
-      confidence: 0.9999920130413283
+      confidence: 0.9999532721416701
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999998807907248
-    sdm_delegation:
-      score: 0
-      pass: false
       confidence: 0.9999994039539002
-  evaluated: '2026-11-08T17:07:02-05:00'
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9995694822610256
+  evaluated: '2026-11-08T20:45:58-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 100
+    band: Operable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_muscle:
+        score: 100
+        pass: true
+        confidence: 0.9999982118638472
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9999982118638472
+    evaluated: '2026-11-08T20:45:58-05:00'
 history:
-- date: '2026-11-08T17:07:02-05:00'
-  type: quality+observable
-  quality_score: 72.33333333333333
-  quality_band: Re-engineer
-  observable_score: 0
+- date: '2026-11-08T20:45:58-05:00'
+  type: full
+  quality_score: 80.66666666666667
+  quality_band: Tunable
+  observable_score: 25
   observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+  build_score: 100
+  build_band: Operable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

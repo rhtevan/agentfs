@@ -1,0 +1,91 @@
+# scores.yaml — agentfs-ctx-chk
+skill: agentfs-ctx-chk
+version: 1.2.0
+model_tier: T3
+qualification_rule: build+observable
+qoo-qualified: false
+quality:
+  schema: quality.yaml
+  aggregate_score: 45.666666666666664
+  band: Redesign
+  dimensions:
+    script_coverage:
+      score: 0
+      pass: false
+      confidence: 1.0
+    inference_hop_count:
+      score: 40
+      pass: false
+      confidence: 0.9943504647864037
+    step_clarity:
+      score: 67
+      pass: true
+      confidence: 0.9995187454111142
+    prose_executability:
+      score: 67
+      pass: true
+      confidence: 0.9377531514126431
+    model_portability:
+      score: 100
+      pass: true
+      confidence: 0.9999996423722521
+    interface_opacity:
+      score: 0
+      pass: false
+      confidence: 0.9999998807907248
+  evaluated: '2026-11-08T20:39:41-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 25
+  band: Redesign
+  dimensions:
+    trace_instrumentation:
+      score: 0
+      pass: false
+      confidence: 1.0
+    cnl_compliance:
+      score: 0
+      pass: false
+      confidence: 0.9968129963217013
+    anti_fabrication:
+      score: 0
+      pass: false
+      confidence: 0.9999971389852362
+    sdm_delegation:
+      score: 100
+      pass: true
+      confidence: 0.9998415959451854
+  evaluated: '2026-11-08T20:39:41-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 25
+    band: Redesign
+    dimensions:
+      has_bones:
+        score: 0
+        pass: false
+        confidence: 1.0
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999998807907248
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 0.999998927117538
+      has_harness:
+        score: 0
+        pass: false
+        confidence: 0.9820137577607905
+    evaluated: '2026-11-08T20:39:41-05:00'
+history:
+- date: '2026-11-08T20:39:41-05:00'
+  type: full
+  quality_score: 45.666666666666664
+  quality_band: Redesign
+  observable_score: 25
+  observable_band: Redesign
+  build_score: 25
+  build_band: Redesign
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

@@ -1,45 +1,43 @@
 # scores.yaml — fedora-desktop-wmclass-fix
-# Batch-scored by score-all.sh
-
 skill: fedora-desktop-wmclass-fix
 version: 1.1.0
 model_tier: T1
-qualification_rule: T1
+qualification_rule: build+observable
 qoo-qualified: false
 quality:
   schema: quality.yaml
-  aggregate_score: 30
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     script_coverage:
       score: 0
       pass: false
       confidence: 1.0
     inference_hop_count:
-      score: 80
-      pass: false
-      confidence: 0.5621440339338243
+      score: 100
+      pass: true
+      confidence: 0.7310334364098939
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9987773365353264
+      confidence: 0.9615037812154664
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999996423722521
+      confidence: 0.9999984502816871
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 0
-      pass: false
-      confidence: 0.9999977350285647
-  evaluated: '2026-11-08T17:06:01-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9706877714009488
+  evaluated: '2026-11-08T20:43:53-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 25
-  band: Redesign
+  aggregate_score: 50
+  band: Re-engineer
   dimensions:
     trace_instrumentation:
       score: 0
@@ -48,21 +46,46 @@ observable:
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999985694905716
+      confidence: 0.9999990463265931
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999833109787882
+      confidence: 0.9998766336062261
     sdm_delegation:
-      score: 0
-      pass: false
-      confidence: 0.9999938011552556
-  evaluated: '2026-11-08T17:06:01-05:00'
+      score: 100
+      pass: true
+      confidence: 0.9820109975876377
+  evaluated: '2026-11-08T20:43:53-05:00'
+operable:
+  build:
+    schema: operable.yaml
+    aggregate_score: 75
+    band: Tunable
+    dimensions:
+      has_bones:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_muscle:
+        score: 0
+        pass: false
+        confidence: 0.9999997615814777
+      has_brain:
+        score: 100
+        pass: true
+        confidence: 1.0
+      has_harness:
+        score: 100
+        pass: true
+        confidence: 0.9959299004209012
+    evaluated: '2026-11-08T20:43:53-05:00'
 history:
-- date: '2026-11-08T17:06:01-05:00'
-  type: quality+observable
-  quality_score: 30
-  quality_band: Redesign
-  observable_score: 25
-  observable_band: Redesign
-  note: 'Batch scored by score-all.sh'
+- date: '2026-11-08T20:43:53-05:00'
+  type: full
+  quality_score: 50
+  quality_band: Re-engineer
+  observable_score: 50
+  observable_band: Re-engineer
+  build_score: 75
+  build_band: Tunable
+  note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

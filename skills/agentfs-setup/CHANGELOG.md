@@ -2,6 +2,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 18:58 | v7.7.2 — Updated version 7.7.0→7.7.2, added qualification_rule: build+observable |
+| 2026-11-08 18:40 | v7.8.0 — Add Rules section with anti-fabrication rules, add trace to all 19 scripts |
 | 2026-11-06 11:55 | v7.7.2 — Bump template version 7.7.1 → 7.7.2 for Session Canary rule prose optimization; Session Canary rule prose optimization: LOCKED keyword, purpose statement, explicit no-replacement constraint for weaker model comprehension |
 | 2026-11-05 19:30 | v7.7.1 — Add model-tier to frontmatter |
 | 2026-11-04 13:21 | v7.7.1 — Add tool output opacity principle to SOUL template and fingerprint list; Add tool output opacity fingerprint for migration detection; Bump version to 7.7.1 for seed-soul.sh tool output opacity principle |
