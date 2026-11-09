@@ -4,7 +4,7 @@ description: >
   configure goose maas, goose maas provider, goose remote provider
 platforms: ['linux']
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   model-tier: T4
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
   related_skills: [goose-litellm-provider, litellm-proxy-status]

@@ -168,13 +168,38 @@ for skill_dir in "$SKILLS_DIR"/*/; do
     build_band=$(echo "$build_json" | jq -r '.band // "Unknown"')
   fi
 
-  # Step 4: Compute qoo-qualified (Build + Observable gated, Quality informational)
+  # Step 4: Compute qoo-qualified (tier-aware thresholds)
+  # T1/T2: Q≥75 + O≥75 + B≥75 (all three gated)
+  # T3:    Q≥50 + O≥50 + B≥75 (relaxed Q+O thresholds)
+  # T4:    B≥75 only (Q+O informational)
   qoo_qualified="false"
+  qualification_rule="$model_tier"
   if [[ "$build_band" != "not-evaluated" ]]; then
-    if [[ "$observable_band" =~ ^(Tunable|Operable)$ ]] && \
-       [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
-      qoo_qualified="true"
-    fi
+    case "$model_tier" in
+      T4)
+        # T4: Only Build is gated. Quality + Observable are informational.
+        if [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
+          qoo_qualified="true"
+        fi
+        ;;
+      T3)
+        # T3: Relaxed — Q≥50 (Re-engineer+), O≥50 (Re-engineer+), B≥75 (Tunable+)
+        q_int=$(echo "$quality_score" | awk '{printf "%d", $1}')
+        o_int=$(echo "$observable_score" | awk '{printf "%d", $1}')
+        if [[ $q_int -ge 50 && $o_int -ge 50 ]] && \
+           [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
+          qoo_qualified="true"
+        fi
+        ;;
+      T1|T2|*)
+        # T1/T2 (and unknown): Strict — Q≥75, O≥75, B≥75 (all Tunable+)
+        if [[ "$quality_band" =~ ^(Tunable|Operable)$ ]] && \
+           [[ "$observable_band" =~ ^(Tunable|Operable)$ ]] && \
+           [[ "$build_band" =~ ^(Tunable|Operable)$ ]]; then
+          qoo_qualified="true"
+        fi
+        ;;
+    esac
   fi
 
   # Step 5: Write scores.yaml
@@ -233,7 +258,7 @@ for skill_dir in "$SKILLS_DIR"/*/; do
 skill: $skill_name
 version: $version
 model_tier: $model_tier
-qualification_rule: build+observable
+qualification_rule: $qualification_rule
 qoo-qualified: $qoo_qualified
 quality:
   schema: quality.yaml

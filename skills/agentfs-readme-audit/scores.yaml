@@ -2,7 +2,7 @@
 skill: agentfs-readme-audit
 version: 3.4.0
 model_tier: T3
-qualification_rule: build+observable
+qualification_rule: T3
 qoo-qualified: true
 quality:
   schema: quality.yaml

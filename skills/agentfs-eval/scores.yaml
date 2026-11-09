@@ -2,7 +2,7 @@
 skill: agentfs-eval
 version: 2.5.0
 model_tier: T4
-qualification_rule: build+observable
+qualification_rule: T4
 qoo-qualified: true
 quality:
   schema: quality.yaml
@@ -12,15 +12,15 @@ quality:
     script_coverage:
       score: 25
       pass: false
-      confidence: 0.9999991655356623
+      confidence: 0.9999994039539003
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.3435109938739618
+      confidence: 0.3270762950285545
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.5618648274889866
+      confidence: 0.6221553205120868
     prose_executability:
       score: 67
       pass: true
@@ -28,12 +28,12 @@ quality:
     model_portability:
       score: 100
       pass: true
-      confidence: 0.9999957084838798
+      confidence: 0.9999933243243501
     interface_opacity:
       score: 0
       pass: false
       confidence: 0.9996646575567589
-  evaluated: '2026-11-08T20:39:54-05:00'
+  evaluated: '2026-11-08T21:11:41-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 100
@@ -55,7 +55,7 @@ observable:
       score: 100
       pass: true
       confidence: 1.0
-  evaluated: '2026-11-08T20:39:54-05:00'
+  evaluated: '2026-11-08T21:11:41-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -73,14 +73,14 @@ operable:
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9999998807907248
+        confidence: 0.9999997615814777
       has_harness:
         score: 100
         pass: true
         confidence: 0.9999997615814777
-    evaluated: '2026-11-08T20:39:54-05:00'
+    evaluated: '2026-11-08T21:11:41-05:00'
 history:
-- date: '2026-11-08T20:39:54-05:00'
+- date: '2026-11-08T21:11:41-05:00'
   type: full
   quality_score: 59.833333333333336
   quality_band: Re-engineer

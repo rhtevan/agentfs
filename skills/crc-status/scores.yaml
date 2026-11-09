@@ -2,7 +2,7 @@
 skill: crc-status
 version: 2.1.0
 model_tier: T1
-qualification_rule: build+observable
+qualification_rule: T1
 qoo-qualified: true
 quality:
   schema: quality.yaml

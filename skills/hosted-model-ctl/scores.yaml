@@ -2,8 +2,8 @@
 skill: hosted-model-ctl
 version: 7.10.1
 model_tier: T3
-qualification_rule: build+observable
-qoo-qualified: false
+qualification_rule: T3
+qoo-qualified: true
 quality:
   schema: quality.yaml
   aggregate_score: 72.16666666666667

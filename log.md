@@ -2,6 +2,25 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 21:11
+- Bump version to 1.5.0 — added scripts/ for Build qualification (skills/goose-maas-provider/SKILL.md)
+- New script: test model reasoning_content compatibility with Goose streaming parser (skills/goose-maas-provider/scripts/test-model-compat.sh)
+
+## 2026-11-08 21:10
+- New script: verify MaaS provider config completeness (provider JSON, config.yaml, keyring) (skills/goose-maas-provider/scripts/verify-config.sh)
+- New script: restore MaaS custom provider JSON and config.yaml entries (skills/goose-maas-provider/scripts/restore-provider.sh)
+
+## 2026-11-08 21:09
+- New script: verify MaaS endpoint connectivity and authentication (skills/goose-maas-provider/scripts/check-endpoint.sh)
+
+## 2026-11-08 21:08
+- Apply T3 tier-aware qualification — Q=72>=50 O=50>=50 B=100>=75 meets T3 threshold (skills/hosted-model-ctl/scores.yaml)
+
+## 2026-11-08 21:07
+- Apply T4 tier-aware qualification — Build=75 Tunable meets T4 threshold (Q+O informational) (skills/skill-harvest/scores.yaml)
+- Write tier-aware qualification_rule to scores.yaml instead of hardcoded build+observable (scripts/score-all.sh)
+- Add tier-aware qualification logic (T4: Build only, T3: relaxed Q+O, T1/T2: strict) (scripts/score-all.sh)
+
 ## 2026-11-08 20:38
 - Split operable eval: --phase build for BMBT only, CECX runtime skipped without trace evidence (scripts/score-all.sh)
 

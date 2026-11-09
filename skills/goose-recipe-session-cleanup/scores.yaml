@@ -2,7 +2,7 @@
 skill: goose-recipe-session-cleanup
 version: 3.0.0
 model_tier: T3
-qualification_rule: build+observable
+qualification_rule: T3
 qoo-qualified: false
 quality:
   schema: quality.yaml

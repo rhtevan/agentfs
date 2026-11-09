@@ -2,7 +2,7 @@
 skill: skupper-model-provider
 version: 9.1.0
 model_tier: T2
-qualification_rule: build+observable
+qualification_rule: T2
 qoo-qualified: false
 quality:
   schema: quality.yaml

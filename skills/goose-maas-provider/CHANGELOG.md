@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 21:11 | v1.5.0 — New script: verify MaaS endpoint connectivity and authentication; New script: restore MaaS custom provider JSON and config.yaml entries; New script: verify MaaS provider config completeness (provider JSON, config.yaml, keyring); New script: test model reasoning_content compatibility with Goose streaming parser; Bump version to 1.5.0 — added scripts/ for Build qualification |
 | 2026-11-05 19:31 | v1.4.0 — Add model-tier to frontmatter |
 | 2026-08-10 22:22 | v1.4 — Added `qwen36-35b-a3b` (Qwen 3.6 35B-A3B MoE) and `deepseek-r1-distill-qwen-14b` to model list in provider JSON, reference configuration, recovery script, and model compatibility matrix |
 | 2026-07-06 20:06 | v1.3 — **Goose Desktop is incompatible with MaaS** — tool calling fails under all tested Desktop configurations (streaming on/off, toolshim on/off); CLI with `GOOSE_TOOLSHIM: true` is the only working approach; updated Desktop section, troubleshooting |
