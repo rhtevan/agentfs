@@ -3,5 +3,6 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 08:41 | v1.1.0 — Create setup script; Bump to 1.1.0; Restructure Steps to delegate to setup.sh |
 | 2026-11-05 19:30 | v1.0.0 — Add model-tier to frontmatter |
 | 2026-06-19 18:24 | v1.0 — Initial skill |

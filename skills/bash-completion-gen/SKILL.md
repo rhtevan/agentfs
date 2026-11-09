@@ -7,7 +7,7 @@ compatibility: "Any agent with shell access on a system with bash-completion ins
 metadata:
   author: agentfs
   version: "1.0.0"
-  model-tier: T3
+  model-tier: T4
   tags: [bash, completion, cli, shell, automation]
 user-invocable: true
 disable-model-invocation: false

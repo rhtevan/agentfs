@@ -1,8 +1,8 @@
 # scores.yaml — goose-desktop-env-fix
 skill: goose-desktop-env-fix
 version: 1.4.0
-model_tier: T3
-qualification_rule: T3
+model_tier: T4
+qualification_rule: T4
 qoo-qualified: false
 quality:
   schema: quality.yaml

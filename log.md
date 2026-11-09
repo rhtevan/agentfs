@@ -2,6 +2,29 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 08:44
+- Add Workflow delegation, bump to 1.2.0 (skills/crc-nad-dynamic-plugin-config/SKILL.md)
+- Create setup script (skills/crc-nad-dynamic-plugin-config/scripts/setup.sh)
+
+## 2026-11-09 08:43
+- CNL restructure Steps to delegate to scripts (skills/dsh-setup/SKILL.md)
+
+## 2026-11-09 08:42
+- Restructure Steps to delegate to setup.sh (skills/crc-noo-config/SKILL.md)
+
+## 2026-11-09 08:41
+- Restructure Steps to delegate to setup.sh (skills/crc-coo-config/SKILL.md)
+
+## 2026-11-09 08:40
+- Bump to 1.1.0 (skills/crc-coo-config/SKILL.md)
+- Create setup script (skills/crc-coo-config/scripts/setup.sh)
+- Bump to 1.2.0 (skills/crc-noo-config/SKILL.md)
+- Create setup script (skills/crc-noo-config/scripts/setup.sh)
+
+## 2026-11-09 08:38
+- Bump to 1.2.0 (skills/headroom-litellm-proxy/SKILL.md)
+- Create setup script (skills/headroom-litellm-proxy/scripts/setup.sh)
+
 ## 2026-11-08 23:02
 - Create setup script for persistent instructions (skills/goose-setup/scripts/setup.sh)
 

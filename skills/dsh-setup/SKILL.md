@@ -59,20 +59,19 @@ Execute each step in order and verify before proceeding.
 DSH stores its config in `~/.dsh/` by default (overridable via `DSH_HOME`
 env var). The `settings.yaml` within controls model providers.
 
-## Steps
+## Workflow
 
-### Setup (initial install)
+The agent MUST select the appropriate operation based on the user's
+request and run the corresponding script. The agent MUST report
+the script output verbatim.
 
-1. **Run the install script**
-   ```bash
-   bash ~/.agents/skills/dsh-setup/scripts/install.sh
-   ```
-   This script:
-   - Verifies Node.js version meets DSH requirements
-   - Installs pnpm locally if not present
-   - Creates `~/.local/share/dsh/` and runs `pnpm add @deepseek-ai/dsh`
-   - Approves required build scripts (node-pty, koffi, protobufjs)
-   - Verifies the `dsh` binary works
+### Step 1 — Setup (initial install)
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/dsh-setup/scripts/install.sh
+```
 
 2. **Install the desktop launcher**
    ```bash

@@ -3,7 +3,7 @@ name: crc-nad-dynamic-plugin-config
 description: >
   install nad plugin, nad console plugin, network attachment
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [openshift, crc, networking, console-plugin, helm]
 ---
@@ -37,6 +37,23 @@ Execute each step in order and verify before proceeding.
   - Verify: `~/.local/bin/helm version`
 - The `nad-console-plugin` project is at `~/app/playground/nad-console-plugin/`
 - Pre-built image: `quay.io/rhtevan/nad-console-plugin:latest`
+
+## Workflow
+
+### Step 0 — Run the setup script
+
+The agent MUST run the setup script:
+
+```bash
+bash ~/.agents/skills/crc-nad-dynamic-plugin-config/scripts/setup.sh
+```
+
+The script handles deployment and verification automatically.
+The agent MUST report the script output verbatim.
+
+Use `--check` to inspect current state without applying changes.
+
+## Legacy Steps (reference only)
 
 ## Step 1: Verify the NAD CRD Is Present
 

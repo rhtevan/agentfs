@@ -3,7 +3,7 @@ name: crc-coo-config
 description: >
   install coo, configure coo, cluster observability
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   model-tier: T3
   tags: [openshift, crc, observability, operator, perses]
 ---
@@ -17,14 +17,23 @@ Install the Red Hat OpenShift Cluster Observability Operator (COO) on an OpenShi
 - The CRC cluster is running and you are logged in as `kubeadmin`.
 - **Cluster monitoring must be enabled.** If it is not, use the `crc-cluster-monitoring` skill first — COO and incident detection depend on the monitoring stack being active.
 
-## Steps
+## Workflow
 
-1. **Verify cluster monitoring is running**
-   Confirm that the monitoring stack is available before proceeding:
-   ```bash
-   oc get co monitoring
-   ```
-   The output must show `Available=True` and `Degraded=False`. If the `monitoring` ClusterOperator does not exist or is degraded, stop and enable cluster monitoring first.
+### Step 1 — Run the setup script
+
+The agent MUST run the setup script:
+
+```bash
+bash ~/.agents/skills/crc-coo-config/scripts/setup.sh
+```
+
+The script handles namespace creation, operator installation, UIPlugin
+configuration, and verification automatically.
+The agent MUST report the script output verbatim.
+
+Use `--check` to inspect current state without applying changes.
+
+## Legacy Steps (reference only)
 
 2. **Create the COO namespace with the cluster-monitoring label**
    The `openshift.io/cluster-monitoring: "true"` label is required for incident detection to work:

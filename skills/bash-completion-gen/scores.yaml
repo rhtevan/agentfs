@@ -1,8 +1,8 @@
 # scores.yaml — bash-completion-gen
 skill: bash-completion-gen
 version: 1.0.0
-model_tier: T3
-qualification_rule: T3
+model_tier: T4
+qualification_rule: T4
 qoo-qualified: false
 quality:
   schema: quality.yaml

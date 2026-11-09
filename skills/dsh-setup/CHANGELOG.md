@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 08:43 | v1.4.0 — CNL restructure Steps to delegate to scripts |
 | 2026-11-08 22:50 | v1.4.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:30 | v1.3.1 — Add model-tier to frontmatter |
 | 2026-08-31 10:03 | v1.3.1 — Added version check to status.sh — compares installed vs registry latest, recommends update when behind |

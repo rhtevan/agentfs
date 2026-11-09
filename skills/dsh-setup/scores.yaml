@@ -3,11 +3,11 @@ skill: dsh-setup
 version: 1.3.1
 model_tier: T3
 qualification_rule: T3
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 46.666666666666664
-  band: Redesign
+  aggregate_score: 83
+  band: Tunable
   dimensions:
     script_coverage:
       score: 0
@@ -59,16 +59,16 @@ observable:
 operable:
   build:
     schema: operable.yaml
-    aggregate_score: 62.5
-    band: Re-engineer
+    aggregate_score: 100
+    band: Operable
     dimensions:
       has_bones:
         score: 100
         pass: true
         confidence: 0.9999417100552707
       has_muscle:
-        score: 0
-        pass: false
+        score: 100
+        pass: true
         confidence: 0.9999938011552556
       has_brain:
         score: 100
@@ -82,10 +82,10 @@ operable:
 history:
 - date: '2026-11-08T20:43:41-05:00'
   type: full
-  quality_score: 46.666666666666664
-  quality_band: Redesign
+  quality_score: 83
+  quality_band: Tunable
   observable_score: 50
   observable_band: Re-engineer
-  build_score: 62.5
-  build_band: Re-engineer
+  build_score: 100
+  build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

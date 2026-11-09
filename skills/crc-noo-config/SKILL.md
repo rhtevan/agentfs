@@ -3,7 +3,7 @@ name: crc-noo-config
 description: >
   install noo, configure noo, network observability
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [openshift, crc, networking, observability, operator, ebpf]
 ---
@@ -27,7 +27,23 @@ Execute each step in order and verify before proceeding.
 - The cluster must be using **OVN-Kubernetes** as the network plugin (CRC default).
 - **No other operators are required.** Loki Operator is NOT needed — this skill uses the built-in demo Loki mode. Cluster Observability Operator is NOT needed.
 
-## Steps
+## Workflow
+
+### Step 1 — Run the setup script
+
+The agent MUST run the setup script:
+
+```bash
+bash ~/.agents/skills/crc-noo-config/scripts/setup.sh
+```
+
+The script handles namespace creation, operator installation,
+FlowCollector configuration, and verification automatically.
+The agent MUST report the script output verbatim.
+
+Use `--check` to inspect current state without applying changes.
+
+## Legacy Steps (reference only)
 
 1. **Verify cluster access and network plugin**
    ```bash

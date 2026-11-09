@@ -6,7 +6,7 @@ description: >
 metadata:
   author: agentfs
   version: "3.1.0"
-  model-tier: T3
+  model-tier: T4
   tags: [goose, recipe, session, cleanup, orphan, desktop, terminal]
 ---
 
