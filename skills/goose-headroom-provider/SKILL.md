@@ -4,7 +4,7 @@ description: >
   configure goose headroom, goose headroom provider
 platforms: ['linux']
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   model-tier: T3
   tags: [goose, headroom, custom-provider, context-optimization, compression, configuration]
   related_skills: [headroom-litellm-proxy, headroom-proxy-status, goose-litellm-provider, litellm-proxy-status]
@@ -16,6 +16,16 @@ Create and configure a Goose custom provider that points to the local
 Headroom context-optimization proxy. This skill covers **only** the Goose
 provider configuration — for Headroom installation and systemd setup, see
 the `headroom-litellm-proxy` skill.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Traffic Chain
 

@@ -8,6 +8,11 @@
 # instructions for the agent.
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+
 cat << 'EOF'
 ⚠️  KGM enable/disable is session-scoped (not global config).
 

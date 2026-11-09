@@ -2,6 +2,11 @@
 # setup-kgm.sh — Add KG Memory MCP extension to Goose config (disabled by default)
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+
 CONFIG="$HOME/.config/goose/config.yaml"
 JSONL_DIR="$HOME/.agents/knowledge"
 JSONL_PATH="$JSONL_DIR/.kgm-index.jsonl"

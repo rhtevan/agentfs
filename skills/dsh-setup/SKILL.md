@@ -7,8 +7,8 @@ platforms: ['linux']
 writes-files: true
 metadata:
   author: agentfs
-  version: "1.3.1"
-  model-tier: T2
+  version: "1.4.0"
+  model-tier: T3
   tags: [dsh, deepseek-harness, agent-harness, setup, launcher]
   related_skills: [dsh-litellm-provider]
 user-invocable: true
@@ -26,6 +26,16 @@ This skill uses **pnpm** for package management (npm cannot handle DSH's
 62+ direct dependencies — it hangs indefinitely consuming 3+ GB RAM).
 The install is persistent (not ephemeral `npx`), so launches are instant
 (~3 seconds) and updates are explicit.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

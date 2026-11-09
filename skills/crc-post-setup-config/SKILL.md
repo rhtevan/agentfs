@@ -4,7 +4,7 @@ description: >
   crc post setup, configure crc monitoring, crc tune
 metadata:
   version: "1.1.0"
-  model-tier: T2
+  model-tier: T3
   tags: [openshift, crc, monitoring, configuration, alerts]
 ---
 

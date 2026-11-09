@@ -4,6 +4,11 @@
 # Exit: 0 = success, 1 = OLSConfig not found or not ready
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "crc-ols" "3.4.0" 2>/dev/null || true
+
 OC_CONTEXT=""
 while [[ $# -gt 0 ]]; do
   case "$1" in

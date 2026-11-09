@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:51 | v3.3.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:31 | v3.2.1 — Add model-tier to frontmatter |
 | 2026-09-29 16:21 | v3.2.1 — Update guardrail reference text to v7 rule names |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |

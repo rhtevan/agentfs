@@ -1,8 +1,8 @@
 # scores.yaml — crc-ctl
 skill: crc-ctl
 version: 2.0.0
-model_tier: T2
-qualification_rule: T2
+model_tier: T3
+qualification_rule: T3
 qoo-qualified: false
 quality:
   schema: quality.yaml

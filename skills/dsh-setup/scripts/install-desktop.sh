@@ -3,6 +3,11 @@
 # Usage: bash install-desktop.sh
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "dsh-setup" "1.4.0" 2>/dev/null || true
+
 DSH_DIR="$HOME/.local/share/dsh"
 LAUNCHER="$HOME/.local/bin/dsh-launcher"
 DESKTOP_FILE="$HOME/.local/share/applications/dsh.desktop"
@@ -65,6 +70,11 @@ cat > "$LAUNCHER" << 'LAUNCHER_EOF'
 # dsh-launcher — Start DSH backend (systemd) + Chrome app-mode window
 # Stops backend automatically when all browser connections close.
 set -euo pipefail
+
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "dsh-setup" "1.4.0" 2>/dev/null || true
 
 DSH_PORT=3080
 DSH_URL="http://127.0.0.1:$DSH_PORT"

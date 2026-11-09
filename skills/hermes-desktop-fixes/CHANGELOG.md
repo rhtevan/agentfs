@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:51 | v3.3.0 — Add Rules + trace |
 | 2026-11-05 19:31 | v3.2.1 — Add model-tier to frontmatter |
 | 2026-10-27 20:57 | v3.2.1 — Added Bug #7: window translucency active on Linux despite no config (localStorage fix via preview frame). Added Techniques section for Electron renderer JS execution pattern. |
 | 2026-09-28 | v3.2.0 — Added Bug #6: GPU process crash (Intel Arc Meteor Lake + Electron 40 + no-sandbox + Wayland). GPU subprocess fails to launch (error_code=1002), retries 6×, then FATAL exits Electron. Fix: `desktop.disable_gpu: true` in config.yaml → `HERMES_DESKTOP_DISABLE_GPU=1` → `app.disableHardwareAcceleration()`. Also fixed `.desktop` entry overwritten by upstream's `linux_desktop_entry.py` regeneration (Exec pointed to raw python path instead of launcher wrapper). |

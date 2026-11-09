@@ -11,6 +11,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "okf-bundle-setup" "1.2.0" 2>/dev/null || true
+
 BUNDLE_ROOT="${1:?Usage: scaffold-bundle.sh <BUNDLE_ROOT>}"
 BUNDLE_ROOT="$(cd "$BUNDLE_ROOT" 2>/dev/null && pwd || (mkdir -p "$BUNDLE_ROOT" && cd "$BUNDLE_ROOT" && pwd))"
 TODAY="$(date '+%Y-%m-%d %H:%M')"

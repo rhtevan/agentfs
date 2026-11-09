@@ -3,6 +3,11 @@
 # Usage: bash verify.sh
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "dsh-litellm-provider" "1.2.0" 2>/dev/null || true
+
 DSH_HOME="${DSH_HOME:-$HOME/.dsh}"
 SETTINGS="$DSH_HOME/settings.yaml"
 LITELLM_URL="http://127.0.0.1:4000"

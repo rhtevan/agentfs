@@ -4,7 +4,7 @@ description: >
   install nmstate, configure nmstate, nmstate operator
 metadata:
   version: "1.1.0"
-  model-tier: T2
+  model-tier: T3
   tags: [openshift, crc, networking, nmstate, operator]
 ---
 

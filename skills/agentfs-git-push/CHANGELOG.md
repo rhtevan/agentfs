@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:19 | v2.1.0 — Add Rules section with anti-fabrication for Observable compliance; Bump version to 2.1.0; Add trace-lib.sh instrumentation; Add trace_step and trace_end |
 | 2026-11-05 19:30 | v2.0.1 — Add model-tier to frontmatter |
 | 2026-10-15 21:44 | v2.0.1 — Sync frontmatter version to match CHANGELOG latest (2.0.0 → 2.0.1) |
 | 2026-09-29 21:46 | v2.0.1 — Step 6: explicit instruction to render tool output in response message |

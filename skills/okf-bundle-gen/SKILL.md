@@ -3,7 +3,7 @@ name: okf-bundle-gen
 description: >
   generate knowledge bundle, create knowledge bundle, okf generate
 metadata:
-  version: "3.2.1"
+  version: "3.3.0"
   model-tier: T3
   tags: [agentfs, okf, knowledge, generation, session]
 ---
@@ -31,6 +31,16 @@ writes (or merges) OKF-conformant concept documents.
 
 For the full OKF specification, see
 `load_skill(name: "okf-bundle-setup/references/okf-spec-summary.md")`.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

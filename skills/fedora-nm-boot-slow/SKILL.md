@@ -7,7 +7,7 @@ argument-hint: "diagnose | fix-wifi | fix-nm-wait-online"
 compatibility: "Fedora 40+ with NetworkManager and systemd"
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [fedora, network, boot, networkmanager, performance]
 user-invocable: true
@@ -25,6 +25,16 @@ that start after network is ready). The most common root cause on
 laptops/workstations is having both wired and Wi-Fi auto-connecting
 simultaneously, where the slower Wi-Fi path (scan → WPA handshake →
 DHCP) holds up the entire boot.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

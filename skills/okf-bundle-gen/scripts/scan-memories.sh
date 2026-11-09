@@ -19,6 +19,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "okf-bundle-gen" "3.3.0" 2>/dev/null || true
+
 DOTAGENTS_ROOT="${1:?Usage: scan-memories.sh <DOTAGENTS_ROOT>}"
 DOTAGENTS_ROOT="$(cd "$DOTAGENTS_ROOT" && pwd)"
 

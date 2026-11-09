@@ -4,6 +4,11 @@
 #   or:  bash setup.sh  (will prompt for sudo)
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "fedora-dns-cache" "1.1.0" 2>/dev/null || true
+
 CONF_DIR="/etc/systemd/resolved.conf.d"
 CONF_FILE="${CONF_DIR}/fast-timeout.conf"
 SERVICE="systemd-resolved"

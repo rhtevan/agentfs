@@ -8,8 +8,8 @@ argument-hint: "setup goose skupper provider for rhel-ai | recreate skupper prov
 compatibility: "goose CLI or Desktop, skupper-model-provider running"
 metadata:
   author: agentfs
-  version: "5.5.0"
-  model-tier: T2
+  version: "5.6.0"
+  model-tier: T3
   tags: [goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -26,6 +26,15 @@ rhtevan-work) as local endpoints on `host.containers.internal:9000` and
 `host.containers.internal:10000`. Use this skill after the VAN is running
 (`skupper model up`) to wire Goose to the self-hosted model
 instead of a cloud provider.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Host-Based Routing
 

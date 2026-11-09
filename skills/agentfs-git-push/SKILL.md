@@ -3,7 +3,7 @@ name: agentfs-git-push
 description: >
   git push safety, pre-push scan, hey git workflow, hey git, git
 metadata:
-  version: "2.0.1"
+  version: "2.1.0"
   model-tier: T2
   tags: [agentfs, git, safety, pre-push, guardrail]
 user-invocable: true
@@ -18,6 +18,15 @@ two-phase safety model: deterministic scan (script) followed by a
 mandatory human confirmation gate. This skill absorbs the full Git
 Push Safety workflow previously inline in AGENTS.md (delegated to this skill)
 (v4.x), ensuring the agent cannot skip, reorder, or combine steps.
+
+## Rules
+
+Do NOT fabricate or invent command output, scan results, or status.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip, reorder, or combine workflow steps.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

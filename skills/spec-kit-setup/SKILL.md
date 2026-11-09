@@ -3,8 +3,8 @@ name: spec-kit-setup
 description: >
   install spec-kit, setup specify, upgrade spec-kit
 metadata:
-  version: "1.0.0"
-  model-tier: T2
+  version: "1.1.0"
+  model-tier: T3
   tags: [speckit, specify, cli, setup, installation]
 ---
 
@@ -14,47 +14,50 @@ Detect, install, or upgrade the `specify` CLI (GitHub Spec Kit) via `uv tool`.
 
 ## What This Skill Does
 
-1. Locates `uv` (checks PATH, `~/.hermes/bin`, `~/.local/bin`, `~/.cargo/bin`,
-   nix store).
-2. Checks whether `specify` is already installed and reads its current version.
-3. Fetches the latest release tag from
-   `github.com/github/spec-kit/releases/latest`.
-4. Compares the installed version against the latest tag.
-5. Installs (fresh) or upgrades (if behind or `--force`) using
-   `uv tool install specify-cli --force --from git+...@<tag>`.
-6. Verifies the new installation by running `specify version`.
+Install or upgrade the `specify` CLI to the latest version.
+The script handles all detection, comparison, and installation
+steps automatically.
 
-## Usage
+## Workflow
 
-Run the bundled script from the skill directory:
+### Step 1 — Run the install script
+
+The agent MUST run the install script:
 
 ```bash
-bash <skill-dir>/scripts/check-and-install.sh
+bash ~/.agents/skills/spec-kit-setup/scripts/check-and-install.sh
 ```
 
-### Options
+The script handles version detection, download, and installation
+automatically. The agent MUST report the script output verbatim.
 
-| Flag | Effect |
-|------|--------|
-| `--json` | Machine-readable JSON output |
-| `--force` | Reinstall even if already at the latest version |
-| `--tag vX.Y.Z` | Pin to a specific release tag instead of latest |
+Optional flags: `--force` (reinstall), `--tag vX.Y.Z` (pin version),
+`--json` (machine-readable output).
 
-### Examples
+### Step 2 — Verify
+
+The agent MUST confirm installation:
 
 ```bash
-# Auto-detect and install/upgrade to latest
-bash <skill-dir>/scripts/check-and-install.sh
-
-# Force reinstall at current latest
-bash <skill-dir>/scripts/check-and-install.sh --force
-
-# Pin to a specific release
-bash <skill-dir>/scripts/check-and-install.sh --tag v0.11.8
-
-# JSON output for scripted use
-bash <skill-dir>/scripts/check-and-install.sh --json
+specify version
 ```
+
+## Output Contract
+
+- Exit 0 → installation successful (or already up to date)
+- Exit 1 → installation failed (script output explains the cause)
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
+
+This skill is purely mechanical — no semantic judgment is required.
+All decisions are made by the install script.
 
 ## Prerequisites
 
@@ -65,54 +68,10 @@ bash <skill-dir>/scripts/check-and-install.sh --json
 
 If `uv` is not found, install it first: https://docs.astral.sh/uv/
 
-## Version Detection
+## Verification
 
-Spec-kit has shipped two different `specify version` output formats:
-
-| Format | CLI Version Field | Release Version Source |
-|--------|-------------------|------------------------|
-| Old (CLI ≤ 0.0.x) | `CLI Version` + `Template Version` | Template Version matches the release tag |
-| New (CLI ≥ 0.11.x) | `CLI Version` only | CLI Version matches the release tag |
-
-The script handles both formats automatically — it checks for `Template Version`
-first (old format) and falls back to `CLI Version` (new format).
-
-## Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | Success — installed, upgraded, or already current |
-| 1 | Fatal error — missing `uv`, missing `python3`, install failure |
-| 2 | User-actionable issue — bad arguments |
-
-## After Installation
-
-Once `specify` is available, common next steps:
-
-```bash
-# Verify
-specify version
-specify check
-
-# Initialize a project
-cd <project-root>
-specify init . --integration <agent>
-
-# Or proceed to the agentfs-setup skill for the DotAgents structure
-```
-
-## JSON Output Schema
-
-When `--json` is passed, the script emits a single JSON object:
-
-```json
-{
-  "action": "installed | upgraded | current | error",
-  "version": "0.11.8",
-  "latest_tag": "v0.11.8",
-  "message": "Human-readable summary"
-}
-```
+- [ ] `specify version` reports the expected version
+- [ ] Script exits 0 with a success message
 
 
 ## Changelog

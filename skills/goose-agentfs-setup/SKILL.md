@@ -6,8 +6,8 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.7.0"
-  model-tier: T2
+  version: "1.8.0"
+  model-tier: T3
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
 disable-model-invocation: false
@@ -59,6 +59,15 @@ Goose's context file loading (`load_hints.rs`) does the following:
    including referenced files inline.
 
 All discovered content is concatenated into the system prompt.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

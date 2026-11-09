@@ -3,6 +3,11 @@
 # Usage: bash verify.sh
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "dsh-setup" "1.4.0" 2>/dev/null || true
+
 DSH_DIR="$HOME/.local/share/dsh"
 PNPM_BIN="$HOME/.local/share/pnpm/node_modules/.bin/pnpm"
 LAUNCHER="$HOME/.local/bin/dsh-launcher"

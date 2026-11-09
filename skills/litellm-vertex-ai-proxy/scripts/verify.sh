@@ -4,6 +4,11 @@
 # Exit codes: 0 = all checks pass, 1 = one or more checks failed
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "litellm-vertex-ai-proxy" "3.2.0" 2>/dev/null || true
+
 CONFIG_FILE="$HOME/.config/litellm/config.yaml"
 SERVICE_FILE="$HOME/.config/systemd/user/litellm-proxy.service"
 

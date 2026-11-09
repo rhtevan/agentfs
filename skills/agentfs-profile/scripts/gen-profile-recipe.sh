@@ -31,6 +31,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "agentfs-profile" "1.11.0" 2>/dev/null || true
+
 # ── Parse arguments ──────────────────────────────────────────────────
 if [[ $# -lt 2 ]]; then
   echo "[gen-profile-recipe] ERROR: profile-name and task-description required." >&2

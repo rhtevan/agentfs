@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "skupper-model-provider" "9.2.0" 2>/dev/null || true
+
 # ── Load topology ─────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
@@ -582,6 +587,11 @@ install_router_auto_restart() {
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "skupper-model-provider" "9.2.0" 2>/dev/null || true
+
 ROUTER="model-provider-podman-skupper-router"
 
 podman start "${ROUTER}"
@@ -635,6 +645,11 @@ install_controller_auto_restart() {
   cat > ~/.local/share/skupper/system-controller/internal/scripts/start-watch.sh << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "skupper-model-provider" "9.2.0" 2>/dev/null || true
 CONTAINER=\"${controller}\"
 podman start \"\${CONTAINER}\"
 RC=\$(podman wait --condition=stopped \"\${CONTAINER}\")

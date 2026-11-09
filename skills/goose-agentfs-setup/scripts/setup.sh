@@ -9,6 +9,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-agentfs-setup" "1.8.0" 2>/dev/null || true
+
 # --- Configuration ---
 GOOSE_CONFIG="${GOOSE_CONFIG:-${HOME}/.config/goose/config.yaml}"
 

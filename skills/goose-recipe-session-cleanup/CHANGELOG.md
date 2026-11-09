@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:50 | v3.1.0 — Add Rules + trace |
 | 2026-11-05 19:31 | v3.0.0 — Add model-tier to frontmatter |
 
 

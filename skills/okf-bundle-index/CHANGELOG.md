@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:34 | v1.5.0 — Add Rules + trace + bump to 1.5.0; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:31 | v1.4.1 — Add model-tier to frontmatter |
 | 2026-10-16 20:12 | v1.4.1 — Fix: allow **bold** markdown in description extraction — awk pattern excluded * which caught ** bold openers |
 | 2026-08-26 12:36 | v1.4.0 — rebuild-index.sh: sort concepts and sub-bundles newest-first by mtime (matching skill index pattern) |

@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:33 | v1.7.0 — Add Rules + trace + bump to 1.7.0; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-08 21:19 | v1.6.0 — Add anti-fabrication rules and CNL compliance for Observable qualification |
 | 2026-11-05 19:31 | v1.5.0 — Add model-tier to frontmatter |
 | 2026-10-22 21:48 | v1.5.0 — New script: self-healing symlink enforcement for MCP server memory.jsonl |

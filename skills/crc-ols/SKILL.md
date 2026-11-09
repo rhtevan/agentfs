@@ -6,7 +6,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER"
 metadata:
   author: agentfs
-  version: "3.3.2"
+  version: "3.4.0"
   model-tier: T3
   tags: [openshift, crc, lightspeed, ols, llm, provider-management]
 user-invocable: true
@@ -16,6 +16,16 @@ disable-model-invocation: false
 # OpenShift Lightspeed on CRC — Multi-Provider Management
 
 Install OpenShift Lightspeed on an OpenShift Local (CRC) cluster, configure one or more LLM providers, switch between them, and apply CRC-specific tunings.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Usage
 

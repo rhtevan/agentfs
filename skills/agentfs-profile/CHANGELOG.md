@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:37 | v1.11.0 — Add Rules, bump to 1.11.0; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:30 | v1.10.0 — Add model-tier to frontmatter |
 | 2026-08-26 21:34 | v1.10.0 — Added LITE scope guard: create-profile.sh refuses in LITE scope projects. Standardized terminology: mode → scope. |
 | 2026-08-20 00:00 | v1.9.0 — Refactor create-profile.sh to delegate SOUL authoring to author-soul.sh; add recipe.yaml placeholder generation with SOUL content + identity override header; add output/ directory; add gen-profile-recipe.sh for on-demand task recipe generation |

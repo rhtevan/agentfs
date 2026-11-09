@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:51 | v1.2.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:31 | v1.1.0 — Add model-tier to frontmatter |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |
 | 2026-07-09 01:55 | v1.1 — Fixed default path to `~/.agents/knowledge/` (USER scope), updated examples |

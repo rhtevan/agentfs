@@ -4,7 +4,7 @@ description: >
   configure hermes agentfs, hermes skills dirs, hermes agentfs
 platforms: ['linux']
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T2
   tags: [hermes, agentfs, configuration, skills, compatibility]
   related_skills: [agentfs-setup, hermes-litellm-provider, hermes-desktop-fixes]
@@ -49,6 +49,15 @@ working directory. Each project must be registered individually.
 | `.agents/skills/` (PROJECT) | ✅ native (auto) | ✅ via `external_dirs` (manual per-project) |
 | SKILL.md format | ✅ YAML frontmatter | ✅ same format |
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
+
 ## Prerequisites
 
 - Hermes Agent installed (`~/.hermes/` exists with `config.yaml`)
@@ -57,44 +66,48 @@ working directory. Each project must be registered individually.
 
 ## Steps
 
-### Step 1: Check Current Compatibility
+### Step 1 — Check Current Compatibility
+
+The agent MUST run the setup script in check mode:
 
 ```bash
 bash ~/.agents/skills/hermes-agentfs-setup/scripts/setup.sh --check
 ```
 
-Reports USER and PROJECT status, registered project paths, and any
-issues to fix.
+The agent MUST report the script output verbatim.
 
-### Step 2: USER Setup
+### Step 2 — USER Setup
+
+The agent MUST run the setup script:
 
 ```bash
 bash ~/.agents/skills/hermes-agentfs-setup/scripts/setup.sh
 ```
 
-Adds `~/.agents/skills` to `skills.external_dirs`. Idempotent — safe to
-run multiple times. Creates a timestamped backup of `config.yaml`.
+The script handles configuration changes and backup automatically.
+The agent MUST report the script output verbatim.
 
-### Step 3: PROJECT Setup (per-project)
+### Step 3 — PROJECT Setup (per-project)
 
-Run this in each project directory that has `.agents/skills/`:
+The agent MUST run the setup script with `--project` in each project
+directory that has `.agents/skills/`:
 
 ```bash
 bash ~/.agents/skills/hermes-agentfs-setup/scripts/setup.sh --project
 ```
 
-Or specify a path:
+Or specify a path explicitly:
 
 ```bash
 bash ~/.agents/skills/hermes-agentfs-setup/scripts/setup.sh --project /path/to/project
 ```
 
-This registers the project's `.agents/skills/` as an absolute path in
-`external_dirs`. Idempotent per project.
+The script handles project registration automatically.
+The agent MUST report the script output verbatim.
 
-### Step 4: Restart Hermes
+### Step 4 — Restart Hermes
 
-Hermes reads `config.yaml` at session startup. Restart any active session
+The agent MUST instruct the user to restart any active Hermes session
 to pick up the new skill directories.
 
 ### Step 5: Verify

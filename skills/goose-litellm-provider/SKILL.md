@@ -4,7 +4,7 @@ description: >
   configure goose litellm, goose litellm provider
 platforms: ['linux']
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   model-tier: T3
   tags: [goose, litellm, custom-provider, redhat, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
@@ -21,6 +21,15 @@ LiteLLM proxy backed by Vertex AI Claude models (no auth,
 
 For remote MaaS (Model as a Service) setup, see the `goose-maas-provider`
 skill instead.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

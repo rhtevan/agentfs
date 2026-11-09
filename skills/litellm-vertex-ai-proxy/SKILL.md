@@ -4,7 +4,7 @@ description: >
   setup litellm vertex, vertex ai proxy, litellm vertex
 platforms: ['linux']
 metadata:
-  version: "3.1.2"
+  version: "3.2.0"
   model-tier: T2
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   related_skills: [litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
@@ -30,6 +30,15 @@ This skill deploys LiteLLM locally as a proxy that:
 Any AI agent or application that supports OpenAI-compatible endpoints
 can use this proxy. See agent-specific skills (`goose-litellm-provider`,
 `hermes-litellm-provider`) for integration guidance.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

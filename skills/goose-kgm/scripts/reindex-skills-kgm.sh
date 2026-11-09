@@ -9,6 +9,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+
 SKILLS_DIR="$HOME/.agents/skills"
 INDEX="$SKILLS_DIR/index.md"
 JSONL_PATH="$SKILLS_DIR/.kgm-skills.jsonl"

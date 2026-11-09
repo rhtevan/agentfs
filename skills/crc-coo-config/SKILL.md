@@ -4,7 +4,7 @@ description: >
   install coo, configure coo, cluster observability
 metadata:
   version: "1.0.0"
-  model-tier: T2
+  model-tier: T3
   tags: [openshift, crc, observability, operator, perses]
 ---
 

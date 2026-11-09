@@ -4,6 +4,11 @@
 # Exit codes: 0 = all checks pass, 1 = one or more checks failed
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "hermes-litellm-provider" "2.3.0" 2>/dev/null || true
+
 HERMES_CONFIG="$HOME/.hermes/config.yaml"
 LITELLM_URL="http://127.0.0.1:4000"
 PROVIDER_NAME="litellm-vertex-ai"

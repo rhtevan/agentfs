@@ -3,7 +3,7 @@ name: agentfs-ctx-chk
 description: >
   audit context, check context, context audit
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   model-tier: T3
   tags: [agentfs, context, audit, optimization, guardrails]
 user-invocable: true
@@ -15,6 +15,16 @@ disable-model-invocation: false
 Audit the full stack of context that loads into an AI agent session and
 identify redundancy, ambiguity, conflicts, effectiveness issues, and
 stale cross-references. Optionally apply fixes.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Overview
 

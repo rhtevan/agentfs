@@ -19,6 +19,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "hermes-agentfs-setup" "1.2.0" 2>/dev/null || true
+
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 CONFIG="$HERMES_HOME/config.yaml"
 AGENTS_SKILLS_USER="~/.agents/skills"

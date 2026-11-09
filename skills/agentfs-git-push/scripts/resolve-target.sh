@@ -15,6 +15,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "agentfs-git-push" "2.1.0" 2>/dev/null || true
+
 EXPLICIT="${1:-}"
 DEFAULT_TARGET="$HOME/.agents"
 
@@ -59,6 +64,9 @@ if [[ "$CWD" != "$TARGET" ]]; then
 fi
 
 # ── Output ───────────────────────────────────────────────────────────
+trace_step 1 "resolve_target" 0 "target=$TARGET,cwd_also=$CWD_ALSO" 2>/dev/null || true
+trace_end 2>/dev/null || true
+
 echo "TARGET=$TARGET"
 echo "CWD_ALSO=$CWD_ALSO"
 if [[ "$CWD_ALSO" == "true" ]]; then

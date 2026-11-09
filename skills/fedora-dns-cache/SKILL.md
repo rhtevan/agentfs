@@ -6,7 +6,7 @@ argument-hint: "No arguments required"
 compatibility: "Fedora 40+ with systemd-resolved"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.1.0"
   model-tier: T2
   tags: [fedora, dns, network, systemd, terminal, offline]
 user-invocable: true
@@ -33,71 +33,56 @@ Enable `StaleRetentionSec` in `systemd-resolved`. When upstream DNS
 is unreachable, previously cached answers are served immediately
 (for up to 1 hour after expiry) instead of waiting for a timeout.
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
+
 ## Prerequisites
 
 - Fedora 40+ (or any systemd 250+ distro with `systemd-resolved`)
 - `systemd-resolved` active as the system DNS resolver
 - `sudo` access to write to `/etc/systemd/resolved.conf.d/`
 
-## Steps
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
 
-1. **Diagnose DNS timeout history**
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
-   Check if DNS timeouts have been occurring:
+## Workflow
 
-   ```bash
-   resolvectl statistics | grep -A1 Timeout
-   ```
+### Step 1 — Run the setup script
 
-   Any non-zero "Total Timeouts" confirms the problem.
+The agent MUST run the setup script:
 
-2. **Check current configuration**
+```bash
+bash ~/.agents/skills/fedora-dns-cache/scripts/setup.sh
+```
 
-   Verify no existing stale cache config:
+The script handles diagnosis, configuration, and service restart
+automatically. It requires `sudo` for systemd config changes.
+The agent MUST report the script output verbatim.
 
-   ```bash
-   systemd-analyze cat-config systemd/resolved.conf | grep -i stale
-   ```
+### Step 2 — Verify
 
-   Default is `#StaleRetentionSec=0` (disabled).
+The agent MUST confirm the configuration is active:
 
-3. **Apply the drop-in configuration**
+```bash
+systemd-analyze cat-config systemd/resolved.conf | grep -i stale
+```
 
-   Run the setup script (requires `sudo`):
+Expected: `StaleRetentionSec=3600` (uncommented).
 
-   ```bash
-   bash ~/.agents/skills/fedora-dns-cache/scripts/setup.sh
-   ```
+## Output Contract
 
-   Or apply manually:
-
-   ```bash
-   sudo mkdir -p /etc/systemd/resolved.conf.d
-
-   sudo tee /etc/systemd/resolved.conf.d/fast-timeout.conf <<'EOF'
-   # Reduce DNS pain when ISP connection drops
-   [Resolve]
-   # Serve stale (expired) cached records when upstream DNS is unreachable
-   # rather than waiting for a timeout. Stale records served for up to 1 hour.
-   StaleRetentionSec=3600
-   EOF
-   ```
-
-4. **Restart systemd-resolved**
-
-   ```bash
-   sudo systemctl restart systemd-resolved
-   ```
-
-5. **Verify**
-
-   Confirm the setting is active:
-
-   ```bash
-   systemd-analyze cat-config systemd/resolved.conf | grep -i stale
-   ```
-
-   Expected output should show `StaleRetentionSec=3600` (uncommented).
+- Exit 0 from the setup script → configuration applied successfully
+- Exit 1 → error (script output explains the cause)
 
 ## How It Works
 

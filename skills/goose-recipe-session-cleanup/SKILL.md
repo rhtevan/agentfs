@@ -5,7 +5,7 @@ description: >
   clean desktop sessions, clean terminal sessions
 metadata:
   author: agentfs
-  version: "3.0.0"
+  version: "3.1.0"
   model-tier: T3
   tags: [goose, recipe, session, cleanup, orphan, desktop, terminal]
 ---
@@ -15,6 +15,16 @@ metadata:
 Identify and remove Goose session records from the sessions database.
 Covers all four session categories with per-category opt-in and optional
 date filtering.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Problem
 

@@ -7,8 +7,8 @@ argument-hint: "setup | teardown | upgrade | status"
 compatibility: "Node.js >= 18, npx, Goose with developer extension"
 metadata:
   author: agentfs
-  version: "1.1.3"
-  model-tier: T2
+  version: "1.2.0"
+  model-tier: T3
   tags: [goose, mcp, drawio, diagram, extension]
   related_skills: [agentfs-archify]
 user-invocable: true
@@ -31,6 +31,15 @@ definitions to every Goose turn (10 tools). For agent-native diagram
 generation without the per-turn context tax, consider the `agentfs-archify`
 skill instead — it produces self-contained HTML diagrams from a
 typed JSON spec with zero idle token cost.
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

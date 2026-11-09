@@ -2,6 +2,151 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-08 22:52
+- Add Rules + trace (skills/agentfs-ctx-chk/SKILL.md)
+- Add Rules + trace (skills/fedora-nm-boot-slow/SKILL.md)
+- Add trace-lib.sh (skills/crc-ols/scripts/switch-provider.sh)
+- Add trace-lib.sh (skills/crc-ols/scripts/remove-provider.sh)
+- Add trace-lib.sh (skills/crc-ols/scripts/list.sh)
+- Add Rules + trace (skills/crc-ols/SKILL.md)
+
+## 2026-11-08 22:51
+- Add trace-lib.sh (skills/okf-bundle-setup/scripts/verify-bundle.sh)
+- Add trace-lib.sh (skills/okf-bundle-setup/scripts/scan-files.sh)
+- Add trace-lib.sh (skills/okf-bundle-setup/scripts/scaffold-bundle.sh)
+- Add Rules + trace (skills/okf-bundle-setup/SKILL.md)
+- Add trace-lib.sh (skills/okf-bundle-harvest/scripts/prune-memory.sh)
+- Add trace-lib.sh (skills/okf-bundle-harvest/scripts/harvest-summary.sh)
+- Add Rules + trace (skills/okf-bundle-harvest/SKILL.md)
+- Add trace-lib.sh (skills/okf-bundle-gen/scripts/scan-memories.sh)
+- Add trace-lib.sh (skills/okf-bundle-gen/scripts/list-existing-concepts.sh)
+- Add Rules + trace (skills/okf-bundle-gen/SKILL.md)
+- Add Rules + trace (skills/hermes-desktop-fixes/SKILL.md)
+- Add Rules + trace (skills/goose-setup/SKILL.md)
+
+## 2026-11-08 22:50
+- Add Rules + trace (skills/goose-recipe-session-cleanup/SKILL.md)
+- Add Rules + trace (skills/goose-headroom-provider/SKILL.md)
+- Add Rules + trace (skills/goose-desktop-env-fix/SKILL.md)
+- Add trace-lib.sh (skills/dsh-setup/scripts/verify.sh)
+- Add trace-lib.sh (skills/dsh-setup/scripts/update.sh)
+- Add trace-lib.sh (skills/dsh-setup/scripts/teardown.sh)
+- Add trace-lib.sh (skills/dsh-setup/scripts/status.sh)
+- Add trace-lib.sh (skills/dsh-setup/scripts/install.sh)
+- Add trace-lib.sh (skills/dsh-setup/scripts/install-desktop.sh)
+- Add Rules + trace (skills/dsh-setup/SKILL.md)
+- Add trace-lib.sh (skills/dsh-litellm-provider/scripts/verify.sh)
+- Add trace-lib.sh (skills/dsh-litellm-provider/scripts/setup.sh)
+
+## 2026-11-08 22:49
+- Add Rules + trace (skills/dsh-litellm-provider/SKILL.md)
+- Add trace-lib.sh (skills/crc-ctl/scripts/crc-cleanup.sh)
+- Add Rules + trace (skills/crc-ctl/SKILL.md)
+
+## 2026-11-08 22:48
+- Add trace-lib.sh (skills/goose-litellm-provider/scripts/verify.sh)
+- Add trace-lib.sh (skills/goose-litellm-provider/scripts/restore.sh)
+- Add Rules, bump to 1.8.0 (skills/goose-litellm-provider/SKILL.md)
+
+## 2026-11-08 22:47
+- Remove internal step details from What This Skill Does (skills/spec-kit-setup/SKILL.md)
+- Remove Version Detection, Exit Codes, After Installation sections (internal details) (skills/spec-kit-setup/SKILL.md)
+
+## 2026-11-08 22:46
+- Remove JSON Output Schema section (internal reference) (skills/spec-kit-setup/SKILL.md)
+- Add no-semantic-judgment rule (skills/spec-kit-setup/SKILL.md)
+
+## 2026-11-08 22:45
+- Restructure to 2-step CNL with Output Contract (skills/spec-kit-setup/SKILL.md)
+
+## 2026-11-08 22:44
+- Restructure to 2-step CNL with Output Contract, delegate to script (skills/fedora-dns-cache/SKILL.md)
+
+## 2026-11-08 22:37
+- Add trace-lib.sh (skills/agentfs-profile/scripts/gen-profile-recipe.sh)
+- Add trace-lib.sh (skills/agentfs-profile/scripts/create-profile.sh)
+- Add Rules, bump to 1.11.0 (skills/agentfs-profile/SKILL.md)
+- Add Rules section (skills/agentfs-archify/SKILL.md)
+
+## 2026-11-08 22:35
+- Add trace-lib.sh (skills/skupper-model-provider/scripts/common.sh)
+- Add Rules + trace + bump to 9.2.0 (skills/skupper-model-provider/SKILL.md)
+
+## 2026-11-08 22:34
+- Add trace-lib.sh (skills/goose-skupper-provider/scripts/test.sh)
+- Add trace-lib.sh (skills/goose-skupper-provider/scripts/teardown.sh)
+- Add trace-lib.sh (skills/goose-skupper-provider/scripts/setup.sh)
+- Add Rules + trace + bump to 5.6.0 (skills/goose-skupper-provider/SKILL.md)
+- Add trace-lib.sh (skills/spec-kit-setup/scripts/check-and-install.sh)
+- Add Rules + trace + bump to 1.1.0 (skills/spec-kit-setup/SKILL.md)
+- Add trace-lib.sh (skills/okf-bundle-index/scripts/rebuild-index.sh)
+- Add trace-lib.sh (skills/okf-bundle-index/scripts/audit-index.sh)
+- Add Rules + trace + bump to 1.5.0 (skills/okf-bundle-index/SKILL.md)
+- Add trace-lib.sh (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+- Add trace-lib.sh (skills/goose-agentfs-setup/scripts/setup.sh)
+- Add trace-lib.sh (skills/goose-agentfs-setup/scripts/activate-profile.sh)
+
+## 2026-11-08 22:33
+- Add Rules + trace + bump to 1.8.0 (skills/goose-agentfs-setup/SKILL.md)
+- Add trace-lib.sh (skills/goose-kgm/scripts/teardown-kgm.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/status-kgm.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/setup-kgm.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/reindex-skills-kgm.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/reindex-kgm.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/enable-kgm.sh)
+- Add trace-lib.sh (skills/goose-kgm/scripts/disable-kgm.sh)
+- Add Rules + trace + bump to 1.7.0 (skills/goose-kgm/SKILL.md)
+- Add trace-lib.sh (skills/fedora-dns-cache/scripts/setup.sh)
+- Add Rules + trace + bump to 1.1.0 (skills/fedora-dns-cache/SKILL.md)
+
+## 2026-11-08 22:31
+- Add trace-lib.sh (skills/goose-nextai-drawio/scripts/manage.sh)
+- Add Rules section, bump to 1.2.0 (skills/goose-nextai-drawio/SKILL.md)
+
+## 2026-11-08 22:30
+- Add trace-lib.sh (skills/ocp-containerfile/scripts/verify.sh)
+- Add trace-lib.sh (skills/ocp-containerfile/scripts/generate.sh)
+- Add trace-lib.sh (skills/ocp-containerfile/scripts/audit.sh)
+- Add Rules section, bump to 1.1.0 (skills/ocp-containerfile/SKILL.md)
+
+## 2026-11-08 22:25
+- Remove config.yaml reference from Step 4 for interface_opacity (skills/hermes-agentfs-setup/SKILL.md)
+
+## 2026-11-08 22:24
+- CNL upgrade Step 3, remove internal references (skills/hermes-agentfs-setup/SKILL.md)
+- CNL upgrade Steps 1-2, remove internal references for interface_opacity (skills/hermes-agentfs-setup/SKILL.md)
+
+## 2026-11-08 22:23
+- Add trace-lib.sh instrumentation (skills/hermes-agentfs-setup/scripts/setup.sh)
+- Bump version to 1.2.0 (skills/hermes-agentfs-setup/SKILL.md)
+- Add Rules section, bump version to 1.2.0 (skills/hermes-agentfs-setup/SKILL.md)
+
+## 2026-11-08 22:22
+- Add trace-lib.sh instrumentation (skills/litellm-vertex-ai-proxy/scripts/probe-models.sh)
+- Add trace-lib.sh instrumentation (skills/litellm-vertex-ai-proxy/scripts/test-sa.sh)
+- Add trace-lib.sh instrumentation (skills/litellm-vertex-ai-proxy/scripts/select-sa.sh)
+- Add trace-lib.sh instrumentation (skills/litellm-vertex-ai-proxy/scripts/detect-sa.sh)
+- Add trace-lib.sh instrumentation (skills/litellm-vertex-ai-proxy/scripts/verify.sh)
+- Add trace-lib.sh instrumentation (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+- Bump version to 3.2.0 (skills/litellm-vertex-ai-proxy/SKILL.md)
+- Add Rules section with anti-fabrication (skills/litellm-vertex-ai-proxy/SKILL.md)
+
+## 2026-11-08 22:21
+- Add trace-lib.sh instrumentation (skills/hermes-litellm-provider/scripts/restore.sh)
+- Add trace-lib.sh instrumentation (skills/hermes-litellm-provider/scripts/verify.sh)
+- CNL upgrade: add MUST to Steps 1,3,4 (skills/hermes-litellm-provider/SKILL.md)
+
+## 2026-11-08 22:20
+- Bump version to 2.3.0 (skills/hermes-litellm-provider/SKILL.md)
+- Add Rules section with anti-fabrication (skills/hermes-litellm-provider/SKILL.md)
+
+## 2026-11-08 22:19
+- Add trace_step and trace_end (skills/agentfs-git-push/scripts/resolve-target.sh)
+- Add trace-lib.sh instrumentation (skills/agentfs-git-push/scripts/resolve-target.sh)
+- Bump version to 2.1.0 (skills/agentfs-git-push/SKILL.md)
+- Add Rules section with anti-fabrication for Observable compliance (skills/agentfs-git-push/SKILL.md)
+
 ## 2026-11-08 22:10
 - Add trace_step and trace_end calls (skills/fedora-window-list/scripts/toggle-window-list.sh)
 - Add trace-lib.sh instrumentation (skills/fedora-window-list/scripts/toggle-window-list.sh)

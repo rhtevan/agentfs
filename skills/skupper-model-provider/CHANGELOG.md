@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:35 | v9.2.0 — Add Rules + trace + bump to 9.2.0; Add trace-lib.sh |
 | 2026-11-06 12:55 | v9.1.0 — Bump metadata version 9.0.0→9.1.0 to match CHANGELOG |
 | 2026-11-05 19:32 | v9.1.0 — Add model-tier to frontmatter |
 | 2026-10-23 11:40 | v9.1.0 — Add naming convention to references list |

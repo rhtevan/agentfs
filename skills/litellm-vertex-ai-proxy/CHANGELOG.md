@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:22 | v3.2.0 — Add Rules section with anti-fabrication; Bump version to 3.2.0; Add trace-lib.sh instrumentation; Add trace-lib.sh instrumentation; Add trace-lib.sh instrumentation; Add trace-lib.sh instrumentation; Add trace-lib.sh instrumentation; Add trace-lib.sh instrumentation |
 | 2026-11-05 19:31 | v3.1.2 — Add model-tier to frontmatter |
 | 2026-10-26 10:33 | v3.1.2 — Add select-sa.sh: non-interactive SA selection that rejects default compute SA; update workflow Step 1 to use it |
 | 2026-10-26 10:25 | v3.1.1 — Add default compute SA guardrails: detect-sa.sh warns, test-sa.sh warns, SKILL.md prereqs block usage |

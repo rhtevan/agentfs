@@ -9,6 +9,11 @@
 # matching the KGM entity schema.
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+
 KNOWLEDGE_DIR="$HOME/.agents/knowledge"
 INDEX="$KNOWLEDGE_DIR/index.md"
 JSONL_KNOWLEDGE="$KNOWLEDGE_DIR/.kgm-knowledge.jsonl"

@@ -7,8 +7,8 @@ argument-hint: "'start crc', 'stop crc', 'clean crc'"
 compatibility: "Requires crcstart/crcstop wrappers installed via crc-cmd skill"
 metadata:
   author: agentfs
-  version: "2.0.0"
-  model-tier: T2
+  version: "2.1.0"
+  model-tier: T3
   tags: [crc, openshift, openshift-local, cluster, operations, cleanup]
 user-invocable: true
 disable-model-invocation: false
@@ -26,6 +26,16 @@ accumulate over time.
 > **Important:** Never use the built-in `crc start` or `crc stop`
 > commands directly. Always use the `crcstart` and `crcstop` wrapper
 > scripts. See the `crc-cmd` skill for installation details.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Harvested From
 

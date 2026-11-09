@@ -4,6 +4,11 @@
 # Exit codes: 0 = all pass, 1 = failures found, 2 = usage error
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "ocp-containerfile" "1.1.0" 2>/dev/null || true
+
 MODE="both"
 FILE=""
 

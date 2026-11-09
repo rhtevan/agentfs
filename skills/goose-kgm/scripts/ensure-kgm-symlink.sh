@@ -14,6 +14,11 @@
 # Usage: bash ensure-kgm-symlink.sh [--quiet]
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+
 QUIET="${1:-}"
 JSONL_TARGET="$HOME/.agents/knowledge/.kgm-index.jsonl"
 

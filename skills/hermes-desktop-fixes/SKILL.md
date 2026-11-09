@@ -3,12 +3,22 @@ name: hermes-desktop-fixes
 description: >
   fix hermes desktop, hermes electron fix, hermes identity fix
 metadata:
-  version: "3.2.1"
+  version: "3.3.0"
   model-tier: T3
   tags: [hermes, desktop, electron, fix, provider]
 ---
 
 # Hermes Desktop Fixes
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Bugs Fixed
 

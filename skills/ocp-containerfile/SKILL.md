@@ -7,8 +7,8 @@ argument-hint: "[--mode legacy|userns|both]"
 compatibility: "podman (for verify), bash"
 metadata:
   author: agentfs
-  version: "1.0.0"
-  model-tier: T2
+  version: "1.1.0"
+  model-tier: T3
   tags: [openshift, containerfile, container-image, security, scc, ubi, audit]
 user-invocable: true
 disable-model-invocation: false
@@ -26,6 +26,15 @@ This skill references the `ocp-containerfile` knowledge bundle at
 `~/.agents/knowledge/ocp-containerfile/` for detailed explanations
 of each rule. The skill handles the procedural workflow; the
 knowledge bundle provides the "why."
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

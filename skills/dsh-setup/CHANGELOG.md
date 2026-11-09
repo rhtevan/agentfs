@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:50 | v1.4.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:30 | v1.3.1 — Add model-tier to frontmatter |
 | 2026-08-31 10:03 | v1.3.1 — Added version check to status.sh — compares installed vs registry latest, recommends update when behind |
 | 2026-08-31 09:59 | v1.3.0 — Replaced ambiguous 'dsh launcher' and 'dsh desktop' signals with 'dsh status'; added status.sh script showing backend state and desktop path |

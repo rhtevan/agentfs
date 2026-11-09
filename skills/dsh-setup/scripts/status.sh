@@ -3,6 +3,11 @@
 # Usage: bash status.sh
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "dsh-setup" "1.4.0" 2>/dev/null || true
+
 DSH_DIR="$HOME/.local/share/dsh"
 DESKTOP_FILE="$HOME/.local/share/applications/dsh.desktop"
 SERVICE_FILE="$HOME/.config/systemd/user/dsh.service"

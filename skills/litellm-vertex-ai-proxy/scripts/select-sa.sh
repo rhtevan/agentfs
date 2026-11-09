@@ -16,6 +16,11 @@
 #   8. If none → exit 1
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "litellm-vertex-ai-proxy" "3.2.0" 2>/dev/null || true
+
 PROJECT=""
 SA_EMAIL=""
 

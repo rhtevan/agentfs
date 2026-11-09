@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:51 | v7.3.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:31 | v7.2.0 — Add model-tier to frontmatter |
 | 2026-10-15 21:45 | v7.2.0 — Sync frontmatter version to match CHANGELOG latest (1.2.0 → 7.2.0) |
 | 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |

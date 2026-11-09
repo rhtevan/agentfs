@@ -14,6 +14,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-skupper-provider" "5.6.0" 2>/dev/null || true
+
 SCRIPT_DIR="$(dirname "$0")"
 PROVIDER_DIR="$HOME/.config/goose/custom_providers"
 PROVIDER_JSON="$PROVIDER_DIR/custom_skupper.json"

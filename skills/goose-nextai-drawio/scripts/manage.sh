@@ -3,6 +3,11 @@
 # Usage: bash manage.sh <setup|teardown|upgrade|status>
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-nextai-drawio" "1.2.0" 2>/dev/null || true
+
 PACKAGE_NAME="@next-ai-drawio/mcp-server"
 BIN_NAME="next-ai-drawio-mcp"
 EXTENSION_KEY="nextaidrawio"

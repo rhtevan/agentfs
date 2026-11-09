@@ -4,6 +4,11 @@
 # Exit codes: 0 = all checks pass, 1 = one or more checks failed
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-litellm-provider" "1.8.0" 2>/dev/null || true
+
 PROVIDER_JSON="$HOME/.config/goose/custom_providers/custom_redhat.json"
 CONFIG_YAML="$HOME/.config/goose/config.yaml"
 LITELLM_URL="http://127.0.0.1:4000"

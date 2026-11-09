@@ -4,7 +4,7 @@ description: >
   configure hermes litellm, hermes litellm provider
 platforms: ['linux']
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   model-tier: T2
   tags: [hermes, litellm, custom-provider, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, hermes-headroom-provider]
@@ -17,6 +17,15 @@ disable-model-invocation: false
 Set up Hermes Agent (CLI and Desktop) to use a locally hosted LiteLLM
 proxy as its custom LLM provider. The proxy is backed by Vertex AI
 Claude models (no auth, `http://127.0.0.1:4000`).
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 
@@ -87,13 +96,13 @@ providers:
 
 ### Step 1 — Pre-flight Check
 
-Run the verification script to see current state:
+The agent MUST run the verification script to check current state:
 
 ```bash
 bash ~/.agents/skills/hermes-litellm-provider/scripts/verify.sh
 ```
 
-If the proxy is not running, start it:
+If the proxy is not running, the agent MUST start it:
 
 ```bash
 systemctl --user start litellm-proxy
@@ -137,13 +146,17 @@ hermes model
 
 ### Step 3 — Verify Configuration
 
+The agent MUST run the verification script:
+
 ```bash
 bash ~/.agents/skills/hermes-litellm-provider/scripts/verify.sh
 ```
 
-All 11 checks should pass.
+The agent MUST report the script output verbatim. All 11 checks should pass.
 
 ### Step 4 — Test from CLI
+
+The agent MUST run a test query:
 
 ```bash
 hermes chat --oneshot "Say hello in one sentence"

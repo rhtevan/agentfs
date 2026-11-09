@@ -15,6 +15,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "agentfs-profile" "1.11.0" 2>/dev/null || true
+
 if [[ $# -lt 1 ]]; then
   echo "[agentfs-profile] ERROR: Profile name required." >&2
   echo "  Usage: bash create-profile.sh <profile-name> [ROOT_DIR]" >&2

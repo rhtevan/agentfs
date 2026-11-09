@@ -10,8 +10,8 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | upgrad
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts, CRC/OpenShift"
 metadata:
   author: agentfs
-  version: "9.1.0"
-  model-tier: T2
+  version: "9.2.0"
+  model-tier: T3
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
 disable-model-invocation: false
@@ -180,6 +180,15 @@ For detailed troubleshooting procedures, see
 
 For the full known issues table, see
 [references/known-issues.md](references/known-issues.md).
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

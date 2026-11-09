@@ -3,7 +3,7 @@ name: okf-bundle-setup
 description: >
   setup knowledge bundle, scaffold knowledge bundle, okf setup
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [agentfs, okf, knowledge, scaffolding, setup]
 ---
@@ -20,6 +20,16 @@ Create, organize, or update a directory as an **Open Knowledge Format
 
 For the full OKF specification, see
 [references/okf-spec-summary.md](references/okf-spec-summary.md).
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 

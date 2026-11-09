@@ -3,7 +3,7 @@ name: goose-desktop-env-fix
 description: >
   fix goose desktop, goose shell environment, goose env fix
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   model-tier: T3
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---
@@ -13,6 +13,16 @@ metadata:
 Fix the Goose Desktop `shell` tool so that shell commands run with the
 full user environment — including devbox/nix-installed tools, crc/oc,
 cargo, sdkman, and custom exports.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## Problem
 

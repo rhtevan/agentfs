@@ -6,7 +6,7 @@ argument-hint: "Optionally specify project paths: 'harvest from ~/projects/foo a
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
   author: agentfs
-  version: "7.2.0"
+  version: "7.3.0"
   model-tier: T3
   tags: [agentfs, okf, knowledge, memory, distillation, graduation]
 user-invocable: true
@@ -28,6 +28,16 @@ This skill implements the **graduation path** defined in the Scope Rules rule in
 > When an observation in `MEMORY.md` matures into cross-project knowledge
 > worth preserving, graduate it to an OKF knowledge bundle under
 > `~/.agents/knowledge/` and remove the original entry.
+
+
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+Do NOT skip steps or combine multiple operations into one step.
+Execute each step in order and verify before proceeding.
 
 ## How It Differs from `okf-bundle-gen`
 

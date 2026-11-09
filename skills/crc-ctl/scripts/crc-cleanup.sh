@@ -12,6 +12,11 @@
 # Requires: CRC VM running, SSH accessible on 127.0.0.1:2222
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "crc-ctl" "2.1.0" 2>/dev/null || true
+
 SSH_KEY="$HOME/.crc/machines/crc/id_ed25519"
 SSH_HOST="127.0.0.1"
 SSH_PORT="2222"

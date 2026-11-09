@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:52 | v1.3.0 — Add Rules + trace |
 | 2026-11-05 19:30 | v1.2.0 — Add model-tier to frontmatter |
 | 2026-08-26 21:34 | v1.2.0 — Added LITE scope context budget note (~850 tokens, 16K target). |
 | 2026-07-14 18:34 | v1.1 — Added Directionality Rule between Steps 1–2: USER scope is canonical, PROJECT scope is fix target; updated Step 7 root cause table with Fix Direction column; updated references/checklist.md Phase 7 with matching changes |

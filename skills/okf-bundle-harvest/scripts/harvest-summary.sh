@@ -13,6 +13,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "okf-bundle-harvest" "7.3.0" 2>/dev/null || true
+
 SCAN_SCRIPT="$HOME/.agents/skills/okf-bundle-gen/scripts/scan-memories.sh"
 
 if [[ ! -f "$SCAN_SCRIPT" ]]; then

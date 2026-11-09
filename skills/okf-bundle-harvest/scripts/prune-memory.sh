@@ -14,6 +14,11 @@
 
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "okf-bundle-harvest" "7.3.0" 2>/dev/null || true
+
 MEMORY_FILE="${1:?Usage: prune-memory.sh <MEMORY_FILE> <ENTRY_CONTENT>}"
 ENTRY_CONTENT="${2:?Usage: prune-memory.sh <MEMORY_FILE> <ENTRY_CONTENT>}"
 

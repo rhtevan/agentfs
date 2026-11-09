@@ -4,7 +4,7 @@ description: >
   install nad plugin, nad console plugin, network attachment
 metadata:
   version: "1.1.0"
-  model-tier: T2
+  model-tier: T3
   tags: [openshift, crc, networking, console-plugin, helm]
 ---
 

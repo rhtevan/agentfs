@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-08 22:37 | v2.16.0 — Add Rules section |
 | 2026-11-05 19:30 | v2.15 — Add model-tier to frontmatter |
 
 | Date | Version | Description |

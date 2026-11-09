@@ -4,6 +4,11 @@
 # Exit codes: 0 = success, 1 = failure, 2 = usage error
 set -euo pipefail
 
+# Trace instrumentation
+# shellcheck source=~/.agents/scripts/trace-lib.sh
+source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+trace_init "goose-litellm-provider" "1.8.0" 2>/dev/null || true
+
 FAST_MODEL="claude-haiku-4-5"
 DEFAULT_MODEL="claude-opus-4-6"
 

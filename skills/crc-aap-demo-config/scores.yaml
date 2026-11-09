@@ -1,8 +1,8 @@
 # scores.yaml — crc-aap-demo-config
 skill: crc-aap-demo-config
 version: 1.0.0
-model_tier: T2
-qualification_rule: T2
+model_tier: T3
+qualification_rule: T3
 qoo-qualified: false
 quality:
   schema: quality.yaml
