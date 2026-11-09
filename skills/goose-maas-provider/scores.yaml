@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 60
       pass: false
-      confidence: 0.11574501741756395
+      confidence: 0.1385883747204699
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9947249487080803
+      confidence: 0.9852122001473991
     prose_executability:
       score: 100
       pass: true
-      confidence: 0.5558498764214826
+      confidence: 0.7290674136609876
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9968273290569476
-  evaluated: '2026-11-08T21:11:54-05:00'
+      confidence: 0.994779918752388
+  evaluated: '2026-11-09T10:50:17-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 50
@@ -46,16 +46,16 @@ observable:
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9999989271175381
+      confidence: 1.0
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999645960934691
+      confidence: 0.9999833109787882
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9914221254080451
-  evaluated: '2026-11-08T21:11:54-05:00'
+      confidence: 0.99682649979276
+  evaluated: '2026-11-09T10:50:17-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -65,11 +65,11 @@ operable:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9890130589396956
+        confidence: 0.994779918752388
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.9999985694905716
+        confidence: 0.9999963045256736
       has_brain:
         score: 100
         pass: true
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9988304957495425
-    evaluated: '2026-11-08T21:11:54-05:00'
+        confidence: 0.9999921322487633
+    evaluated: '2026-11-09T10:50:17-05:00'
 history:
-- date: '2026-11-08T21:11:54-05:00'
+- date: '2026-11-09T10:50:17-05:00'
   type: full
   quality_score: 71.16666666666667
   quality_band: Re-engineer

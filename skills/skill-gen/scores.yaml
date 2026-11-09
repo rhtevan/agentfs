@@ -20,7 +20,7 @@ quality:
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9804736483751855
+      confidence: 0.9808138966784775
     prose_executability:
       score: 0
       pass: false
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9999996423722521
-  evaluated: '2026-11-08T21:12:21-05:00'
+      confidence: 0.9999996423722523
+  evaluated: '2026-11-09T10:50:59-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 93.75
@@ -42,11 +42,11 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 0.8807970468833342
+      confidence: 0.8519528492100928
     cnl_compliance:
       score: 75
       pass: false
-      confidence: 0.969809637061919
+      confidence: 0.9695626995767981
     anti_fabrication:
       score: 100
       pass: true
@@ -54,8 +54,8 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9999545833252356
-  evaluated: '2026-11-08T21:12:21-05:00'
+      confidence: 0.9999417100552707
+  evaluated: '2026-11-09T10:50:59-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -69,18 +69,18 @@ operable:
       has_muscle:
         score: 100
         pass: true
-        confidence: 0.9999870063564402
+        confidence: 0.9999833109787882
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9999998807907245
+        confidence: 1.0
       has_harness:
         score: 100
         pass: true
         confidence: 1.0
-    evaluated: '2026-11-08T21:12:21-05:00'
+    evaluated: '2026-11-09T10:50:59-05:00'
 history:
-- date: '2026-11-08T21:12:21-05:00'
+- date: '2026-11-09T10:50:59-05:00'
   type: full
   quality_score: 42
   quality_band: Redesign

@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 40
       pass: false
-      confidence: 0.9984373469781855
+      confidence: 0.9984375846755271
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.7357400703412624
+      confidence: 0.7814918017316335
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9995592391792439
+      confidence: 0.9997339956414152
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9984987894978749
-  evaluated: '2026-11-08T21:52:54-05:00'
+      confidence: 0.9988304957495425
+  evaluated: '2026-11-09T11:24:01-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 6.25
@@ -46,16 +46,16 @@ observable:
     cnl_compliance:
       score: 25
       pass: false
-      confidence: 0.5980207198276961
+      confidence: 0.49199064797549624
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999039265409295
+      confidence: 0.9999251421693931
     sdm_delegation:
       score: 0
       pass: false
-      confidence: 0.9996646575567589
-  evaluated: '2026-11-08T21:52:54-05:00'
+      confidence: 0.999447174672272
+  evaluated: '2026-11-09T11:24:01-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 0
         pass: false
-        confidence: 0.994779918752388
-    evaluated: '2026-11-08T21:52:54-05:00'
+        confidence: 0.9968273290569476
+    evaluated: '2026-11-09T11:24:01-05:00'
 history:
-- date: '2026-11-08T21:52:54-05:00'
+- date: '2026-11-09T11:24:01-05:00'
   type: full
   quality_score: 23.333333333333332
   quality_band: Redesign

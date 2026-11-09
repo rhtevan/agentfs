@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 11:14 | v1.1.0 — CNL restructure: replaced numbered list Steps with ### Step N + agent MUST pattern and Output Contract |
 | 2026-11-08 22:50 | v1.2.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:30 | v1.1.0 — Add model-tier to frontmatter |
 | 2026-08-24 16:57 | v1.1.0 — Fixed: DSH rejects empty apiKeyEnv; now uses LITELLM_VERTEX_AI_API_KEY with dummy value; fixed verify.sh bash arithmetic under set -e; fixed model grep patterns for YAML indent |

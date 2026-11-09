@@ -98,6 +98,86 @@ T4:    operable.build.band ∈ {Tunable, Operable}
 traces which are model-dependent and environment-dependent. CECX
 scores are valuable diagnostics but not a qualification gate.
 
+### Why the Bar Differs by Tier
+
+The qualification bar is strict for T1/T2 precisely because those
+skills should be crystal clear if they're truly that mechanical.
+A T1 skill has no excuse for being unclear — it's "run this script,
+report the output." If a small model can't follow it, the skill's
+prose is the problem.
+
+A T3 skill that requires OpenShift domain reasoning will inherently
+score lower on Quality dimensions like `step_clarity` and
+`inference_hop_count` because the steps genuinely require judgment.
+Penalizing that would force dumbing down the skill.
+
+T4 goes further — Quality and Observable are purely informational
+because skills like "generate bash completions" or "clean up orphaned
+sessions" require creative/analytical work that can't be reduced to
+CNL checklists. Only the build infrastructure (scripts exist, have
+logic, have validation) is gated.
+
+**The tier classifies the skill's cognitive demand, not the skill's
+importance.** A T1 skill isn't less valuable — it's just easier for
+a model to execute correctly.
+
+### Per-Skill Tier Rationale
+
+**T4 — Frontier only (build gate)**
+
+| Skill | Rationale |
+|-------|-----------|
+| bash-completion-gen | Generative — model must author bash completion scripts from scratch based on CLI analysis |
+| goose-desktop-env-fix | Diagnostic + generative — 468L, model must detect env issues across shells/DEs, generate fixes contextually |
+| goose-recipe-session-cleanup | Analytical — 500L, model must identify orphaned sessions, evaluate what's safe to remove, handle multiple session types |
+| goose-nextai-drawio | Generative — model orchestrates Draw.io extension setup with contextual configuration |
+| ocp-containerfile | Generative — model must audit/generate Containerfiles applying OpenShift best practices |
+| skill-gen | Generative — model creates new skills from scratch, scoring and iterating on quality |
+| skill-eval | Analytical — model evaluates skill quality across multiple dimensions, produces structured scores |
+| agentfs-eval | Analytical — model audits AgentFS health, checks violations, produces maturity scores |
+
+**T3 — Strong model (relaxed Q/O)**
+
+| Skill | Rationale |
+|-------|-----------|
+| crc-ctl | Domain expertise (CRC lifecycle), conditional workflows (start/stop/clean differ), disk cleanup requires judgment |
+| crc-aap-demo-config | Domain expertise (AAP on OpenShift), multi-step operator install with interpretation of cluster state |
+| crc-cmd | Conditional (install crcstart vs crcstop), domain knowledge of CRC wrapper behavior |
+| crc-ovn-frr-metallb-config | Heavy domain (OVN + FRR + MetalLB + BGP), 357L, multi-component networking setup requiring understanding of interactions |
+| crc-coo-config | Domain expertise (Cluster Observability on OpenShift), operator lifecycle with prerequisite checking |
+| crc-noo-config | Domain expertise (Network Observability), FlowCollector CR with eBPF feature configuration |
+| crc-nmstate-config | Domain expertise (NMState operator), multi-resource creation with CSV wait logic |
+| crc-nad-dynamic-plugin-config | Domain expertise (NAD console plugin), Helm-based deploy with console plugin verification |
+| crc-post-setup-config | Domain expertise (CRC tuning), multi-part setup (monitoring + kubelet + alerts) requiring sequencing |
+| dsh-litellm-provider | Multi-mode (configure/verify/troubleshoot), LiteLLM domain knowledge, provider-specific config interpretation |
+| fedora-nm-boot-slow | Diagnostic — model must analyze boot logs, identify NM-wait-online causes, select from multiple fix strategies |
+| goose-headroom-provider | 392L, multi-mode provider config, model interprets proxy topology and upstream routing |
+| hermes-desktop-fixes | Diagnostic — model identifies electron/desktop issues, selects appropriate fix from multiple patterns |
+| okf-bundle-gen | 714L, multi-step knowledge generation with schema interpretation, domain judgment on concept extraction |
+| okf-bundle-harvest | 517L, model must evaluate conversation history, identify graduation candidates, make quality judgments |
+| agentfs-ctx-chk | 295L, context audit requires interpreting skill/knowledge structure, identifying anomalies — analytical work |
+| goose-agentfs-setup | 465L, multi-mode dispatch (configure/sync/activate profile), conditional logic across scopes |
+| okf-bundle-index | 324L, index repair requires structural analysis of knowledge bundles and cross-reference validation |
+| spec-kit-setup | Multi-step install with version detection, comparison logic, and conditional upgrade paths |
+
+**T2 — Mid-range model (strict bar)**
+
+| Skill | Rationale |
+|-------|-----------|
+| agentfs-profile | Recipe-following — 127L, 2 scripts, 4 steps. Model creates agent profiles by following a template. Simple conditionals. |
+| agentfs-git-push | Recipe with safety checks — 217L, 1 script. Model runs pre-push scan, reviews output, confirms push. |
+| agentfs-readme-audit | Script-driven audit — model runs script, reports findings. Structured output interpretation. |
+| hermes-agentfs-setup | Recipe — 4 steps to configure Hermes skill directories. Simple file operations. |
+| goose-kgm | Multi-mode dispatch but each mode is a single script call. Simple conditionals. |
+| skupper-model-provider | Multi-mode dispatch — 8 operations, but each is a single script call with clear output. |
+| dsh-setup | Multi-mode (install/update/teardown/status) — each mode delegates to a script. |
+
+**T1 — Mechanical (strict bar)**
+
+| Skill | Rationale |
+|-------|-----------|
+| All T1 skills | Script-driven, ≤3 steps, no judgment. Model is a shell invoker. Examples: fedora-window-list (toggle script), goose-cli-fix (repair script), crc-status (status check). |
+
 ## Full Skill Classification (59 skills)
 
 ### T1 — Mechanical (14 skills)
@@ -127,7 +207,7 @@ Target: Quality ≥75, Observable ≥75, Build ≥75.
 
 | Skill | Lines | Scripts | Steps | Status | Notes |
 |-------|:-----:|:-------:|:-----:|:------:|-------|
-| agentfs-archify | 138 | 0 | 0 | 🔲 | Generative (diagrams) but small |
+| agentfs-archify | 138 | 0 | 0 | ✅ exempt | Upstream copy (tt-a1i/Archify, MIT). Not subject to QOO modification. |
 | agentfs-git-push | 217 | 1 | 10 | 🔲 | Well-structured, 1 script |
 | agentfs-profile | 126 | 2 | 4 | 🔲 | Small, scripted |
 | bash-completion-gen | 311 | 0 | 8 | 🔲 | No scripts — prose-heavy |
@@ -536,8 +616,14 @@ simplify it instead.
 
 **Exempt classification (`model-tier: n/a`):** Reserved for skills
 that are not workflow skills — stubs, config pointers, utility
-fragments. Must have documented justification. Target: ≤3 across
+fragments — or upstream copies that must not be modified for QOO
+compliance. Must have documented justification. Target: ≤5 across
 the entire portfolio.
+
+**Current exemptions (3):**
+1. **hermes-headroom-provider** — 23-line stub, not a workflow skill
+2. **skill-index** — delegator/utility, not a workflow skill
+3. **agentfs-archify** — upstream copy (tt-a1i/Archify, MIT licensed)
 
 ## Dependency Graph
 

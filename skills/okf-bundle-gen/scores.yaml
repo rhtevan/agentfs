@@ -1,91 +1,91 @@
 # scores.yaml — okf-bundle-gen
 skill: okf-bundle-gen
-version: 3.2.1
+version: 3.3.0
 model_tier: T3
 qualification_rule: T3
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 43.333333333333336
-  band: Redesign
+  aggregate_score: 65.33333333333333
+  band: Re-engineer
   dimensions:
     script_coverage:
-      score: 0
-      pass: false
-      confidence: 1.0
+      score: 75
+      pass: true
+      confidence: 0.9990875709164005
     inference_hop_count:
-      score: 60
-      pass: false
-      confidence: 0.8518809472731329
+      score: 100
+      pass: true
+      confidence: 0.5859703690913177
     step_clarity:
-      score: 0
-      pass: false
-      confidence: 0.999935273546097
+      score: 67
+      pass: true
+      confidence: 0.9942291952288006
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999997615814777
+      confidence: 0.9962701958326411
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 100
-      pass: true
-      confidence: 0.9975274099865513
-  evaluated: '2026-11-08T20:49:07-05:00'
+      score: 50
+      pass: false
+      confidence: 0.5621765025686553
+  evaluated: '2026-11-09T11:29:05-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 50
-  band: Re-engineer
+  aggregate_score: 93.75
+  band: Operable
   dimensions:
     trace_instrumentation:
-      score: 0
-      pass: false
-      confidence: 1.0
-    cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9994310994614196
-    anti_fabrication:
-      score: 0
+      confidence: 0.9999995231630692
+    cnl_compliance:
+      score: 75
       pass: false
-      confidence: 0.9999251421693931
+      confidence: 0.8793075423684246
+    anti_fabrication:
+      score: 100
+      pass: true
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9994468174748747
-  evaluated: '2026-11-08T20:49:07-05:00'
+      confidence: 0.9947795648443508
+  evaluated: '2026-11-09T11:29:05-05:00'
 operable:
   build:
     schema: operable.yaml
-    aggregate_score: 62.5
-    band: Re-engineer
+    aggregate_score: 100
+    band: Operable
     dimensions:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9997387615048174
+        confidence: 1.0
       has_muscle:
-        score: 0
-        pass: false
-        confidence: 0.999998927117538
+        score: 100
+        pass: true
+        confidence: 1.0
       has_brain:
         score: 100
         pass: true
         confidence: 1.0
       has_harness:
-        score: 50
-        pass: false
-        confidence: 0.6224593298742985
-    evaluated: '2026-11-08T20:49:07-05:00'
+        score: 100
+        pass: true
+        confidence: 0.9999785427891018
+    evaluated: '2026-11-09T11:29:05-05:00'
 history:
-- date: '2026-11-08T20:49:07-05:00'
+- date: '2026-11-09T11:29:05-05:00'
   type: full
-  quality_score: 43.333333333333336
-  quality_band: Redesign
-  observable_score: 50
-  observable_band: Re-engineer
-  build_score: 62.5
-  build_band: Re-engineer
+  quality_score: 65.33333333333333
+  quality_band: Re-engineer
+  observable_score: 93.75
+  observable_band: Operable
+  build_score: 100
+  build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

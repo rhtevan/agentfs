@@ -21,6 +21,28 @@ If a command fails, report the actual error — do not guess.
 Do NOT skip steps or combine multiple operations into one step.
 Execute each step in order and verify before proceeding.
 
+This skill requires no semantic judgment — all steps are mechanical
+script execution with deterministic outcomes.
+
+## Workflow
+
+### Step 1 — Run the setup script
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/crc-nmstate-config/scripts/setup.sh
+```
+
+Use `--check` to verify without making changes.
+
+## Output Contract
+
+- Exit 0 → NMState operator installed and verified
+- Exit 1 → installation failed, review output
+
+---
+
 ## Prerequisites
 
 - CRC cluster is running (`crc status` shows Running)

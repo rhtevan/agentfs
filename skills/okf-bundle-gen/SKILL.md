@@ -69,6 +69,35 @@ top-level navigation and changelog across all session sub-bundles.
 
 ---
 
+## Workflow
+
+### Step 1 — Scan existing concepts
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/okf-bundle-gen/scripts/list-existing-concepts.sh
+```
+
+### Step 2 — Scan memories for graduation candidates
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/okf-bundle-gen/scripts/scan-memories.sh
+```
+
+### Step 3 — Generate the knowledge bundle
+
+The agent MUST follow the Procedure below to create the bundle files.
+
+## Output Contract
+
+- Exit 0 from scripts → scan completed, data available for generation
+- The generated bundle MUST include: index.md, at least one concept .md file, and log.md
+
+---
+
 ## Procedure
 
 Execute these phases **in order**.

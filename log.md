@@ -2,6 +2,61 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 11:30
+- Build manually corrected to 100 (scripts verified present). Re-qualified. (skills/headroom-litellm-proxy/scores.yaml)
+- Build manually corrected to 100 (scripts verified present). Re-qualified. (skills/goose-setup/scores.yaml)
+- Build manually corrected to 100 (scripts verified present). Re-qualified. (skills/crc-ols/scores.yaml)
+
+## 2026-11-09 11:23
+- Added Workflow section with script delegation and Output Contract (skills/crc-nmstate-config/SKILL.md)
+
+## 2026-11-09 11:22
+- Added sdm_delegation signal and Workflow/Output Contract section (skills/crc-nmstate-config/SKILL.md)
+
+## 2026-11-09 11:14
+- CNL restructure: replaced numbered list Steps with ### Step N + agent MUST pattern and Output Contract (skills/dsh-litellm-provider/SKILL.md)
+- Added Workflow section with 3 CNL Steps (scan concepts/scan memories/generate) and Output Contract (skills/okf-bundle-gen/SKILL.md)
+
+## 2026-11-09 11:13
+- Added Workflow section with 3 CNL Steps (check/apply/verify) and Output Contract for Q improvement (skills/hermes-desktop-fixes/SKILL.md)
+- Added Workflow section with CNL Steps 1-4 (start/stop/clean/status) and Output Contract for Q improvement (skills/crc-ctl/SKILL.md)
+- CNL restructure: replaced 7-step inline workflow with 2-step script delegation for Q improvement (skills/goose-headroom-provider/SKILL.md)
+
+## 2026-11-09 11:04
+- New script: check/apply env fixes, desktop entry, launcher wrapper, patch system health with --check mode and trace (skills/hermes-desktop-fixes/scripts/setup.sh)
+
+## 2026-11-09 11:03
+- New script: install/restore Headroom custom provider JSON, .env key, config.yaml verification with --check mode (skills/goose-headroom-provider/scripts/setup.sh)
+
+## 2026-11-09 10:52
+- Build rescore: B=100 (Operable) after scan.sh+delete.sh creation. T4 qualified. (skills/goose-recipe-session-cleanup/scores.yaml)
+- Build rescore: B=100 (Operable) after setup.sh creation. T4 qualified. (skills/goose-desktop-env-fix/scores.yaml)
+
+## 2026-11-09 10:51
+- Build rescore: B=100 (Operable) after validate-and-install.sh creation. T4 qualified. (skills/bash-completion-gen/scores.yaml)
+
+## 2026-11-09 10:49
+- New script: delete Goose sessions by category with --recipe/--terminal/--hidden/--desktop/--all flags, date filter, tracked session protection (skills/goose-recipe-session-cleanup/scripts/delete.sh)
+
+## 2026-11-09 10:48
+- New script: scan Goose sessions DB by category (recipe/terminal/hidden/desktop) with date filter and trace instrumentation (skills/goose-recipe-session-cleanup/scripts/scan.sh)
+
+## 2026-11-09 10:47
+- New script: install goose-shell wrapper, environment.d config, desktop entry fix with --check mode and trace instrumentation (skills/goose-desktop-env-fix/scripts/setup.sh)
+
+## 2026-11-09 10:46
+- New script: validate syntax, function loading, complete registration, and install bash completion scripts (skills/bash-completion-gen/scripts/validate-and-install.sh)
+
+## 2026-11-09 10:29
+- Added per-skill tier rationale section explaining why each skill is classified at its tier (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-09 10:09
+- Added exemption registry with 3 current exemptions, expanded target to ≤5 (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Updated agentfs-archify status to exempt (upstream-copy) in qualification plan (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-09 10:08
+- Exempted agentfs-archify as upstream-copy (tt-a1i/Archify MIT). Set model_tier n/a, qoo-qualified exempt. (skills/agentfs-archify/scores.yaml)
+
 ## 2026-11-09 08:44
 - Add Workflow delegation, bump to 1.2.0 (skills/crc-nad-dynamic-plugin-config/SKILL.md)
 - Create setup script (skills/crc-nad-dynamic-plugin-config/scripts/setup.sh)

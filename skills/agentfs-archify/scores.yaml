@@ -1,9 +1,10 @@
 # scores.yaml — agentfs-archify
 skill: agentfs-archify
 version: 2.15
-model_tier: T2
-qualification_rule: T2
-qoo-qualified: false
+model_tier: "n/a"
+qualification_rule: exempt
+qoo-qualified: exempt
+exempt_reason: upstream-copy — direct copy of tt-a1i/Archify (MIT licensed). Modifying for QOO compliance would break upstream fidelity.
 quality:
   schema: quality.yaml
   aggregate_score: 51.166666666666664
@@ -89,3 +90,6 @@ history:
   build_score: 50
   build_band: Re-engineer
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'
+- date: '2026-11-09T10:08:00-05:00'
+  type: exemption
+  note: 'Exempted as upstream-copy. Direct copy of tt-a1i/Archify (MIT). Not subject to QOO modification.'

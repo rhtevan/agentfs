@@ -20,6 +20,39 @@ If a command fails, report the actual error — do not guess.
 Do NOT skip steps or combine multiple operations into one step.
 Execute each step in order and verify before proceeding.
 
+## Workflow
+
+### Step 1 — Check current state
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/hermes-desktop-fixes/scripts/setup.sh --check
+```
+
+### Step 2 — Apply fixes
+
+If Step 1 reports issues, the agent MUST run:
+
+```bash
+bash ~/.agents/skills/hermes-desktop-fixes/scripts/setup.sh
+```
+
+### Step 3 — Verify patch health
+
+If patches are installed, the agent MUST run:
+
+```bash
+bash ~/.hermes/hermes-check-patches.sh
+```
+
+## Output Contract
+
+- Exit 0 from setup.sh → all fixes are in place
+- Exit N (N>0) → N issues found, review output
+
+---
+
 ## Bugs Fixed
 
 ### 0. LC_CTYPE Locale Warning (Cosmetic, Annoying)

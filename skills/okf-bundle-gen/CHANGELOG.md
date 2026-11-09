@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 11:14 | v2.1.0 — Added Workflow section with 3 CNL Steps (scan concepts/scan memories/generate) and Output Contract |
 | 2026-11-08 22:51 | v3.3.0 — Add Rules + trace; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:31 | v3.2.1 — Add model-tier to frontmatter |
 | 2026-09-29 16:21 | v3.2.1 — Update guardrail reference text to v7 rule names |

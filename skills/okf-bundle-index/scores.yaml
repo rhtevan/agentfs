@@ -1,6 +1,6 @@
 # scores.yaml — okf-bundle-index
 skill: okf-bundle-index
-version: 1.4.1
+version: 1.5.0
 model_tier: T3
 qualification_rule: T3
 qoo-qualified: true
@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.7772979437545758
+      confidence: 0.9399107973118934
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9969339492123618
+      confidence: 0.8999281198869127
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999992847447459
+      confidence: 0.9999946356109106
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9992903742048809
-  evaluated: '2026-11-08T20:49:32-05:00'
+      confidence: 0.9706877714009488
+  evaluated: '2026-11-09T11:29:30-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 100
@@ -42,7 +42,7 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 1.0
+      confidence: 0.9996646575567589
     cnl_compliance:
       score: 100
       pass: true
@@ -50,12 +50,12 @@ observable:
     anti_fabrication:
       score: 100
       pass: true
-      confidence: 0.999998927117538
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9975269357220583
-  evaluated: '2026-11-08T20:49:32-05:00'
+      confidence: 0.9399113260295691
+  evaluated: '2026-11-09T11:29:30-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -65,11 +65,11 @@ operable:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9999833109787882
+        confidence: 0.9999952316511551
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.9999977350285647
+        confidence: 0.9999938011552556
       has_brain:
         score: 100
         pass: true
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.994779918752388
-    evaluated: '2026-11-08T20:49:32-05:00'
+        confidence: 0.9999985694905716
+    evaluated: '2026-11-09T11:29:30-05:00'
 history:
-- date: '2026-11-08T20:49:32-05:00'
+- date: '2026-11-09T11:29:30-05:00'
   type: full
   quality_score: 50
   quality_band: Re-engineer

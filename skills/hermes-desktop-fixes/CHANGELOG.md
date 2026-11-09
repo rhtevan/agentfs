@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 11:13 | v3.4.0 — New script: check/apply env fixes, desktop entry, launcher wrapper, patch system health with --check mode and trace; Added Workflow section with 3 CNL Steps (check/apply/verify) and Output Contract for Q improvement |
 | 2026-11-08 22:51 | v3.3.0 — Add Rules + trace |
 | 2026-11-05 19:31 | v3.2.1 — Add model-tier to frontmatter |
 | 2026-10-27 20:57 | v3.2.1 — Added Bug #7: window translucency active on Linux despite no config (localStorage fix via preview frame). Added Techniques section for Electron renderer JS execution pattern. |

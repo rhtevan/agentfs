@@ -12,19 +12,19 @@ quality:
     script_coverage:
       score: 50
       pass: false
-      confidence: 0.9999724634116024
+      confidence: 0.999664657556759
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.6827381795822299
+      confidence: 0.5344676383232109
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9954861038489528
+      confidence: 0.9857307369142586
     prose_executability:
       score: 67
       pass: true
-      confidence: 0.7684478453247285
+      confidence: 0.7594379383366126
     model_portability:
       score: 100
       pass: true
@@ -33,7 +33,7 @@ quality:
       score: 100
       pass: true
       confidence: 0.9984987894978749
-  evaluated: '2026-11-08T20:45:58-05:00'
+  evaluated: '2026-11-09T11:27:24-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 87.5
@@ -42,20 +42,20 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 1.0
+      confidence: 0.9999977350285647
     cnl_compliance:
-      score: 0
+      score: 50
       pass: false
-      confidence: 0.9999532721416701
+      confidence: 0.8174197969286217
     anti_fabrication:
       score: 100
       pass: true
-      confidence: 0.9999994039539002
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9995694822610256
-  evaluated: '2026-11-08T20:45:58-05:00'
+      confidence: 0.9968273290569476
+  evaluated: '2026-11-09T11:27:24-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -69,7 +69,7 @@ operable:
       has_muscle:
         score: 100
         pass: true
-        confidence: 0.9999982118638472
+        confidence: 1.0
       has_brain:
         score: 100
         pass: true
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9999982118638472
-    evaluated: '2026-11-08T20:45:58-05:00'
+        confidence: 0.9999998807907245
+    evaluated: '2026-11-09T11:27:24-05:00'
 history:
-- date: '2026-11-08T20:45:58-05:00'
+- date: '2026-11-09T11:27:24-05:00'
   type: full
   quality_score: 80.66666666666667
   quality_band: Tunable

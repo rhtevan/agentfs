@@ -1,6 +1,6 @@
 # scores.yaml — crc-coo-config
 skill: crc-coo-config
-version: 1.0.0
+version: 1.1.0
 model_tier: T3
 qualification_rule: T3
 qoo-qualified: true
@@ -10,52 +10,52 @@ quality:
   band: Re-engineer
   dimensions:
     script_coverage:
-      score: 0
-      pass: false
+      score: 100
+      pass: true
       confidence: 1.0
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.5621675559155392
+      confidence: 0.9999982118638471
     step_clarity:
-      score: 0
-      pass: false
-      confidence: 0.9986702030045619
+      score: 100
+      pass: true
+      confidence: 0.9820107689454116
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999984502816872
+      confidence: 0.9802713070861462
     model_portability:
       score: 100
       pass: true
-      confidence: 1.0
+      confidence: 0.9999997615814776
     interface_opacity:
-      score: 50
-      pass: false
-      confidence: 0.5621765025686553
-  evaluated: '2026-11-08T20:41:35-05:00'
-observable:
-  schema: observable.yaml
-  aggregate_score: 50
-  band: Re-engineer
-  dimensions:
-    trace_instrumentation:
       score: 0
       pass: false
-      confidence: 1.0
+      confidence: 0.9999982118638472
+  evaluated: '2026-11-09T11:24:26-05:00'
+observable:
+  schema: observable.yaml
+  aggregate_score: 75
+  band: Tunable
+  dimensions:
+    trace_instrumentation:
+      score: 100
+      pass: true
+      confidence: 0.9999938011552556
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.9958927743258186
+      confidence: 0.9999998807907248
     anti_fabrication:
       score: 0
       pass: false
-      confidence: 0.9999996423722521
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9998407617436356
-  evaluated: '2026-11-08T20:41:35-05:00'
+      confidence: 0.9988294252840437
+  evaluated: '2026-11-09T11:24:26-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -77,15 +77,15 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9046505126460354
-    evaluated: '2026-11-08T20:41:35-05:00'
+        confidence: 0.999998927117538
+    evaluated: '2026-11-09T11:24:26-05:00'
 history:
-- date: '2026-11-08T20:41:35-05:00'
+- date: '2026-11-09T11:24:26-05:00'
   type: full
   quality_score: 66.66666666666667
   quality_band: Re-engineer
-  observable_score: 50
-  observable_band: Re-engineer
+  observable_score: 75
+  observable_band: Tunable
   build_score: 100
   build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

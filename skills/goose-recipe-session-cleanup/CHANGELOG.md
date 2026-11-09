@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 10:49 | v3.2.0 — New script: scan Goose sessions DB by category (recipe/terminal/hidden/desktop) with date filter and trace instrumentation; New script: delete Goose sessions by category with --recipe/--terminal/--hidden/--desktop/--all flags, date filter, tracked session protection |
 | 2026-11-08 22:50 | v3.1.0 — Add Rules + trace |
 | 2026-11-05 19:31 | v3.0.0 — Add model-tier to frontmatter |
 

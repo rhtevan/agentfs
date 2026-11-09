@@ -143,25 +143,23 @@ entry in `.env` for the `<NAME>_API_KEY` pattern.
 
 ## Workflow
 
-### Step 1 — Verify Headroom Proxy Is Running
+### Step 1 — Run the setup script
+
+The agent MUST run:
 
 ```bash
-systemctl --user status headroom-proxy
-curl -s http://127.0.0.1:8787/health | python3 -m json.tool
+bash ~/.agents/skills/goose-headroom-provider/scripts/setup.sh
 ```
 
-All checks should be healthy. If not running, use the
-`headroom-litellm-proxy` skill to set it up.
+The script checks the Headroom proxy health, creates the custom provider
+JSON, adds the .env API key entry, and verifies config.yaml. Use `--check`
+to verify without making changes.
 
-### Step 2 — Create the Custom Provider JSON
+### Step 2 — Register in config.yaml
 
-Write the JSON file shown in the [Reference Configuration](#custom-provider-json)
-section to:
-
-```bash
-mkdir -p ~/.config/goose/custom_providers
-# Write custom_headroom.json (see Reference Configuration above)
-```
+If the setup script reports that `custom_headroom` is not in config.yaml,
+the agent MUST add the provider entry. Use `goose configure` or manually
+edit `~/.config/goose/config.yaml`.
 
 ### Step 3 — Add to Goose config.yaml
 

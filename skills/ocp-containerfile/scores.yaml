@@ -12,19 +12,19 @@ quality:
     script_coverage:
       score: 0
       pass: false
-      confidence: 0.9999998807907247
+      confidence: 0.999999761581478
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.4674512016799131
+      confidence: 0.7983352273019421
     step_clarity:
       score: 100
       pass: true
-      confidence: 0.7772624321855541
+      confidence: 0.9241290813957268
     prose_executability:
       score: 67
       pass: true
-      confidence: 0.7421694082130996
+      confidence: 0.6053101671393712
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9999724634116024
-  evaluated: '2026-11-08T20:48:54-05:00'
+      confidence: 0.9999545833252356
+  evaluated: '2026-11-09T11:28:53-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 100
@@ -42,11 +42,11 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 1.0
+      confidence: 0.9999938011552556
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.999815259737177
+      confidence: 1.0
     anti_fabrication:
       score: 100
       pass: true
@@ -54,13 +54,13 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9959299004209012
-  evaluated: '2026-11-08T20:48:54-05:00'
+      confidence: 0.8807970468833342
+  evaluated: '2026-11-09T11:28:53-05:00'
 operable:
   build:
     schema: operable.yaml
-    aggregate_score: 87.5
-    band: Tunable
+    aggregate_score: 100
+    band: Operable
     dimensions:
       has_bones:
         score: 100
@@ -69,23 +69,23 @@ operable:
       has_muscle:
         score: 100
         pass: true
-        confidence: 0.9999982118638472
+        confidence: 0.9999997615814777
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9999998807907245
+        confidence: 0.9999998807907248
       has_harness:
-        score: 50
-        pass: false
-        confidence: 0.5621765025686553
-    evaluated: '2026-11-08T20:48:54-05:00'
+        score: 100
+        pass: true
+        confidence: 0.9995694822610256
+    evaluated: '2026-11-09T11:28:53-05:00'
 history:
-- date: '2026-11-08T20:48:54-05:00'
+- date: '2026-11-09T11:28:53-05:00'
   type: full
   quality_score: 61.166666666666664
   quality_band: Re-engineer
   observable_score: 100
   observable_band: Operable
-  build_score: 87.5
-  build_band: Tunable
+  build_score: 100
+  build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

@@ -1,6 +1,6 @@
 # scores.yaml — crc-noo-config
 skill: crc-noo-config
-version: 1.1.0
+version: 1.2.0
 model_tier: T3
 qualification_rule: T3
 qoo-qualified: true
@@ -10,43 +10,43 @@ quality:
   band: Re-engineer
   dimensions:
     script_coverage:
-      score: 0
-      pass: false
+      score: 100
+      pass: true
       confidence: 1.0
     inference_hop_count:
-      score: 80
-      pass: false
-      confidence: 0.6791728063572374
+      score: 100
+      pass: true
+      confidence: 0.9999994039539004
     step_clarity:
-      score: 0
-      pass: false
-      confidence: 0.8261922095496992
+      score: 100
+      pass: true
+      confidence: 0.9398929996579583
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9997604467218493
+      confidence: 0.9948717060877837
     model_portability:
       score: 100
       pass: true
       confidence: 1.0
     interface_opacity:
-      score: 100
-      pass: true
-      confidence: 0.8807970468833342
-  evaluated: '2026-11-08T21:55:45-05:00'
+      score: 0
+      pass: false
+      confidence: 0.9999977350285647
+  evaluated: '2026-11-09T11:25:17-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 50
-  band: Re-engineer
+  aggregate_score: 87.5
+  band: Tunable
   dimensions:
     trace_instrumentation:
-      score: 0
-      pass: false
-      confidence: 1.0
+      score: 100
+      pass: true
+      confidence: 0.9999994039539002
     cnl_compliance:
-      score: 0
+      score: 50
       pass: false
-      confidence: 0.8066283350344858
+      confidence: 0.673617875786091
     anti_fabrication:
       score: 100
       pass: true
@@ -54,8 +54,8 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9988282359826388
-  evaluated: '2026-11-08T21:55:45-05:00'
+      confidence: 0.994779446720623
+  evaluated: '2026-11-09T11:25:17-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -77,15 +77,15 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9890130589396956
-    evaluated: '2026-11-08T21:55:45-05:00'
+        confidence: 0.9999982118638472
+    evaluated: '2026-11-09T11:25:17-05:00'
 history:
-- date: '2026-11-08T21:55:45-05:00'
+- date: '2026-11-09T11:25:17-05:00'
   type: full
   quality_score: 66.66666666666667
   quality_band: Re-engineer
-  observable_score: 50
-  observable_band: Re-engineer
+  observable_score: 87.5
+  observable_band: Tunable
   build_score: 100
   build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'

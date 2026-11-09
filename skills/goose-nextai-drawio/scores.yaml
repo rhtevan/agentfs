@@ -6,7 +6,7 @@ qualification_rule: T3
 qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 55.5
+  aggregate_score: 66.66666666666667
   band: Re-engineer
   dimensions:
     script_coverage:
@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.9706648564854122
+      confidence: 0.962661805159386
     step_clarity:
-      score: 33
-      pass: false
-      confidence: 0.7088476460560765
+      score: 100
+      pass: true
+      confidence: 0.9807430316408376
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999790196052284
+      confidence: 0.9996352334686389
     model_portability:
       score: 100
       pass: true
@@ -32,17 +32,17 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.999447174672272
-  evaluated: '2026-11-08T20:46:23-05:00'
+      confidence: 0.9890130589396956
+  evaluated: '2026-11-09T11:27:36-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 75
+  aggregate_score: 87.5
   band: Tunable
   dimensions:
     trace_instrumentation:
-      score: 100
-      pass: true
-      confidence: 1.0
+      score: 50
+      pass: false
+      confidence: 0.6224593298742985
     cnl_compliance:
       score: 100
       pass: true
@@ -50,12 +50,12 @@ observable:
     anti_fabrication:
       score: 100
       pass: true
-      confidence: 0.9999417100552707
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9999228775396172
-  evaluated: '2026-11-08T20:46:23-05:00'
+      confidence: 0.9992881124087163
+  evaluated: '2026-11-09T11:27:36-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -65,26 +65,26 @@ operable:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9999545833252356
+        confidence: 0.9999785427891018
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.999998927117538
+        confidence: 0.9999963045256736
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9999998807907245
+        confidence: 1.0
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9959299004209012
-    evaluated: '2026-11-08T20:46:23-05:00'
+        confidence: 0.9999971389852362
+    evaluated: '2026-11-09T11:27:36-05:00'
 history:
-- date: '2026-11-08T20:46:23-05:00'
+- date: '2026-11-09T11:27:36-05:00'
   type: full
-  quality_score: 55.5
+  quality_score: 66.66666666666667
   quality_band: Re-engineer
-  observable_score: 75
+  observable_score: 87.5
   observable_band: Tunable
   build_score: 75
   build_band: Tunable

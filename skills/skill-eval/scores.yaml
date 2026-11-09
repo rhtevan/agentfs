@@ -12,28 +12,28 @@ quality:
     script_coverage:
       score: 75
       pass: true
-      confidence: 0.07158933915093244
+      confidence: 0.06195821572156396
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.0015035589193217976
+      confidence: 0.0021059790050288714
     step_clarity:
       score: 33
       pass: false
-      confidence: 0.0005944978235548342
+      confidence: 0.0006143893407559854
     prose_executability:
       score: 33
       pass: false
-      confidence: 0.00012921894033097458
+      confidence: 0.00014636853616754804
     model_portability:
       score: 100
       pass: true
-      confidence: 0.0034406337658694133
+      confidence: 0.002785943462234507
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9999721058045591
-  evaluated: '2026-11-08T21:12:08-05:00'
+      confidence: 0.9999709137801864
+  evaluated: '2026-11-09T10:50:45-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 93.75
@@ -42,11 +42,11 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 0.9968273290569476
+      confidence: 0.9975274099865513
     cnl_compliance:
       score: 75
       pass: false
-      confidence: 0.9913948246499555
+      confidence: 0.9913945910529626
     anti_fabrication:
       score: 100
       pass: true
@@ -55,7 +55,7 @@ observable:
       score: 100
       pass: true
       confidence: 0.9999898673126559
-  evaluated: '2026-11-08T21:12:08-05:00'
+  evaluated: '2026-11-09T10:50:45-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -65,22 +65,22 @@ operable:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9998312281358946
+        confidence: 0.9998183580434945
       has_muscle:
         score: 100
         pass: true
-        confidence: 0.6855639068703584
+        confidence: 0.655186071091105
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9998243163809591
+        confidence: 0.9998631664550408
       has_harness:
         score: 100
         pass: true
-        confidence: 0.01841190356419606
-    evaluated: '2026-11-08T21:12:08-05:00'
+        confidence: 0.021292481802768562
+    evaluated: '2026-11-09T10:50:45-05:00'
 history:
-- date: '2026-11-08T21:12:08-05:00'
+- date: '2026-11-09T10:50:45-05:00'
   type: full
   quality_score: 56.833333333333336
   quality_band: Re-engineer

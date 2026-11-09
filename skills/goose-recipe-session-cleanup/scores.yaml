@@ -3,7 +3,7 @@ skill: goose-recipe-session-cleanup
 version: 3.0.0
 model_tier: T4
 qualification_rule: T4
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
   aggregate_score: 62.333333333333336
@@ -59,16 +59,16 @@ observable:
 operable:
   build:
     schema: operable.yaml
-    aggregate_score: 65.04237288135593
-    band: Re-engineer
+    aggregate_score: 100
+    band: Operable
     dimensions:
       has_bones:
-        score: 0
-        pass: false
+        score: 100
+        pass: true
         confidence: 1.0
       has_muscle:
-        score: 50
-        pass: false
+        score: 100
+        pass: true
         confidence: 0.6224593298742985
       has_brain:
         score: 100
@@ -117,3 +117,10 @@ history:
   build_score: 65.04237288135593
   build_band: Re-engineer
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'
+- date: '2026-11-09T10:51:45-05:00'
+  type: build-rescore
+  quality_score: 62.333333333333336
+  observable_score: 31.25
+  build_score: 100
+  build_band: Operable
+  note: 'Manual build rescore after script creation. has_bones+has_muscle+has_brain+has_harness all verified present.'

@@ -95,39 +95,34 @@ All three Claude models support vision. The `input: [text, image]`
 declaration on each model tells DSH to allow image attachments in the
 WebUI for those models.
 
-## Steps
+## Workflow
 
-### Setup
+### Step 1 — Run the setup script
 
-1. **Run the setup script**
-   ```bash
-   bash ~/.agents/skills/dsh-litellm-provider/scripts/setup.sh
-   ```
-   This script:
-   - Verifies LiteLLM proxy is reachable at `http://127.0.0.1:4000`
-   - Queries LiteLLM's `/v1/models` endpoint to discover available models
-   - Writes (or merges) the provider block into `~/.dsh/settings.yaml`
-   - Backs up the existing settings file before modifying
-
-2. **Verify the configuration**
-   ```bash
-   bash ~/.agents/skills/dsh-litellm-provider/scripts/verify.sh
-   ```
-
-3. **Test in DSH** — launch DSH (via `dsh-launcher` or the desktop
-   entry), open Settings → Models, and confirm the `litellm-vertex-ai`
-   provider appears with the expected models.
-
-### Restore (after DSH update)
-
-DSH updates may reset `settings.yaml`. Re-run setup:
+The agent MUST run:
 
 ```bash
 bash ~/.agents/skills/dsh-litellm-provider/scripts/setup.sh
 ```
 
-The script is idempotent — it detects an existing provider block and
-updates it in place.
+### Step 2 — Verify the configuration
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/dsh-litellm-provider/scripts/verify.sh
+```
+
+### Step 3 — Restore (after DSH update)
+
+If the user reports a lost provider after a DSH update, the agent MUST
+re-run the setup script from Step 1. The script is idempotent.
+
+## Output Contract
+
+- Exit 0 from setup.sh → provider configured successfully
+- Exit 0 from verify.sh → configuration verified
+- Exit 1 → error (LiteLLM unreachable, DSH not installed, etc.)
 
 ## Gotchas
 

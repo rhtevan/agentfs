@@ -1,6 +1,6 @@
 # scores.yaml — goose-agentfs-setup
 skill: goose-agentfs-setup
-version: 1.7.0
+version: 1.8.0
 model_tier: T3
 qualification_rule: T3
 qoo-qualified: true
@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.7310566829687576
+      confidence: 0.7310474016860338
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.9999847414437658
+      confidence: 0.9956590844551634
     prose_executability:
       score: 0
       pass: false
-      confidence: 1.0
+      confidence: 0.9999976158197798
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9999645960934691
-  evaluated: '2026-11-08T20:44:56-05:00'
+      confidence: 0.9999724634116024
+  evaluated: '2026-11-09T11:26:46-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 100
@@ -42,20 +42,20 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 0.9999998807907248
+      confidence: 0.9933071486460124
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.999998211863847
+      confidence: 1.0
     anti_fabrication:
       score: 100
       pass: true
-      confidence: 0.9999724634116024
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9980727693729644
-  evaluated: '2026-11-08T20:44:56-05:00'
+      confidence: 0.9770218505726788
+  evaluated: '2026-11-09T11:26:46-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -65,11 +65,11 @@ operable:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9914224771982877
+        confidence: 0.9992903742048809
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.9999996423722521
+        confidence: 0.9999952316511551
       has_brain:
         score: 100
         pass: true
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.7310586002437232
-    evaluated: '2026-11-08T20:44:56-05:00'
+        confidence: 0.9999870063564402
+    evaluated: '2026-11-09T11:26:46-05:00'
 history:
-- date: '2026-11-08T20:44:56-05:00'
+- date: '2026-11-09T11:26:46-05:00'
   type: full
   quality_score: 50
   quality_band: Re-engineer

@@ -54,6 +54,37 @@ Execute each step in order and verify before proceeding.
 - `virsh` available (from `libvirt-client` package)
 - SSH accessible into CRC VM on `127.0.0.1:2222` (for cleanup operations)
 
+## Workflow
+
+The agent MUST select the appropriate operation based on the user's request.
+
+### Step 1 — Start
+
+The agent MUST run `crc version` first, then follow the Starting procedure below.
+
+### Step 2 — Stop
+
+The agent MUST follow the Stopping procedure below.
+
+### Step 3 — Clean
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/crc-ctl/scripts/crc-cleanup.sh
+```
+
+### Step 4 — Status
+
+The agent MUST run `crc status` and report the output.
+
+## Output Contract
+
+- Exit 0 from crc-cleanup.sh → cleanup completed successfully
+- Exit 1 → cleanup failed, report error
+
+---
+
 ## Starting the Cluster
 
 Follow these steps **in order** when starting CRC:

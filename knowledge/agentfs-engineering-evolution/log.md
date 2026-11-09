@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 10:29
+- Added per-skill tier rationale section explaining why each skill is classified at its tier (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-09 10:09
+- Added exemption registry with 3 current exemptions, expanded target to ≤5 (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Updated agentfs-archify status to exempt (upstream-copy) in qualification plan (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
 ## 2026-11-08 17:00
 - Update status to Phases A+B complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 - Mark Phase B as complete (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
