@@ -12,11 +12,11 @@ quality:
     script_coverage:
       score: 75
       pass: true
-      confidence: 0.9994471746722718
+      confidence: 0.9992902551383588
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.5395292187889822
+      confidence: 0.5395296368489609
     step_clarity:
       score: 100
       pass: true
@@ -24,7 +24,7 @@ quality:
     prose_executability:
       score: 67
       pass: true
-      confidence: 0.6765134702683482
+      confidence: 0.6770451205889619
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9999991655356624
-  evaluated: '2026-11-09T11:23:36-05:00'
+      confidence: 0.9999994039539002
+  evaluated: '2026-11-09T11:53:19-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 100
@@ -55,7 +55,7 @@ observable:
       score: 100
       pass: true
       confidence: 1.0
-  evaluated: '2026-11-09T11:23:36-05:00'
+  evaluated: '2026-11-09T11:53:19-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -78,9 +78,9 @@ operable:
         score: 100
         pass: true
         confidence: 0.9999898673126559
-    evaluated: '2026-11-09T11:23:36-05:00'
+    evaluated: '2026-11-09T11:53:19-05:00'
 history:
-- date: '2026-11-09T11:23:36-05:00'
+- date: '2026-11-09T11:53:19-05:00'
   type: full
   quality_score: 90.33333333333333
   quality_band: Operable

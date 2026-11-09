@@ -16,7 +16,7 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.962661805159386
+      confidence: 0.9525603046249979
     step_clarity:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9890130589396956
-  evaluated: '2026-11-09T11:27:36-05:00'
+      confidence: 0.9933071486460124
+  evaluated: '2026-11-09T11:57:15-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 87.5
@@ -42,7 +42,7 @@ observable:
     trace_instrumentation:
       score: 50
       pass: false
-      confidence: 0.6224593298742985
+      confidence: 0.5621765025686553
     cnl_compliance:
       score: 100
       pass: true
@@ -54,8 +54,8 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9992881124087163
-  evaluated: '2026-11-09T11:27:36-05:00'
+      confidence: 0.9992885886157026
+  evaluated: '2026-11-09T11:57:15-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -69,7 +69,7 @@ operable:
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.9999963045256736
+        confidence: 0.9999971389852362
       has_brain:
         score: 100
         pass: true
@@ -78,9 +78,9 @@ operable:
         score: 100
         pass: true
         confidence: 0.9999971389852362
-    evaluated: '2026-11-09T11:27:36-05:00'
+    evaluated: '2026-11-09T11:57:15-05:00'
 history:
-- date: '2026-11-09T11:27:36-05:00'
+- date: '2026-11-09T11:57:15-05:00'
   type: full
   quality_score: 66.66666666666667
   quality_band: Re-engineer

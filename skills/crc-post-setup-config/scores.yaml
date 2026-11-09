@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.6224550817707951
+      confidence: 0.562172079486398
     step_clarity:
       score: 0
       pass: false
-      confidence: 0.8994281070460719
+      confidence: 0.8760444221090955
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999954700677165
+      confidence: 0.9999960661089133
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.999447174672272
-  evaluated: '2026-11-09T11:25:55-05:00'
+      confidence: 0.9992903742048809
+  evaluated: '2026-11-09T11:55:36-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 87.5
@@ -42,7 +42,7 @@ observable:
     trace_instrumentation:
       score: 50
       pass: false
-      confidence: 0.5621765025686553
+      confidence: 0.6224593298742985
     cnl_compliance:
       score: 100
       pass: true
@@ -55,7 +55,7 @@ observable:
       score: 100
       pass: true
       confidence: 0.8807618072350916
-  evaluated: '2026-11-09T11:25:55-05:00'
+  evaluated: '2026-11-09T11:55:36-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -65,11 +65,11 @@ operable:
       has_bones:
         score: 100
         pass: true
-        confidence: 0.9999645960934691
+        confidence: 0.9999545833252356
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.9999996423722521
+        confidence: 0.9999995231630692
       has_brain:
         score: 100
         pass: true
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9999991655356624
-    evaluated: '2026-11-09T11:25:55-05:00'
+        confidence: 0.9999985694905716
+    evaluated: '2026-11-09T11:55:36-05:00'
 history:
-- date: '2026-11-09T11:25:55-05:00'
+- date: '2026-11-09T11:55:36-05:00'
   type: full
   quality_score: 50
   quality_band: Re-engineer

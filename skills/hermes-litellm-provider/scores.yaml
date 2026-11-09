@@ -6,34 +6,34 @@ qualification_rule: T2
 qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 80.66666666666667
+  aggregate_score: 86.16666666666667
   band: Tunable
   dimensions:
     script_coverage:
       score: 50
       pass: false
-      confidence: 0.9997965511486372
+      confidence: 0.9890123598324899
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.5936997156849156
+      confidence: 0.7196894323689127
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9931002998510257
+      confidence: 0.9625513423564932
     prose_executability:
-      score: 67
+      score: 100
       pass: true
-      confidence: 0.5572368207966878
+      confidence: 0.7746780895735553
     model_portability:
       score: 100
       pass: true
-      confidence: 1.0
+      confidence: 0.9999998807907247
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9988304957495425
-  evaluated: '2026-11-08T20:48:04-05:00'
+      confidence: 0.7310586002437232
+  evaluated: '2026-11-09T12:01:19-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 93.75
@@ -42,20 +42,20 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 1.0
+      confidence: 0.9999977350285647
     cnl_compliance:
       score: 75
-      pass: true
-      confidence: 0.6177336404229782
+      pass: false
+      confidence: 0.9998312281358949
     anti_fabrication:
       score: 100
       pass: true
-      confidence: 0.9999995231630692
+      confidence: 1.0
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.999447174672272
-  evaluated: '2026-11-08T20:48:04-05:00'
+      confidence: 0.9975271728542767
+  evaluated: '2026-11-09T12:01:19-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -77,12 +77,12 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9975274099865513
-    evaluated: '2026-11-08T20:48:04-05:00'
+        confidence: 0.9999963045256736
+    evaluated: '2026-11-09T12:01:19-05:00'
 history:
-- date: '2026-11-08T20:48:04-05:00'
+- date: '2026-11-09T12:01:19-05:00'
   type: full
-  quality_score: 80.66666666666667
+  quality_score: 86.16666666666667
   quality_band: Tunable
   observable_score: 93.75
   observable_band: Operable

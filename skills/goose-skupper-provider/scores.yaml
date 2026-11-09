@@ -24,7 +24,7 @@ quality:
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9999821189265068
+      confidence: 0.9999860527077029
     model_portability:
       score: 100
       pass: true
@@ -33,7 +33,7 @@ quality:
       score: 0
       pass: false
       confidence: 1.0
-  evaluated: '2026-11-09T11:28:01-05:00'
+  evaluated: '2026-11-09T11:57:40-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 100
@@ -46,7 +46,7 @@ observable:
     cnl_compliance:
       score: 100
       pass: true
-      confidence: 0.8518827625192569
+      confidence: 0.8807321204021871
     anti_fabrication:
       score: 100
       pass: true
@@ -54,8 +54,8 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9046503171810815
-  evaluated: '2026-11-09T11:28:01-05:00'
+      confidence: 0.9046502228187048
+  evaluated: '2026-11-09T11:57:40-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -78,9 +78,9 @@ operable:
         score: 100
         pass: true
         confidence: 1.0
-    evaluated: '2026-11-09T11:28:01-05:00'
+    evaluated: '2026-11-09T11:57:40-05:00'
 history:
-- date: '2026-11-09T11:28:01-05:00'
+- date: '2026-11-09T11:57:40-05:00'
   type: full
   quality_score: 66.66666666666667
   quality_band: Re-engineer

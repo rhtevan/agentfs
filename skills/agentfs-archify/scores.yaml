@@ -1,13 +1,12 @@
 # scores.yaml — agentfs-archify
 skill: agentfs-archify
-version: 2.15
+version: 2.16.0
 model_tier: "n/a"
 qualification_rule: exempt
 qoo-qualified: exempt
-exempt_reason: upstream-copy — direct copy of tt-a1i/Archify (MIT licensed). Modifying for QOO compliance would break upstream fidelity.
 quality:
   schema: quality.yaml
-  aggregate_score: 51.166666666666664
+  aggregate_score: 54.5
   band: Re-engineer
   dimensions:
     script_coverage:
@@ -15,17 +14,17 @@ quality:
       pass: false
       confidence: 1.0
     inference_hop_count:
-      score: 40
+      score: 60
       pass: false
-      confidence: 0.9029565363341588
+      confidence: 0.7758387902216866
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.9254052566850807
+      confidence: 0.8894244021180678
     prose_executability:
       score: 0
       pass: false
-      confidence: 0.9953768405650395
+      confidence: 0.9940697866002013
     model_portability:
       score: 100
       pass: true
@@ -33,11 +32,11 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9999251421693931
-  evaluated: '2026-11-08T21:51:20-05:00'
+      confidence: 0.9998766336062261
+  evaluated: '2026-11-09T12:00:03-05:00'
 observable:
   schema: observable.yaml
-  aggregate_score: 62.5
+  aggregate_score: 68.75
   band: Re-engineer
   dimensions:
     trace_instrumentation:
@@ -45,9 +44,9 @@ observable:
       pass: false
       confidence: 1.0
     cnl_compliance:
-      score: 50
+      score: 75
       pass: false
-      confidence: 0.3472887922476652
+      confidence: 0.951976234046701
     anti_fabrication:
       score: 100
       pass: true
@@ -55,8 +54,8 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9997385232067433
-  evaluated: '2026-11-08T21:51:20-05:00'
+      confidence: 0.9996645384165465
+  evaluated: '2026-11-09T12:00:03-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -70,26 +69,23 @@ operable:
       has_muscle:
         score: 0
         pass: false
-        confidence: 0.9999982118638472
+        confidence: 0.9999952316511551
       has_brain:
         score: 100
         pass: true
-        confidence: 1.0
+        confidence: 0.9999998807907248
       has_harness:
         score: 100
         pass: true
         confidence: 0.9859363803758086
-    evaluated: '2026-11-08T21:51:20-05:00'
+    evaluated: '2026-11-09T12:00:03-05:00'
 history:
-- date: '2026-11-08T21:51:20-05:00'
+- date: '2026-11-09T12:00:03-05:00'
   type: full
-  quality_score: 51.166666666666664
+  quality_score: 54.5
   quality_band: Re-engineer
-  observable_score: 62.5
+  observable_score: 68.75
   observable_band: Re-engineer
   build_score: 50
   build_band: Re-engineer
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'
-- date: '2026-11-09T10:08:00-05:00'
-  type: exemption
-  note: 'Exempted as upstream-copy. Direct copy of tt-a1i/Archify (MIT). Not subject to QOO modification.'

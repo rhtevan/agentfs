@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 11:52 | v1.12.0 — Added Rules, Workflow CNL Steps 1-2 (create/recipe), Output Contract |
 | 2026-11-08 22:37 | v1.11.0 — Add Rules, bump to 1.11.0; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:30 | v1.10.0 — Add model-tier to frontmatter |
 | 2026-08-26 21:34 | v1.10.0 — Added LITE scope guard: create-profile.sh refuses in LITE scope projects. Standardized terminology: mode → scope. |

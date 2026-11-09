@@ -33,7 +33,7 @@ quality:
       score: 100
       pass: true
       confidence: 0.9984987894978749
-  evaluated: '2026-11-09T11:27:24-05:00'
+  evaluated: '2026-11-09T11:57:03-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 87.5
@@ -46,7 +46,7 @@ observable:
     cnl_compliance:
       score: 50
       pass: false
-      confidence: 0.8174197969286217
+      confidence: 0.8173896872769034
     anti_fabrication:
       score: 100
       pass: true
@@ -55,7 +55,7 @@ observable:
       score: 100
       pass: true
       confidence: 0.9968273290569476
-  evaluated: '2026-11-09T11:27:24-05:00'
+  evaluated: '2026-11-09T11:57:03-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -78,9 +78,9 @@ operable:
         score: 100
         pass: true
         confidence: 0.9999998807907245
-    evaluated: '2026-11-09T11:27:24-05:00'
+    evaluated: '2026-11-09T11:57:03-05:00'
 history:
-- date: '2026-11-09T11:27:24-05:00'
+- date: '2026-11-09T11:57:03-05:00'
   type: full
   quality_score: 80.66666666666667
   quality_band: Tunable

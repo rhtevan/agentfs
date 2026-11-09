@@ -26,6 +26,29 @@ If a command fails, report the actual error — do not guess.
 Do NOT skip steps or combine multiple operations into one step.
 Execute each step in order and verify before proceeding.
 
+## Workflow
+
+### Step 1 — Run the audit script
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/agentfs-ctx-chk/scripts/audit.sh
+```
+
+### Step 2 — Analyze findings
+
+The agent MUST follow the Execution Steps below to evaluate each
+context source for redundancy, staleness, and optimization opportunities.
+
+## Output Contract
+
+- Exit 0 from audit.sh → no issues found
+- Exit N → N issues requiring attention
+- The agent MUST produce a summary scorecard and prioritized action list
+
+---
+
 ## Overview
 
 | Property | Value |

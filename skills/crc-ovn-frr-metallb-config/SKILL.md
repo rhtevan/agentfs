@@ -12,6 +12,39 @@ metadata:
 
 Set up OVN-Kubernetes FRR shared BGP backend and MetalLB Operator integration on an OpenShift Local (CRC) cluster. This skill re-establishes the full OVN-FRR and MetalLB integration after a `crc delete && crc start` cycle.
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+If a command fails, report the actual error — do not guess.
+
+This skill requires no semantic judgment — all steps are mechanical
+operator installation with deterministic outcomes.
+
+## Workflow
+
+### Step 1 — Run the setup script
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/crc-ovn-frr-metallb-config/scripts/setup.sh
+```
+
+Use `--check` to verify current state. Use `--part N` to run a specific part.
+
+### Step 2 — Configure BGP (environment-specific)
+
+The agent MUST follow Part 3 in the Steps section below to create
+BGP resources matching the user's network topology.
+
+## Output Contract
+
+- Exit 0 → setup completed successfully
+- Exit 1 → setup failed, review output
+
+---
+
 ## Architecture Overview
 
 ```

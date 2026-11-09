@@ -36,6 +36,39 @@ Skills are project-scoped and shared across all agents:
 - `.agents/skills/` — all agents use the same skills
 - Knowledge bundles live at `~/.agents/knowledge/` (USER scope, shared across projects)
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+
+This skill requires no semantic judgment — all steps are mechanical
+profile creation with deterministic outcomes.
+
+## Workflow
+
+### Step 1 — Create the profile
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/agentfs-profile/scripts/create-profile.sh <profile-name> <project-root>
+```
+
+### Step 2 — Generate a recipe (optional)
+
+If the user wants a Goose recipe for the new agent, the agent MUST run:
+
+```bash
+bash ~/.agents/skills/agentfs-profile/scripts/gen-profile-recipe.sh <profile-name> <project-root>
+```
+
+## Output Contract
+
+- Exit 0 from create-profile.sh → profile created and registered in AGENTS.md
+- Exit 1 → creation failed (missing prerequisites, duplicate name, etc.)
+
+---
+
 ## Prerequisites
 
 - **`agentfs-setup`** must have been run in PROJECT scope first

@@ -43,6 +43,29 @@ Execute each step in order and verify before proceeding.
 - `nmcli` available (standard with NetworkManager)
 - `sudo` access for remediation steps (diagnosis is sudo-free)
 
+## Workflow
+
+### Step 1 — Run the diagnostic script
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/fedora-nm-boot-slow/scripts/diagnose.sh
+```
+
+### Step 2 — Apply the recommended fix
+
+Based on the diagnostic output, the agent MUST apply the appropriate
+fix from the options listed. Use `--fix` flag to auto-apply Option A.
+
+## Output Contract
+
+- Exit 0 from diagnose.sh → diagnosis completed, fix options listed
+- NM-wait-online ≤3s → no fix needed
+- NM-wait-online >3s → apply recommended fix
+
+---
+
 ## Steps
 
 ### 1. Diagnose Boot Time

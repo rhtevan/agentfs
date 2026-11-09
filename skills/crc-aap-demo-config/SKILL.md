@@ -14,6 +14,38 @@ Clone the `aap-demo` repository and safely configure it for deployment on an
 existing OpenShift Local (CRC) cluster — without disrupting CRC's preset,
 resource allocations, or other settings.
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+
+This skill requires no semantic judgment — all steps are mechanical
+repository cloning and configuration with deterministic outcomes.
+
+## Workflow
+
+### Step 1 — Run the setup script
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/crc-aap-demo-config/scripts/setup.sh
+```
+
+Use `--check` to verify without changes. Use `--target DIR` for custom location.
+
+### Step 2 — Follow the detailed Steps below
+
+The agent MUST follow the Steps section for environment-specific
+configuration (.env, pull secret, resource sizing).
+
+## Output Contract
+
+- Exit 0 → setup completed successfully
+- Exit 1 → prerequisite missing or setup failed
+
+---
+
 ## Why This Skill Exists
 
 `aap-demo` was designed for MicroShift and makes assumptions that are

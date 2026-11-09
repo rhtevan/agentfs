@@ -2,6 +2,32 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 11:52
+- Added Rules, Workflow CNL Steps 1-2 (create/recipe), Output Contract (skills/agentfs-profile/SKILL.md)
+
+## 2026-11-09 11:51
+- Added Rules, Workflow CNL Step 1, Output Contract (skills/crc-cmd/SKILL.md)
+- New script: install crcstart/crcstop wrappers from SKILL.md with --check mode and trace (skills/crc-cmd/scripts/install.sh)
+- Added Rules, Workflow CNL Steps 1-2, Output Contract (skills/crc-aap-demo-config/SKILL.md)
+
+## 2026-11-09 11:50
+- New script: clone repo, pre-flight CRC checks, config validation with --check mode (skills/crc-aap-demo-config/scripts/setup.sh)
+- Added Rules, Workflow CNL Steps 1-2, and Output Contract (skills/crc-ovn-frr-metallb-config/SKILL.md)
+
+## 2026-11-09 11:49
+- New script: 3-part setup (FRR enable, MetalLB install, BGP config) with --check and --part modes (skills/crc-ovn-frr-metallb-config/scripts/setup.sh)
+- Added Workflow CNL Steps 1-2 and Output Contract (skills/agentfs-ctx-chk/SKILL.md)
+
+## 2026-11-09 11:48
+- New script: inventory context sources, skills, knowledge, memories, extensions, estimate token load (skills/agentfs-ctx-chk/scripts/audit.sh)
+
+## 2026-11-09 11:47
+- Added Workflow CNL Steps 1-2 (diagnose/fix) and Output Contract (skills/fedora-nm-boot-slow/SKILL.md)
+- New script: diagnose NM-wait-online boot delay, check blame/critical-chain/autoconnect, suggest fixes (skills/fedora-nm-boot-slow/scripts/diagnose.sh)
+
+## 2026-11-09 11:46
+- Replaced Usage section with Workflow CNL Steps 1-3 (scan/generate/prune) and Output Contract (skills/okf-bundle-harvest/SKILL.md)
+
 ## 2026-11-09 11:30
 - Build manually corrected to 100 (scripts verified present). Re-qualified. (skills/headroom-litellm-proxy/scores.yaml)
 - Build manually corrected to 100 (scripts verified present). Re-qualified. (skills/goose-setup/scores.yaml)

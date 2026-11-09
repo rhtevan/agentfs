@@ -12,6 +12,33 @@ metadata:
 
 Install two wrapper commands (`crcstart` and `crcstop`) into `~/.local/bin/` for managing OpenShift Local (CRC). These replace the built-in `crc start` and `crc stop` commands with more reliable alternatives.
 
+## Rules
+
+Do NOT fabricate or invent command output, status, or results.
+Every report MUST come from actual script or command execution.
+
+This skill requires no semantic judgment — all steps are mechanical
+file installation with deterministic outcomes.
+
+## Workflow
+
+### Step 1 — Run the install script
+
+The agent MUST run:
+
+```bash
+bash ~/.agents/skills/crc-cmd/scripts/install.sh
+```
+
+Use `--check` to verify without installing.
+
+## Output Contract
+
+- Exit 0 → both commands installed and executable
+- Exit 1 → installation failed
+
+---
+
 ## Background
 
 ### Why `crcstop` exists

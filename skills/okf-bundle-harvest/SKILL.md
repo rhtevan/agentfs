@@ -66,27 +66,36 @@ Execute each step in order and verify before proceeding.
 
 ---
 
-## Usage
+## Workflow
 
-### Harvest from current project
+### Step 1 — Scan memories for harvest candidates
 
-> harvest knowledge from project memories
+The agent MUST run:
 
-Scans `./.agents/memories/` and `./.agents/profiles/*/memories/` in
-the current working directory.
+```bash
+bash ~/.agents/skills/okf-bundle-harvest/scripts/harvest-summary.sh [PROJECT_ROOT...]
+```
 
-### Harvest from specific projects
+If no project roots are given, the script scans the current working directory.
 
-> harvest knowledge from ~/projects/foo and ~/projects/bar
+### Step 2 — Generate the knowledge bundle
 
-Scans the `.agents/` directory in each specified project root.
+The agent MUST follow the Procedure below to create bundle files
+from the identified harvest candidates.
 
-### Harvest from all known projects
+### Step 3 — Prune harvested entries from memories
 
-> harvest knowledge from all my projects
+After bundle creation, the agent MUST run:
 
-The agent should ask the user to provide project paths, or scan
-common locations if the user confirms.
+```bash
+bash ~/.agents/skills/okf-bundle-harvest/scripts/prune-memory.sh <memory-file> <harvested-entries...>
+```
+
+## Output Contract
+
+- Exit 0 from harvest-summary.sh → candidates identified
+- Exit 0 from prune-memory.sh → entries removed from memory
+- The generated bundle MUST include: index.md, concept files, log.md
 
 ---
 
