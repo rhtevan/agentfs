@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 20:44 | v1.9.0 — Add --dry-run flag parsing; Add dry-run exit block with DRY_RUN_RESULT signal |
 | 2026-11-08 22:48 | v1.8.0 — Add Rules, bump to 1.8.0; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:31 | v1.7.0 — Add model-tier to frontmatter |
 | 2026-09-09 21:27 | vv1.7.0 — Changed base_url from localhost:4000 to host.containers.internal:4000 in restore.sh, verify.sh, and SKILL.md. Enables dual-resolution for host and container environments. |

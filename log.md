@@ -2,6 +2,25 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 20:44
+- Add dry-run exit block with DRY_RUN_RESULT signal (skills/goose-litellm-provider/scripts/restore.sh)
+
+## 2026-11-09 20:43
+- Add --dry-run flag parsing (skills/goose-litellm-provider/scripts/restore.sh)
+- Add --dry-run support with DRY_RUN_RESULT signals (skills/goose-skupper-provider/scripts/teardown.sh)
+- Add dry-run convergence check and DRY_RUN_RESULT signals (skills/agentfs-setup/scripts/init-git.sh)
+
+## 2026-11-09 20:42
+- Add --dry-run flag parsing (skills/agentfs-setup/scripts/init-git.sh)
+- Add --dry-run support with DRY_RUN_RESULT signals (skills/goose-kgm/scripts/teardown-kgm.sh)
+- Add dry-run convergence check and DRY_RUN_RESULT/APPLY_RESULT signals (skills/hosted-model-ctl/scripts/set-default.sh)
+
+## 2026-11-09 20:41
+- Add --dry-run flag parsing and strip from positional args (skills/hosted-model-ctl/scripts/set-default.sh)
+
+## 2026-11-09 20:35
+- Update status: Phase 3A complete (11 T1/T2 scripts retrofitted) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-09 20:34
 - Add dry-run logic to copy loop with DRY_RUN_RESULT/APPLY_RESULT signals (skills/skill-merge/scripts/merge-skills.sh)
 - Add --dry-run flag parsing (skills/skill-merge/scripts/merge-skills.sh)

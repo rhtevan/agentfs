@@ -1,16 +1,50 @@
 #!/usr/bin/env bash
 # teardown.sh — Remove Goose Skupper provider configuration
-# Usage: bash teardown.sh
+# Usage: bash teardown.sh [--dry-run]
 
 set -euo pipefail
+
+DRY_RUN=false
+CHANGES=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
 
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-skupper-provider" "5.6.0" 2>/dev/null || true
+trace_init "goose-skupper-provider" "5.7.0" 2>/dev/null || true
 
 PROVIDER_JSON="$HOME/.config/goose/custom_providers/custom_skupper.json"
 CONFIG_YAML="$HOME/.config/goose/config.yaml"
+
+# ── Dry-run check ─────────────────────────────────────────────
+if $DRY_RUN; then
+  echo "=== Goose Skupper Provider — Teardown (dry-run) ==="
+  if [[ -f "$PROVIDER_JSON" ]]; then
+    echo "[dry-run] WOULD: Remove $PROVIDER_JSON"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — custom_skupper.json does not exist"
+  fi
+  if grep -q 'custom_skupper:' "$CONFIG_YAML" 2>/dev/null; then
+    echo "[dry-run] WOULD: Remove custom_skupper entry from config.yaml"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — custom_skupper not in config.yaml"
+  fi
+  echo ""
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
+  echo "Changes: ${CHANGES}"
+  exit 0
+fi
 
 echo "=== Goose Skupper Provider — Teardown ==="
 echo

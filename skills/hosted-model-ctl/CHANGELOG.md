@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 20:42 | v2.2.0 — Add --dry-run flag parsing and strip from positional args; Add dry-run convergence check and DRY_RUN_RESULT/APPLY_RESULT signals |
 | 2026-11-05 19:31 | v7.10.1 — Add model-tier to frontmatter |
 | 2026-10-22 19:56 | v7.10.1 — Corrected Section 17.7: NextToken supports score-type questions |
 | 2026-10-16 21:05 | vv7.10.0 — Eliminate all state files: get_active_profile() uses live podman ps; DEFAULT_PROFILES map replaces builtin vars + state file; ALL_HOSTS derived from DEPLOY_PROFILES; remove set/clear_active_profile, PROFILE_STATE_DIR, _read_persistent_default |

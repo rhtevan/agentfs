@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 20:43 | v5.7.0 — Add --dry-run support with DRY_RUN_RESULT signals |
 | 2026-11-08 22:58 | v5.6.0 — Add Rules + trace + bump to 5.6.0; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; CNL restructure Operations, remove internal descriptions |
 | 2026-11-05 19:31 | v5.5.0 — Add model-tier to frontmatter |
 | 2026-10-15 09:47 | v5.5.0 — Fix: setup.sh now restores active_provider after teardown+setup (recreate). Teardown removes active_provider but setup never set it back, leaving Goose Desktop with no provider on restart. |

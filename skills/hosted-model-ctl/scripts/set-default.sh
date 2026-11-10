@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 # set-default.sh — Set the default deployment profile for a host
 # Usage:
-#   bash set-default.sh PROFILE    — set PROFILE as default for its host
-#   bash set-default.sh --show     — show current defaults for all hosts
+#   bash set-default.sh [--dry-run] PROFILE  — set PROFILE as default for its host
+#   bash set-default.sh --show               — show current defaults for all hosts
 #
 # Changes are persisted by editing DEFAULT_PROFILES in common.sh.
+
+DRY_RUN=false
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
+# Strip --dry-run/--check from args
+POSITIONAL=()
+for arg in "$@"; do
+  case "$arg" in --dry-run|--check) ;; *) POSITIONAL+=("$arg") ;; esac
+done
+set -- "${POSITIONAL[@]+"${POSITIONAL[@]}"}"
 
 source "$(dirname "$0")/common.sh"
 
@@ -30,6 +44,14 @@ CURRENT=$(get_default_profile "$HOST")
 
 if [[ "$CURRENT" == "$PROFILE" ]]; then
   echo "✅ Default for $HOST is already '$PROFILE' — no change"
+  if $DRY_RUN; then echo "DRY_RUN_RESULT=CONVERGED"; else echo "APPLY_RESULT=OK"; fi
+  exit 0
+fi
+
+if $DRY_RUN; then
+  echo "[dry-run] WOULD: Set default profile for $HOST: ${CURRENT:-<none>} → $PROFILE"
+  echo "DRY_RUN_RESULT=PENDING"
+  echo "Changes: 1"
   exit 0
 fi
 
@@ -43,3 +65,4 @@ fi
 
 echo "✅ Default profile for $HOST: ${CURRENT:-<none>} → $PROFILE"
 echo "   (Updated DEFAULT_PROFILES in common.sh)"
+echo "APPLY_RESULT=OK"
