@@ -2,6 +2,42 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 20:34
+- Add dry-run logic to copy loop with DRY_RUN_RESULT/APPLY_RESULT signals (skills/skill-merge/scripts/merge-skills.sh)
+- Add --dry-run flag parsing (skills/skill-merge/scripts/merge-skills.sh)
+- Add dry-run exit block with DRY_RUN_RESULT signal before config mutation (skills/hermes-litellm-provider/scripts/restore.sh)
+
+## 2026-11-09 20:33
+- Add --dry-run flag parsing (skills/hermes-litellm-provider/scripts/restore.sh)
+- Add --dry-run action with DRY_RUN_RESULT signal to main dispatch (skills/hermes-agentfs-setup/scripts/setup.sh)
+- Add DRY_RUN/CHANGES/ERRORS variables (skills/hermes-agentfs-setup/scripts/setup.sh)
+
+## 2026-11-09 20:32
+- Add --dry-run support per action with DRY_RUN_RESULT/APPLY_RESULT signals (skills/fedora-window-list/scripts/toggle-window-list.sh)
+- Add dry-run check block with DRY_RUN_RESULT signals (skills/fedora-obsidian-fix/scripts/fix.sh)
+- Add --dry-run flag parsing (skills/fedora-obsidian-fix/scripts/fix.sh)
+
+## 2026-11-09 20:31
+- Add --dry-run support with DRY_RUN_RESULT/APPLY_RESULT signals (skills/fedora-dns-cache/scripts/setup.sh)
+- Add dry-run exit block with DRY_RUN_RESULT signal before file write (skills/agentfs-profile/scripts/gen-profile-recipe.sh)
+
+## 2026-11-09 20:30
+- Add --dry-run/--check to arg parser (skills/agentfs-profile/scripts/gen-profile-recipe.sh)
+- Add DRY_RUN/CHANGES/ERRORS variables (skills/agentfs-profile/scripts/gen-profile-recipe.sh)
+- Add --dry-run pre-check block with DRY_RUN_RESULT signals (skills/agentfs-profile/scripts/create-profile.sh)
+- Add --dry-run flag parsing and strip from positional args (skills/agentfs-profile/scripts/create-profile.sh)
+
+## 2026-11-09 20:29
+- Add --dry-run support with DRY_RUN_RESULT/APPLY_RESULT signals (skills/agentflow-fuseki/scripts/stop-fuseki.sh)
+- Add --dry-run support with DRY_RUN_RESULT/APPLY_RESULT signals (skills/agentflow-fuseki/scripts/start-fuseki.sh)
+
+## 2026-11-09 20:28
+- Complete --dry-run retrofit: wrap all mutations, add DRY_RUN_RESULT/APPLY_RESULT signals (skills/agentflow-fuseki/scripts/setup-fuseki.sh)
+
+## 2026-11-09 20:27
+- Wrap Jena download mutation in dry-run guard (skills/agentflow-fuseki/scripts/setup-fuseki.sh)
+- Add --dry-run flag parsing, apply() helper, and CHANGES counter for dry-run gate (skills/agentflow-fuseki/scripts/setup-fuseki.sh)
+
 ## 2026-11-09 19:46
 - Fix D6 drift: update template version stamp to 7.8.0, add Rule 7 Dry-Run Gate to rule table (README.md)
 - Fix D6 drift: update version 7.7.2→7.8.0, rule count 6→7 (README.md)

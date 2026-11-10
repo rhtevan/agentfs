@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 # setup.sh — Configure systemd-resolved stale DNS caching on Fedora
-# Usage: sudo bash setup.sh
-#   or:  bash setup.sh  (will prompt for sudo)
+# Usage: sudo bash setup.sh [--dry-run]
+#   or:  bash setup.sh [--dry-run] (will prompt for sudo in apply mode)
 set -euo pipefail
+
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
 
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "fedora-dns-cache" "1.1.0" 2>/dev/null || true
+trace_init "fedora-dns-cache" "1.2.0" 2>/dev/null || true
 
 CONF_DIR="/etc/systemd/resolved.conf.d"
 CONF_FILE="${CONF_DIR}/fast-timeout.conf"
@@ -27,8 +38,26 @@ if [[ -f "$CONF_FILE" ]]; then
     echo "✅ Stale DNS caching is already configured in $CONF_FILE"
     echo "   Current setting:"
     grep 'StaleRetentionSec' "$CONF_FILE"
+    if $DRY_RUN; then
+      echo ""
+      echo "DRY_RUN_RESULT=CONVERGED"
+    else
+      echo "APPLY_RESULT=OK"
+    fi
     exit 0
   fi
+fi
+
+# --- Dry-run exit ---
+if $DRY_RUN; then
+  echo "[dry-run] WOULD: Create $CONF_FILE with StaleRetentionSec=3600"
+  CHANGES=$((CHANGES + 1))
+  echo "[dry-run] WOULD: Restart $SERVICE"
+  CHANGES=$((CHANGES + 1))
+  echo ""
+  echo "DRY_RUN_RESULT=PENDING"
+  echo "Changes: ${CHANGES}"
+  exit 0
 fi
 
 # --- Escalate to root if needed ---
@@ -64,8 +93,13 @@ if systemd-analyze cat-config systemd/resolved.conf 2>/dev/null | grep -q 'Stale
   echo "✅ Verified: StaleRetentionSec=3600 is active"
 else
   echo "⚠️  Warning: Could not verify StaleRetentionSec setting" >&2
-  exit 1
+  ERRORS=$((ERRORS + 1))
 fi
 
 echo ""
-echo "Done. DNS lookups will now use stale cache when upstream is unreachable."
+if [[ $ERRORS -eq 0 ]]; then
+  echo "APPLY_RESULT=OK"
+  echo "Done. DNS lookups will now use stale cache when upstream is unreachable."
+else
+  echo "APPLY_RESULT=PARTIAL"
+fi

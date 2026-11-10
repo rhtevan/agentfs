@@ -7,10 +7,14 @@
 # sections in ~/.hermes/config.yaml. All other settings are preserved.
 set -euo pipefail
 
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "hermes-litellm-provider" "2.3.0" 2>/dev/null || true
+trace_init "hermes-litellm-provider" "2.4.0" 2>/dev/null || true
 
 DEFAULT_MODEL="claude-opus-4-6"
 LITELLM_URL="http://127.0.0.1:4000"
@@ -19,6 +23,8 @@ HERMES_CONFIG="$HOME/.hermes/config.yaml"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --dry-run) DRY_RUN=true; shift ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; shift ;;
     --default-model) DEFAULT_MODEL="$2"; shift 2 ;;
     -h|--help)
       echo "Usage: bash restore.sh [--default-model MODEL]"
@@ -73,6 +79,18 @@ KEY_ENV="HERMES_CUSTOM_$(echo "$PROVIDER_NAME" | tr '[:lower:]-' '[:upper:]_')_A
 if [[ ! -f "$HERMES_CONFIG" ]]; then
   echo "❌ $HERMES_CONFIG not found. Run 'hermes model' first to create initial config."
   exit 1
+fi
+
+# Dry-run check
+if $DRY_RUN; then
+  echo "[dry-run] WOULD: Update model: and providers.$PROVIDER_NAME: sections in $HERMES_CONFIG"
+  echo "[dry-run]   default_model: $DEFAULT_MODEL"
+  echo "[dry-run]   models: $(echo $MODELS | tr '\n' ', ')"
+  CHANGES=$((CHANGES + 1))
+  echo ""
+  echo "DRY_RUN_RESULT=PENDING"
+  echo "Changes: ${CHANGES}"
+  exit 0
 fi
 
 # Backup

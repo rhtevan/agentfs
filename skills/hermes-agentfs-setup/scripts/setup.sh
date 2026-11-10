@@ -19,10 +19,15 @@
 
 set -euo pipefail
 
+# Dry-run support
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "hermes-agentfs-setup" "1.2.0" 2>/dev/null || true
+trace_init "hermes-agentfs-setup" "1.3.0" 2>/dev/null || true
 
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 CONFIG="$HERMES_HOME/config.yaml"
@@ -485,6 +490,17 @@ do_list() {
 # ── Main ──────────────────────────────────────────────────────────────────
 
 case "${1:-}" in
+  --dry-run)
+    DRY_RUN=true
+    if config_exists && has_system_entry; then
+      echo "[dry-run] NO CHANGE — ~/.agents/skills already in external_dirs"
+      echo "DRY_RUN_RESULT=CONVERGED"
+    else
+      echo "[dry-run] WOULD: Add ~/.agents/skills to Hermes external_dirs"
+      echo "DRY_RUN_RESULT=PENDING"
+    fi
+    exit 0
+    ;;
   --check|-c)
     do_check
     ;;
@@ -504,6 +520,7 @@ case "${1:-}" in
     printf "Usage: %s [COMMAND]\n\n" "$(basename "$0")"
     printf "  ${BOLD}USER scope${NC} (~/.agents/skills — shared across projects)\n"
     printf "    (no args)                Run USER setup\n"
+    printf "    --dry-run                Check what would change\n"
     printf "    --undo                   Remove USER entry\n\n"
     printf "  ${BOLD}PROJECT scope${NC} (.agents/skills — per-project)\n"
     printf "    --project [path]         Register CWD (or path) project skills\n"

@@ -31,6 +31,11 @@
 
 set -euo pipefail
 
+# Dry-run support
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
@@ -58,6 +63,15 @@ QUIET=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --check)
+      echo "WARN: --check is deprecated, use --dry-run" >&2
+      DRY_RUN=true
+      shift
+      ;;
     --root)
       ROOT="$2"
       shift 2
@@ -164,6 +178,20 @@ response:
     required: [summary, findings, verdict]
 RESPONSEEOF
   )
+fi
+
+# ── Dry-run check ─────────────────────────────────────────────────────
+if $DRY_RUN; then
+  echo "[dry-run] WOULD: Write recipe to $OUTPUT_FILE"
+  CHANGES=$((CHANGES + 1))
+  if [[ "$RUN_AFTER" == true ]]; then
+    echo "[dry-run] WOULD: Execute recipe via goose run"
+    CHANGES=$((CHANGES + 1))
+  fi
+  echo ""
+  echo "DRY_RUN_RESULT=PENDING"
+  echo "Changes: ${CHANGES}"
+  exit 0
 fi
 
 # ── Write recipe YAML ─────────────────────────────────────────────────

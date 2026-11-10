@@ -1,8 +1,40 @@
 #!/usr/bin/env bash
 # setup-fuseki.sh — Install Apache Jena + Fuseki and configure as systemd user service
-# Usage: bash setup-fuseki.sh [--version VERSION]
+# Usage: bash setup-fuseki.sh [--dry-run] [--version VERSION]
 # Idempotent: safe to run multiple times.
 set -euo pipefail
+
+# ══════════════════════════════════════════════════════
+# Dry-run support
+# ══════════════════════════════════════════════════════
+
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
+
+# Strip --dry-run/--check from positional args
+POSITIONAL=()
+for arg in "$@"; do
+  case "$arg" in --dry-run|--check) ;; *) POSITIONAL+=("$arg") ;; esac
+done
+set -- "${POSITIONAL[@]+"${POSITIONAL[@]}"}"
+
+apply() {
+  local description="$1"; shift
+  if $DRY_RUN; then
+    echo "[dry-run] WOULD: $description"
+    CHANGES=$((CHANGES + 1))
+  else
+    "$@"
+  fi
+}
 
 # ══════════════════════════════════════════════════════
 # Configuration
@@ -61,17 +93,31 @@ info "Checking Jena CLI tools..."
 if [[ -d "$JENA_DIR" ]]; then
     skip "Jena ${JENA_VERSION} already installed at ${JENA_DIR}"
 else
-    info "Downloading Apache Jena ${JENA_VERSION}..."
-    wget -q "${JENA_MIRROR}/apache-jena-${JENA_VERSION}.tar.gz" \
-        -O "${INSTALL_DIR}/apache-jena.tar.gz"
-    tar xzf "${INSTALL_DIR}/apache-jena.tar.gz" -C "${INSTALL_DIR}"
-    rm -f "${INSTALL_DIR}/apache-jena.tar.gz"
-    ok "Jena CLI tools installed at ${JENA_DIR}"
+    if $DRY_RUN; then
+      echo "[dry-run] WOULD: Download and install Jena ${JENA_VERSION}"
+      CHANGES=$((CHANGES + 1))
+    else
+      info "Downloading Apache Jena ${JENA_VERSION}..."
+      wget -q "${JENA_MIRROR}/apache-jena-${JENA_VERSION}.tar.gz" \
+          -O "${INSTALL_DIR}/apache-jena.tar.gz"
+      tar xzf "${INSTALL_DIR}/apache-jena.tar.gz" -C "${INSTALL_DIR}"
+      rm -f "${INSTALL_DIR}/apache-jena.tar.gz"
+      ok "Jena CLI tools installed at ${JENA_DIR}"
+    fi
 fi
 
 # Create stable symlink
-ln -sfn "apache-jena-${JENA_VERSION}" "${JENA_LINK}"
-ok "Symlink: ${JENA_LINK} → apache-jena-${JENA_VERSION}"
+if $DRY_RUN; then
+  if [[ ! -L "${JENA_LINK}" ]] || [[ "$(readlink "${JENA_LINK}")" != "apache-jena-${JENA_VERSION}" ]]; then
+    echo "[dry-run] WOULD: Create symlink ${JENA_LINK}"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — Jena symlink already correct"
+  fi
+else
+  ln -sfn "apache-jena-${JENA_VERSION}" "${JENA_LINK}"
+  ok "Symlink: ${JENA_LINK} → apache-jena-${JENA_VERSION}"
+fi
 
 # ══════════════════════════════════════════════════════
 # Step 3: Download Jena Fuseki
@@ -81,17 +127,31 @@ info "Checking Jena Fuseki..."
 if [[ -d "$FUSEKI_DIR" ]]; then
     skip "Fuseki ${JENA_VERSION} already installed at ${FUSEKI_DIR}"
 else
-    info "Downloading Apache Jena Fuseki ${JENA_VERSION}..."
-    wget -q "${JENA_MIRROR}/apache-jena-fuseki-${JENA_VERSION}.tar.gz" \
-        -O "${INSTALL_DIR}/apache-jena-fuseki.tar.gz"
-    tar xzf "${INSTALL_DIR}/apache-jena-fuseki.tar.gz" -C "${INSTALL_DIR}"
-    rm -f "${INSTALL_DIR}/apache-jena-fuseki.tar.gz"
-    ok "Fuseki installed at ${FUSEKI_DIR}"
+    if $DRY_RUN; then
+      echo "[dry-run] WOULD: Download and install Fuseki ${JENA_VERSION}"
+      CHANGES=$((CHANGES + 1))
+    else
+      info "Downloading Apache Jena Fuseki ${JENA_VERSION}..."
+      wget -q "${JENA_MIRROR}/apache-jena-fuseki-${JENA_VERSION}.tar.gz" \
+          -O "${INSTALL_DIR}/apache-jena-fuseki.tar.gz"
+      tar xzf "${INSTALL_DIR}/apache-jena-fuseki.tar.gz" -C "${INSTALL_DIR}"
+      rm -f "${INSTALL_DIR}/apache-jena-fuseki.tar.gz"
+      ok "Fuseki installed at ${FUSEKI_DIR}"
+    fi
 fi
 
 # Create stable symlink
-ln -sfn "apache-jena-fuseki-${JENA_VERSION}" "${FUSEKI_LINK}"
-ok "Symlink: ${FUSEKI_LINK} → apache-jena-fuseki-${JENA_VERSION}"
+if $DRY_RUN; then
+  if [[ ! -L "${FUSEKI_LINK}" ]] || [[ "$(readlink "${FUSEKI_LINK}")" != "apache-jena-fuseki-${JENA_VERSION}" ]]; then
+    echo "[dry-run] WOULD: Create symlink ${FUSEKI_LINK}"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — Fuseki symlink already correct"
+  fi
+else
+  ln -sfn "apache-jena-fuseki-${JENA_VERSION}" "${FUSEKI_LINK}"
+  ok "Symlink: ${FUSEKI_LINK} → apache-jena-fuseki-${JENA_VERSION}"
+fi
 
 # ══════════════════════════════════════════════════════
 # Step 4: Create data directory
@@ -100,8 +160,13 @@ ok "Symlink: ${FUSEKI_LINK} → apache-jena-fuseki-${JENA_VERSION}"
 if [[ -d "$DATA_DIR" ]]; then
     skip "Data directory already exists: ${DATA_DIR}"
 else
-    mkdir -p "$DATA_DIR"
-    ok "Created data directory: ${DATA_DIR}"
+    if $DRY_RUN; then
+      echo "[dry-run] WOULD: Create data directory ${DATA_DIR}"
+      CHANGES=$((CHANGES + 1))
+    else
+      mkdir -p "$DATA_DIR"
+      ok "Created data directory: ${DATA_DIR}"
+    fi
 fi
 
 # ══════════════════════════════════════════════════════
@@ -112,14 +177,19 @@ info "Checking PATH configuration..."
 if grep -q 'apache-jena' "${HOME}/.bashrc" 2>/dev/null; then
     skip "Jena PATH entries already in .bashrc"
 else
-    cat >> "${HOME}/.bashrc" << 'BASHRC_EOF'
+    if $DRY_RUN; then
+      echo "[dry-run] WOULD: Add JENA_HOME, FUSEKI_HOME, PATH to .bashrc"
+      CHANGES=$((CHANGES + 1))
+    else
+      cat >> "${HOME}/.bashrc" << 'BASHRC_EOF'
 
 # Apache Jena (managed by fuseki skill)
 export JENA_HOME="${HOME}/.local/share/apache-jena"
 export FUSEKI_HOME="${HOME}/.local/share/apache-jena-fuseki"
 export PATH="${JENA_HOME}/bin:${FUSEKI_HOME}:${PATH}"
 BASHRC_EOF
-    ok "Added JENA_HOME, FUSEKI_HOME, and PATH to .bashrc"
+      ok "Added JENA_HOME, FUSEKI_HOME, and PATH to .bashrc"
+    fi
 fi
 
 # ══════════════════════════════════════════════════════
@@ -127,10 +197,21 @@ fi
 # ══════════════════════════════════════════════════════
 
 info "Configuring systemd user service..."
-mkdir -p "${SYSTEMD_DIR}"
 
-# Always write the service file (idempotent — overwrites with same content)
-cat > "${SERVICE_FILE}" << EOF
+if $DRY_RUN; then
+  if [[ ! -f "${SERVICE_FILE}" ]]; then
+    echo "[dry-run] WOULD: Create systemd unit ${SERVICE_FILE}"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — systemd unit already exists"
+  fi
+  echo "[dry-run] WOULD: Reload systemd and enable fuseki.service"
+  CHANGES=$((CHANGES + 1))
+else
+  mkdir -p "${SYSTEMD_DIR}"
+
+  # Always write the service file (idempotent — overwrites with same content)
+  cat > "${SERVICE_FILE}" << EOF
 [Unit]
 Description=Apache Jena Fuseki SPARQL Server
 After=network.target
@@ -150,27 +231,44 @@ StandardError=journal
 WantedBy=default.target
 EOF
 
-ok "Wrote systemd unit: ${SERVICE_FILE}"
+  ok "Wrote systemd unit: ${SERVICE_FILE}"
 
-# Reload systemd and enable (but don't start)
-systemctl --user daemon-reload
-systemctl --user enable fuseki.service 2>/dev/null
-ok "Service enabled (will not auto-start until 'fuseki start')"
+  # Reload systemd and enable (but don't start)
+  systemctl --user daemon-reload
+  systemctl --user enable fuseki.service 2>/dev/null
+  ok "Service enabled (will not auto-start until 'fuseki start')"
+fi
 
 # ══════════════════════════════════════════════════════
 # Summary
 # ══════════════════════════════════════════════════════
 
 echo ""
-echo "══════════════════════════════════════════════════════"
-echo "  Setup Complete: ${PASS} done, ${SKIP} skipped"
-echo "══════════════════════════════════════════════════════"
-echo ""
-echo "  Jena CLI:  ${JENA_LINK}/bin/"
-echo "  Fuseki:    ${FUSEKI_LINK}/"
-echo "  Data:      ${DATA_DIR}/"
-echo "  Service:   ${SERVICE_FILE}"
-echo ""
-echo "  Next: run 'fuseki start' or:"
-echo "    systemctl --user start fuseki"
-echo "══════════════════════════════════════════════════════"
+if $DRY_RUN; then
+  echo "══════════════════════════════════════════════════════"
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "  DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "  DRY_RUN_RESULT=PENDING"
+  fi
+  echo "  Changes: ${CHANGES}"
+  echo "══════════════════════════════════════════════════════"
+else
+  echo "══════════════════════════════════════════════════════"
+  if [[ $ERRORS -eq 0 ]]; then
+    echo "  APPLY_RESULT=OK"
+  else
+    echo "  APPLY_RESULT=PARTIAL"
+  fi
+  echo "  Setup Complete: ${PASS} done, ${SKIP} skipped"
+  echo "══════════════════════════════════════════════════════"
+  echo ""
+  echo "  Jena CLI:  ${JENA_LINK}/bin/"
+  echo "  Fuseki:    ${FUSEKI_LINK}/"
+  echo "  Data:      ${DATA_DIR}/"
+  echo "  Service:   ${SERVICE_FILE}"
+  echo ""
+  echo "  Next: run 'fuseki start' or:"
+  echo "    systemctl --user start fuseki"
+  echo "══════════════════════════════════════════════════════"
+fi

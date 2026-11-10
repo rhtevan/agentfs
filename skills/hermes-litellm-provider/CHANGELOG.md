@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 20:34 | v2.4.0 — Add --dry-run flag parsing; Add dry-run exit block with DRY_RUN_RESULT signal before config mutation |
 | 2026-11-08 22:21 | v2.3.0 — Add Rules section with anti-fabrication; Bump version to 2.3.0; CNL upgrade: add MUST to Steps 1,3,4; Add trace-lib.sh instrumentation; Add trace-lib.sh instrumentation |
 | 2026-11-05 19:31 | v2.2.0 — Add model-tier to frontmatter |
 | 2026-08-10 15:39 | v2.2.0 — Removed claude-sonnet-4-5 from reference config |

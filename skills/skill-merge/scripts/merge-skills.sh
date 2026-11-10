@@ -12,12 +12,15 @@
 
 set -euo pipefail
 
+DRY_RUN=false
 FORCE=false
 PROJECT_ROOT="."
 SKILL_NAMES=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --dry-run) DRY_RUN=true; shift ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; shift ;;
     --force) FORCE=true; shift ;;
     --project-root) PROJECT_ROOT="$2"; shift 2 ;;
     *) SKILL_NAMES+=("$1"); shift ;;
@@ -69,6 +72,8 @@ ERRORS=0
 printf "%-30s %s\n" "Skill" "Status"
 printf "%-30s %s\n" "-----" "------"
 
+CHANGES=0
+
 for name in "${SKILL_NAMES[@]}"; do
   src="$SOURCE/$name"
   dst="$DEST/$name"
@@ -76,6 +81,22 @@ for name in "${SKILL_NAMES[@]}"; do
   if [[ ! -d "$src" || ! -f "$src/SKILL.md" ]]; then
     printf "%-30s %s\n" "$name" "✗ not found in project"
     ((ERRORS++))
+    continue
+  fi
+
+  if $DRY_RUN; then
+    if [[ -d "$dst" ]]; then
+      if [[ "$FORCE" == "true" ]]; then
+        printf "%-30s %s\n" "$name" "[dry-run] WOULD overwrite"
+        CHANGES=$((CHANGES + 1))
+      else
+        printf "%-30s %s\n" "$name" "⊘ already exists (would skip)"
+        ((SKIPPED++))
+      fi
+    else
+      printf "%-30s %s\n" "$name" "[dry-run] WOULD copy"
+      CHANGES=$((CHANGES + 1))
+    fi
     continue
   fi
 
@@ -98,7 +119,24 @@ done
 
 echo ""
 echo "═══════════"
+
+if $DRY_RUN; then
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
+  echo "Would copy: $CHANGES  Would skip: $SKIPPED  Errors: $ERRORS"
+  exit 0
+fi
+
 echo "Copied: $COPIED  Skipped: $SKIPPED  Errors: $ERRORS"
+
+if [[ "$ERRORS" -eq 0 ]]; then
+  echo "APPLY_RESULT=OK"
+else
+  echo "APPLY_RESULT=PARTIAL"
+fi
 
 if [[ "$COPIED" -gt 0 ]]; then
   echo ""

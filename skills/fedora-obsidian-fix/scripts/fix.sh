@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 # fix.sh — Apply the Obsidian Snap portal fix for Fedora Wayland
-# Usage: bash fix.sh
+# Usage: bash fix.sh [--dry-run]
 # Exit codes: 0 = success, 1 = failure, 2 = usage error
 set -euo pipefail
+
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
 
 WRAPPER="$HOME/.local/bin/obsidian-wrapper.sh"
 USER_DESKTOP="$HOME/.local/share/applications/obsidian_md.obsidian.Obsidian.desktop"
@@ -26,6 +37,30 @@ if [[ ! -f "$SNAP_DESKTOP" ]]; then
   echo "❌ Snap desktop file not found at: $SNAP_DESKTOP"
   echo "   The snap package structure may have changed."
   exit 1
+fi
+
+# --- Dry-run check ---
+if $DRY_RUN; then
+  [[ -f "$WRAPPER" ]] \
+    && echo "[dry-run] NO CHANGE — wrapper script already exists" \
+    || { echo "[dry-run] WOULD: Create wrapper script $WRAPPER"; CHANGES=$((CHANGES + 1)); }
+  [[ -f "$USER_DESKTOP" ]] \
+    && echo "[dry-run] NO CHANGE — desktop override already exists" \
+    || { echo "[dry-run] WOULD: Create desktop override $USER_DESKTOP"; CHANGES=$((CHANGES + 1)); }
+  if [[ -f "$SNAP_DEFAULT_DESKTOP" ]] && [[ ! -f "$SNAP_DEFAULT_OVERRIDE" ]]; then
+    echo "[dry-run] WOULD: Shadow competing Snap .desktop file"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — Snap shadow already handled"
+  fi
+  echo ""
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
+  echo "Changes: ${CHANGES}"
+  exit 0
 fi
 
 # Step 1: Create wrapper script

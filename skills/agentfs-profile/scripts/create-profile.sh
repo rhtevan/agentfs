@@ -15,6 +15,25 @@
 
 set -euo pipefail
 
+# Dry-run support
+DRY_RUN=false
+CHANGES=0
+ERRORS=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
+
+# Strip --dry-run/--check from positional args
+POSITIONAL=()
+for arg in "$@"; do
+  case "$arg" in --dry-run|--check) ;; *) POSITIONAL+=("$arg") ;; esac
+done
+set -- "${POSITIONAL[@]+"${POSITIONAL[@]}"}"
+
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
@@ -56,6 +75,41 @@ if [[ ! -d "$AGENTS/profiles" ]]; then
 fi
 
 echo "[agentfs-profile] Creating profile '$PROFILE_NAME' in $PROFILE_DIR"
+
+# Dry-run: check what would be created
+if $DRY_RUN; then
+  if [[ -d "$PROFILE_DIR" ]]; then
+    echo "[dry-run] NO CHANGE — profile directory already exists"
+  else
+    echo "[dry-run] WOULD: Create $PROFILE_DIR/memories/"
+    CHANGES=$((CHANGES + 1))
+  fi
+  [[ -f "$PROFILE_DIR/SOUL.md" ]] \
+    && echo "[dry-run] NO CHANGE — SOUL.md already exists" \
+    || { echo "[dry-run] WOULD: Create SOUL.md"; CHANGES=$((CHANGES + 1)); }
+  [[ -f "$PROFILE_DIR/recipe.yaml" ]] \
+    && echo "[dry-run] NO CHANGE — recipe.yaml already exists" \
+    || { echo "[dry-run] WOULD: Create recipe.yaml"; CHANGES=$((CHANGES + 1)); }
+  [[ -f "$PROFILE_DIR/memories/USER.md" ]] \
+    && echo "[dry-run] NO CHANGE — memories/USER.md already exists" \
+    || { echo "[dry-run] WOULD: Create memories/USER.md"; CHANGES=$((CHANGES + 1)); }
+  [[ -f "$PROFILE_DIR/memories/MEMORY.md" ]] \
+    && echo "[dry-run] NO CHANGE — memories/MEMORY.md already exists" \
+    || { echo "[dry-run] WOULD: Create memories/MEMORY.md"; CHANGES=$((CHANGES + 1)); }
+  # Check AGENTS.md registration
+  if [[ -f "$ROOT/AGENTS.md" ]] && ! grep -q "| $PROFILE_NAME " "$ROOT/AGENTS.md" 2>/dev/null; then
+    echo "[dry-run] WOULD: Register profile in AGENTS.md"
+    CHANGES=$((CHANGES + 1))
+  fi
+  echo ""
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
+  echo "Changes: ${CHANGES}"
+  exit 0
+fi
 
 mkdir -p "$PROFILE_DIR/memories"
 
