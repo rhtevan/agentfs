@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-10 12:10
+- Add SOUL-AGENTS amplification principle: design guidance for when SOUL overlaps vs amplifies AGENTS.md rules, attention-bridge exception (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-11-06 12:22
 - Add State-Locking Keywords section: LOCKED keyword technique for persisting model-generated values across turns, diagnostic method using thinking blocks (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 

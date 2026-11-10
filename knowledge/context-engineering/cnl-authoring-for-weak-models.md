@@ -161,6 +161,36 @@ per-invocation directive.
 value across turns. Pair with an explicit negative: generate once,
 then LOCK + "do NOT [verb] a replacement/new/different [noun]."
 
+## SOUL-AGENTS Amplification Principle (v7.8.0, 2026-11-10)
+
+When SOUL.md (delivered via TOM at recency peak) and AGENTS.md rules
+(in the system prompt dead zone at 58-85%) address related concerns,
+the relationship should be **amplification**, not overlap or
+repetition.
+
+**Amplification** means: SOUL states the general principle; the
+AGENTS.md rule mechanizes a specific instance. SOUL covers the
+cases the rule doesn't reach.
+
+| SOUL Principle | AGENTS.md Rule | Relationship |
+|---------------|---------------|-------------|
+| Verify before acting | R2 Pre-Flight, R7 Dry-Run | SOUL covers conversational claims; rules cover task planning and scripts |
+| Verify before responding | R2 Validation Gate | SOUL covers any claim in any response; rule covers task completion |
+| Intellectual integrity | R4 Conflict Resolution | **Exception: intentional overlap.** SOUL primes disposition at recency; R4 provides procedure in dead zone. The overlap is attention-bridge reinforcement. |
+
+**When overlap is acceptable:** When the SOUL principle is at recency
+peak and the AGENTS.md rule is in the dead zone. The overlap bridges
+the attention gap — SOUL primes the behavior, the rule provides the
+procedure if the model retrieves it.
+
+**When overlap should be eliminated:** When both are at comparable
+attention positions, or when the SOUL principle merely restates the
+rule without generalizing it.
+
+**Design test:** For each SOUL principle, ask: "If the AGENTS.md rule
+were removed, would this principle still provide unique value?" If
+yes, it amplifies. If no, it merely overlaps.
+
 ## Implications
 
 - CNL is a necessary but insufficient condition for weak-model

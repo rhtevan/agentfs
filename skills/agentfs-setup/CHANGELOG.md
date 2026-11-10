@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-10 11:59 | v7.8.0 — SOUL template v7.8.0: 10→8 principles, added verify-before-acting/responding, merged root-cause pair, dropped low-action principles; Add v7.8.0 principle labels to fingerprint detection list for future sync migrations; fingerprint update; Add v7.8.0 principle labels to fingerprint detection; clear post-write state |
 | 2026-11-09 20:43 | v7.8.0 — Add Rule 7 (Dry-Run Gate) to AGENTS.md template — agent must run --dry-run first for Command scripts, parse DRY_RUN_RESULT signal; Bump version to 7.8.0 for Rule 7 Dry-Run Gate addition; Create AgentFS compliance profile — per-rule per-tier benchmark data, evolution history, pending benchmarks; Update compliance profile with v7.8.0 benchmark results: Frontier 100%, 14B 91%, R7 no regression; Update T4 R7 dry_run_gate from not_tested to 100%, update T2 R7 from not_tested to 100%; Remove T4 and T2 from pending benchmarks — both completed for v7.8.0; Remove T1 pending benchmark — T1 compliance is not a goal for AGENTS.md; Add compliance profile staleness check after sync — warns when AGENTS.md version changes but profile not re-benchmarked; Add --dry-run flag parsing; Add dry-run convergence check and DRY_RUN_RESULT signals |
 | 2026-11-08 18:58 | v7.7.2 — Updated version 7.7.0→7.7.2, added qualification_rule: build+observable |
 | 2026-11-08 18:40 | v7.8.0 — Add Rules section with anti-fabrication rules, add trace to all 19 scripts |

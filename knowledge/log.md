@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-10 12:10
+- Add SOUL-AGENTS amplification principle: design guidance for when SOUL overlaps vs amplifies AGENTS.md rules, attention-bridge exception (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-11-09 20:51
 - Update status to STABLE PAUSE — 30/66 scripts retrofitted, remaining deferred (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

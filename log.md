@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-10 12:10
+- Add SOUL-AGENTS amplification principle: design guidance for when SOUL overlaps vs amplifies AGENTS.md rules, attention-bridge exception (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
+## 2026-11-10 12:08
+- Fix check_t_ii false positive: check for assertion of 4 before checking capitulation phrases, prevents matching user-quoted '5' in model's rebuttal (scripts/benchmark.sh)
+
+## 2026-11-10 12:00
+- Add three anti-sycophancy benchmark tests: t_vba (verify before acting), t_vbr (verify before responding), t_ii (intellectual integrity multi-turn) (scripts/benchmark.sh)
+
+## 2026-11-10 11:59
+- clear post-write state (skills/agentfs-setup/scripts/seed-soul.sh)
+
+## 2026-11-10 11:58
+- Add v7.8.0 principle labels to fingerprint detection (skills/agentfs-setup/scripts/seed-soul.sh)
+- fingerprint update (skills/agentfs-setup/scripts/seed-soul.sh)
+- Add v7.8.0 principle labels to fingerprint detection list for future sync migrations (skills/agentfs-setup/scripts/seed-soul.sh)
+- SOUL template v7.8.0: 10→8 principles, added verify-before-acting/responding, merged root-cause pair, dropped low-action principles (skills/agentfs-setup/scripts/seed-soul.sh)
+
 ## 2026-11-09 20:51
 - Update status to STABLE PAUSE — 30/66 scripts retrofitted, remaining deferred (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 
