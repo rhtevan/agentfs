@@ -3,7 +3,7 @@ name: agentfs-ctx-chk
 description: >
   audit context, check context, context audit
 metadata:
-  version: "1.3.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [agentfs, context, audit, optimization, guardrails]
 user-invocable: true

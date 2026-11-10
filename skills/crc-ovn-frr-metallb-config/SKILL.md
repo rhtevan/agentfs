@@ -3,7 +3,7 @@ name: crc-ovn-frr-metallb-config
 description: >
   setup ovn frr, setup metallb, bgp metallb
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [openshift, crc, networking, ovn, bgp, metallb]
 ---

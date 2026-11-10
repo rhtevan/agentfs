@@ -4,7 +4,7 @@ description: >
   configure goose litellm, goose litellm provider
 platforms: ['linux']
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
   model-tier: T3
   tags: [goose, litellm, custom-provider, redhat, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]

@@ -201,6 +201,16 @@ if [[ -n "$SKILL_DIR" ]]; then
   if [[ -n "$VERSION" ]]; then
     echo "[post-write] Updating changelog: $SKILL_DIR/CHANGELOG.md v$VERSION"
     bash "$SCRIPT_DIR/merge-changelog-entry.sh" "$SKILL_DIR/CHANGELOG.md" "$VERSION" "$CHANGELOG_DESCRIPTION"
+
+    # Also update version: in SKILL.md frontmatter to stay in sync
+    SKILL_MD="$SKILL_DIR/SKILL.md"
+    if [[ -f "$SKILL_MD" ]]; then
+      CURRENT_VER=$(grep -oP '^\s*version:\s*"\K[^"]+' "$SKILL_MD" 2>/dev/null || echo "")
+      if [[ -n "$CURRENT_VER" && "$CURRENT_VER" != "$VERSION" ]]; then
+        sed -i "s/^\(\s*version:\s*\"\)${CURRENT_VER}\"/\1${VERSION}\"/" "$SKILL_MD"
+        echo "[post-write] Updated SKILL.md version: $CURRENT_VER → $VERSION"
+      fi
+    fi
   else
     echo "[post-write] ℹ️  Supporting file modified ($FILE_IN_SKILL) — no version bump required."
   fi

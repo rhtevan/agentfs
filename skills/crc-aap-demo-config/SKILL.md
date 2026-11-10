@@ -3,7 +3,7 @@ name: crc-aap-demo-config
 description: >
   configure aap demo, setup aap demo, aap demo
 metadata:
-  version: "1.0.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [openshift, crc, aap-demo, configuration, safety, preflight]
 ---

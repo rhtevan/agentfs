@@ -3,7 +3,7 @@ name: agentfs-profile
 description: >
   create profile, new agent profile, add agent
 metadata:
-  version: "1.11.0"
+  version: "1.12.0"
   model-tier: T2
   tags: [agentfs, profiles, multi-agent, identity]
 ---

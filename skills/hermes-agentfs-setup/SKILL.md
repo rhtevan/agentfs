@@ -4,7 +4,7 @@ description: >
   configure hermes agentfs, hermes skills dirs, hermes agentfs
 platforms: ['linux']
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   model-tier: T2
   tags: [hermes, agentfs, configuration, skills, compatibility]
   related_skills: [agentfs-setup, hermes-litellm-provider, hermes-desktop-fixes]

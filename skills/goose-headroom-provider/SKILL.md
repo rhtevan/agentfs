@@ -4,7 +4,7 @@ description: >
   configure goose headroom, goose headroom provider
 platforms: ['linux']
 metadata:
-  version: "2.2.0"
+  version: "2.0.0"
   model-tier: T3
   tags: [goose, headroom, custom-provider, context-optimization, compression, configuration]
   related_skills: [headroom-litellm-proxy, headroom-proxy-status, goose-litellm-provider, litellm-proxy-status]

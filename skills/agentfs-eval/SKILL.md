@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.5.0"
+  version: "2.6.0"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---

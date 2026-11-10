@@ -3,7 +3,7 @@ name: crc-nmstate-config
 description: >
   install nmstate, configure nmstate, nmstate operator
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   model-tier: T3
   tags: [openshift, crc, networking, nmstate, operator]
 ---

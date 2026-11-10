@@ -6,7 +6,7 @@ argument-hint: "<command-name> — the CLI command to generate bash completion f
 compatibility: "Any agent with shell access on a system with bash-completion installed"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.2.0"
   model-tier: T4
   tags: [bash, completion, cli, shell, automation]
 user-invocable: true

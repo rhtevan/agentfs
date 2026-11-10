@@ -3,7 +3,7 @@ name: goose-desktop-env-fix
 description: >
   fix goose desktop, goose shell environment, goose env fix
 metadata:
-  version: "1.5.0"
+  version: "1.7.0"
   model-tier: T4
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
 ---

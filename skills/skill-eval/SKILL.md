@@ -7,7 +7,7 @@ argument-hint: "hey check skill <name> | hey eval skill <name> | hey assess skil
 compatibility: "bash, shellcheck (optional), yq, jq"
 metadata:
   author: agentfs
-  version: "2.2.0"
+  version: "2.5.0"
   model-tier: T4
   tags: [agentfs, skills, evaluation, quality, audit, qoo, operable]
 user-invocable: true

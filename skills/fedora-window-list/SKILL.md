@@ -6,7 +6,7 @@ argument-hint: "{enable|disable|status}"
 compatibility: "Fedora with GNOME desktop"
 metadata:
   author: agentfs
-  version: "1.2.0"
+  version: "1.3.0"
   model-tier: T1
   tags: [fedora, gnome, desktop, taskbar]
 user-invocable: true

@@ -3,7 +3,7 @@ name: goose-setup
 description: >
   setup goose, goose global instructions, goose persistent instructions
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
   model-tier: T3
   tags: [goose, config, instructions, persistent]
 ---

@@ -7,7 +7,7 @@ argument-hint: "'start crc', 'stop crc', 'clean crc'"
 compatibility: "Requires crcstart/crcstop wrappers installed via crc-cmd skill"
 metadata:
   author: agentfs
-  version: "2.1.0"
+  version: "1.1.0"
   model-tier: T3
   tags: [crc, openshift, openshift-local, cluster, operations, cleanup]
 user-invocable: true

@@ -3,7 +3,7 @@ name: crc-cmd
 description: >
   install crcstart, install crcstop, crc wrapper
 metadata:
-  version: "1.0.0"
+  version: "1.2.0"
   model-tier: T3
   tags: [openshift, crc, wrapper, shell]
 ---

@@ -5,7 +5,7 @@ description: >
   clean desktop sessions, clean terminal sessions
 metadata:
   author: agentfs
-  version: "3.1.0"
+  version: "3.2.0"
   model-tier: T4
   tags: [goose, recipe, session, cleanup, orphan, desktop, terminal]
 ---

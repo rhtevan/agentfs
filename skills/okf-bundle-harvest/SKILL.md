@@ -6,7 +6,7 @@ argument-hint: "Optionally specify project paths: 'harvest from ~/projects/foo a
 compatibility: "Requires AgentFS setup (agentfs-setup skill) with MEMORY.md files"
 metadata:
   author: agentfs
-  version: "7.3.0"
+  version: "2.1.0"
   model-tier: T3
   tags: [agentfs, okf, knowledge, memory, distillation, graduation]
 user-invocable: true

@@ -3,7 +3,7 @@ name: skill-merge
 description: >
   merge skills, copy skills to user, promote skills
 metadata:
-  version: "1.3.0"
+  version: "1.2.0"
   model-tier: T1
   tags: [agentfs, skills, merge, project, user]
 ---
