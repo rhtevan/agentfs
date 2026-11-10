@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 # setup-kgm.sh — Add KG Memory MCP extension to Goose config (disabled by default)
+# Usage: bash setup-kgm.sh [--dry-run]
 set -euo pipefail
+
+DRY_RUN=false
+CHANGES=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
 
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+trace_init "goose-kgm" "1.8.0" 2>/dev/null || true
 
 CONFIG="$HOME/.config/goose/config.yaml"
 JSONL_DIR="$HOME/.agents/knowledge"
@@ -22,6 +32,18 @@ fi
 if grep -q 'knowledge-graph-memory\|knowledgegraphmemory' "$CONFIG" 2>/dev/null; then
   echo "✅ KGM extension already configured in $CONFIG"
   echo "   Use enable-kgm.sh to enable it."
+  if $DRY_RUN; then echo "DRY_RUN_RESULT=CONVERGED"; fi
+  exit 0
+fi
+
+if $DRY_RUN; then
+  echo "[dry-run] WOULD: Add knowledgegraphmemory extension to $CONFIG"
+  CHANGES=$((CHANGES + 1))
+  echo "[dry-run] WOULD: Ensure symlinks for server-memory"
+  CHANGES=$((CHANGES + 1))
+  echo ""
+  echo "DRY_RUN_RESULT=PENDING"
+  echo "Changes: ${CHANGES}"
   exit 0
 fi
 

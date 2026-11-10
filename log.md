@@ -2,7 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 20:46
+- Add dry-run check block with DRY_RUN_RESULT signals (skills/goose-setup/scripts/setup.sh)
+- Add --dry-run flag parsing (skills/goose-setup/scripts/setup.sh)
+
+## 2026-11-09 20:45
+- Add dry-run convergence check and DRY_RUN_RESULT signals (skills/goose-kgm/scripts/setup-kgm.sh)
+- Add --dry-run flag parsing (skills/goose-kgm/scripts/setup-kgm.sh)
+- Add DRY_RUN_RESULT summary at end of script (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+
 ## 2026-11-09 20:44
+- Wrap symlink mutations in dry-run guards (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+- Add --dry-run flag parsing (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
 - Add dry-run exit block with DRY_RUN_RESULT signal (skills/goose-litellm-provider/scripts/restore.sh)
 
 ## 2026-11-09 20:43

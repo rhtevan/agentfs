@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 20:46 | v1.6.0 — Add --dry-run flag parsing; Add dry-run check block with DRY_RUN_RESULT signals |
 | 2026-11-08 23:02 | v1.5.0 — Add Rules + trace; Create setup script for persistent instructions |
 | 2026-11-05 19:31 | v1.4.0 — Add model-tier to frontmatter |
 

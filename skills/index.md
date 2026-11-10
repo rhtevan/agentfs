@@ -4,10 +4,11 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-11-09 20:46 |
+| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-09 20:45 |
 | [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | configure goose litellm, goose litellm provider | 2026-11-09 20:44 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-09 20:43 |
 | [goose-skupper-provider](./goose-skupper-provider/SKILL.md) | goose, provider, skupper, van, granite, vllm, custom-provider, rhel-ai, rhtevan-work | setup goose skupper provider, teardown skupper provider, recreate skupper provider, test skupper provider, check skupper provider | 2026-11-09 20:43 |
-| [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-09 20:42 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-09 20:42 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | configure hermes litellm, hermes litellm provider | 2026-11-09 20:34 |
 | [skill-merge](./skill-merge/SKILL.md) | agentfs, skills, merge, project, user | merge skills, copy skills to user, promote skills | 2026-11-09 20:34 |
@@ -28,7 +29,6 @@
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | goose, headroom, custom-provider, context-optimization, compression, configuration | configure goose headroom, goose headroom provider | 2026-11-09 18:49 |
 | [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-11-09 12:02 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider | 2026-11-09 12:02 |
-| [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-11-09 12:02 |
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | headroom, proxy, litellm, systemd, compression, context-optimization, installation | install headroom, setup headroom proxy, headroom service | 2026-11-09 12:02 |
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health | 2026-11-09 12:01 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex | 2026-11-09 12:01 |

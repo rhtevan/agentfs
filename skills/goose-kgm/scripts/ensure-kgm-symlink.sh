@@ -14,12 +14,24 @@
 # Usage: bash ensure-kgm-symlink.sh [--quiet]
 set -euo pipefail
 
+DRY_RUN=false
+CHANGES=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
+  esac
+done
+
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+trace_init "goose-kgm" "1.8.0" 2>/dev/null || true
 
-QUIET="${1:-}"
+QUIET=""
+for arg in "$@"; do
+  [[ "$arg" == "--quiet" ]] && QUIET="--quiet"
+done
 JSONL_TARGET="$HOME/.agents/knowledge/.kgm-index.jsonl"
 
 # Search all known npx cache locations
@@ -42,18 +54,26 @@ for NPX_DIR in "${NPX_DIRS[@]}"; do
       if [[ "$LINK_TARGET" == "$EXPECTED_TARGET" ]]; then
         [[ "$QUIET" == "--quiet" ]] || echo "✅ Symlink OK: $SERVER_MEM → $JSONL_TARGET"
       else
-        # Symlink points to wrong target — fix it
-        rm "$SERVER_MEM"
-        ln -s "$JSONL_TARGET" "$SERVER_MEM"
-        [[ "$QUIET" == "--quiet" ]] || echo "🔧 Fixed symlink: $SERVER_MEM → $JSONL_TARGET (was → $LINK_TARGET)"
+        if $DRY_RUN; then
+          echo "[dry-run] WOULD: Fix symlink $SERVER_MEM (currently → $LINK_TARGET)"
+          CHANGES=$((CHANGES + 1))
+        else
+          rm "$SERVER_MEM"
+          ln -s "$JSONL_TARGET" "$SERVER_MEM"
+          [[ "$QUIET" == "--quiet" ]] || echo "🔧 Fixed symlink: $SERVER_MEM → $JSONL_TARGET (was → $LINK_TARGET)"
+        fi
       fi
       FOUND=1
     elif [[ -f "$SERVER_MEM" ]]; then
-      # Regular file — npx reinstalled and overwrote our symlink
-      cp "$SERVER_MEM" "${SERVER_MEM}.bak"
-      rm "$SERVER_MEM"
-      ln -s "$JSONL_TARGET" "$SERVER_MEM"
-      [[ "$QUIET" == "--quiet" ]] || echo "🔧 Replaced regular file with symlink: $SERVER_MEM → $JSONL_TARGET"
+      if $DRY_RUN; then
+        echo "[dry-run] WOULD: Replace regular file with symlink: $SERVER_MEM"
+        CHANGES=$((CHANGES + 1))
+      else
+        cp "$SERVER_MEM" "${SERVER_MEM}.bak"
+        rm "$SERVER_MEM"
+        ln -s "$JSONL_TARGET" "$SERVER_MEM"
+        [[ "$QUIET" == "--quiet" ]] || echo "🔧 Replaced regular file with symlink: $SERVER_MEM → $JSONL_TARGET"
+      fi
       FOUND=1
     fi
   done < <(find "$NPX_DIR" -path "*/server-memory/dist/memory.jsonl" 2>/dev/null)
@@ -61,4 +81,13 @@ done
 
 if [[ "$FOUND" -eq 0 ]]; then
   [[ "$QUIET" == "--quiet" ]] || echo "⚠️  No server-memory package found in npx cache. Run the extension once to install, then re-run."
+fi
+
+if $DRY_RUN; then
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
+  echo "Changes: ${CHANGES}"
 fi

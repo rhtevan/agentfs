@@ -23,7 +23,12 @@ INSTRUCTIONS="$CONFIG_DIR/instructions.md"
 CONFIG_YAML="$CONFIG_DIR/config.yaml"
 
 CHECK=false
-[[ "${1:-}" == "--check" ]] && CHECK=true
+DRY_RUN=false
+CHANGES=0
+case "${1:-}" in
+  --check) CHECK=true ;;
+  --dry-run) DRY_RUN=true ;;
+esac
 
 echo "=== Goose Persistent Instructions Setup ==="
 echo ""
@@ -57,6 +62,29 @@ if [[ "$CHECK" == true ]]; then
     [[ $(wc -l < "$INSTRUCTIONS") -gt 20 ]] && echo "   ... ($(wc -l < "$INSTRUCTIONS") lines total)"
   fi
   trace_end 2>/dev/null || true
+  exit 0
+fi
+
+# Dry-run check
+if [[ "$DRY_RUN" == true ]]; then
+  [[ -f "$INSTRUCTIONS" ]] \
+    && echo "[dry-run] NO CHANGE — instructions.md already exists" \
+    || { echo "[dry-run] WOULD: Create $INSTRUCTIONS"; CHANGES=$((CHANGES + 1)); }
+  if [[ -f "$CONFIG_YAML" ]] && grep -q 'GOOSE_MOIM_MESSAGE_FILE' "$CONFIG_YAML" 2>/dev/null; then
+    echo "[dry-run] NO CHANGE — GOOSE_MOIM_MESSAGE_FILE already registered"
+  elif [[ -f "$CONFIG_YAML" ]]; then
+    echo "[dry-run] WOULD: Add GOOSE_MOIM_MESSAGE_FILE to config.yaml"
+    CHANGES=$((CHANGES + 1))
+  else
+    echo "[dry-run] NO CHANGE — config.yaml not found (cannot register)"
+  fi
+  echo ""
+  if [[ $CHANGES -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
+  echo "Changes: ${CHANGES}"
   exit 0
 fi
 

@@ -2,7 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
-| 2026-11-09 20:42 | v1.8.0 — Add --dry-run support with DRY_RUN_RESULT signals |
+| 2026-11-09 20:45 | v1.8.0 — Add --dry-run support with DRY_RUN_RESULT signals; Add --dry-run flag parsing; Wrap symlink mutations in dry-run guards; Add DRY_RUN_RESULT summary at end of script; Add --dry-run flag parsing; Add dry-run convergence check and DRY_RUN_RESULT signals |
 | 2026-11-08 22:57 | v1.7.0 — Add Rules + trace + bump to 1.7.0; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; CNL restructure Operations to Step workflow format; Remove internal descriptions from operation steps |
 | 2026-11-08 21:19 | v1.6.0 — Add anti-fabrication rules and CNL compliance for Observable qualification |
 | 2026-11-05 19:31 | v1.5.0 — Add model-tier to frontmatter |
