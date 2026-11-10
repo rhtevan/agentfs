@@ -748,6 +748,18 @@ ${RESULTS}
 
 REPORT
 
+# --- Cleanup benchmark sessions ---
+log "Cleaning up benchmark sessions..."
+goose session remove --regex "^benchmark_" --name dummy 2>/dev/null || true
+# Direct DB cleanup for any remaining benchmark sessions
+sqlite3 ~/.local/share/goose/sessions/sessions.db \
+  "DELETE FROM messages WHERE session_id IN (SELECT id FROM sessions WHERE LOWER(name) LIKE 'benchmark%');" 2>/dev/null || true
+sqlite3 ~/.local/share/goose/sessions/sessions.db \
+  "DELETE FROM usage_ledger WHERE session_id IN (SELECT id FROM sessions WHERE LOWER(name) LIKE 'benchmark%');" 2>/dev/null || true
+sqlite3 ~/.local/share/goose/sessions/sessions.db \
+  "DELETE FROM sessions WHERE LOWER(name) LIKE 'benchmark%';" 2>/dev/null || true
+log "Benchmark sessions cleaned up"
+
 log "Complete: $PASSED/$TOTAL passed (${PASS_RATE}%)"
 
 if [[ $FAILED -gt 0 ]]; then

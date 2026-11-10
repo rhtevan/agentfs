@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-10 12:17
+- Add post-run benchmark session cleanup: deletes benchmark sessions from goose session DB after each run (scripts/benchmark.sh)
+
 ## 2026-11-10 12:10
 - Add SOUL-AGENTS amplification principle: design guidance for when SOUL overlaps vs amplifies AGENTS.md rules, attention-bridge exception (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 
