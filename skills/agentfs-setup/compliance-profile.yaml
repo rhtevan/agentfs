@@ -1,0 +1,92 @@
+# AgentFS Compliance Profile
+# Updated whenever AGENTS.md template changes or new benchmarks run.
+# See: ~/.agents/knowledge/agentfs-engineering-evolution/benchmark-results.md
+
+schema_version: "1.0"
+agents_md_version: "7.8.0"
+compliance_target: "≥90%"
+
+# ── Validated Tiers ──────────────────────────────────────────────────────
+
+validated_tiers:
+  T4:
+    model: "claude-sonnet-4.6"
+    provider: "custom_redhat"
+    date: "2026-10-29"
+    harness_version: "v7.6.0"
+    runs: 6
+    pass: 6
+    overall: "100%"
+    per_rule:
+      R1_signal_dispatch: "100%"
+      R2_pre_flight: "100%"
+      R3_session_canary: "100%"
+      R4_conflict_resolution: "not_testable"
+      R5_checkpoint: "100%"
+      R6_scope_post_write: "100%"
+      R7_dry_run_gate: "100%"
+    failure_modes: []
+
+  T2:
+    model: "Qwen3-14B-FP8"
+    provider: "custom_skupper"
+    date: "2026-10-29"
+    harness_version: "v7.6.0"
+    runs: 30
+    pass: 28
+    overall: "93%"
+    per_rule:
+      R1_signal_dispatch: "100%"
+      R2_pre_flight: "100%"
+      R3_session_canary: "80%"
+      R4_conflict_resolution: "not_testable"
+      R5_checkpoint: "100%"
+      R6_scope_post_write: "100%"
+      R7_dry_run_gate: "not_tested"
+    failure_modes:
+      - id: FM5
+        rule: R3
+        rate: "20%"
+        description: >
+          Model-level attention failure on turn 1 — no canary generated.
+          Not attributable to AGENTS.md rule complexity.
+        mitigation: "Model-level. Shorter/simpler canary rule may help."
+      - id: FM_chain
+        rule: R1
+        rate: "7%"
+        description: >
+          Dispatch succeeds but shell execution skipped on skill load.
+          Stochastic — no structural root cause identified.
+        mitigation: "No fix. Stochastic model behavior."
+
+# ── Summary ──────────────────────────────────────────────────────────────
+
+minimum_tier: T2
+minimum_tier_rate: "93%"
+
+# ── Evolution History ────────────────────────────────────────────────────
+# Tracks how compliance changed across AGENTS.md versions.
+
+evolution:
+  - version: "7.5.1"
+    date: "2026-10-27"
+    T4_overall: "83%"
+    T2_overall: "66%"
+    note: "R3 (Post-Write) 0% on both models — effect-based rule failure"
+
+  - version: "7.6.0"
+    date: "2026-10-29"
+    T4_overall: "100%"
+    T2_overall: "93%"
+    note: "Self-contained actions principle — R3 merged into R6, +27pp on T2"
+
+  - version: "7.8.0"
+    date: "2026-11-09"
+    T4_overall: "100%"
+    T2_overall: "91%"
+    note: "Added Rule 7 (Dry-Run Gate) — no regression. T1 canary FM5 stochastic."
+
+# ── Pending ──────────────────────────────────────────────────────────────
+
+pending_benchmarks: []
+# T1 compliance is not a goal — AGENTS.md requires T2+ cognitive ability.

@@ -203,3 +203,15 @@ else
 fi
 
 echo "[sync-agents-md] ✅ Synced $AGENTS (v$CURRENT_VERSION → v$TEMPLATE_VERSION, scope: $AGENTFS_SCOPE)"
+
+# --- Compliance profile staleness check ---
+COMPLIANCE_PROFILE="${HOME}/.agents/skills/agentfs-setup/compliance-profile.yaml"
+if [[ -f "$COMPLIANCE_PROFILE" ]]; then
+  PROFILE_VERSION=$(grep 'agents_md_version:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"')
+  if [[ "$PROFILE_VERSION" != "$TEMPLATE_VERSION" ]]; then
+    echo ""
+    echo "[sync-agents-md] ⚠️  Compliance profile is STALE (v${PROFILE_VERSION} ≠ v${TEMPLATE_VERSION})"
+    echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T4"
+    echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T2"
+  fi
+fi

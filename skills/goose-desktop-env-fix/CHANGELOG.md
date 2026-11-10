@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 18:50 | v1.7.0 — Migrate --check to --dry-run contract with DRY_RUN_RESULT signals |
 | 2026-11-09 10:47 | v1.6.0 — New script: install goose-shell wrapper, environment.d config, desktop entry fix with --check mode and trace instrumentation |
 | 2026-11-08 22:50 | v1.5.0 — Add Rules + trace |
 | 2026-11-05 19:31 | v1.4.0 — Add model-tier to frontmatter |

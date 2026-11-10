@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # setup.sh — Clone and configure aap-demo for CRC deployment
-# Usage: setup.sh [--check] [--target DIR]
+# Usage: setup.sh [--dry-run] [--target DIR]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "crc-aap-demo-config" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
+DRY_RUN=false
 TARGET_DIR="${HOME}/app/playground/aap-demo"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --check) CHECK_ONLY=true; shift ;;
+    --dry-run) DRY_RUN=true; shift ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
     --target) TARGET_DIR="$2"; shift 2 ;;
     *) shift ;;
   esac
@@ -44,7 +45,7 @@ if [[ -d "$TARGET_DIR" ]]; then
     echo "⚠ Directory exists but is not aap-demo repo: $TARGET_DIR"
   fi
 else
-  if $CHECK_ONLY; then
+  if $DRY_RUN; then
     echo "⚠ aap-demo not cloned. Would clone to: $TARGET_DIR"
   else
     echo "  Cloning aap-demo..."
@@ -90,9 +91,17 @@ fi
 
 # ── Summary ──────────────────────────────────────────────────────────────
 echo ""
-if $CHECK_ONLY; then
-  echo "✅ Pre-flight check complete."
+if $DRY_RUN; then
+  if [[ -d "$TARGET_DIR/.git" ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+    echo "✅ AAP demo repo already cloned. No changes needed."
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+    echo "Would clone repo and configure. Run without --dry-run to apply."
+  fi
+  exit 0
 else
+  echo "APPLY_RESULT=OK"
   echo "✅ Setup complete. Review .env configuration before running aap-demo."
 fi
 

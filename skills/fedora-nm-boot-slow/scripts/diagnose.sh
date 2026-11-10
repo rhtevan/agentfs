@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # diagnose.sh — Diagnose NM-wait-online boot delay on Fedora
-# Usage: diagnose.sh [--check] [--fix]
+# Usage: diagnose.sh [--dry-run] [--fix]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "fedora-nm-boot-slow" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
+DRY_RUN=false
 APPLY_FIX=false
 
 for arg in "$@"; do
   case "$arg" in
-    --check) CHECK_ONLY=true ;;
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
     --fix) APPLY_FIX=true ;;
   esac
 done
@@ -122,6 +123,14 @@ nmcli -t -f NAME,connection.autoconnect con show 2>/dev/null | grep ':yes' | cut
 done
 
 echo ""
+# Note: diagnose.sh is a Query (read-only diagnostic). --dry-run is
+# supported for consistency. Always CONVERGED since no mutations.
+if $DRY_RUN; then
+  echo "DRY_RUN_RESULT=CONVERGED"
+  echo "Diagnosis is read-only. No changes to apply."
+  exit 0
+fi
+
 echo "=== Diagnosis complete ==="
 
 trace_end 2>/dev/null || true

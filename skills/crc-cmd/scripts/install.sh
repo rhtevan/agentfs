@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # install.sh — Install crcstart and crcstop wrapper commands
-# Usage: install.sh [--check]
+# Usage: install.sh [--dry-run]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "crc-cmd" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
-[[ "${1:-}" == "--check" ]] && CHECK_ONLY=true
+DRY_RUN=false
+[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
+if [[ "${1:-}" == "--check" ]]; then echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; fi
 
 BIN_DIR="${HOME}/.local/bin"
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -28,7 +29,7 @@ fi
 if [[ -d "$BIN_DIR" ]]; then
   echo "✓ $BIN_DIR exists"
 else
-  if $CHECK_ONLY; then
+  if $DRY_RUN; then
     echo "⚠ $BIN_DIR does not exist (would create)"
   else
     mkdir -p "$BIN_DIR"
@@ -53,10 +54,10 @@ if [[ -f "$CRCSTOP" ]]; then
     echo "  ✓ Is executable"
   else
     echo "  ⚠ Not executable"
-    $CHECK_ONLY || chmod +x "$CRCSTOP"
+    $DRY_RUN || chmod +x "$CRCSTOP"
   fi
 else
-  if $CHECK_ONLY; then
+  if $DRY_RUN; then
     echo "⚠ crcstop not installed"
   else
     # Extract crcstop from SKILL.md
@@ -78,10 +79,10 @@ if [[ -f "$CRCSTART" ]]; then
     echo "  ✓ Is executable"
   else
     echo "  ⚠ Not executable"
-    $CHECK_ONLY || chmod +x "$CRCSTART"
+    $DRY_RUN || chmod +x "$CRCSTART"
   fi
 else
-  if $CHECK_ONLY; then
+  if $DRY_RUN; then
     echo "⚠ crcstart not installed"
   else
     echo "  Installing crcstart from SKILL.md..."
@@ -96,12 +97,25 @@ fi
 trace_step 4 "verify" 0 "" 2>/dev/null || true
 
 echo ""
-if [[ -x "$CRCSTOP" && -x "$CRCSTART" ]]; then
-  echo "✅ Both crcstart and crcstop are installed and executable."
-  echo "  crcstart: $CRCSTART"
-  echo "  crcstop:  $CRCSTOP"
+if $DRY_RUN; then
+  if [[ -x "$CRCSTOP" && -x "$CRCSTART" ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+    echo "✅ Both crcstart and crcstop are installed. No changes needed."
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+    echo "Installation needed. Run without --dry-run to install."
+  fi
+  exit 0
 else
-  echo "⚠ Installation incomplete. Run without --check to install."
+  if [[ -x "$CRCSTOP" && -x "$CRCSTART" ]]; then
+    echo "APPLY_RESULT=OK"
+    echo "✅ Both crcstart and crcstop are installed and executable."
+    echo "  crcstart: $CRCSTART"
+    echo "  crcstop:  $CRCSTOP"
+  else
+    echo "APPLY_RESULT=PARTIAL"
+    echo "⚠ Installation incomplete. Review above."
+  fi
 fi
 
 trace_end 2>/dev/null || true

@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # audit.sh — Inventory agent context sources and check for issues
-# Usage: audit.sh [--check] [PROJECT_ROOT]
+# Usage: audit.sh [--dry-run] [PROJECT_ROOT]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "agentfs-ctx-chk" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
+DRY_RUN=false
 PROJECT_ROOT="${1:-.}"
 
 for arg in "$@"; do
-  [[ "$arg" == "--check" ]] && CHECK_ONLY=true
+  [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
+  if [[ "$arg" == "--check" ]]; then echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; fi
 done
 
 # Remove --check from positional if present
@@ -166,6 +167,14 @@ fi
 echo ""
 
 # ── Summary ──────────────────────────────────────────────────────────────
+# Note: audit.sh is a Query (read-only). --dry-run is a no-op but
+# supported for consistency. Output signals match the contract.
+if $DRY_RUN; then
+  echo "DRY_RUN_RESULT=CONVERGED"
+  echo "Audit is read-only. No changes to apply."
+  exit 0
+fi
+
 if [[ $ISSUES -eq 0 ]]; then
   echo "✅ Context audit complete. No issues found."
 else

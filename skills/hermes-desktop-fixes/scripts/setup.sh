@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # setup.sh — Apply Hermes Desktop fixes (env, desktop entry, patch system)
-# Usage: setup.sh [--check] [--skip-patches]
+# Usage: setup.sh [--dry-run] [--skip-patches]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "hermes-desktop-fixes" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
+DRY_RUN=false
 SKIP_PATCHES=false
 
 for arg in "$@"; do
   case "$arg" in
-    --check) CHECK_ONLY=true ;;
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
     --skip-patches) SKIP_PATCHES=true ;;
   esac
 done
@@ -21,6 +22,7 @@ HERMES_DIR="${HOME}/.hermes"
 HERMES_AGENT="${HERMES_DIR}/hermes-agent"
 DESKTOP_FILE="${HOME}/.local/share/applications/com.nousresearch.hermes.desktop"
 ERRORS=0
+CHANGES=0
 
 echo "=== Hermes Desktop Fixes ==="
 echo ""
@@ -48,7 +50,7 @@ if [[ -f "${HERMES_DIR}/hermes-env.sh" ]]; then
   ERRORS=$((ERRORS + issues))
 else
   echo "⚠ hermes-env.sh not found"
-  if ! $CHECK_ONLY; then
+  if ! $DRY_RUN; then
     cat > "${HERMES_DIR}/hermes-env.sh" << 'ENVEOF'
 #!/usr/bin/env bash
 # hermes-env.sh — Environment fixes for Hermes Desktop
@@ -83,7 +85,7 @@ if [[ -f "${HERMES_DIR}/.env" ]]; then
   grep -q 'LC_CTYPE' "${HERMES_DIR}/.env" && echo "  ✓ LC_CTYPE set" || echo "  ⚠ Missing LC_CTYPE"
 else
   echo "⚠ .env not found"
-  if ! $CHECK_ONLY; then
+  if ! $DRY_RUN; then
     cat > "${HERMES_DIR}/.env" << 'DOTENVEOF'
 ELECTRON_DISABLE_SANDBOX=1
 LC_CTYPE=en_US.UTF-8
@@ -108,7 +110,7 @@ fi
 # Check for duplicate hermes.desktop
 if [[ -f "${HOME}/.local/share/applications/hermes.desktop" ]]; then
   echo "⚠ Duplicate hermes.desktop found (upstream-generated, causes duplicate icon)"
-  if ! $CHECK_ONLY; then
+  if ! $DRY_RUN; then
     rm -f "${HOME}/.local/share/applications/hermes.desktop"
     echo "  ✓ Removed duplicate"
   else
@@ -170,12 +172,22 @@ fi
 
 # ── Summary ──────────────────────────────────────────────────────────────
 echo ""
-if [[ $ERRORS -eq 0 ]]; then
-  echo "✅ All Hermes Desktop fixes are in place."
-else
-  if $CHECK_ONLY; then
-    echo "⚠ ${ERRORS} issue(s) found. Run without --check to apply fixes."
+if $DRY_RUN; then
+  if [[ $CHANGES -eq 0 && $ERRORS -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+    echo "✅ All Hermes Desktop fixes are in place. No changes needed."
   else
+    echo "DRY_RUN_RESULT=PENDING"
+    [[ $CHANGES -gt 0 ]] && echo "$CHANGES change(s) would be applied."
+    [[ $ERRORS -gt 0 ]] && echo "$ERRORS precondition issue(s) found."
+  fi
+  exit 0
+else
+  if [[ $ERRORS -eq 0 ]]; then
+    echo "APPLY_RESULT=OK"
+    echo "✅ All Hermes Desktop fixes are in place."
+  else
+    echo "APPLY_RESULT=PARTIAL"
     echo "⚠ Completed with ${ERRORS} warning(s). Review above."
   fi
 fi

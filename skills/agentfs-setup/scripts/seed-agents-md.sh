@@ -339,9 +339,23 @@ history. A changed canary signals dead-zone attention loss.
 4. When MEMORY.md accumulates ≥3 entries on same topic: suggest
    graduation via `hey harvest`.
 
+### 7. Dry-Run Gate
+
+**When:** A skill workflow step runs a Command script (any script
+that creates, modifies, or deletes files, services, or configuration).
+
+**Do:**
+1. If the script supports \`--dry-run\`, run it with \`--dry-run\` first.
+2. Parse stdout for the result signal:
+   - \`DRY_RUN_RESULT=CONVERGED\` → report "already configured", skip apply.
+   - \`DRY_RUN_RESULT=PENDING\` → proceed to apply (run without \`--dry-run\`).
+3. Exit code 0 from \`--dry-run\` means the dry-run itself succeeded,
+   NOT that no changes are needed. Read the output signal.
+4. Do NOT treat \`DRY_RUN_RESULT=PENDING\` as a failure.
+
 ## Signal Dispatch
 
-When the user message starts with `hey`, match the keywords and route:
+When the user message starts with \`hey\`, match the keywords and route:
 
 __SIGNAL_DISPATCH_TABLE__
 

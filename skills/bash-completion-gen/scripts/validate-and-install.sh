@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # validate-and-install.sh — Validate and install a bash completion script
-# Usage: validate-and-install.sh <completion-file> <command-name> [--check]
+# Usage: validate-and-install.sh <completion-file> <command-name> [--dry-run]
 # Version: 1.0.0
 set -euo pipefail
 
@@ -9,17 +9,18 @@ trace_init "bash-completion-gen" "1.0.0" 2>/dev/null || true
 
 COMPLETION_FILE="${1:-}"
 COMMAND_NAME="${2:-}"
-CHECK_ONLY=false
+DRY_RUN=false
 
 for arg in "$@"; do
-  [[ "$arg" == "--check" ]] && CHECK_ONLY=true
+  [[ "$arg" == "--dry-run" ]] && DRY_RUN=true
+  if [[ "$arg" == "--check" ]]; then echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; fi
 done
 
 if [[ -z "$COMPLETION_FILE" || -z "$COMMAND_NAME" ]]; then
-  echo "Usage: validate-and-install.sh <completion-file> <command-name> [--check]"
+  echo "Usage: validate-and-install.sh <completion-file> <command-name> [--dry-run]"
   echo "  <completion-file>  Path to the generated bash completion script"
   echo "  <command-name>     The CLI command being completed"
-  echo "  --check            Validate only, do not install"
+  echo "  --dry-run          Validate only, do not install"
   exit 1
 fi
 
@@ -98,9 +99,15 @@ elif [[ -f "$SYSTEM_EXISTING" ]]; then
   echo "ℹ System completion exists: $SYSTEM_EXISTING (user install will override)"
 fi
 
-if $CHECK_ONLY; then
+if $DRY_RUN; then
   echo ""
-  echo "── Check-only mode. No installation performed. ──"
+  if [[ -f "${INSTALL_DIR}/${COMMAND_NAME}" ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+    echo "Completion for '$COMMAND_NAME' already installed. No changes needed."
+  else
+    echo "DRY_RUN_RESULT=PENDING"
+    echo "[dry-run] WOULD INSTALL: ${INSTALL_DIR}/${COMMAND_NAME}"
+  fi
   trace_end 2>/dev/null || true
   exit 0
 fi

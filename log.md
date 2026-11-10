@@ -2,6 +2,64 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 19:46
+- Fix D6 drift: update template version stamp to 7.8.0, add Rule 7 Dry-Run Gate to rule table (README.md)
+- Fix D6 drift: update version 7.7.2→7.8.0, rule count 6→7 (README.md)
+
+## 2026-11-09 19:22
+- Update status: Obj 2 complete (Phases A+B+D), Obj 1 Phases 1+2 complete, Phase C removed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Add compliance profile staleness check after sync — warns when AGENTS.md version changes but profile not re-benchmarked (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-11-09 19:21
+- Create update-compliance.sh — runs benchmark, parses results, updates compliance-profile.yaml. Supports --check, --tier, --provider, --model, --runs.
+
+## 2026-11-09 19:20
+- Remove Phase C (T1 benchmark) — T1 compliance is not a goal for AGENTS.md (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-09 19:19
+- Remove T1 pending benchmark — T1 compliance is not a goal for AGENTS.md (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-09 18:54
+- Fix --dry-run arg parsing (skills/agentfs-ctx-chk/scripts/audit.sh)
+- Fix --dry-run arg parsing for non-case-style syntax (skills/crc-cmd/scripts/install.sh)
+- Fix usage help: --check → --dry-run (skills/bash-completion-gen/scripts/validate-and-install.sh)
+
+## 2026-11-09 18:53
+- Fix --dry-run arg parsing and usage help text (skills/bash-completion-gen/scripts/validate-and-install.sh)
+- Migrate --check to --dry-run with DRY_RUN_RESULT signals, deprecated --check alias (skills/bash-completion-gen/scripts/validate-and-install.sh)
+- Migrate --check to --dry-run with DRY_RUN_RESULT/APPLY_RESULT signals (skills/crc-aap-demo-config/scripts/setup.sh)
+
+## 2026-11-09 18:52
+- Migrate --check to --dry-run with DRY_RUN_RESULT/APPLY_RESULT signals (skills/crc-ovn-frr-metallb-config/scripts/setup.sh)
+- Migrate --check to --dry-run with DRY_RUN_RESULT signal (read-only diagnostic) (skills/fedora-nm-boot-slow/scripts/diagnose.sh)
+- Migrate --check to --dry-run with DRY_RUN_RESULT signal (read-only Query, always CONVERGED) (skills/agentfs-ctx-chk/scripts/audit.sh)
+
+## 2026-11-09 18:51
+- Migrate --check to --dry-run with DRY_RUN_RESULT/APPLY_RESULT signals (skills/crc-cmd/scripts/install.sh)
+- Complete --dry-run migration: DRY_RUN_RESULT signals, exit 0 on dry-run, APPLY_RESULT signals (skills/hermes-desktop-fixes/scripts/setup.sh)
+- Add CHANGES counter for --dry-run migration (summary block pending) (skills/hermes-desktop-fixes/scripts/setup.sh)
+
+## 2026-11-09 18:50
+- Migrate --check to --dry-run contract with DRY_RUN_RESULT signals (skills/goose-desktop-env-fix/scripts/setup.sh)
+
+## 2026-11-09 18:49
+- Migrate --check to --dry-run contract: structured output signals, exit 0 always, --check deprecated alias (skills/goose-headroom-provider/scripts/setup.sh)
+
+## 2026-11-09 18:48
+- Remove T4 and T2 from pending benchmarks — both completed for v7.8.0 (skills/agentfs-setup/compliance-profile.yaml)
+- Update T4 R7 dry_run_gate from not_tested to 100%, update T2 R7 from not_tested to 100% (skills/agentfs-setup/compliance-profile.yaml)
+- Update compliance profile with v7.8.0 benchmark results: Frontier 100%, 14B 91%, R7 no regression (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-09 18:36
+- Create AgentFS compliance profile — per-rule per-tier benchmark data, evolution history, pending benchmarks (skills/agentfs-setup/compliance-profile.yaml)
+- Bump version to 7.8.0 for Rule 7 Dry-Run Gate addition (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-09 18:35
+- Add Rule 7 (Dry-Run Gate) to AGENTS.md template — agent must run --dry-run first for Command scripts, parse DRY_RUN_RESULT signal (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-09 18:31
+- Action plan: dry-run pattern adoption + AgentFS compliance profile. Two objectives with phased execution, success criteria, risk mitigations. (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-09 12:12
 - Phase H complete: added Final Status section with portfolio summary, reclassifications, scripts created, patterns, and timeline (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 

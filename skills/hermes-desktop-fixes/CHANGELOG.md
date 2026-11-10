@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 18:51 | v3.5.0 — Add CHANGES counter for --dry-run migration (summary block pending); Complete --dry-run migration: DRY_RUN_RESULT signals, exit 0 on dry-run, APPLY_RESULT signals |
 | 2026-11-09 11:13 | v3.4.0 — New script: check/apply env fixes, desktop entry, launcher wrapper, patch system health with --check mode and trace; Added Workflow section with 3 CNL Steps (check/apply/verify) and Output Contract for Q improvement |
 | 2026-11-08 22:51 | v3.3.0 — Add Rules + trace |
 | 2026-11-05 19:31 | v3.2.1 — Add model-tier to frontmatter |

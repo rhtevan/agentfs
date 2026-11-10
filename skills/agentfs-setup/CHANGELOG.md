@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-09 19:22 | v7.8.0 — Add Rule 7 (Dry-Run Gate) to AGENTS.md template — agent must run --dry-run first for Command scripts, parse DRY_RUN_RESULT signal; Bump version to 7.8.0 for Rule 7 Dry-Run Gate addition; Create AgentFS compliance profile — per-rule per-tier benchmark data, evolution history, pending benchmarks; Update compliance profile with v7.8.0 benchmark results: Frontier 100%, 14B 91%, R7 no regression; Update T4 R7 dry_run_gate from not_tested to 100%, update T2 R7 from not_tested to 100%; Remove T4 and T2 from pending benchmarks — both completed for v7.8.0; Remove T1 pending benchmark — T1 compliance is not a goal for AGENTS.md; Add compliance profile staleness check after sync — warns when AGENTS.md version changes but profile not re-benchmarked |
 | 2026-11-08 18:58 | v7.7.2 — Updated version 7.7.0→7.7.2, added qualification_rule: build+observable |
 | 2026-11-08 18:40 | v7.8.0 — Add Rules section with anti-fabrication rules, add trace to all 19 scripts |
 | 2026-11-06 11:55 | v7.7.2 — Bump template version 7.7.1 → 7.7.2 for Session Canary rule prose optimization; Session Canary rule prose optimization: LOCKED keyword, purpose statement, explicit no-replacement constraint for weaker model comprehension |

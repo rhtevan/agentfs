@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # setup.sh — Configure OVN-K FRR + MetalLB with shared BGP backend on CRC
-# Usage: setup.sh [--check] [--part 1|2|3]
+# Usage: setup.sh [--dry-run] [--part 1|2|3]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "crc-ovn-frr-metallb-config" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
+DRY_RUN=false
 PART=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --check) CHECK_ONLY=true; shift ;;
+    --dry-run) DRY_RUN=true; shift ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
     --part) PART="$2"; shift 2 ;;
     *) shift ;;
   esac
@@ -33,7 +34,7 @@ echo "✓ Logged in as $(oc whoami)"
 CRC_STATUS=$(crc status 2>/dev/null | grep 'CRC VM' | awk '{print $NF}' || echo "unknown")
 echo "  CRC status: $CRC_STATUS"
 
-if $CHECK_ONLY; then
+if $DRY_RUN; then
   echo ""
   echo "── Current state ──"
   echo "FRR namespace: $(oc get ns openshift-frr-k8s -o name 2>/dev/null || echo 'not found')"
@@ -148,4 +149,11 @@ fi
 
 trace_end 2>/dev/null || true
 echo ""
-echo "✅ Setup complete."
+if $DRY_RUN; then
+  echo "DRY_RUN_RESULT=PENDING"
+  echo "Operator setup requires cluster access. Run without --dry-run to apply."
+  exit 0
+else
+  echo "APPLY_RESULT=OK"
+  echo "✅ Setup complete."
+fi

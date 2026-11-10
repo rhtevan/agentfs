@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-09 19:22
+- Update status: Obj 2 complete (Phases A+B+D), Obj 1 Phases 1+2 complete, Phase C removed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-09 19:20
+- Remove Phase C (T1 benchmark) — T1 compliance is not a goal for AGENTS.md (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-09 18:31
+- Action plan: dry-run pattern adoption + AgentFS compliance profile. Two objectives with phased execution, success criteria, risk mitigations. (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-09 12:12
 - Phase H complete: added Final Status section with portfolio summary, reclassifications, scripts created, patterns, and timeline (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 

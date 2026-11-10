@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # setup.sh — Install goose-shell wrapper + environment.d config + desktop entry fix
-# Usage: setup.sh [--check] [--skip-desktop] [--skip-bashrc-check]
+# Usage: setup.sh [--dry-run] [--skip-desktop] [--skip-bashrc-check]
 # Version: 1.0.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "goose-desktop-env-fix" "1.0.0" 2>/dev/null || true
 
-CHECK_ONLY=false
+DRY_RUN=false
 SKIP_DESKTOP=false
 SKIP_BASHRC=false
 
 for arg in "$@"; do
   case "$arg" in
-    --check) CHECK_ONLY=true ;;
+    --dry-run) DRY_RUN=true ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
     --skip-desktop) SKIP_DESKTOP=true ;;
     --skip-bashrc-check) SKIP_BASHRC=true ;;
   esac
@@ -25,6 +26,7 @@ DESKTOP_FILE="${HOME}/.local/share/applications/Goose.desktop"
 SYSTEM_DESKTOP="/usr/share/applications/Goose.desktop"
 REAL_HOME="$HOME"
 ERRORS=0
+CHANGES=0
 
 echo "=== Goose Desktop Environment Fix ==="
 echo ""
@@ -66,7 +68,7 @@ if [[ -f "$WRAPPER" ]]; then
   fi
 else
   echo "⚠ goose-shell wrapper not found: $WRAPPER"
-  if $CHECK_ONLY; then
+  if $DRY_RUN; then
     echo "  Would create wrapper"
     ERRORS=$((ERRORS + 1))
   else
@@ -102,7 +104,7 @@ if [[ -f "$ENV_CONF" ]]; then
   fi
 else
   echo "⚠ environment.d config not found: $ENV_CONF"
-  if $CHECK_ONLY; then
+  if $DRY_RUN; then
     echo "  Would create config"
     ERRORS=$((ERRORS + 1))
   else
@@ -127,7 +129,7 @@ else
       echo "  ✓ GOOSE_SHELL is set in Exec line"
     else
       echo "  ⚠ GOOSE_SHELL not found in Exec line"
-      if $CHECK_ONLY; then
+      if $DRY_RUN; then
         echo "  Would add GOOSE_SHELL to Exec line"
         ERRORS=$((ERRORS + 1))
       else
@@ -197,14 +199,19 @@ fi
 
 # ── Summary ──────────────────────────────────────────────────────────────
 echo ""
-if $CHECK_ONLY; then
-  if [[ $ERRORS -eq 0 ]]; then
-    echo "✅ All checks passed. Goose Desktop environment fix is in place."
+if $DRY_RUN; then
+  if [[ $CHANGES -eq 0 && $ERRORS -eq 0 ]]; then
+    echo "DRY_RUN_RESULT=CONVERGED"
+    echo "✅ Goose Desktop environment fix is in place. No changes needed."
   else
-    echo "⚠ ${ERRORS} issue(s) found. Run without --check to apply fixes."
+    echo "DRY_RUN_RESULT=PENDING"
+    [[ $CHANGES -gt 0 ]] && echo "$CHANGES change(s) would be applied."
+    [[ $ERRORS -gt 0 ]] && echo "$ERRORS precondition issue(s) found."
   fi
+  exit 0
 else
   if [[ $ERRORS -eq 0 ]]; then
+    echo "APPLY_RESULT=OK"
     echo "✅ Setup complete. Restart Goose Desktop to apply changes."
     echo ""
     echo "Post-restart verification:"
@@ -212,6 +219,7 @@ else
     echo "  2. Run: which gh && which oc"
     echo "  3. Check no fork bombs: ps aux | grep 'devbox global shellenv' | grep -v grep | wc -l"
   else
+    echo "APPLY_RESULT=PARTIAL"
     echo "⚠ Setup completed with ${ERRORS} warning(s). Review above."
   fi
 fi
