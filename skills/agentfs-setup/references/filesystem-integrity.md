@@ -18,6 +18,23 @@ instead of direct edits for managed files.
 
 All scripts live in `~/.agents/skills/agentfs-setup/scripts/`.
 
+## Log Entry Format
+
+```
+- <Imperative verb> <what changed> (<relative-path>)
+```
+
+| Rule | Why |
+|---|---|
+| Lead with an imperative verb (`Add`, `Fix`, `Update`, `Create`, `Remove`, `Document`, `Rewrite`) | Matches the established convention — 1074 of 1968 entries at the time of writing |
+| Do NOT lead with the filename (`restore.sh: …`) | The path suffix already names the file; the prefix duplicates it |
+| Do NOT invent tag prefixes (`doc:`, `fix:`) | Zero precedent in the log; the verb carries the same meaning |
+| Always end with the relative path | `restore.sh` / `setup.sh` / `SKILL.md` recur across skills — without the path the entry is ambiguous |
+| Do NOT start with a date | The `##` heading already carries the timestamp (`merge-log-entry.sh` strips it) |
+
+`post-write.sh` appends the path automatically unless the description
+already contains the full relative path.
+
 ## Scope Logging Rules
 
 Log to **every scope** you touched in the same task:
@@ -40,6 +57,16 @@ bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh create <files>  # befo
 bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh clear           # after success
 bash ~/.agents/skills/agentfs-setup/scripts/checkpoint.sh check           # on session start
 ```
+
+Where the checkpoint lives (any cwd works):
+
+| Command | Location |
+|---|---|
+| `create <files>` | `<root>/.checkpoint`, `<root>` = nearest `.agents` ancestor of each file's absolute path. Files outside any `.agents/` → `./.agents`, else `~/.agents`. Files in several roots → one checkpoint per root. Paths are recorded absolute. |
+| `clear`, `check` | Every candidate root: `./.agents` and `~/.agents`. `--root DIR` limits it to one. |
+
+Until the 2026-11-13 fix the root came from the cwd only, so a
+`clear` from a project directory could miss a `~/.agents` checkpoint.
 
 ## Cross-Skill Script Execution
 

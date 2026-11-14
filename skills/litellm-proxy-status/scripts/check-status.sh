@@ -15,8 +15,9 @@ set -euo pipefail
 # Source trace library if available
 if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
   source "$HOME/.agents/scripts/trace-lib.sh"
+  trace_init "litellm-proxy-status" "1.2.0" 2>/dev/null || true
 else
-  trace_step() { echo "[trace] $*" >&2; }
+  trace_step() { :; }; trace_end() { :; }
 fi
 
 HEALTH_URL="http://127.0.0.1:4000/health"
@@ -25,7 +26,7 @@ CONFIG_FILE="$HOME/.config/litellm/config.yaml"
 SERVICE_FILE="$HOME/.config/systemd/user/litellm-proxy.service"
 
 # --- Step 1: systemd status ---
-trace_step "Checking systemd service status"
+trace_step 1 "checking-systemd-service-status" 0 "" 2>/dev/null || true
 echo "--- SYSTEMD STATUS ---"
 if systemctl --user is-active litellm-proxy &>/dev/null; then
   echo "Service: active"
@@ -37,7 +38,7 @@ fi
 echo ""
 
 # --- Step 2: health endpoint ---
-trace_step "Checking health endpoint"
+trace_step 2 "checking-health-endpoint" 0 "" 2>/dev/null || true
 echo "--- HEALTH ---"
 health_json=$(curl -s --connect-timeout 3 "$HEALTH_URL" 2>/dev/null || echo "UNREACHABLE")
 if [[ "$health_json" == "UNREACHABLE" ]]; then
@@ -48,7 +49,7 @@ fi
 echo ""
 
 # --- Step 3: model list ---
-trace_step "Listing available models"
+trace_step 3 "listing-available-models" 0 "" 2>/dev/null || true
 echo "--- MODELS ---"
 models_json=$(curl -s --connect-timeout 3 "$MODELS_URL" 2>/dev/null || echo "UNREACHABLE")
 if [[ "$models_json" == "UNREACHABLE" ]]; then
@@ -59,7 +60,7 @@ fi
 echo ""
 
 # --- Step 4: LiteLLM config ---
-trace_step "Reading LiteLLM configuration"
+trace_step 4 "reading-litellm-configuration" 0 "" 2>/dev/null || true
 echo "--- LITELLM CONFIG ---"
 if [[ -f "$CONFIG_FILE" ]]; then
   cat "$CONFIG_FILE"
@@ -69,7 +70,7 @@ fi
 echo ""
 
 # --- Step 5: service config ---
-trace_step "Reading service configuration"
+trace_step 5 "reading-service-configuration" 0 "" 2>/dev/null || true
 echo "--- SERVICE CONFIG ---"
 if [[ -f "$SERVICE_FILE" ]]; then
   cat "$SERVICE_FILE"
@@ -78,4 +79,5 @@ else
 fi
 echo ""
 
-trace_step "Status check complete"
+trace_step 6 "status-check-complete" 0 "" 2>/dev/null || true
+trace_end 2>/dev/null || true

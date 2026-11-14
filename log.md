@@ -2,6 +2,187 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-13 22:05
+- Repair historical corruption: backtick 7 raw HTML tags, remove an injected duplicate file header, rejoin an entry split by the dedup insert, restore a missing bullet, drop a duplicated 2026-08-13 12:32 section, normalise blank lines (log.md)
+- Fix the log lint false positive: hard-wrapped list continuation lines are valid Markdown (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
+## 2026-11-13 22:04
+- Add Category 13: log.md integrity lint (raw HTML tags, duplicate or out-of-order headings, stray text, duplicate file header) (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
+## 2026-11-13 22:03
+- Add a test suite for merge-log-entry.sh covering all six defect classes found in log.md (skills/agentfs-setup/scripts/test-merge-log-entry.sh)
+- Scan the whole preamble for the Append-only comment instead of head -3 (it was silently dropped) (skills/agentfs-setup/scripts/merge-log-entry.sh)
+
+## 2026-11-13 22:02
+- Refuse to write when the log header is malformed (prevents injecting a second header) and stop deleting the flock file (skills/agentfs-setup/scripts/merge-log-entry.sh)
+- Add entry guards: reject non-list lines, auto-backtick raw HTML tags, warn on a missing path suffix (skills/agentfs-setup/scripts/merge-log-entry.sh)
+- Document entry validation rules and exit codes in the header comment (skills/agentfs-setup/scripts/merge-log-entry.sh)
+
+## 2026-11-13 21:50
+- Wrap `<stamp>`/`<digits>` placeholders in backticks so Markdown does not swallow them as HTML tags (log.md)
+
+## 2026-11-13 21:45
+- Rewrite 74 entries from this session to the imperative-verb convention, dropping redundant filename and doc: prefixes (log.md)
+
+## 2026-11-13 21:44
+- Document the log entry format (imperative verb + path suffix; no filename or tag prefixes) (skills/agentfs-setup/references/filesystem-integrity.md)
+
+## 2026-11-13 21:34
+- Append missing (path) suffix to 41 entries from this session that led with a bare filename (log.md)
+- Add sk-litellm-local-no-auth placeholder as a known false positive (proxy has no master_key; DSH needs a non-empty apiKeyEnv) (.pre-push-allowlist)
+- Suppress the log path suffix only on a full relative-path match, not a bare basename (restore.sh/setup.sh/SKILL.md recur across skills and left entries ambiguous) (skills/agentfs-setup/scripts/post-write.sh)
+
+## 2026-11-13 21:27
+- Update skill count 59 → 62 (gcp-vertex-models, goose-gcp-provider, goose-corp-provider) (README.md)
+
+## 2026-11-13 21:18
+- Document checkpoint root resolution (files' .agents ancestor; clear/check scan ./.agents + ~/.agents; --root) (skills/agentfs-setup/references/filesystem-integrity.md)
+- Isolate HOME in tests; add tests 9-12 for cwd independence, absolute paths, mixed roots, --root (skills/agentfs-setup/scripts/test-checkpoint.sh)
+
+## 2026-11-13 21:17
+- Resolve checkpoint root from the files' absolute paths (nearest .agents ancestor) instead of the cwd; record absolute paths; clear/check cover ./.agents + ~/.agents (or --root DIR); run the git-tracked test in the file's dir (skills/agentfs-setup/scripts/checkpoint.sh)
+
+## 2026-11-13 21:13
+- Document the strongest-served-model default (claude-opus-5-5), the dry-run → apply workflow with flags table, gotcha #1 reset note, and S5/T7/T8 (skills/goose-litellm-provider/SKILL.md)
+- Leave the default model alone when the proxy is down; accept the strongest-model lookup only on success and when served (skills/goose-litellm-provider/scripts/restore.sh)
+
+## 2026-11-13 21:12
+- Set the default to the strongest served model (litellm default model), rank models (5-5 before 5), add dry-run CONVERGED/PENDING with change list, set providers.custom_redhat.model via line-level edit + post-check + backup, chat-test before switching default, add --no-default and GOOSE_CONFIG_DIR (skills/goose-litellm-provider/scripts/restore.sh)
+
+## 2026-11-13 21:07
+- Document the backup location in the Hermes backups/config dir (skills/hermes-litellm-provider/SKILL.md)
+
+## 2026-11-13 21:06
+- Write backups to ~/.hermes/backups/config/`config.yaml.agentfs.<stamp>` (Hermes sweeps `config.yaml.bak.<digits>` siblings into that dir) (skills/hermes-litellm-provider/scripts/restore.sh)
+
+## 2026-11-13 21:04
+- Document the absence of runtime discovery in DSH, the agent-default-model section, the dry-run workflow with flags, and S5/T5/T6 (skills/dsh-litellm-provider/SKILL.md)
+- Document the strongest-served-model default, the dry-run → apply workflow, and the line-level edit (skills/hermes-litellm-provider/SKILL.md)
+- Add a check that agent-default-model is served by LiteLLM (+ strongest-model info); show the latest timestamped backup (skills/dsh-litellm-provider/scripts/verify.sh)
+
+## 2026-11-13 21:03
+- Report when the default model is not managed in the converged message (skills/dsh-litellm-provider/scripts/setup.sh)
+- Set the default to the strongest served model (litellm default model), rank models, add dry-run CONVERGED/PENDING, replace the whole-file yaml re-dump with a line-level block edit + post-check, reject an unserved --default-model (skills/hermes-litellm-provider/scripts/restore.sh)
+- Add --dry-run (CONVERGED/PENDING), rank models, set agent-default-model to the strongest served model (--default-model/--no-default/--force-default), use a line-level block edit with post-check and timestamped backups (skills/dsh-litellm-provider/scripts/setup.sh)
+
+## 2026-11-13 20:55
+- Reword Spec S4 to match the new check (skills/hermes-litellm-provider/SKILL.md)
+- Document that the models field is per-model metadata, not an allowlist, when discover_models is true (skills/hermes-litellm-provider/SKILL.md)
+- Fix S4 to follow Hermes discovery semantics — a models: mapping with discover_models true is metadata (info only); fail only when pinned (discover_models false or list/string models:) (skills/hermes-litellm-provider/scripts/verify.sh)
+
+## 2026-11-13 20:43
+- Note that the model list is generated, update examples to claude-opus-5, replace the duplicated recovery script with setup.sh, add a drift troubleshooting row (skills/goose-headroom-provider/SKILL.md)
+- Build the model list from LiteLLM /model/info (was 3 hard-coded 4.x models), report drift for an existing JSON, default to claude-opus-5; fix --model arg parsing and the silent exit when config has no active_provider (skills/goose-headroom-provider/scripts/setup.sh)
+
+## 2026-11-13 20:42
+- Update the settings.yaml example to the current proxy models; note the list is generated from /v1/models (skills/dsh-litellm-provider/SKILL.md)
+- Update the reference config examples to the current proxy models (claude-opus-5 default) (skills/hermes-litellm-provider/SKILL.md)
+- Change the default model claude-opus-4-6 → claude-opus-5 (proxy models still discovered from /v1/models) (skills/hermes-litellm-provider/scripts/restore.sh)
+
+## 2026-11-13 20:38
+- Add the Version policy section (script-only changes keep version:; template_version split deferred, user decides timing) and document the merge-log-entry timestamp guard (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-13 20:28
+- Revert version 7.8.1 → 7.8.0, keeping the script fixes (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-13 20:26
+- Fix the version bump to use grep -m1 (a SKILL.md with a 2nd version: line broke sed) (skills/agentfs-setup/scripts/post-write.sh)
+
+## 2026-11-13 20:25
+- Strip a leading date/time from entry lines (the heading already has it) and warn on stderr (skills/agentfs-setup/scripts/merge-log-entry.sh)
+
+## 2026-11-13 20:20
+- Update Overview to version 1.0.2 (skills/goose-gcp-provider/SKILL.md)
+- Document the Desktop 1.59.0 provider switch defaulting to claude-sonnet-4-6 (saved_model bug) as a local gotcha — goose-litellm-provider v1.10.2, goose-gcp-provider v1.0.2 (skills/goose-litellm-provider/SKILL.md, skills/goose-gcp-provider/SKILL.md)
+- Cross-reference gotcha #8 to goose-litellm-provider gotcha #1 (skills/goose-gcp-provider/SKILL.md)
+- Add a Gotchas section — Desktop 1.59.0 provider switch picks claude-sonnet-4-6 (saved_model bug) — and a troubleshooting row (skills/goose-litellm-provider/SKILL.md)
+
+## 2026-11-13 20:13
+- Fix docs for v1.0.1 — Desktop 1.59.0 saved_model bug (gotcha #8), corrected Recent semantics (gotcha #3) (skills/goose-gcp-provider/SKILL.md)
+- Correct gotcha #3 (Recent records the previous model), add gotcha #8 for the Desktop saved_model bug and a troubleshooting row (skills/goose-gcp-provider/SKILL.md)
+
+## 2026-11-13 19:54
+- Create goose-gcp-provider v1.0.0 (configure goose gcp / goose gcp provider): sets providers.gcp_vertex_ai.model + GCP_LOCATION from gcp-vertex-models after a live test; Desktop GUI test confirmed the same config key; gcp-vertex-models 1.0.1 and litellm-vertex-ai-proxy 3.4.1 doc cross-links (skills/goose-gcp-provider/)
+
+## 2026-11-13 19:53
+- Point the native gcp_vertex_ai section to goose-gcp-provider (skills/litellm-vertex-ai-proxy/SKILL.md)
+- List goose-gcp-provider as a consumer (skills/gcp-vertex-models/SKILL.md)
+- Create goose-gcp-provider v1.0.0 (configure goose gcp, goose gcp provider) (skills/goose-gcp-provider/SKILL.md)
+
+## 2026-11-13 19:52
+- Add verify.sh covering S1-S5 (skills/goose-gcp-provider/scripts/verify.sh)
+- Add setup.sh (dry-run default, test-then-write, line-level config edit) (skills/goose-gcp-provider/scripts/setup.sh)
+
+## 2026-11-13 19:42
+- Create gcp-vertex-models v1.0.0 (probe moved from litellm-vertex-ai-proxy; refresh vertex models / vertex model list / vertex default model); litellm-vertex-ai-proxy v3.4.0 (refresh litellm models); litellm-proxy-status v1.2.0 (litellm model list / litellm default model; check-status.sh trace fix); goose-litellm-provider v1.10.1 (doc pointer); QOO scoring skipped — SDM unavailable (skills/gcp-vertex-models/, skills/litellm-vertex-ai-proxy/, skills/litellm-proxy-status/)
+
+## 2026-11-13 19:41
+- Fix trace_step called with text instead of a numeric step (printf invalid number -> exit 1 under set -e); add trace_init/trace_end (skills/litellm-proxy-status/scripts/check-status.sh)
+
+## 2026-11-13 19:40
+- Point the model-list reference to litellm model list / refresh litellm models (probe moved to gcp-vertex-models) (skills/goose-litellm-provider/SKILL.md)
+- Add the litellm model list and litellm default model queries and a Tests section for v1.2.0 (skills/litellm-proxy-status/SKILL.md)
+- Add the litellm model list and litellm default model queries and a Tests section for v1.2.0 (skills/litellm-proxy-status/SKILL.md)
+- Add models.sh list/default for v1.2.0 (litellm model list, litellm default model) (skills/litellm-proxy-status/scripts/models.sh)
+
+## 2026-11-13 19:39
+- Depend on gcp-vertex-models for v3.4.0; add the refresh litellm models workflow (refresh-models.sh); deprecate probe-models.sh to a wrapper (skills/litellm-vertex-ai-proxy/SKILL.md)
+- Fix the summary filter (skills/litellm-vertex-ai-proxy/scripts/refresh-models.sh)
+
+## 2026-11-13 19:38
+- Depend on gcp-vertex-models for v3.4.0; add refresh-models.sh and a dry-run convergence signal (skills/litellm-vertex-ai-proxy/)
+- Depend on gcp-vertex-models for v3.4.0; add refresh-models.sh and a dry-run convergence signal (skills/litellm-vertex-ai-proxy/scripts/probe-models.sh)
+- Depend on gcp-vertex-models for v3.4.0; add refresh-models.sh and a dry-run convergence signal (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+
+## 2026-11-13 19:37
+- Create gcp-vertex-models v1.0.0 (refresh vertex models, vertex model list, vertex default model) (skills/gcp-vertex-models/SKILL.md)
+- Add verify.sh covering S1-S5 (skills/gcp-vertex-models/scripts/verify.sh)
+
+## 2026-11-13 19:36
+- Fix rank stdin (the heredoc consumed stdin) (skills/gcp-vertex-models/scripts/models.sh)
+
+## 2026-11-13 19:32
+- Add models.sh list/default/rank read-only queries (skills/gcp-vertex-models/scripts/models.sh)
+- Move probe-models.sh from litellm-vertex-ai-proxy; add a JSON cache (skills/gcp-vertex-models/scripts/probe-models.sh)
+
+## 2026-11-13 14:00
+- Mark the schema example as no longer authoritative; document dynamic_models semantics; update the default/fast model examples (skills/goose-litellm-provider/SKILL.md)
+- Generate the models array from live LiteLLM /model/info; default model claude-opus-5 (skills/goose-litellm-provider/scripts/restore.sh)
+
+## 2026-11-13 13:59
+- Remove the stale model table; make probe-models.sh the source of truth; document LiteLLM /v1/models semantics; fix gotchas 1/2/8; add a native gcp_vertex_ai section (skills/litellm-vertex-ai-proxy/SKILL.md)
+
+## 2026-11-13 13:58
+- Consume probe-models.sh JSON: SA auth (no gcloud token), explicit per-model vertex_location, --regions/--prefer flags (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+
+## 2026-11-13 13:57
+- Rewrite probe-models.sh: SA auth via google-auth, publisher catalog candidates, global+regional matrix, 200/429/404/403 states, json/table/names output (skills/litellm-vertex-ai-proxy/scripts/probe-models.sh)
+
+## 2026-11-13 11:54
+- Set preserves_thinking to true (skills/goose-corp-provider/scripts/setup.sh)
+
+## 2026-11-13 11:53
+- Handle the reasoning field for thinking models (skills/goose-corp-provider/scripts/test.sh)
+- Enable thinking and increase max_tokens to 500 (skills/goose-corp-provider/scripts/test.sh)
+
+## 2026-11-13 11:45
+- Increase max_tokens and disable thinking for the test prompt (skills/goose-corp-provider/scripts/test.sh)
+
+## 2026-11-13 11:38
+- Add QOO scores (quality SDM_UNAVAILABLE, observable 95.0 Operable) (skills/goose-corp-provider/scores.yaml)
+- Add store-key.sh for interactive key rotation (user-run) (skills/goose-corp-provider/scripts/store-key.sh)
+
+## 2026-11-13 11:37
+- Add test.sh for end-to-end validation (skills/goose-corp-provider/scripts/test.sh)
+- Add check-key.sh for keyring verification (skills/goose-corp-provider/scripts/check-key.sh)
+
+## 2026-11-13 11:36
+- Add setup.sh for the provider JSON and config.yaml (skills/goose-corp-provider/scripts/setup.sh)
+- Add probe-models.sh for model discovery (skills/goose-corp-provider/scripts/probe-models.sh)
+
+## 2026-11-13 11:35
+- Add the initial SKILL.md for the Corp model service provider (skills/goose-corp-provider/SKILL.md)
+
 ## 2026-11-10 12:17
 - Add post-run benchmark session cleanup: deletes benchmark sessions from goose session DB after each run (scripts/benchmark.sh)
 
@@ -1052,7 +1233,7 @@
 
 ## 2026-10-31 20:23
 - Step 7d: added deterministic qoo-qualified formula — same rule as skill-eval Step 8 (skills/skill-gen/SKILL.md)
-- Step 7d: qoo-qualified template changed from hardcoded true to <computed> (skills/skill-gen/SKILL.md)
+- Step 7d: qoo-qualified template changed from hardcoded true to `<computed>` (skills/skill-gen/SKILL.md)
 
 ## 2026-10-31 20:22
 - Bump frontmatter version to 2.1.0 (skills/skill-eval/SKILL.md)
@@ -1078,8 +1259,7 @@
 - Add SCOPE_EXPLICIT tracking for auto-fallback support (skills/agentfs-readme-audit/scripts/gather-state.sh)
 
 ## 2026-10-31 19:37
-- Fix: trace_end step_count grep -c returned '0
-0' when 0 steps — same pattern as error_count fix (scripts/trace-lib.sh)
+- Fix: trace_end step_count grep -c returned '0\n0' when 0 steps — same pattern as error_count fix (scripts/trace-lib.sh)
 
 ## 2026-10-31 19:36
 - Fix 2: stderr summary on success — model sees feedback even when stdout is redirected to file (skills/agentfs-readme-audit/scripts/gather-state.sh)
@@ -1124,8 +1304,8 @@
 - Unconditional trace — removed AGENTFS_TRACE guard, added trace_init (skills/agentfs-readme-audit/scripts/gather-state.sh)
 
 ## 2026-10-31 18:33
-- trace_init: auto-route to .traces/<skill>-<timestamp>.jsonl when default path (scripts/trace-lib.sh)
-- trace-lib: default AGENTFS_TRACE to ~/.agents/.traces/<skill>-<timestamp>.jsonl when .traces/ dir exists (scripts/trace-lib.sh)
+- trace_init: auto-route to .traces/`<skill>`-`<timestamp>`.jsonl when default path (scripts/trace-lib.sh)
+- trace-lib: default AGENTFS_TRACE to ~/.agents/.traces/`<skill>`-`<timestamp>`.jsonl when .traces/ dir exists (scripts/trace-lib.sh)
 
 ## 2026-10-31 18:24
 - Added --phase build flag to BMBT sdm-evaluate.sh call (skills/skill-eval/SKILL.md)
@@ -1229,7 +1409,7 @@
 - Add --deleted flag to header comment (skills/agentfs-setup/scripts/post-write.sh)
 
 ## 2026-10-31 14:10
-Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; KGM entity and index entry also removed
+- Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; KGM entity and index entry also removed
 
 ## 2026-10-29 23:01
 - Fix D7 drift: update QOO table with BMBT, adapted schemas, hybrid evidence architecture (README.md)
@@ -1815,7 +1995,6 @@ Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; K
 - Removed Networking category row — skupper-linux-two-site skill deleted, capability covered under Model Serving (README.md)
 
 ## 2026-10-21 16:18
-
 - Removed skills/skupper-linux-two-site/ — superseded by skupper-model-provider; updated skills/index.md (61 → 60 skills)
 
 ## 2026-10-21 14:23
@@ -1841,6 +2020,7 @@ Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; K
 - v9.0.0: New CRC link names, staleness detection on Pending links, inter-router listener guard (skills/skupper-model-provider/scripts/up.sh)
 - v9.0.0: New site/link names, Phase 3b inter-router listener injection + SAN cert regeneration, CRC local link/listener setup (skills/skupper-model-provider/scripts/setup.sh)
 - v9.0.0: New site names (drop hub- prefix), LINK_NAMES array, SKUPPER_ROUTER_VERSION env var, inter-router injection, SAN regeneration, CRC staleness detection helpers (skills/skupper-model-provider/scripts/common.sh)
+
 ## 2026-10-19 11:50
 - Version refs 7.3.7 → 7.3.8 for design-spec Design Goals addition (README.md)
 
@@ -2071,7 +2251,6 @@ Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; K
 - Checkpoint rule: explicit version-bump step for seed edits (skills/agentfs-setup/scripts/seed-agents-md.sh)
 - Category 12: seed-version-bump guard (skills/agentfs-setup/scripts/pre-push-scan.sh)
 - Remove Path Hygiene assertions, add Checkpoint seed-edit assertions (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
-
 
 ## 2026-09-29 22:09
 - Removed Path Hygiene from violation check — rule removed from AGENTS.md (skills/agentfs-violation-chk/SKILL.md)
@@ -2426,10 +2605,6 @@ Removed deprecated skill agentfs-violation-chk — absorbed into agentfs-eval; K
 ## 2026-09-24 11:02
 - Rewrote Discovery Tiers and Rule 8 for small-model compatibility: explicit skill lookup procedure, direct load_skill references, anti-pattern callouts (skills/agentfs-setup/scripts/seed-agents-md.sh)
 
-r# Directory Update Log
-
-<!-- Append-only. Newest entries at top. -->
-
 ## 2026-09-18 12:12
 - Added ocp-containerfile knowledge bundle to README knowledge list — fixes D3 drift (README.md)
 
@@ -2773,7 +2948,7 @@ r# Directory Update Log
 - hosted-model-ctl: Switched ALL Qwen3.8 entries from vLLM v0.27.1 to nightly image. Added --reasoning-parser qwen3 flag to both qwen38-27b and qwen38-27b-40k aliases. This fixes the thinking token leak in content field (CoT now routed to reasoning_content). Solo profile (solo-qwen38) will now use nightly + reasoning parser automatically — same fix as validated in co-host testing.
 
 ## 2026-08-25 15:23
-- hosted-model-ctl: Fixed tool calling for ALL models. Root cause: Granite 4.1 outputs <tool_call>JSON</tool_call> XML format but the 'granite' parser in vLLM 0.8.4 expects bare JSON arrays — switched to 'hermes' parser which matches. For Qwen3.8 on vLLM 0.27.1, switched from 'hermes' to 'qwen3_xml' parser (new in 0.27.1). Both models now return finish_reason=tool_calls with properly parsed tool_calls array. Updated common.sh (qwen3_xml parser for all Qwen entries), setup.sh (hermes parser for vllm-ilab and vllm-bnb engines). Qwen3.8 still leaks thinking tokens in content field — separate issue requiring reasoning parser support.
+- hosted-model-ctl: Fixed tool calling for ALL models. Root cause: Granite 4.1 outputs `<tool_call>`JSON`</tool_call>` XML format but the 'granite' parser in vLLM 0.8.4 expects bare JSON arrays — switched to 'hermes' parser which matches. For Qwen3.8 on vLLM 0.27.1, switched from 'hermes' to 'qwen3_xml' parser (new in 0.27.1). Both models now return finish_reason=tool_calls with properly parsed tool_calls array. Updated common.sh (qwen3_xml parser for all Qwen entries), setup.sh (hermes parser for vllm-ilab and vllm-bnb engines). Qwen3.8 still leaks thinking tokens in content field — separate issue requiring reasoning parser support.
 
 ## 2026-08-25 14:40
 - hosted-model-ctl: Phase 7 co-hosting validated. Deployed co-g8b-qwen38 profile — Granite 8B BF16 TP=2 @128K on GPUs 0,1 (port 9000) + Qwen3.8-27B FP8 TP=2 @40K on GPUs 2,3 (port 9001). Both models responding simultaneously, all 4 GPUs ~21.2/23 GB utilized. Key learnings: (1) CDI per-GPU selection works with --device nvidia.com/gpu=N syntax + --security-opt label=disable. (2) CUDA_VISIBLE_DEVICES env var does NOT work inside CDI containers. (3) Qwen3.8 FP8 TP=2 maxes out at ~40K context (not 64K) due to enforce-eager overhead. Updated common.sh aliases (64k→40k), deployment-profiles.md, SKILL.md. Implemented GPU pinning in setup.sh for vllm and vllm-ilab engines.
@@ -3047,7 +3222,6 @@ r# Directory Update Log
 - Migrated all 48 skills: converted `description` to signal phrases, removed `metadata.signals` from frontmatter
 - Regenerated `skills/index.md` with new `Skill | Tags | Description | Updated` format
 
-
 ## 2026-08-13 11:37
 - Updated `skupper-model-provider` (v7.3.0 → v7.4.0): Simplified `start-watch.sh` from 20 lines to 6 — removed bash SIGTERM trap, stop marker file, and `podman inspect` exit code check. Now uses direct `podman wait` exit code propagation + `SuccessExitStatus=SIGTERM` in systemd units. Fixes service marked `failed` (exit 143) after `systemctl stop`. Patched and verified on all 3 hosts.
 - Regenerated `~/.agents/skills/index.md` (48 skills).
@@ -3159,18 +3333,7 @@ r# Directory Update Log
 - Regenerated `~/.agents/skills/index.md` (48 skills)
 
 ## 2026-08-10 16:25
-- Added `<!-- Append-only. Newest entries at top. -->
-
-## 2026-08-13 12:32
-- **Signal Phrase Schema Migration (v2.0.0)**: `description` field redefined as signal phrases (Command: `verb+noun(s)`, Query: `noun(s)`); `metadata.signals` removed from schema
-- Updated `skill-gen/references/skill-schema.md` to v2.0.0: Signal Phrase Rules, Opening Paragraph requirement, Progressive Disclosure Model
-- Updated `skill-gen/SKILL.md` to v3.0.0: new description format, updated template, checklist, Skill Check P1 items
-- Updated `skill-index/SKILL.md` to v3.0.0: index columns `Skill | Tags | Description | Updated`; legacy `metadata.signals` warning
-- Updated `agentfs-setup/references/design-spec.md` to v3.11: SKILL.md Frontmatter Schema, Signal Routing architecture
-- Updated `agentfs-setup/scripts/seed-agents-md.sh`: Routing Rules reference `description` field instead of `metadata.signals`
-- Migrated all 48 skills: converted `description` to signal phrases, removed `metadata.signals` from frontmatter
-- Regenerated `skills/index.md` with new `Skill | Tags | Description | Updated` format
-` comment anchor to `~/.agents/log.md` (was missing)
+- Added `<!-- Append-only. Newest entries at top. -->` comment anchor to `~/.agents/log.md` (was missing)
 - Strengthened Guardrail #5 insertion anchor in AGENTS.md: added "read current file head before inserting" to prevent stale-context log misordering
 
 ## 2026-08-10 16:15
@@ -3435,7 +3598,6 @@ r# Directory Update Log
 - Scripts: setup-fuseki.sh, start-fuseki.sh, stop-fuseki.sh, status-fuseki.sh
 - Regenerated skills/index.md (43 skills)
 
-
 ## 2026-07-22 23:51
 - Merged `## Modes` into `## Directory Structure` — eliminated terminology
   duplication ("scope" vs "mode"); Directory Structure now shows both USER
@@ -3635,7 +3797,6 @@ r# Directory Update Log
 ## 2026-07-10 18:08
 - `agentfs-setup` v3.0 — PROJECT is now the default mode; added canonical Scope Definitions section (USER=`~/.agents/`, PROJECT=`./.agents/`) to SKILL.md, AGENTS.md template, design-spec, and README; documented two USER setup paths (full clone vs minimal install); added Prerequisites section; nine guardrails (was eight); verify-setup.sh now checks for Scope Definitions in AGENTS.md; all user-facing instructions now say "ask your agent to run the skill" instead of directing users to execute bash scripts; Path B (minimal install) references the skill with USER scope hint; README reordered: Scope Definitions → Getting Started → Directory Structure → Modes → Guardrails → Memory Architecture
 - Updated `README.md` — Scope Definitions and Getting Started moved to top; all instructions agent-centric (not bash-centric); step 3 needs no scope hint since PROJECT is default
-
 
 ## 2026-07-10 17:05
 - Created `skill-creator` proxy skill — two modes (simple scaffold + advanced Anthropic upstream), AgentFS post-creation checklist, agent compatibility notes, fetch-upstream.sh for caching complete upstream file structure

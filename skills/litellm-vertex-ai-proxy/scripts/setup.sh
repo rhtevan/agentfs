@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # setup.sh — Set up LiteLLM proxy for Vertex AI with systemd
-# Usage: bash setup.sh --project PROJECT --sa-key PATH [--region REGION] [--port PORT] [--dry-run]
+# Usage: bash setup.sh --project PROJECT --sa-key PATH [--regions R1,R2] [--prefer global|regional] [--port PORT] [--dry-run]
 # Exit codes: 0 = success, 1 = failure, 2 = usage error
 set -euo pipefail
 
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "litellm-vertex-ai-proxy" "3.2.0" 2>/dev/null || true
+trace_init "litellm-vertex-ai-proxy" "3.4.0" 2>/dev/null || true
 
 PROJECT=""
 SA_KEY=""
-REGION="us-east5"
+REGIONS="global,us-east5"
+PREFER="global"
 HOST="127.0.0.1"
 PORT="4000"
 DRY_RUN=false
@@ -26,7 +27,8 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --project)  PROJECT="$2"; shift 2 ;;
     --sa-key)   SA_KEY="$2"; shift 2 ;;
-    --region)   REGION="$2"; shift 2 ;;
+    --regions|--region) REGIONS="$2"; shift 2 ;;
+    --prefer)   PREFER="$2"; shift 2 ;;
     --host)     HOST="$2"; shift 2 ;;
     --port)     PORT="$2"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
@@ -39,7 +41,8 @@ while [[ $# -gt 0 ]]; do
       echo "  --sa-key  PATH     Path to service account key JSON"
       echo ""
       echo "Optional:"
-      echo "  --region  REGION   Vertex AI region (default: us-east5)"
+      echo "  --regions R1,R2    Regions to probe (default: global,us-east5)"
+      echo "  --prefer  MODE     global|regional: region used per model when both work (default: global)"
       echo "  --host    HOST     Bind address (default: 127.0.0.1, use 0.0.0.0 for container access)"
       echo "  --port    PORT     Proxy port (default: 4000)"
       echo "  --dry-run          Write to /tmp/litellm-setup-preview/ instead of live paths"
@@ -52,7 +55,7 @@ done
 
 # --- Validate inputs ---
 if [[ -z "$PROJECT" ]]; then
-  PROJECT=$(gcloud config get-value project 2>/dev/null || echo "")
+  PROJECT=$(gcloud config get-value project 2>/dev/null || echo "${ANTHROPIC_VERTEX_PROJECT_ID:-}")
   if [[ -z "$PROJECT" ]]; then
     echo "❌ --project is required (or set via gcloud config)"
     exit 2
@@ -102,39 +105,43 @@ else
   fi
 fi
 
-# --- Discover models ---
-echo "Discovering models on $REGION..."
-TOKEN=$(gcloud auth print-access-token 2>/dev/null || echo "")
-if [[ -z "$TOKEN" ]]; then
-  echo "❌ Could not get access token. Run 'gcloud auth login' first."
+# --- Discover models (gcp-vertex-models skill: SA auth, global + regional) ---
+PROBE="${HOME}/.agents/skills/gcp-vertex-models/scripts/probe-models.sh"
+if [[ ! -f "$PROBE" ]]; then
+  echo "❌ Dependency missing: gcp-vertex-models skill ($PROBE)"
+  exit 1
+fi
+PROBE_JSON="$(mktemp /tmp/litellm-probe.XXXXXX.json)"
+trap 'rm -f "$PROBE_JSON"' EXIT
+
+echo "Probing Vertex AI (regions: $REGIONS) ..."
+set +e
+bash "$PROBE" --project "$PROJECT" --credentials "$SA_KEY" \
+  --regions "$REGIONS" --prefer "$PREFER" --format json --output "$PROBE_JSON" 2>/dev/null
+PROBE_RC=$?
+set -e
+if [[ $PROBE_RC -ne 0 ]]; then
+  echo "❌ Probe found no usable models (exit $PROBE_RC) for project $PROJECT"
   exit 1
 fi
 
-URL_BASE="https://${REGION}-aiplatform.googleapis.com/v1/projects/$PROJECT/locations/$REGION/publishers/anthropic/models"
+# Lines of "<model> <region>" for usable models only
+mapfile -t MODEL_LINES < <(python3 -c '
+import json, sys
+for m in json.load(open(sys.argv[1]))["models"]:
+    if m["region"]:
+        print(m["model"], m["region"])
+' "$PROBE_JSON")
 MODELS=()
-
-for model in claude-opus-4-6 claude-sonnet-4-6 claude-haiku-4-5 claude-sonnet-4-5 claude-opus-4-7 claude-opus-4-8 claude-opus-5 claude-sonnet-5; do
-  RESP=$(curl -sf -w "%{http_code}" -o /dev/null \
-    -X POST \
-    -H "Authorization: Bearer $TOKEN" \
-    -H "Content-Type: application/json" \
-    "$URL_BASE/$model:rawPredict" \
-    -d '{"anthropic_version":"vertex-2023-10-16","messages":[{"role":"user","content":"hi"}],"max_tokens":5}' 2>/dev/null || echo "000")
-  if [[ "$RESP" == "200" ]]; then
-    echo "  ✅ $model"
-    MODELS+=("$model")
-  fi
+for line in "${MODEL_LINES[@]}"; do
+  echo "  ✅ ${line% *}  (${line#* })"
+  MODELS+=("${line% *}")
 done
-
-if [[ ${#MODELS[@]} -eq 0 ]]; then
-  echo "❌ No models available on $REGION for project $PROJECT"
-  exit 1
-fi
 
 echo ""
 echo "Found ${#MODELS[@]} model(s)"
 
-# --- Generate config.yaml ---
+# --- Generate config.yaml (explicit model_list, per-model region, no wildcard) ---
 mkdir -p "$CONFIG_DIR"
 
 # Backup existing config
@@ -144,26 +151,17 @@ if [[ -f "$CONFIG_FILE" && "$DRY_RUN" != true ]]; then
   echo "📋 Config backup: $BACKUP"
 fi
 
-cat > "$CONFIG_FILE" << 'HEADER'
-model_list:
-HEADER
-
-for model in "${MODELS[@]}"; do
-  cat >> "$CONFIG_FILE" << EOF
-  - model_name: $model
-    litellm_params:
-      model: vertex_ai/$model
-      vertex_project: $PROJECT
-      vertex_location: $REGION
-
-EOF
-done
-
-cat >> "$CONFIG_FILE" << 'FOOTER'
-litellm_settings:
-  drop_params: true
-  request_timeout: 120
-FOOTER
+{
+  echo "# Generated by litellm-vertex-ai-proxy/scripts/setup.sh from gcp-vertex-models probe"
+  echo "# $(date -u +%Y-%m-%dT%H:%M:%SZ) project=$PROJECT regions=$REGIONS"
+  echo "model_list:"
+  for line in "${MODEL_LINES[@]}"; do
+    model="${line% *}"; region="${line#* }"
+    printf '  - model_name: %s\n    litellm_params:\n      model: vertex_ai/%s\n      vertex_project: %s\n      vertex_location: %s\n\n' \
+      "$model" "$model" "$PROJECT" "$region"
+  done
+  printf 'litellm_settings:\n  drop_params: true\n  request_timeout: 120\n'
+} > "$CONFIG_FILE"
 
 echo "✅ Config written: $CONFIG_FILE"
 
@@ -205,6 +203,17 @@ if [[ "$DRY_RUN" == true ]]; then
   echo ""
   echo "   diff $CONFIG_FILE ~/.config/litellm/config.yaml"
   echo "   diff $SERVICE_FILE ~/.config/systemd/user/litellm-proxy.service"
+  # Convergence = same model/region set and same service unit (header comments ignored)
+  LIVE_CFG="$HOME/.config/litellm/config.yaml"; LIVE_SVC="$HOME/.config/systemd/user/litellm-proxy.service"
+  pairs() { [[ -f "$1" ]] && awk '/model: vertex_ai\//{sub("vertex_ai/","",$2); m=$2} /vertex_location:/{print m, $2}' "$1" | sort; }
+  if [[ "$(pairs "$CONFIG_FILE")" == "$(pairs "$LIVE_CFG")" ]] && diff -q "$SERVICE_FILE" "$LIVE_SVC" >/dev/null 2>&1; then
+    echo ""; echo "DRY_RUN_RESULT=CONVERGED"
+  else
+    echo ""; echo "Model/region changes (- live, + generated):"
+    diff <(pairs "$LIVE_CFG") <(pairs "$CONFIG_FILE") | grep '^[<>]' | sed 's/^</  -/; s/^>/  +/' || true
+    diff -q "$SERVICE_FILE" "$LIVE_SVC" >/dev/null 2>&1 || echo "  service unit differs"
+    echo "DRY_RUN_RESULT=PENDING"
+  fi
   exit 0
 fi
 

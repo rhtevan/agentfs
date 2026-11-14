@@ -235,7 +235,7 @@ Skills cover topics like:
 | **Evaluation** | AgentFS workspace eval (`agentfs-eval`), individual skill eval (`skill-eval`), QOO schemas (`schemas/quality.yaml`, `observable.yaml`, `operable.yaml`, adapted variants for AGENTS.md) |
 | **Data Services** | Apache Fuseki triplestore lifecycle (`agentflow-fuseki`) |
 
-The library currently contains **59 skills** across these categories.
+The library currently contains **62 skills** across these categories.
 See [`skills/index.md`](skills/index.md) for the full catalog.
 
 #### SKILL.md Frontmatter

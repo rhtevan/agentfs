@@ -291,6 +291,71 @@ else
   DETAILS+="| Seed version bump | ✅ Clean |\n"
 fi
 
+# ── Category 13: log.md Integrity ──────────────────────────────────
+# Whole-file lint of every staged log.md: corruption can arrive by hand
+# as well as through merge-log-entry.sh, and an unclosed raw <tag>
+# silently swallows the rendered content that follows it.
+LOG_ISSUES=""
+for _log in $(echo "$CHANGED_FILES" | grep -E '(^|/)log\.md$' || true); do
+  [[ -f "$_log" ]] || continue
+  _out="$(LOGFILE="$_log" python3 - <<'PYEOF' || true
+import os, re
+from collections import Counter
+p = os.environ["LOGFILE"]
+L = open(p).read().split("\n")
+HDR = re.compile(r'^## (\d{4}-\d{2}-\d{2} \d{2}:\d{2})$')
+issues = []
+if L and L[0] != "# Directory Update Log":
+    issues.append("first line is not '# Directory Update Log'")
+if sum(1 for x in L if x == "# Directory Update Log") > 1:
+    issues.append("duplicate '# Directory Update Log' header inside the file")
+for i, line in enumerate(L):
+    if not (line.startswith("- ") or line.startswith("  - ")):
+        continue
+    for m in re.finditer(r'<[^ >`][^>]*>', line):
+        if line[:m.start()].count("`") % 2 == 0:
+            issues.append("line %d: raw HTML tag %s outside backticks" % (i + 1, m.group(0)))
+hs = [(i, HDR.match(x).group(1)) for i, x in enumerate(L) if HDR.match(x)]
+for t, n in Counter(t for _, t in hs).items():
+    if n > 1:
+        issues.append("duplicate heading '## %s' (%d times)" % (t, n))
+for a, b in zip(hs, hs[1:]):
+    if a[1] < b[1]:
+        issues.append("line %d: out of order — '%s' precedes '%s'" % (a[0] + 1, a[1], b[1]))
+# Stray text = a non-blank line that is neither a heading, a list item,
+# nor an indented continuation of the list item above it. Hard-wrapped
+# entries ("  continued text") are valid Markdown and must not flag.
+in_item = False
+for i, line in enumerate(L[4:], start=5):
+    if not line.strip():
+        in_item = False
+        continue
+    if line.startswith("## "):
+        in_item = False
+        continue
+    if re.match(r'^(  |    )?- ', line):
+        in_item = True
+        continue
+    if in_item and line.startswith("  "):
+        continue
+    issues.append("line %d: stray text outside a list item" % i)
+for s in issues[:12]:
+    print(s)
+PYEOF
+)"
+  [[ -n "$_out" ]] && LOG_ISSUES+="$_log: $_out"$'\n'
+done
+
+if [[ -n "$LOG_ISSUES" ]]; then
+  FINDINGS=$((FINDINGS + 1))
+  DETAILS+="| log.md integrity | ⚠️  FOUND |\n"
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && DETAILS+="|  | \`${line:0:80}\` |\n"
+  done <<< "$LOG_ISSUES"
+else
+  DETAILS+="| log.md integrity | ✅ Clean |\n"
+fi
+
 # ── Output Report ──────────────────────────────────────────────────
 echo ""
 echo "╔══════════════════════════════════════════════╗"

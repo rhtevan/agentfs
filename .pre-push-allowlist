@@ -11,3 +11,10 @@
 - Username or SSH host alias matching against skill or knowledge
   description keywords in index files (e.g., model names like "granite"
   in skills/index.md coincidentally matching an SSH host alias)
+
+- The literal placeholder `sk-litellm-local-no-auth` appearing in
+  dsh-* and litellm-* skill files (SKILL.md, setup.sh,
+  install-desktop.sh). The local LiteLLM proxy runs without a
+  master_key and authenticates nothing; DSH only requires its
+  apiKeyEnv variable to be non-empty. Not a credential. Lines
+  matching the secrets pattern via `API_KEY=` are false positives.

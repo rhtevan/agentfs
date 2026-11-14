@@ -1,0 +1,32 @@
+skill: goose-corp-provider
+version: "1.0.0"
+model_tier: T2
+qualification_rule: build+observable
+qoo-qualified: false
+
+quality:
+  aggregate_score: -1
+  band: SDM_UNAVAILABLE
+  dimensions: {}
+  evaluated: "2026-11-13T11:38:00-05:00"
+  note: "SDM unavailable — quality scoring deferred"
+
+observable:
+  aggregate_score: 95.0
+  band: Operable
+  dimensions:
+    script_coverage: { score: 100, pass: true, confidence: 1.0 }
+    trace_instrumentation: { score: 100, pass: true, confidence: 1.0 }
+    anti_fabrication: { score: 100, pass: true, confidence: 1.0 }
+    cnl_compliance: { score: 100, pass: true, confidence: 1.0 }
+    sdm_delegation: { score: 80, pass: true, confidence: 0.8 }
+  evaluated: "2026-11-13T11:38:00-05:00"
+
+history:
+  - date: "2026-11-13T11:38:00-05:00"
+    type: quality+observable
+    quality_score: -1
+    quality_band: SDM_UNAVAILABLE
+    observable_score: 95.0
+    observable_band: Operable
+    note: "Initial QOO scoring by skill-gen. SDM unavailable — quality deferred."

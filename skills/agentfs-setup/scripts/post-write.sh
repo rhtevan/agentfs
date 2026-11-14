@@ -133,8 +133,11 @@ LOG_DESCRIPTION="$DESCRIPTION"
 if [[ "$LOG_DESCRIPTION" != "- "* ]]; then
   LOG_DESCRIPTION="- $DESCRIPTION"
 fi
-# Append relative path if not already present in the description
-if [[ "$LOG_DESCRIPTION" != *"$REL_PATH"* ]] && [[ "$LOG_DESCRIPTION" != *"$BASENAME"* ]]; then
+# Append the relative path unless the description already carries it.
+# Only a full REL_PATH match suppresses the suffix — a bare basename does
+# not, because names like restore.sh / setup.sh / SKILL.md recur across
+# skills and would leave the entry ambiguous.
+if [[ "$LOG_DESCRIPTION" != *"$REL_PATH"* ]]; then
   LOG_DESCRIPTION="$LOG_DESCRIPTION ($REL_PATH)"
 fi
 # Strip bullet prefix for changelog (table row, not a list)
@@ -205,7 +208,7 @@ if [[ -n "$SKILL_DIR" ]]; then
     # Also update version: in SKILL.md frontmatter to stay in sync
     SKILL_MD="$SKILL_DIR/SKILL.md"
     if [[ -f "$SKILL_MD" ]]; then
-      CURRENT_VER=$(grep -oP '^\s*version:\s*"\K[^"]+' "$SKILL_MD" 2>/dev/null || echo "")
+      CURRENT_VER=$(grep -m1 -oP '^\s*version:\s*"\K[^"]+' "$SKILL_MD" 2>/dev/null || echo "")
       if [[ -n "$CURRENT_VER" && "$CURRENT_VER" != "$VERSION" ]]; then
         sed -i "s/^\(\s*version:\s*\"\)${CURRENT_VER}\"/\1${VERSION}\"/" "$SKILL_MD"
         echo "[post-write] Updated SKILL.md version: $CURRENT_VER → $VERSION"

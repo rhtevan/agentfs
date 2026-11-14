@@ -4,7 +4,7 @@ description: >
   configure goose headroom, goose headroom provider
 platforms: ['linux']
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   model-tier: T3
   tags: [goose, headroom, custom-provider, context-optimization, compression, configuration]
   related_skills: [headroom-litellm-proxy, headroom-proxy-status, goose-litellm-provider, litellm-proxy-status]
@@ -59,26 +59,8 @@ Goose (custom_headroom) → Headroom Proxy (:8787) → LiteLLM (:4000) → Verte
   "base_url": "http://host.containers.internal:8787",
   "models": [
     {
-      "name": "claude-opus-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-5",
-      "context_limit": 128000,
+      "name": "claude-opus-5",
+      "context_limit": 1000000,
       "input_token_cost": null,
       "output_token_cost": null,
       "currency": null,
@@ -102,13 +84,18 @@ Goose (custom_headroom) → Headroom Proxy (:8787) → LiteLLM (:4000) → Verte
 }
 ```
 
+> **`models` is generated, not hand-written.** `setup.sh` builds it from
+> LiteLLM `/model/info` (Headroom's upstream): one entry per served model,
+> `context_limit` = `max_input_tokens`. The block above shows one entry.
+> Current list: `hey litellm model list`.
+
 ### config.yaml Provider Entry
 
 ```yaml
 providers:
   custom_headroom:
     enabled: true
-    model: claude-opus-4-6
+    model: claude-opus-5
     configured: true
 ```
 
@@ -168,7 +155,7 @@ Add the provider entry under `providers:` in `~/.config/goose/config.yaml`:
 ```yaml
   custom_headroom:
     enabled: true
-    model: claude-opus-4-6
+    model: claude-opus-5
     configured: true
 ```
 
@@ -192,7 +179,7 @@ goose configure
 4. Name → `Headroom`
 5. API URL → `http://host.containers.internal:8787`
 6. Authentication Required → **No**
-7. Available Models → `claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-4-5`
+7. Available Models → output of `hey litellm model list` (comma-separated)
 8. Streaming Support → **Yes**
 
 ### Step 5 — Switch to the Headroom Provider
@@ -225,7 +212,7 @@ Expected output:
 ```
   custom_headroom:
     enabled: true
-    model: claude-opus-4-6
+    model: claude-opus-5
     configured: true
 active_provider: custom_headroom
 ```
@@ -274,92 +261,17 @@ If the Headroom custom provider is lost (e.g., after a config reset):
 5. **Set `active_provider: custom_headroom`** in config.yaml
 6. **Restart Goose** — the Headroom provider will be available
 
-### Quick Recovery Script
+### Quick Recovery
 
 ```bash
-#!/usr/bin/env bash
-# Restore the Headroom custom provider for Goose
-set -euo pipefail
-
-PROVIDER_DIR="$HOME/.config/goose/custom_providers"
-PROVIDER_FILE="$PROVIDER_DIR/custom_headroom.json"
-
-mkdir -p "$PROVIDER_DIR"
-
-cat > "$PROVIDER_FILE" << 'EOF'
-{
-  "name": "custom_headroom",
-  "engine": "openai",
-  "display_name": "Headroom",
-  "description": "Headroom context-optimization proxy → LiteLLM (Vertex AI Claude models)",
-  "api_key_env": "",
-  "base_url": "http://host.containers.internal:8787",
-  "models": [
-    {
-      "name": "claude-opus-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-5",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    }
-  ],
-  "headers": null,
-  "timeout_seconds": 600,
-  "supports_streaming": true,
-  "requires_auth": false,
-  "catalog_provider_id": null,
-  "base_path": null,
-  "env_vars": null,
-  "dynamic_models": null,
-  "skip_canonical_filtering": false,
-  "model_doc_link": null,
-  "setup_steps": [],
-  "fast_model": null,
-  "preserves_thinking": true
-}
-EOF
-
-# Ensure .env has the API key
-ENV_FILE="$HOME/.config/goose/.env"
-if ! grep -q 'CUSTOM_HEADROOM_API_KEY' "$ENV_FILE" 2>/dev/null; then
-  echo 'CUSTOM_HEADROOM_API_KEY=sk-EXAMPLE-not-real' >> "$ENV_FILE"
-fi
-
-echo "✅ Headroom custom provider restored to: $PROVIDER_FILE"
-echo ""
-echo "Next steps:"
-echo "  1. Add to ~/.config/goose/config.yaml under providers:"
-echo ""
-echo "     providers:"
-echo "       custom_headroom:"
-echo "         enabled: true"
-echo "         model: claude-opus-4-6"
-echo "         configured: true"
-echo "     active_provider: custom_headroom"
-echo ""
-echo "  2. Verify Headroom proxy is running:"
-echo "     systemctl --user status headroom-proxy"
+bash ~/.agents/skills/goose-headroom-provider/scripts/setup.sh --dry-run
+bash ~/.agents/skills/goose-headroom-provider/scripts/setup.sh
 ```
+
+`setup.sh` recreates `custom_headroom.json` with the model list from
+LiteLLM and adds the `.env` key. It does not rewrite an existing JSON;
+when its model list drifts from LiteLLM it prints the regenerate command
+(`mv … .bak && bash setup.sh`).
 
 ---
 
@@ -378,6 +290,7 @@ echo "     systemctl --user status headroom-proxy"
 |---|---|---|
 | Headroom not in provider list | Missing JSON file | Copy `custom_headroom.json` to `~/.config/goose/custom_providers/` |
 | "Connection refused" on :8787 | Headroom proxy not running | `systemctl --user start headroom-proxy` (see `headroom-litellm-proxy` skill) |
+| `ℹ️  Model list differs from LiteLLM` | Proxy model list refreshed (`refresh litellm models`) after the JSON was created | Run the printed `mv … .bak && bash setup.sh` command |
 | Provider shows but won't connect | `base_url` wrong in JSON | Verify `http://host.containers.internal:8787` |
 | Only 1 model available | Models not listed in JSON | Update the `models` array to match LiteLLM models |
 | Config lost after update | Goose config reset | Re-run the recovery procedure above |

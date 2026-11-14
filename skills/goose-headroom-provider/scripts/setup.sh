@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
 # setup.sh — Install/restore Goose custom provider for Headroom proxy
-# Usage: setup.sh [--dry-run] [--model MODEL]
-# Version: 2.0.0
+# Usage: setup.sh [--dry-run] [--model MODEL]   (env LITELLM_URL, default http://127.0.0.1:4000)
+# Version: 2.1.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-headroom-provider" "2.0.0" 2>/dev/null || true
+trace_init "goose-headroom-provider" "2.1.0" 2>/dev/null || true
 
 DRY_RUN=false
-MODEL="claude-opus-4-6"
+MODEL="claude-opus-5"
+LITELLM_URL="${LITELLM_URL:-http://127.0.0.1:4000}"
 CHANGES=0
 ERRORS=0
 
-for arg in "$@"; do
-  case "$arg" in
-    --dry-run) DRY_RUN=true ;;
-    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
-    --model) shift; MODEL="${1:-claude-opus-4-6}" ;;
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run) DRY_RUN=true; shift ;;
+    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; shift ;;
+    --model) MODEL="${2:?--model needs a value}"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
 
@@ -41,6 +43,33 @@ else
   ERRORS=$((ERRORS + 1))
 fi
 
+# ── Models: discovered from LiteLLM (Headroom's upstream) ──────────────
+# Headroom forwards to LiteLLM, so the provider JSON lists exactly the
+# models LiteLLM serves (/model/info: name + max_input_tokens).
+discover_models() {
+  LITELLM_URL="$LITELLM_URL" python3 - << 'PYEOF'
+import json, os, sys, urllib.request
+try:
+    data = json.load(urllib.request.urlopen(os.environ["LITELLM_URL"].rstrip("/") + "/model/info", timeout=10))["data"]
+except Exception:
+    sys.exit(1)
+out = {}
+for m in data:
+    out[m["model_name"]] = (m.get("model_info") or {}).get("max_input_tokens") or 200000
+def key(n):
+    p = n.split("-")
+    fam = {"opus": 0, "sonnet": 1, "haiku": 2}.get(p[1] if len(p) > 1 else "", 9)
+    try:
+        ver = tuple(-int(x) for x in p[2:])
+    except ValueError:
+        ver = (0,)
+    return (fam, ver, n)
+models = [{"name": n, "context_limit": out[n], "input_token_cost": None, "output_token_cost": None,
+           "currency": None, "supports_cache_control": None, "reasoning": False} for n in sorted(out, key=key)]
+print(json.dumps(models, indent=4))
+PYEOF
+}
+
 # ── Step 2: Create/verify custom provider JSON ──────────────────────────
 trace_step 2 "provider_json" 0 "path=${PROVIDER_FILE}" 2>/dev/null || true
 
@@ -52,12 +81,32 @@ if [[ -f "$PROVIDER_FILE" ]]; then
     echo "  ⚠ File exists but may not contain custom_headroom"
     ERRORS=$((ERRORS + 1))
   fi
+  if LIVE_JSON="$(discover_models)"; then
+    DRIFT="$(LIVE_JSON="$LIVE_JSON" PROVIDER_FILE="$PROVIDER_FILE" python3 -c '
+import json, os
+live = [m["name"] for m in json.loads(os.environ["LIVE_JSON"])]
+cur = [m["name"] for m in json.load(open(os.environ["PROVIDER_FILE"])).get("models", [])]
+add = [n for n in live if n not in cur]; gone = [n for n in cur if n not in live]
+if add or gone:
+    print("missing: %s | not served: %s" % (" ".join(add) or "-", " ".join(gone) or "-"))
+')"
+    if [[ -n "$DRIFT" ]]; then
+      echo "  ℹ️  Model list differs from LiteLLM ($DRIFT)"
+      echo "     To regenerate: mv $PROVIDER_FILE ${PROVIDER_FILE}.bak && bash $(realpath "$0")"
+    else
+      echo "  ✓ Model list matches LiteLLM"
+    fi
+  fi
 else
   if $DRY_RUN; then
     echo "[dry-run] WOULD CREATE: $PROVIDER_FILE"
     CHANGES=$((CHANGES + 1))
   else
     mkdir -p "$PROVIDER_DIR"
+    if ! MODELS_JSON="$(discover_models)"; then
+      echo "❌ LiteLLM unreachable at $LITELLM_URL — cannot build the model list" >&2
+      exit 1
+    fi
     cat > "$PROVIDER_FILE" << 'PROVIDER_EOF'
 {
   "name": "custom_headroom",
@@ -66,35 +115,7 @@ else
   "description": "Headroom context-optimization proxy → LiteLLM (Vertex AI Claude models)",
   "api_key_env": "",
   "base_url": "http://host.containers.internal:8787",
-  "models": [
-    {
-      "name": "claude-opus-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-6",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "claude-sonnet-4-5",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    }
-  ],
+  "models": __MODELS__,
   "headers": null,
   "timeout_seconds": 600,
   "supports_streaming": true,
@@ -110,6 +131,13 @@ else
   "preserves_thinking": true
 }
 PROVIDER_EOF
+    MODELS_JSON="$MODELS_JSON" python3 - "$PROVIDER_FILE" << 'PYEOF'
+import json, os, sys
+p = sys.argv[1]
+s = open(p).read().replace("__MODELS__", json.dumps(json.loads(os.environ["MODELS_JSON"]), indent=4).replace("\n", "\n  "))
+json.loads(s)
+open(p, "w").write(s)
+PYEOF
     echo "✓ Created provider JSON: $PROVIDER_FILE"
   fi
 fi
@@ -135,11 +163,11 @@ trace_step 4 "config_yaml" 0 "path=${CONFIG_YAML}" 2>/dev/null || true
 if [[ -f "$CONFIG_YAML" ]]; then
   if grep -q 'custom_headroom' "$CONFIG_YAML"; then
     echo "✓ NO CHANGE: custom_headroom found in config.yaml"
-    active=$(grep 'active_provider:' "$CONFIG_YAML" | awk '{print $2}')
+    active=$(grep 'active_provider:' "$CONFIG_YAML" | awk '{print $2}' || true)
     echo "  Current active_provider: ${active:-not set}"
   else
     echo "⚠ custom_headroom not found in config.yaml"
-    echo "  Add manually or run 'goose configure' to register the provider"
+    echo "  Add under providers: in $CONFIG_YAML →  custom_headroom: {enabled: true, model: $MODEL, configured: true}"
     ERRORS=$((ERRORS + 1))
   fi
 else

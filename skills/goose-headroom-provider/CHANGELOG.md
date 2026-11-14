@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-13 20:43 | v2.1.0 — setup.sh builds models from LiteLLM /model/info (was 3 hard-coded 4.x models), reports drift for existing JSON, default claude-opus-5; fix --model arg parsing and silent exit when config has no active_provider; doc: generated-models note, examples → claude-opus-5, duplicated recovery script replaced by setup.sh, drift troubleshooting row |
 | 2026-11-09 18:49 | v2.0.0 — Migrate --check to --dry-run contract: structured output signals, exit 0 always, --check deprecated alias |
 | 2026-11-09 11:13 | v2.3.0 — New script: install/restore Headroom custom provider JSON, .env key, config.yaml verification with --check mode; CNL restructure: replaced 7-step inline workflow with 2-step script delegation for Q improvement |
 | 2026-11-08 22:50 | v2.2.0 — Add Rules + trace |

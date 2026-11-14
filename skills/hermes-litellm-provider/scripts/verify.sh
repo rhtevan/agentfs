@@ -7,7 +7,7 @@ set -euo pipefail
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "hermes-litellm-provider" "2.3.0" 2>/dev/null || true
+trace_init "hermes-litellm-provider" "2.4.2" 2>/dev/null || true
 
 HERMES_CONFIG="$HOME/.hermes/config.yaml"
 LITELLM_URL="http://127.0.0.1:4000"
@@ -107,19 +107,48 @@ else
   check "S3d: model.default ($MODEL_DEFAULT) matches providers.$PROVIDER_NAME.default_model ($PROVIDER_DEFAULT_MODEL)" "FAIL"
 fi
 
-# S4: Config models match live LiteLLM models
-# Extract model names from the providers.<name>.models: hash keys
-CONFIG_MODELS=$(awk "/^  $PROVIDER_NAME:/{found=1} found && /^    models:/{m=1; next} m && /^      [a-z]/{gsub(/:.*/, \"\"); print \$1} m && /^    [a-z]/ && !/^      /{m=0}" "$HERMES_CONFIG" 2>/dev/null | sort)
-LIVE_MODELS=$(curl -sf "$LITELLM_URL/v1/models" 2>/dev/null | python3 -c "import sys,json; print('\n'.join(sorted(m['id'] for m in json.load(sys.stdin).get('data',[]))))" 2>/dev/null || echo "")
+# S4: Hermes sees the live LiteLLM models
+# Hermes semantics (hermes_cli/model_switch.py _models_config_is_allowlist):
+#   discover_models true (default) + models: mapping → live /models listing is used;
+#     the mapping is per-model metadata, not an allowlist → mismatch is informational.
+#   discover_models false, or models: list/string → models: is the catalog → must match live.
+LIVE_MODELS=$(curl -sf "$LITELLM_URL/v1/models" 2>/dev/null | python3 -c "import sys,json; print(' '.join(sorted(m['id'] for m in json.load(sys.stdin).get('data',[]))))" 2>/dev/null || echo "")
+S4=$(LIVE="$LIVE_MODELS" CFG="$HERMES_CONFIG" PROV="$PROVIDER_NAME" python3 - << 'PYEOF' 2>/dev/null || echo "ERR"
+import os, yaml
+p = ((yaml.safe_load(open(os.environ["CFG"])) or {}).get("providers") or {}).get(os.environ["PROV"]) or {}
+d = p.get("discover_models", True)
+if isinstance(d, str):
+    d = d.lower() not in ("false", "no", "0")
+m = p.get("models")
+if isinstance(m, dict) or m is None:
+    cfg, pinned = sorted(m or {}), not d
+elif isinstance(m, str):
+    cfg, pinned = [x.strip() for x in m.split(",") if x.strip()], True
+else:
+    cfg = [x if isinstance(x, str) else (x or {}).get("id") or (x or {}).get("name") for x in m]
+    cfg, pinned = sorted(x for x in cfg if x), True
+live = os.environ["LIVE"].split()
+print("%s|%s|%s" % ("pinned" if pinned else "discovered", "match" if sorted(cfg) == live else "differ", " ".join(sorted(cfg))))
+PYEOF
+)
+S4_MODE="${S4%%|*}"; S4_REST="${S4#*|}"; S4_MATCH="${S4_REST%%|*}"; S4_CFG="${S4_REST#*|}"
 
-if [[ -n "$LIVE_MODELS" && "$CONFIG_MODELS" == "$LIVE_MODELS" ]]; then
-  check "S4: Config models match live LiteLLM models" "PASS"
-elif [[ -z "$LIVE_MODELS" ]]; then
-  check "S4: Config models match live LiteLLM models (proxy unreachable)" "FAIL"
+if [[ -z "$LIVE_MODELS" ]]; then
+  check "S4: Hermes sees live LiteLLM models (proxy unreachable)" "FAIL"
+elif [[ "$S4" == "ERR" ]]; then
+  check "S4: Hermes sees live LiteLLM models (cannot parse $HERMES_CONFIG)" "FAIL"
+elif [[ "$S4_MODE" == "discovered" ]]; then
+  check "S4: Hermes discovers models live from /v1/models ($(wc -w <<< "$LIVE_MODELS") served)" "PASS"
+  if [[ "$S4_MATCH" == "differ" ]]; then
+    echo "    ℹ️  models: metadata keys differ from live list (informational — not an allowlist)"
+    echo "       metadata: ${S4_CFG:-none}"
+  fi
+elif [[ "$S4_MATCH" == "match" ]]; then
+  check "S4: Pinned models: list matches live LiteLLM models" "PASS"
 else
-  check "S4: Config models match live LiteLLM models" "FAIL"
-  echo "    Config models: $(echo $CONFIG_MODELS | tr '\n' ', ')"
-  echo "    Live models:   $(echo $LIVE_MODELS | tr '\n' ', ')"
+  check "S4: Pinned models: list matches live LiteLLM models" "FAIL"
+  echo "    Pinned (discover_models false or list-form models:): $S4_CFG"
+  echo "    Live:   $LIVE_MODELS"
 fi
 
 # Summary

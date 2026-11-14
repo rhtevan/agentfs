@@ -81,7 +81,12 @@ assert_output_contains() {
 TMP_DIR=$(mktemp -d)
 trap "rm -rf $TMP_DIR" EXIT
 
-cd "$TMP_DIR"
+# Isolated HOME: clear/check also scan ~/.agents and must never touch the real one
+export HOME="$TMP_DIR/home"
+mkdir -p "$HOME/.agents/skills"
+
+mkdir -p "$TMP_DIR/proj"
+cd "$TMP_DIR/proj"
 mkdir -p .agents/memories
 git init -q
 git config user.email "test@test.com"
@@ -167,6 +172,47 @@ assert_fail "No args exits non-zero" "$rc"
 rc=0
 OUTPUT=$(bash "$CHK_SCRIPT" create 2>&1) || rc=$?
 assert_fail "Create with no files exits non-zero" "$rc"
+
+# ── Test 9: cwd independence (the root follows the files) ─────────
+echo "=== Test 9: Root follows the files, not the cwd ==="
+echo "user skill" > "$HOME/.agents/skills/x.md"
+rc=0
+OUTPUT=$(bash "$CHK_SCRIPT" create "$HOME/.agents/skills/x.md" 2>&1) || rc=$?
+assert_ok "Create (from project dir, USER file) exits 0" "$rc"
+assert_file_exists "Checkpoint written to USER root" "$HOME/.agents/.checkpoint"
+assert_file_not_exists "No checkpoint in project root" ".agents/.checkpoint"
+rc=0
+OUTPUT=$( (cd "$TMP_DIR" && bash "$CHK_SCRIPT" check) 2>&1) || rc=$?
+assert_fail "Check from an unrelated dir still sees it" "$rc"
+OUTPUT=$(bash "$CHK_SCRIPT" clear 2>&1)
+assert_file_not_exists "Clear from project dir removes USER checkpoint" "$HOME/.agents/.checkpoint"
+
+# ── Test 10: relative path recorded absolute ───────────────────────
+echo "=== Test 10: Absolute paths ==="
+bash "$CHK_SCRIPT" create .agents/memories/MEMORY.md >/dev/null 2>&1
+assert_output_contains "Relative path stored absolute" "^$TMP_DIR/proj/\.agents/memories/MEMORY.md  [a-f0-9]{64}$" "$(cat .agents/.checkpoint)"
+bash "$CHK_SCRIPT" clear >/dev/null 2>&1
+
+# ── Test 11: files spanning two roots ──────────────────────────────
+echo "=== Test 11: Mixed roots ==="
+bash "$CHK_SCRIPT" create .agents/memories/MEMORY.md "$HOME/.agents/skills/x.md" >/dev/null 2>&1
+assert_file_exists "Project checkpoint" ".agents/.checkpoint"
+assert_file_exists "USER checkpoint" "$HOME/.agents/.checkpoint"
+rc=0; grep -q "skills/x.md" .agents/.checkpoint || rc=$?
+assert_fail "Project checkpoint lists only project files" "$rc"
+OUTPUT=$(bash "$CHK_SCRIPT" clear 2>&1)
+assert_output_contains "Clear reports both" "cleared: .*proj/\.agents.*" "$OUTPUT"
+assert_file_not_exists "Both cleared (USER)" "$HOME/.agents/.checkpoint"
+
+# ── Test 12: --root and option errors ──────────────────────────────
+echo "=== Test 12: --root ==="
+bash "$CHK_SCRIPT" create .agents/memories/MEMORY.md "$HOME/.agents/skills/x.md" >/dev/null 2>&1
+bash "$CHK_SCRIPT" clear --root "$HOME/.agents" >/dev/null 2>&1
+assert_file_not_exists "--root clears only that root" "$HOME/.agents/.checkpoint"
+assert_file_exists "Other root untouched" ".agents/.checkpoint"
+bash "$CHK_SCRIPT" clear >/dev/null 2>&1
+rc=0; bash "$CHK_SCRIPT" clear --bogus >/dev/null 2>&1 || rc=$?
+assert_fail "Unknown clear option exits non-zero" "$rc"
 
 # ── Summary ────────────────────────────────────────────────────────
 echo ""

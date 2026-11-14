@@ -256,6 +256,23 @@ the current AGENTS.md. Specifically:
    Rule #1's `search_nodes` clause) only exist *after* the sync
    completes, so the agent must re-read to pick them up.
 
+### Version policy
+
+`version:` in this SKILL.md doubles as the AGENTS.md template version:
+`seed-agents-md.sh` stamps it as `agentfs-template-version`, and
+`sync-agents-md.sh`, `agentfs-eval/template-check.sh` and
+`pre-push-scan.sh` compare against it. Bumping it re-syncs every
+project AGENTS.md.
+
+| Change | `version:` | CHANGELOG |
+|--------|-----------|-----------|
+| Template text (`seed-agents-md.sh` AGENTS.md/SOUL output) | Bump | New row under the new version |
+| Scripts, docs, tests only | **Keep** | Row under the current version, e.g. `v7.8.0 — scripts only, version not bumped; fix: …` |
+
+`post-write.sh` requires `--version` for behavioral files: pass the
+current version for script-only changes. Splitting a separate
+`template_version` from `version:` is deferred; the user decides when.
+
 ### Verification
 
 The agent can verify the setup by running:
@@ -313,6 +330,10 @@ bash merge-log-entry.sh ~/.agents/log.md "- Updated README.md skill categories"
 # Multi-line entry
 bash merge-log-entry.sh ~/.agents/log.md "- Added SoC principle to skill-gen\n- Fixed merge-log-entry.sh comment"
 ```
+
+Do not start an entry line with a date or time — the `## YYYY-MM-DD HH:MM`
+heading already carries it. The script strips a leading date/timestamp
+from each entry line and warns on stderr.
 
 ### `merge-changelog-entry.sh`
 

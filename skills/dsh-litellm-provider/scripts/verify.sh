@@ -10,7 +10,7 @@ trace_init "dsh-litellm-provider" "1.2.0" 2>/dev/null || true
 
 DSH_HOME="${DSH_HOME:-$HOME/.dsh}"
 SETTINGS="$DSH_HOME/settings.yaml"
-LITELLM_URL="http://127.0.0.1:4000"
+LITELLM_URL="${LITELLM_URL:-http://127.0.0.1:4000}"
 PROVIDER_ID="litellm-vertex-ai"
 
 passed=0
@@ -108,9 +108,30 @@ for m in data.get('data', []):
   fi
 fi
 
-# --- Backup exists ---
-if [[ -f "$SETTINGS.bak" ]]; then
-  echo "  ℹ️  Backup: $SETTINGS.bak"
+# --- Default model is served (agent-default-model) ---
+if [[ -n "${LIVE_MODELS:-}" ]]; then
+  DEF=$(SETTINGS="$SETTINGS" python3 -c '
+import os, yaml
+d = (yaml.safe_load(open(os.environ["SETTINGS"])) or {}).get("agent-default-model") or {}
+print("%s %s" % (d.get("provider", "-"), d.get("model", "-")))' 2>/dev/null || echo "- -")
+  DEF_PROV="${DEF%% *}"; DEF_MODEL="${DEF#* }"
+  if [[ "$DEF_PROV" != "$PROVIDER_ID" ]]; then
+    echo "  ℹ️  agent-default-model uses provider '$DEF_PROV' (not managed by this skill)"
+  elif grep -qx "$DEF_MODEL" <<< "$LIVE_MODELS"; then
+    check "Default model served ($DEF_MODEL)" "ok"
+    STRONGEST=$(bash "$HOME/.agents/skills/litellm-proxy-status/scripts/models.sh" default --url "$LITELLM_URL" 2>/dev/null || true)
+    if [[ -n "$STRONGEST" && "$STRONGEST" != "$DEF_MODEL" ]]; then
+      echo "  ℹ️  Strongest served model is $STRONGEST (informational)"
+    fi
+  else
+    check "Default model served" "agent-default-model '$DEF_MODEL' is not served by LiteLLM"
+  fi
+fi
+
+# --- Latest backup ---
+LATEST_BAK=$(ls -1t "$SETTINGS".bak* 2>/dev/null | head -1 || true)
+if [[ -n "$LATEST_BAK" ]]; then
+  echo "  ℹ️  Latest backup: $LATEST_BAK"
 fi
 
 echo ""

@@ -1,13 +1,14 @@
 ---
 name: litellm-vertex-ai-proxy
 description: >
-  setup litellm vertex, vertex ai proxy, litellm vertex
+  setup litellm vertex, vertex ai proxy, litellm vertex,
+  refresh litellm models
 platforms: ['linux']
 metadata:
-  version: "3.2.0"
+  version: "3.4.1"
   model-tier: T2
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
-  related_skills: [litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
+  related_skills: [gcp-vertex-models, litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -44,20 +45,29 @@ Execute each step in order and verify before proceeding.
 
 - Linux with systemd (Fedora, RHEL, Ubuntu, etc.)
 - `uv` package manager (`which uv` or install from https://docs.astral.sh/uv/)
-- `gcloud` CLI authenticated (`gcloud auth login`)
+- `gcloud` CLI (optional; only used for project auto-detection — scripts authenticate with the SA key via `google-auth`)
 - A GCP project with Vertex AI API enabled
 - A **dedicated** GCP service account key (JSON) with `roles/aiplatform.user` —
   do NOT use the Compute Engine default service account (`*-compute@developer.gserviceaccount.com`),
   which holds `roles/editor` and is over-privileged for Vertex AI workloads
 - `python3` with `google-auth` package
 
-## Known Available Models (as of 2026-08-10)
+## Available Models — Source of Truth
 
-| Model | Region | Context Window |
-|---|---|---|
-| `claude-opus-4-6` | `us-east5` | 1M tokens |
-| `claude-sonnet-4-6` | `us-east5` | 1M tokens |
-| `claude-haiku-4-5` | `us-east5` | 200k tokens |
+This skill keeps no model table. Model discovery belongs to the
+**`gcp-vertex-models`** skill (dependency): `hey vertex model list`,
+`hey refresh vertex models`, `hey vertex default model`. `setup.sh` calls
+its probe and writes one `model_list` entry per usable model with that
+model's `region` as `vertex_location`.
+
+### Does the LiteLLM proxy serve a dynamic model list?
+
+`GET /v1/models` works, but it is **config-driven, not live from Vertex**. It lists
+the `model_list` entries (a wildcard `vertex_ai/*` expands LiteLLM's built-in,
+version-dependent catalog, which includes models your project cannot call).
+Therefore `setup.sh` writes an explicit `model_list` from the probe. Refresh it
+with `hey refresh litellm models` (workflow below); clients that fetch `/v1/models`
+(e.g. goose custom providers) then pick the change up automatically.
 
 ---
 
@@ -96,13 +106,15 @@ account needs `roles/aiplatform.user` — contact GCP admin.
 
 ### Step 3 — Discover Available Models
 
+Load the `gcp-vertex-models` skill and run its refresh step:
+
 ```bash
-bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/probe-models.sh \
-  --project <project_id> --region us-east5
+bash ~/.agents/skills/gcp-vertex-models/scripts/probe-models.sh \
+  --project <project_id> --credentials "$SA_KEY"
 ```
 
-Probes known Claude model names against Vertex AI. There is no
-listing API — this brute-force probe is the only discovery method.
+Show the model × region table to the user. Continue only if it reports
+at least one usable model.
 
 ### Step 4 — Install LiteLLM
 
@@ -118,7 +130,6 @@ uv tool install 'litellm[proxy]'
 bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/setup.sh \
   --project <project_id> \
   --sa-key <path_to_key.json> \
-  --region us-east5 \
   --dry-run
 ```
 
@@ -128,7 +139,6 @@ Review the generated files, then run for real:
 bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/setup.sh \
   --project <project_id> \
   --sa-key <path_to_key.json> \
-  --region us-east5 \
   --force
 ```
 
@@ -138,13 +148,13 @@ To bind on all interfaces (required for container/sandbox access):
 bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/setup.sh \
   --project <project_id> \
   --sa-key <path_to_key.json> \
-  --region us-east5 \
   --host 0.0.0.0 \
   --force
 ```
 
 The setup script:
-- Discovers available models from live Vertex AI
+- Runs the `gcp-vertex-models` probe (SA auth, `global` + `us-east5`; `--regions`, `--prefer global|regional`)
+- Writes an explicit `model_list` with a per-model `vertex_location` (no wildcard)
 - Generates `~/.config/litellm/config.yaml`
 - Generates `~/.config/systemd/user/litellm-proxy.service`
 - Backs up existing files before overwriting
@@ -158,6 +168,38 @@ bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/verify.sh
 ```
 
 All 11 checks should pass.
+
+---
+
+## Refresh LiteLLM Models (`hey refresh litellm models`)
+
+Use when Vertex offers new models or the proxy serves stale ones. The
+refresh keeps the live bind host, port, and SA key from the systemd unit.
+
+### Refresh Step 1 — Dry run
+
+```bash
+bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/refresh-models.sh
+```
+
+- `DRY_RUN_RESULT=CONVERGED` → report "proxy already current". Stop.
+- `DRY_RUN_RESULT=PENDING` → show the `-`/`+` model/region changes to the user. Ask for approval.
+
+### Refresh Step 2 — Apply (after approval)
+
+```bash
+bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/refresh-models.sh --apply
+```
+
+Backs up and rewrites `config.yaml`, restarts the proxy, and chat-tests every
+served model. Exit 1 lists the failing models; the backup path is printed.
+
+### Refresh Step 3 — Downstream
+
+Relay the script's "Downstream" lines. goose `custom_redhat` discovers models
+automatically, but its fallback list makes `goose-litellm-provider` verify S4 fail
+until `goose-litellm-provider/scripts/restore.sh` runs. Hermes and DSH hold static
+lists. Do NOT edit other agents' configs from this skill.
 
 ---
 
@@ -176,14 +218,16 @@ journalctl --user -u litellm-proxy -f     # follow logs
 
 | # | Issue | Detail |
 |:-:|-------|--------|
-| 1 | **No model listing API** | Vertex AI has no endpoint to list available Anthropic publisher models. `gcloud ai models list`, `GET .../publishers/anthropic/models`, and all v1/v1beta1 variants return 404 or empty. The only discovery method is probing each model name with a `rawPredict` request. Use `scripts/probe-models.sh`. |
-| 2 | **`global` region returns 404 on raw API** | Direct API calls to `https://global-aiplatform.googleapis.com/.../:rawPredict` return 404 for all models. However, LiteLLM's internal routing via `vertex_location: global` still works. Use explicit `us-east5` for reliability and consistency. |
-| 3 | **Region availability varies by model** | Not all models are available in all regions. `us-central1` returns 400 ("not servable in region"). Always probe with `scripts/probe-models.sh` before adding a model. |
-| 4 | **429 ≠ 404** | A 429 response from probing means the model exists but is rate-limited or quota-gated (e.g., `claude-sonnet-5` returned 429). A 404 means the model is genuinely unavailable. |
-| 5 | **Context windows differ across model families** | Opus/Sonnet 4.6 have 1M token context; Haiku 4.5 and Sonnet 4.5 have 200k tokens. Downstream consumers (Goose, Hermes) must set `context_limit` correctly per model. |
+| 1 | **No entitlement listing API** | `GET https://us-central1-aiplatform.googleapis.com/v1beta1/publishers/anthropic/models` lists the publisher *catalog* (names only); some listed models still return 404/403 for your project. Only a `rawPredict` call shows true availability. Use the `gcp-vertex-models` skill. |
+| 2 | **`global` host has no region prefix** | The global endpoint is `https://aiplatform.googleapis.com/v1/projects/P/locations/global/...` (NOT `global-aiplatform.googleapis.com`, which does not exist). Newer models (opus-5, sonnet-5-5, haiku-5-5 …) are typically quota-limited (429) in `us-east5` but 200 on `global`, which is what the native `claude` CLI uses (`CLOUD_ML_REGION=global`). `global` gives no regional data-residency guarantee. |
+| 3 | **Region availability varies by model** | Not all models are available in all regions. `us-central1` returns 400 ("not servable in region"). Always probe (`gcp-vertex-models`) before adding a model. |
+| 4 | **429 ≠ 404** | A 429 response from probing means the model exists but is rate-limited or quota-gated (e.g., `claude-sonnet-5` returns 429 on `us-east5` but 200 on `global`). A 404 means the model is genuinely unavailable. |
+| 5 | **Context windows differ across model families** | Opus/Sonnet 4.6 and newer have 1M token context; Haiku 4.5, Sonnet 4.5 and Opus 4.5 have 200k tokens. Downstream consumers (Goose, Hermes) must set `context_limit` correctly per model. |
 | 6 | **Service account key, not user ADC** | systemd services cannot re-authenticate interactively. User ADC refresh tokens expire and the proxy silently fails. Always use a service account key file via `GOOGLE_APPLICATION_CREDENTIALS`. |
-| 7 | **`setup.sh` discovers all available models** | The probe may find models you've intentionally excluded (e.g., `claude-sonnet-4-5`). After running `setup.sh`, review the generated config and remove unwanted models before restarting. |
-| 8 | **`--host 127.0.0.1` blocks container access** | Default binds to loopback only. Containers (Podman, Docker, OpenShell sandboxes) reach the host via bridge IPs like `host.containers.internal`, which is not `127.0.0.1`. Use `--host 0.0.0.0` when the proxy must be reachable from containers. Safe on private networks with no public-facing interfaces. |
+| 7 | **`setup.sh` discovers all available models** | The probe may find models you've intentionally excluded. Review the generated config (use `--dry-run`) and remove unwanted models before restarting. |
+| 8 | **`--host 127.0.0.1` blocks container access** | Default binds to loopback only. Containers (Podman, Docker, OpenShell sandboxes) reach the host via bridge IPs like `host.containers.internal`, which is not `127.0.0.1`. Use `--host 0.0.0.0` when the proxy must be reachable from containers. **The proxy has no `master_key`, so anyone who can reach the port can spend your GCP quota** — restrict via firewall, or set `general_settings.master_key` and give clients the key. |
+| 9 | **Wildcard `vertex_ai/*` is misleading** | It exposes LiteLLM's built-in catalog (incl. models your project cannot call → Vertex 404/403 at request time) and varies with the LiteLLM version. Prefer the explicit list that `setup.sh` generates. |
+| 10 | **`gcloud auth print-access-token` may fail** | It needs a usable user login for the active gcloud context. All scripts here use the SA key via `google-auth` instead. |
 
 ---
 
@@ -196,6 +240,7 @@ journalctl --user -u litellm-proxy -f     # follow logs
 | S3 | Service account credentials file exists and is type service_account | `scripts/verify.sh` checks S3a–S3b |
 | S4 | Health endpoint responds with all endpoints healthy | `scripts/verify.sh` checks S4a–S4b |
 | S5 | /v1/models endpoint returns configured models | `scripts/verify.sh` check S5 |
+| S6 | Refresh detects drift without changing state, applies on request | `scripts/refresh-models.sh` prints `DRY_RUN_RESULT=…`; `--apply` chat-tests every model |
 
 ## Tests
 
@@ -207,10 +252,10 @@ journalctl --user -u litellm-proxy -f     # follow logs
 | T4 | S4 | `bash scripts/verify.sh 2>&1 \| grep S4` | S4a–S4b show ✅ |
 | T5 | S5 | `bash scripts/verify.sh 2>&1 \| grep S5` | S5 shows ✅ |
 | T6 | S1–S5 | `bash scripts/verify.sh` | Exit code 0, all checks pass |
-| T7 | — | `bash scripts/probe-models.sh --region us-east5` | At least 1 model found |
+| T7 | S6 | `bash scripts/refresh-models.sh` | Exit 0; `DRY_RUN_RESULT=CONVERGED` right after setup |
 | T8 | — | `bash scripts/detect-sa.sh` | At least 1 SA key found |
 | T9 | — | `bash scripts/test-sa.sh --sa-key <key> --project <proj>` | ✅ Success response |
-| T10 | S1–S5 | `bash scripts/setup.sh --dry-run` → diff against live | Generated files match expectations |
+| T10 | S1–S5 | `bash scripts/setup.sh --dry-run` | Ends with `DRY_RUN_RESULT=CONVERGED` or a `-`/`+` model diff + `PENDING` |
 | T11 | S1–S5 | Stop proxy → remove config → `bash scripts/setup.sh --force` → `bash scripts/verify.sh` | Full rebuild passes all checks |
 
 ## Troubleshooting
@@ -221,11 +266,21 @@ journalctl --user -u litellm-proxy -f     # follow logs
 | 403 from Vertex AI | SA missing IAM role | Grant `roles/aiplatform.user` to the service account |
 | Credentials expire | Using user ADC instead of SA key | Switch to service account key file |
 | Port 4000 in use | Another process | Use `--port` flag with `scripts/setup.sh` |
-| Model returns 404 | Model not available in region | Run `scripts/probe-models.sh` to check availability |
-| `global` returns 404 | Direct API doesn't support `global` | Use `us-east5` explicitly |
-| Unwanted models after setup | `setup.sh` discovers all available | Edit config.yaml, remove unwanted, restart proxy |
+| Model returns 404 | Model not available in region | `hey refresh litellm models` |
+| `global` returns 404 | Wrong host (`global-aiplatform…`) or model not offered | Use host `aiplatform.googleapis.com`; `hey vertex model list` |
+| 429 on a model | Regional quota (common in `us-east5` for new models) | Use `global` (`--prefer global`) or request quota |
+| Unwanted models after setup | `setup.sh` includes every usable model | Edit config.yaml, remove unwanted, restart proxy |
 
 
 ## Changelog
 
 > See [CHANGELOG.md](./CHANGELOG.md) for version history.
+
+
+## Alternative: native goose `gcp_vertex_ai` (no proxy)
+
+goose can call Vertex directly with the same SA key. Use the
+`goose-gcp-provider` skill (`hey configure goose gcp`): it sets
+`providers.gcp_vertex_ai.model` + `GCP_LOCATION` from `vertex default model`
+after a live test. goose's picker for this provider is compiled in, so newer
+models are used by name.
