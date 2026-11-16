@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 15:10
+- Accept both SOUL load mechanisms: pre-7.7.0 @import and 7.7.0+ read instruction (skills/agentfs-setup/scripts/verify-setup.sh)
+
+## 2026-11-16 15:09
+- Replace dropped @import SOUL check with adoption-instruction check (skills/agentfs-setup/scripts/verify-setup.sh)
+
 ## 2026-11-16 14:54
 - Troubleshooting row for the pre-7.9.3 confidence-float PII false positive (skills/agentfs-git-push/SKILL.md)
 - Allowlist Category 6 fictional 555-exchange phone test vectors (.pre-push-allowlist)

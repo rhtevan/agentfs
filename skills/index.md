@@ -4,8 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-16 15:10 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-11-16 14:54 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-16 14:53 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-16 14:51 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-11-16 14:48 |
 | [gcp-vertex-models](./gcp-vertex-models/SKILL.md) | gcp, vertex-ai, claude, models, discovery, credentials, service-account | refresh vertex models, vertex model list, vertex default model, select vertex credential, vertex credential list | 2026-11-16 14:37 |

@@ -422,9 +422,33 @@ else
     "grep -qv '^[[:space:]]*$\|^[[:space:]]*<!--\|^[[:space:]]*-->\|^#' '$AGENTS/SOUL.md' 2>/dev/null" \
     "echo '  ⚠ SOUL.md exists but appears to be a stub — run author-soul.sh to add identity content'"
 
-  check "AGENTS.md loads SOUL.md via @import" \
-    "grep -q '@\.agents/SOUL\.md' '$ROOT/AGENTS.md' 2>/dev/null" \
-    "echo '  ⚠ AGENTS.md missing @.agents/SOUL.md import — run agentfs-setup --sync to update template'"
+  # AGENTS.md must get SOUL.md adopted at session start. Two mechanisms
+  # have been used, and both are accepted here:
+  #
+  #   1. '@.agents/SOUL.md' — a bare import line. Emitted by
+  #      seed-agents-md.sh up to and including v7.6.x.
+  #   2. 'Read `.agents/SOUL.md` now and adopt it ...' — an imperative
+  #      instruction. Replaced the import in v7.7.0 (d02acc6).
+  #
+  # Until 2026-11-16 this checked ONLY for the import, so every project
+  # synced to v7.7.0 or later failed it, with a remediation hint ("run
+  # --sync") that made the failure worse rather than fixing it. A check
+  # that cannot pass teaches the reader to skim past the ✗ column.
+  #
+  # Both forms are matched because unsynced projects are a legitimate
+  # state, not a defect: agentbox (v5.9.0) and dsh (v4.17.6) still use
+  # the import and genuinely do load SOUL.md. Failing them would report
+  # drift where none exists. agentflow (v7.3.3) carries both at once,
+  # which is also fine.
+  #
+  # The imperative is matched loosely ("Read ... .agents/SOUL.md") so
+  # rewording the sentence does not re-break this. Presence of the path
+  # alone is NOT sufficient — it appears in the Quick Orientation and
+  # Scope Definitions tables as a reference, which is not an
+  # instruction to adopt it.
+  check "AGENTS.md loads SOUL.md (import or read instruction)" \
+    "grep -qE '^@\.agents/SOUL\.md|Read .*\.agents/SOUL\.md' '$ROOT/AGENTS.md' 2>/dev/null" \
+    "echo '  ⚠ AGENTS.md neither imports nor instructs reading .agents/SOUL.md — run agentfs-setup --sync to update template'"
 
   check ".agents/profiles/ directory exists" \
     "[[ -d '$AGENTS/profiles' ]]" \
