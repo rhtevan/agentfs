@@ -4,12 +4,12 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-16 14:26 |
+| [gcp-vertex-models](./gcp-vertex-models/SKILL.md) | gcp, vertex-ai, claude, models, discovery, credentials, service-account | refresh vertex models, vertex model list, vertex default model, select vertex credential, vertex credential list | 2026-11-16 14:37 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-16 14:35 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-16 14:18 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-11-16 14:14 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider, rotate ols key, ols credential status | 2026-11-16 13:31 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-11-16 13:31 |
-| [gcp-vertex-models](./gcp-vertex-models/SKILL.md) | gcp, vertex-ai, claude, models, discovery, credentials, service-account | refresh vertex models, vertex model list, vertex default model, select vertex credential, vertex credential list | 2026-11-16 13:24 |
 | [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-16 12:52 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex, refresh litellm models | 2026-11-16 11:51 |
 | [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-11-16 11:49 |

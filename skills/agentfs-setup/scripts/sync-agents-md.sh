@@ -100,6 +100,10 @@ elif [[ "$CURRENT_VERSION" == "$TEMPLATE_VERSION" ]]; then
       echo ""
     fi
   fi
+  # The USER README drifts on a template bump even when this project's
+  # AGENTS.md is already current, so it must run on this early exit too.
+  README_SYNC="${HOME}/.agents/scripts/sync-readme-version.sh"
+  [[ -f "$README_SYNC" ]] && bash "$README_SYNC" || true
   exit 0
 else
   echo "[sync-agents-md] Current: v$CURRENT_VERSION → Template: v$TEMPLATE_VERSION"
@@ -203,6 +207,15 @@ else
 fi
 
 echo "[sync-agents-md] ✅ Synced $AGENTS (v$CURRENT_VERSION → v$TEMPLATE_VERSION, scope: $AGENTFS_SCOPE)"
+
+# --- Keep the USER README's version references in step ---
+# The template version comes from agentfs-setup frontmatter, so every
+# bump leaves the README claiming an older version. This drifted three
+# releases running before it was mechanised.
+README_SYNC="${HOME}/.agents/scripts/sync-readme-version.sh"
+if [[ -f "$README_SYNC" ]]; then
+  bash "$README_SYNC" || echo "[sync-agents-md] ⚠️  README version sync failed — check ~/.agents/README.md"
+fi
 
 # --- Compliance profile staleness check ---
 COMPLIANCE_PROFILE="${HOME}/.agents/skills/agentfs-setup/compliance-profile.yaml"

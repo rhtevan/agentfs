@@ -2,6 +2,19 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 14:37
+- Document the two scored-0 dimensions as evidenced waivers, not defects (skills/gcp-vertex-models/scores.yaml)
+
+## 2026-11-16 14:35
+- Call sync-readme-version.sh after a successful sync (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-11-16 14:34
+- Call sync-readme-version.sh on the already-up-to-date early exit (skills/agentfs-setup/scripts/sync-agents-md.sh)
+- New: keep USER README version references in step with the template version (D6 drift mechanism) (scripts/sync-readme-version.sh)
+
+## 2026-11-16 14:33
+- Test 7: assert README_AUDIT_REQUIRED instead of the removed 'README staleness' string; add negative case (skills/agentfs-setup/scripts/test-pre-push-scan.sh)
+
 ## 2026-11-16 14:28
 - Update version references to v7.9.1 (README.md)
 

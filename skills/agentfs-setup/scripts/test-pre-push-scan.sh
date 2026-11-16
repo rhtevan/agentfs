@@ -143,15 +143,31 @@ assert_output_contains "Detects PII" "PII.*FOUND" "$SCAN_OUTPUT"
 git reset -q HEAD pii.txt
 rm -f pii.txt
 
-# ── Test 7: README staleness notice ────────────────────────────────
-echo "=== Test 7: README staleness ==="
+# ── Test 7: README audit signal ────────────────────────────────────
+# Category 7 was a "README staleness" string check until
+# agentfs-readme-audit v1.2.0 replaced it with the README_AUDIT_REQUIRED
+# signal — the audit is semantic and belongs to that skill, not to a
+# grep in this one. The assertion was never updated, so this test
+# failed continuously and the suite sat permanently red. A suite that
+# is always red is a suite nobody reads.
+echo "=== Test 7: README audit signal ==="
 mkdir -p skills
 echo "new skill" > skills/test-skill.txt
 git add skills/test-skill.txt
 run_scan
-assert_output_contains "README notice" "README staleness.*STALE" "$SCAN_OUTPUT"
+assert_output_contains "C7.1: agentfs file staged → README_AUDIT_REQUIRED" \
+  "README audit.*README_AUDIT_REQUIRED" "$SCAN_OUTPUT"
 git reset -q HEAD skills/test-skill.txt
 rm -rf skills
+
+# Negative case: a non-agentfs file must NOT raise the signal.
+echo 'plain' > plain-c7.txt
+git add plain-c7.txt
+run_scan
+assert_output_contains "C7.2: non-agentfs file → no audit required" \
+  "README audit.*N/A" "$SCAN_OUTPUT"
+git reset -q HEAD plain-c7.txt
+rm -f plain-c7.txt
 
 # ── Test 8: All categories in one file ─────────────────────────────
 echo "=== Test 8: Multi-category detection ==="
