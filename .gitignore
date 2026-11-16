@@ -12,3 +12,6 @@ skills/*/topology.env
 .kgm-index.jsonl
 .kgm-knowledge.jsonl
 .kgm-skills.jsonl
+
+# flock mutex files (runtime, machine-local; merge-log-entry.sh)
+*.lock
