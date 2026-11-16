@@ -48,7 +48,7 @@ else
 fi
 
 # Test 2: API health
-code=$(run_on_host "$PROFILE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${PORT}/v1/models 2>/dev/null" || echo "000")
+code=$(run_on_host "$PROFILE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${PORT}/v1/models 2>/dev/null" || echo "000")
 if [[ "$code" == "200" ]]; then
   run_test "API health (HTTP $code)" "PASS"
 else
@@ -56,7 +56,7 @@ else
 fi
 
 # Test 3: Model ID
-model_id=$(run_on_host "$PROFILE_HOST" "curl -s http://localhost:${PORT}/v1/models 2>/dev/null" | jq -r '.data[0].id' 2>/dev/null)
+model_id=$(run_on_host "$PROFILE_HOST" "curl -s http://127.0.0.1:${PORT}/v1/models 2>/dev/null" | jq -r '.data[0].id' 2>/dev/null)
 if [[ -n "$model_id" && "$model_id" != "null" ]]; then
   run_test "Model ID ($model_id)" "PASS"
 else
@@ -66,7 +66,7 @@ fi
 # Test 4: Chat completion
 # Use max_tokens=200 to allow room for reasoning models that use
 # <think> tokens before producing visible content (e.g., Granite 4.2+)
-response=$(run_on_host "$PROFILE_HOST" "curl -s --max-time 120 http://localhost:${PORT}/v1/chat/completions \
+response=$(run_on_host "$PROFILE_HOST" "curl -s --max-time 120 http://127.0.0.1:${PORT}/v1/chat/completions \
   -H 'Content-Type: application/json' \
   -d '{\"model\": \"${model_id}\", \"max_tokens\": 200, \"messages\": [{\"role\": \"user\", \"content\": \"Say hello in one word.\"}]}' 2>/dev/null")
 content=$(echo "$response" | jq -r '.choices[0].message.content // ""' 2>/dev/null)

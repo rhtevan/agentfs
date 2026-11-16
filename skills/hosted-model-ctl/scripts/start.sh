@@ -73,7 +73,16 @@ else
 
   # Re-parse our profile (vars were overwritten by loop)
   parse_profile "$PROFILE"
-  run_on_host "$PROFILE_HOST" "podman start $CONTAINER"
+  # run_on_host discards remote stderr (2>/dev/null on ssh). Merge podman's
+  # stderr into stdout on the remote side so the real error is surfaced.
+  start_rc=0
+  start_out=$(run_on_host "$PROFILE_HOST" "podman start $CONTAINER 2>&1") || start_rc=$?
+  if (( start_rc != 0 )); then
+    echo "❌ podman start failed on $PROFILE_HOST (exit $start_rc):" >&2
+    printf '%s\n' "$start_out" | sed 's/^/   /' >&2
+    echo "   Diagnose host GPU/driver/CDI state: bash $(dirname "$0")/pre-check.sh $PROFILE_HOST" >&2
+    exit "$start_rc"
+  fi
   echo "✅ $CONTAINER started on $PROFILE_HOST"
 fi
 

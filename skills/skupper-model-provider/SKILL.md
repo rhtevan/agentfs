@@ -10,7 +10,7 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | upgrad
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts, CRC/OpenShift"
 metadata:
   author: agentfs
-  version: "9.2.0"
+  version: "9.2.1"
   model-tier: T3
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true

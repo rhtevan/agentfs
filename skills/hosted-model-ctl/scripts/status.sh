@@ -54,9 +54,9 @@ fi
 
 # API check
 if [[ "$status" == *"Up"* ]]; then
-  code=$(run_on_host "$PROFILE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${PORT}/v1/models 2>/dev/null" || echo "000")
+  code=$(run_on_host "$PROFILE_HOST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${PORT}/v1/models 2>/dev/null" || echo "000")
   if [[ "$code" == "200" ]]; then
-    model_id=$(run_on_host "$PROFILE_HOST" "curl -s http://localhost:${PORT}/v1/models 2>/dev/null" | jq -r '.data[0].id' 2>/dev/null)
+    model_id=$(run_on_host "$PROFILE_HOST" "curl -s http://127.0.0.1:${PORT}/v1/models 2>/dev/null" | jq -r '.data[0].id' 2>/dev/null)
     echo "API:       ✅ HTTP $code — serving $model_id"
   else
     echo "API:       ❌ HTTP $code"

@@ -230,7 +230,7 @@ wait_for_model() {
   echo "Waiting for model on ${host}:${port} (max ${max_wait}s)..."
   while (( elapsed < max_wait )); do
     local code
-    code=$(run_on_host "$host" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${port}/v1/models 2>/dev/null" || echo "000")
+    code=$(run_on_host "$host" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${port}/v1/models 2>/dev/null" || echo "000")
     if [[ "$code" == "200" ]]; then
       echo "✅ Model ready on ${host}:${port} (${elapsed}s)"
       return 0

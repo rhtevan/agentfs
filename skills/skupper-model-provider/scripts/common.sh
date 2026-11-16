@@ -916,11 +916,21 @@ validate_profile() {
   local hmc_common
   hmc_common="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../hosted-model-ctl/scripts/common.sh"
   if [[ -f "$hmc_common" ]]; then
-    source "$hmc_common"
-    for p in "${ALL_PROFILES[@]}"; do
+    # Read the profile list in a subshell. Sourcing hosted-model-ctl's
+    # common.sh directly would redefine run_on_host/host_reachable (same
+    # names, different implementation — no ssh_host_for mapping) for the
+    # rest of the calling script.
+    local profiles
+    profiles=$(bash -c 'source "$1" >/dev/null 2>&1 && printf "%s\n" "${ALL_PROFILES[@]}"' _ "$hmc_common") || profiles=""
+    if [[ -z "$profiles" ]]; then
+      echo "❌ Cannot validate profile — failed to load profiles from hosted-model-ctl" >&2
+      return 1
+    fi
+    local p
+    while IFS= read -r p; do
       [[ "$input" == "$p" ]] && return 0
-    done
-    echo "❌ Unknown profile '$input'. Valid profiles: ${ALL_PROFILES[*]}" >&2
+    done <<< "$profiles"
+    echo "❌ Unknown profile '$input'. Valid profiles: $(tr '\n' ' ' <<< "$profiles")" >&2
   else
     echo "❌ Cannot validate profile — hosted-model-ctl not found" >&2
   fi

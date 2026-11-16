@@ -44,6 +44,25 @@ else
   fail "No NVIDIA device nodes in /dev/"
 fi
 
+drv_ver=$(run_on_host "$TARGET" "nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1" || echo "")
+if [[ -n "$drv_ver" ]]; then
+  pass "NVIDIA driver loaded: $drv_ver"
+else
+  fail "nvidia-smi cannot reach the driver (nvidia module not loaded — nouveau active or kmod missing for running kernel?)"
+fi
+
+# akmods (Fedora/RPM Fusion) exits 0 even when the kmod build fails, so a
+# kernel update can silently leave the host on nouveau. Look for the log.
+akmod_ver=$(run_on_host "$TARGET" "rpm -q akmod-nvidia >/dev/null 2>&1 && rpm -q --qf '%{VERSION}' akmod-nvidia" || echo "")
+if [[ -n "$akmod_ver" ]]; then
+  failed_log=$(run_on_host "$TARGET" "ls /var/cache/akmods/nvidia/${akmod_ver}-*-for-\$(uname -r).failed.log 2>/dev/null | head -1" || echo "")
+  if [[ -z "$failed_log" ]]; then
+    pass "akmods: no failed nvidia ${akmod_ver} build for running kernel"
+  else
+    fail "akmods: nvidia ${akmod_ver} failed to build for running kernel — see ${failed_log}"
+  fi
+fi
+
 # 4. NVIDIA Container Toolkit / CDI
 echo "4. Container GPU access (CDI)"
 cdi_file=$(run_on_host "$TARGET" "ls /etc/cdi/nvidia.yaml 2>/dev/null" || echo "")
@@ -51,6 +70,19 @@ if [[ -n "$cdi_file" ]]; then
   pass "CDI spec: /etc/cdi/nvidia.yaml"
 else
   fail "CDI spec not found — install nvidia-container-toolkit"
+fi
+
+# A CDI spec generated for an older driver references library files that
+# no longer exist; podman then fails to inject devices/libs at start.
+cdi_ver=$(run_on_host "$TARGET" "f=/var/run/cdi/nvidia.yaml; [ -f \$f ] || f=/etc/cdi/nvidia.yaml; grep -oE 'libcuda\.so\.[0-9]+(\.[0-9]+)+' \$f 2>/dev/null | head -1 | sed 's/^libcuda\.so\.//'" || echo "")
+if [[ -z "$drv_ver" ]]; then
+  warn "CDI driver match: skipped (driver not loaded)"
+elif [[ -z "$cdi_ver" ]]; then
+  warn "CDI driver match: could not read driver version from CDI spec"
+elif [[ "$cdi_ver" == "$drv_ver" ]]; then
+  pass "CDI spec matches loaded driver ($cdi_ver)"
+else
+  fail "CDI spec is for driver $cdi_ver but $drv_ver is loaded — run: sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml"
 fi
 
 # 5. Container images
@@ -87,7 +119,9 @@ fi
 
 # 7. Disk space
 echo "7. Disk space"
-avail=$(run_on_host "$TARGET" "df -BG --output=avail / 2>/dev/null | tail -1 | tr -d ' G'" || echo "0")
+# Measure where model weights / HF cache live ($HOME), not '/': on image-mode
+# (bootc) hosts such as rhel-ai, '/' is a read-only overlay that always shows 0.
+avail=$(run_on_host "$TARGET" "df -BG --output=avail \$HOME 2>/dev/null | tail -1 | tr -d ' G'" || echo "0")
 if (( avail > 50 )); then
   pass "Disk: ${avail}G available"
 else

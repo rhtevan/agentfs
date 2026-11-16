@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 14:50 | v2.3.0 — Model HTTP probes (common.sh wait_for_model, status.sh, test.sh) use 127.0.0.1 instead of localhost: localhost resolves to ::1 on rhtevan-work and podman port-forward refuses IPv6 → false readiness timeouts / false 'down'. start.sh surfaces podman start stderr and preserves its exit code (was swallowed by run_on_host 2>/dev/null). pre-check.sh: add driver-loaded (nvidia-smi), akmods failed-build (installed version × running kernel), and CDI-spec/driver version match checks; disk check measures $HOME instead of / (bootc rhel-ai '/' is a 40M read-only overlay → false 0G failure) |
 | 2026-11-09 20:42 | v2.2.0 — Add --dry-run flag parsing and strip from positional args; Add dry-run convergence check and DRY_RUN_RESULT/APPLY_RESULT signals |
 | 2026-11-05 19:31 | v7.10.1 — Add model-tier to frontmatter |
 | 2026-10-22 19:56 | v7.10.1 — Corrected Section 17.7: NextToken supports score-type questions |

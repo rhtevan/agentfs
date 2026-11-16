@@ -2,6 +2,19 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 14:50
+- pre-check.sh disk check measures $HOME instead of / — on image-mode (bootc) rhel-ai '/' is a 40M read-only overlay that always reported 0G (false failure) (skills/hosted-model-ctl/scripts/pre-check.sh)
+
+## 2026-11-16 14:48
+- pre-check.sh: add driver-loaded (nvidia-smi), akmods failed-build (installed version × running kernel), and CDI-spec/driver version match checks (skills/hosted-model-ctl/scripts/pre-check.sh)
+- validate_profile reads hosted-model-ctl profiles in a subshell — sourcing it directly redefined run_on_host/host_reachable (lost ssh_host_for mapping, ConnectTimeout 10→5) for the rest of up.sh/down.sh --profile runs (skills/skupper-model-provider/scripts/common.sh)
+- start.sh surfaces podman start stderr and preserves its exit code on failure (previously swallowed by run_on_host 2>/dev/null); points to pre-check.sh (skills/hosted-model-ctl/scripts/start.sh)
+
+## 2026-11-16 14:47
+- Model HTTP probes use 127.0.0.1 instead of localhost — localhost resolves to ::1 on rhtevan-work and podman port-forward refuses IPv6, causing false readiness timeouts and false 'down' status (test.sh) (skills/hosted-model-ctl/scripts/test.sh)
+- Model HTTP probes use 127.0.0.1 instead of localhost — localhost resolves to ::1 on rhtevan-work and podman port-forward refuses IPv6, causing false readiness timeouts and false 'down' status (status.sh) (skills/hosted-model-ctl/scripts/status.sh)
+- Model HTTP probes use 127.0.0.1 instead of localhost — localhost resolves to ::1 on rhtevan-work and podman port-forward refuses IPv6, causing false readiness timeouts and false 'down' status (common.sh) (skills/hosted-model-ctl/scripts/common.sh)
+
 ## 2026-11-16 14:37
 - Document the two scored-0 dimensions as evidenced waivers, not defects (skills/gcp-vertex-models/scores.yaml)
 

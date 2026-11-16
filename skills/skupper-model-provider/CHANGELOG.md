@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 14:48 | v9.2.1 — validate_profile reads hosted-model-ctl profiles in a subshell — sourcing it directly redefined run_on_host/host_reachable (lost ssh_host_for mapping, ConnectTimeout 10→5) for the rest of up.sh/down.sh --profile runs |
 | 2026-11-08 22:57 | v9.2.0 — Add Rules + trace + bump to 9.2.0; Add trace-lib.sh; CNL restructure Operations to Step workflow, remove internal descriptions |
 | 2026-11-06 12:55 | v9.1.0 — Bump metadata version 9.0.0→9.1.0 to match CHANGELOG |
 | 2026-11-05 19:32 | v9.1.0 — Add model-tier to frontmatter |
