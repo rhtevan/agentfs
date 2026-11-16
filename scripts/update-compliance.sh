@@ -57,6 +57,10 @@ get_agents_md_version() {
 }
 
 AGENTS_MD_VERSION=$(get_agents_md_version)
+# Content hash of the rules these results are measured against.
+# Empty if AGENTS.md cannot be read — the profile writer skips the
+# field rather than recording a wrong value.
+RULES_HASH=$(bash "${SCRIPT_DIR}/rules-hash.sh" 2>/dev/null || echo "")
 
 # --- Check mode ---
 if $CHECK_ONLY; then
@@ -81,15 +85,46 @@ if $CHECK_ONLY; then
   echo "Minimum tier: $(grep 'minimum_tier:' "$PROFILE_YAML" | awk '{print $2}')"
   echo "Target:       $(grep 'compliance_target:' "$PROFILE_YAML" | awk '{print $2}' | tr -d '"')"
 
-  # Check staleness
-  profile_version=$(grep 'agents_md_version:' "$PROFILE_YAML" | awk '{print $2}' | tr -d '"')
-  if [[ "$profile_version" != "$AGENTS_MD_VERSION" ]]; then
-    echo ""
-    echo "⚠ STALE: Profile is for v${profile_version} but AGENTS.md is v${AGENTS_MD_VERSION}"
+  # Check staleness.
+  #
+  # Keyed on the RULES HASH, not the version string. The template
+  # version is derived from agentfs-setup frontmatter, so it moves
+  # whenever that skill is bumped for any reason — including fixes to
+  # scripts with no presence in AGENTS.md. Comparing versions reported
+  # a stale profile in those cases and sent the user into a full
+  # benchmark run to re-measure rules that had not changed.
+  # '|| true': a pre-1.1 profile has no rules-hash line, and grep
+  # exits 1 on no match, which under 'set -e' would kill the script
+  # before the fallback branch below could run.
+  profile_version=$(grep -m1 '^agents_md_version:' "$PROFILE_YAML" | awk '{print $2}' | tr -d '"' || true)
+  profile_hash=$(grep -m1 '^agents_md_rules_hash:' "$PROFILE_YAML" | awk '{print $2}' | tr -d '"' || true)
+  current_hash=$(bash "${SCRIPT_DIR}/rules-hash.sh" 2>/dev/null || echo "")
+
+  echo ""
+  if [[ -z "$profile_hash" ]]; then
+    # Pre-1.1 profile with no hash recorded — fall back to the version
+    # string rather than silently claiming the profile is current.
+    if [[ "$profile_version" != "$AGENTS_MD_VERSION" ]]; then
+      echo "⚠ STALE: Profile is for v${profile_version} but AGENTS.md is v${AGENTS_MD_VERSION}"
+      echo "  (no rules hash in profile — falling back to version comparison)"
+      echo "  Run: update-compliance.sh --tier T4 --provider <name> --model <id>"
+    else
+      echo "✅ Profile is current (v${profile_version}, no rules hash recorded)"
+    fi
+  elif [[ -z "$current_hash" ]]; then
+    echo "⚠ Cannot verify: rules hash unavailable (no readable AGENTS.md)"
+    echo "  Profile records rules hash ${profile_hash} for v${profile_version}"
+  elif [[ "$profile_hash" != "$current_hash" ]]; then
+    echo "⚠ STALE: AGENTS.md rules changed since this profile was measured"
+    echo "  Profile rules hash: ${profile_hash} (v${profile_version})"
+    echo "  Current rules hash: ${current_hash} (v${AGENTS_MD_VERSION})"
     echo "  Run: update-compliance.sh --tier T4 --provider <name> --model <id>"
+  elif [[ "$profile_version" != "$AGENTS_MD_VERSION" ]]; then
+    echo "✅ Profile is current — rules unchanged (hash ${current_hash})"
+    echo "  Note: template version moved v${profile_version} → v${AGENTS_MD_VERSION}"
+    echo "  with no rule changes. No benchmark needed."
   else
-    echo ""
-    echo "✅ Profile is current (v${profile_version})"
+    echo "✅ Profile is current (v${profile_version}, rules hash ${current_hash})"
   fi
   exit 0
 fi
@@ -230,6 +265,7 @@ provider = "$PROVIDER"
 runs = int("$TOTAL")
 passed = int("$PASSED")
 agents_version = "$AGENTS_MD_VERSION"
+rules_hash = "$RULES_HASH"
 
 # Update agents_md_version
 import re
@@ -238,6 +274,24 @@ content = re.sub(
     f'agents_md_version: "{agents_version}"',
     content
 )
+
+# Record the rules hash these results were measured against. Without
+# this the profile would read as stale the moment it was written.
+if rules_hash:
+    if re.search(r'agents_md_rules_hash:\s*"[^"]*"', content):
+        content = re.sub(
+            r'agents_md_rules_hash:\s*"[^"]*"',
+            f'agents_md_rules_hash: "{rules_hash}"',
+            content
+        )
+    else:
+        # Pre-1.1 profile — insert the field after agents_md_version.
+        content = re.sub(
+            r'(agents_md_version:\s*"[^"]*"\n)',
+            rf'\1agents_md_rules_hash: "{rules_hash}"\n',
+            content,
+            count=1
+        )
 
 # Update the evolution section — add new entry if version changed
 # Check if this version already has a non-pending entry

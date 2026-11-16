@@ -206,12 +206,33 @@ echo "[sync-agents-md] ✅ Synced $AGENTS (v$CURRENT_VERSION → v$TEMPLATE_VERS
 
 # --- Compliance profile staleness check ---
 COMPLIANCE_PROFILE="${HOME}/.agents/skills/agentfs-setup/compliance-profile.yaml"
+RULES_HASH_SH="${HOME}/.agents/scripts/rules-hash.sh"
 if [[ -f "$COMPLIANCE_PROFILE" ]]; then
-  PROFILE_VERSION=$(grep 'agents_md_version:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"')
-  if [[ "$PROFILE_VERSION" != "$TEMPLATE_VERSION" ]]; then
+  # '|| true': pre-1.1 profiles have no rules-hash line; grep exits 1
+  # on no match and 'set -e' would abort the sync at its last step.
+  PROFILE_VERSION=$(grep -m1 '^agents_md_version:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"' || true)
+  PROFILE_HASH=$(grep -m1 '^agents_md_rules_hash:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"' || true)
+  CURRENT_HASH=""
+  [[ -f "$RULES_HASH_SH" ]] && CURRENT_HASH=$(bash "$RULES_HASH_SH" "$AGENTS" 2>/dev/null || echo "")
+
+  # Staleness is a property of the RULES, not the version string. The
+  # template version tracks agentfs-setup's frontmatter, so it moves
+  # for changes that never touch AGENTS.md. Warn only when the rules
+  # the profile was measured against actually differ.
+  if [[ -n "$PROFILE_HASH" && -n "$CURRENT_HASH" ]]; then
+    if [[ "$PROFILE_HASH" != "$CURRENT_HASH" ]]; then
+      echo ""
+      echo "[sync-agents-md] ⚠️  Compliance profile is STALE — rules changed"
+      echo "[sync-agents-md]    Profile: ${PROFILE_HASH} (v${PROFILE_VERSION})"
+      echo "[sync-agents-md]    Current: ${CURRENT_HASH} (v${TEMPLATE_VERSION})"
+      echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T4"
+      echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T2"
+    fi
+  elif [[ "$PROFILE_VERSION" != "$TEMPLATE_VERSION" ]]; then
+    # Pre-1.1 profile, or AGENTS.md unreadable — fall back to versions.
     echo ""
-    echo "[sync-agents-md] ⚠️  Compliance profile is STALE (v${PROFILE_VERSION} ≠ v${TEMPLATE_VERSION})"
+    echo "[sync-agents-md] ⚠️  Compliance profile may be STALE (v${PROFILE_VERSION} ≠ v${TEMPLATE_VERSION})"
+    echo "[sync-agents-md]    No rules hash available — cannot tell if rules changed."
     echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T4"
-    echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T2"
   fi
 fi

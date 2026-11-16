@@ -2,8 +2,18 @@
 # Updated whenever AGENTS.md template changes or new benchmarks run.
 # See: ~/.agents/knowledge/agentfs-engineering-evolution/benchmark-results.md
 
-schema_version: "1.0"
-agents_md_version: "7.8.0"
+schema_version: "1.1"
+agents_md_version: "7.9.0"
+# Content hash of the behavioural rules ('## Rules' + '## Signal
+# Dispatch') the benchmarks below were measured against. Staleness is
+# keyed on THIS, not on agents_md_version: the template version is
+# derived from agentfs-setup frontmatter, so it moves whenever that
+# skill is bumped for any reason — including changes to scripts that
+# have no presence in AGENTS.md. Produced by ~/.agents/scripts/rules-hash.sh.
+#
+# Verified identical across v7.8.0 and v7.9.0 (2026-11-16): the 7.9.0
+# bump came from a pre-push-scan.sh fix and changed no rule text.
+agents_md_rules_hash: "a856949dfa03993d"
 compliance_target: "≥90%"
 
 # ── Validated Tiers ──────────────────────────────────────────────────────

@@ -2,6 +2,27 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 14:28
+- Update version references to v7.9.1 (README.md)
+
+## 2026-11-16 14:26
+- Guard profile-field greps with || true (same set -e exposure) (skills/agentfs-setup/scripts/sync-agents-md.sh)
+- Guard profile-field greps with || true — missing hash field killed the script under set -e, making the pre-1.1 fallback unreachable (scripts/update-compliance.sh)
+
+## 2026-11-16 14:25
+- Anchor profile field greps at line start (skills/agentfs-setup/scripts/sync-agents-md.sh)
+- Anchor profile field greps at line start — comment text containing the field name was matching too (scripts/update-compliance.sh)
+- Compliance staleness check keys on rules hash; version fallback when no hash available (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-11-16 14:24
+- Define RULES_HASH alongside AGENTS_MD_VERSION (scripts/update-compliance.sh)
+- Record agents_md_rules_hash when writing benchmark results, inserting the field for pre-1.1 profiles (scripts/update-compliance.sh)
+- --check staleness now keys on rules hash with version-string fallback for pre-1.1 profiles (scripts/update-compliance.sh)
+
+## 2026-11-16 14:23
+- Add agents_md_rules_hash (schema 1.1); staleness now keys on rule content, not version string (skills/agentfs-setup/compliance-profile.yaml)
+- New: content hash of AGENTS.md behavioural rules, so compliance staleness keys on rule content instead of a version string (scripts/rules-hash.sh)
+
 ## 2026-11-16 14:15
 - Update template-version example stamp to 7.9.0 (README.md)
 - Update structural-rules version reference to v7.9.0 (README.md)
