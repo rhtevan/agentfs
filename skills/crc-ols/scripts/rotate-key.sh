@@ -257,14 +257,20 @@ trace_step 7 "verify-in-pod" 0 "" 2>/dev/null || true
 
 if [[ "$PURL" == http* ]]; then
   echo -n "  Verify:  in-pod probe ... "
+  # Probe chat/completions, NOT /models — /models is frequently
+  # unauthenticated (verified on the Corp endpoint 2026-11-16: a garbage
+  # bearer token returns 200 from /models and 401 from chat/completions),
+  # so a 200 from /models would be a meaningless confirmation.
   # shellcheck disable=SC2086
   POD_HTTP=$(oc $OC_CONTEXT exec deployment/lightspeed-app-server -n "$NS" \
     -c lightspeed-service-api -- bash -c \
     "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 \
        -H \"Authorization: Bearer \$(cat /etc/apikeys/$SECRET_NAME/$CRED_KEY 2>/dev/null || cat /app-root/.credentials/$CRED_KEY 2>/dev/null)\" \
-       ${PURL%/}/models" 2>/dev/null || echo "000")
+       -H 'Content-Type: application/json' \
+       -d '{\"model\":\"$PMODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}' \
+       ${PURL%/}/chat/completions" 2>/dev/null || echo "000")
   if [[ "$POD_HTTP" == "200" ]]; then
-    echo "✅ HTTP 200"
+    echo "✅ HTTP 200 (inference accepted)"
   else
     echo "⚠️  HTTP $POD_HTTP — mount path may differ; check 'ols credential status'"
   fi

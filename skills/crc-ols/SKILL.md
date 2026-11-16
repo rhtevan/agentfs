@@ -7,7 +7,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER | rotate-key PROVIDER"
 metadata:
   author: agentfs
-  version: "3.5.0"
+  version: "3.6.0"
   model-tier: T3
   tags: [openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation]
   related_skills: [gcp-vertex-models, goose-corp-provider, crc-ctl, skupper-model-provider]
@@ -89,9 +89,8 @@ GVM=~/.agents/skills/gcp-vertex-models/scripts
 # Prints "<model> <region>" on stdout; diagnostics go to stderr.
 read -r MODEL LOCATION < <(bash $GVM/models.sh default 2>/dev/null)
 
-# Project: recorded in the probe cache by the last probe run.
-PROJECT=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser(
-  '~/.cache/gcp-vertex-models/models.json')))['project'])")
+# Project: recorded by the last probe run.
+PROJECT=$(bash $GVM/models.sh project)
 
 # SA key: filters to type:service_account and rejects the default compute SA.
 SA_KEY=$(bash $GVM/select-sa.sh --project "$PROJECT")
@@ -739,6 +738,7 @@ After completing any operation, verify through the OpenShift web console:
 | Provider unreachable: in-pod `curl` → `HTTP=000`, `exit code 60` | Provider served by a private/corporate CA absent from the cluster trust bundle. `curl -k` → 200 confirms it is trust, not network | Add the root CA via `spec.ols.additionalCAConfigMapRef` — see [Phase 5](#phase-5--trust-a-private-ca-only-for-providers-behind-an-internal-ca) |
 | Rotation backup leaks the old key | `rotate-key.sh` writes `/tmp/<secret>.bak.<ts>.yaml` (mode 600) containing the PREVIOUS key, and `/tmp` survives until reboot or the 10-day tmpfiles sweep | `shred -u /tmp/<secret>.bak.*.yaml` once the new key is confirmed. Same applies to any `oc get secret -o yaml` you redirect to a file |
 | Duplicate certs in the merged CA bundle | Assuming `additionalCAConfigMapRef` *replaces* the trust bundle and pre-concatenating `kube-root-ca.crt` into it | It **merges** via a separate `additional-ca` volume. Put ONLY the private root CA in the ConfigMap; key MUST be `ca.crt` |
+| Credential probe reports `✅ HTTP 200` for a key that is invalid | `GET /v1/models` is **unauthenticated** on many OpenAI-compatible endpoints. Verified against `models.corp.redhat.com/oai/v1` on 2026-11-16: a garbage bearer token returns **200** from `/models` and **401** from `/chat/completions` | Probe authentication with a real inference call: `POST {url}/chat/completions` with `max_tokens: 1`. `list.sh` and `rotate-key.sh` do this. Never infer credential validity from `/models` |
 
 ## Specification
 

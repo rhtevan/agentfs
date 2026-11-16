@@ -2,6 +2,42 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 12:51
+- Add Step 6 select-sa and Step 7 detect-sa (skills/gcp-vertex-models/SKILL.md)
+- Routing table: cover all 6 signals, add dispatch rule (skills/gcp-vertex-models/SKILL.md)
+
+## 2026-11-16 12:50
+- Add Step 5 project query (skills/gcp-vertex-models/SKILL.md)
+
+## 2026-11-16 12:49
+- Cache is private; consumers use models.sh, not the path (skills/gcp-vertex-models/SKILL.md)
+- Bump version row to 1.2.0 (skills/gcp-vertex-models/SKILL.md)
+- Use models.sh project instead of parsing the cache file (skills/crc-ols/scripts/install.sh)
+- Use models.sh project instead of parsing the cache file (skills/crc-ols/SKILL.md)
+
+## 2026-11-16 12:48
+- Implement project subcommand after cache load (skills/gcp-vertex-models/scripts/models.sh)
+- Move project block after cache load (skills/gcp-vertex-models/scripts/models.sh)
+- Implement project subcommand (skills/gcp-vertex-models/scripts/models.sh)
+- Accept project in mode validation (skills/gcp-vertex-models/scripts/models.sh)
+
+## 2026-11-16 12:47
+- Add 'project' subcommand so consumers stop parsing the cache file (skills/gcp-vertex-models/scripts/models.sh)
+
+## 2026-11-16 12:46
+- Sync Version row to 1.1.0 (skills/goose-corp-provider/SKILL.md)
+- Add --model flag to arg parser; declare MODEL for set -u (skills/goose-corp-provider/scripts/store-key.sh)
+
+## 2026-11-16 12:45
+- Document --model flag in usage header (skills/goose-corp-provider/scripts/store-key.sh)
+- Resolve validation model from config/endpoint instead of hardcoded granite (skills/goose-corp-provider/scripts/store-key.sh)
+- Add gotcha: /models is unauthenticated, probe chat/completions (skills/crc-ols/SKILL.md)
+
+## 2026-11-16 12:44
+- Fix undefined $MODEL -> $PMODEL in verify probe (skills/crc-ols/scripts/rotate-key.sh)
+- Post-rotation verify: use chat/completions not /models (skills/crc-ols/scripts/rotate-key.sh)
+- Auth probe: use chat/completions (|models| is unauthenticated on Corp) (skills/crc-ols/scripts/list.sh)
+
 ## 2026-11-16 11:58
 - Add gotcha: rotation backup holds the old live key (skills/crc-ols/SKILL.md)
 - Warn that the pre-rotation backup holds the OLD live key and must be shredded (skills/crc-ols/scripts/rotate-key.sh)

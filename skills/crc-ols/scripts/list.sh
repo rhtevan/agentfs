@@ -100,20 +100,37 @@ print(f'{src} {age} {limit}')
   fi
 
   # --- auth (in-pod, external HTTP providers only) ---
+  #
+  # Probe chat/completions, NOT /models.
+  #
+  # /models is frequently UNAUTHENTICATED. Verified 2026-11-16 against
+  # https://models.corp.redhat.com/oai/v1 :
+  #     /models           with a garbage bearer token -> HTTP 200
+  #     /chat/completions with a garbage bearer token -> HTTP 401
+  # A 200 from /models therefore proves the endpoint is reachable, and
+  # nothing whatsoever about the credential. Only an inference call
+  # actually exercises authentication.
   AUTH_TXT="➖ not probed"
   if [[ "$PURL" == http* ]] && ! echo "$PURL" | grep -q "listener-"; then
+    if [[ "$PMODEL" == "-" || -z "$PMODEL" ]]; then
+      AUTH_TXT="➖ not probed (no model in CRD)"
+    else
     # shellcheck disable=SC2086
     CODE=$(oc ${OC_CONTEXT} exec deployment/lightspeed-app-server -n openshift-lightspeed \
       -c lightspeed-service-api -- bash -c \
       "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 8 --max-time 25 \
          -H \"Authorization: Bearer \$(cat /etc/apikeys/$SECRET/$CKEY 2>/dev/null)\" \
-         ${PURL%/}/models" 2>/dev/null || echo "000")
+         -H 'Content-Type: application/json' \
+         -d '{\"model\":\"$PMODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}' \
+         ${PURL%/}/chat/completions" 2>/dev/null || echo "000")
     case "$CODE" in
-      200)     AUTH_TXT="✅ HTTP 200" ;;
+      200)     AUTH_TXT="✅ HTTP 200 (inference accepted)" ;;
       401|403) AUTH_TXT="❌ HTTP $CODE — credential rejected" ;;
+      404)     AUTH_TXT="⚠️  HTTP 404 — model '$PMODEL' not served here" ;;
       000)     AUTH_TXT="⚠️  unreachable (network or CA trust)" ;;
       *)       AUTH_TXT="⚠️  HTTP $CODE" ;;
     esac
+    fi
   fi
 
   echo "  $PNAME ($SECRET)"

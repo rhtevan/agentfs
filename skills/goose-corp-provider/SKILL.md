@@ -6,7 +6,7 @@ description: >
 argument-hint: "setup | rotate-key | status | list-models"
 metadata:
   author: agentfs
-  version: "1.0.0"
+  version: "1.1.0"
   model-tier: T2
   tags: [goose, corp, custom-provider, redhat, model-service]
   related_skills: [goose-maas-provider, goose-litellm-provider, goose-skupper-provider]
@@ -31,7 +31,7 @@ goose session or touches a file under version control.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.0.0 |
+| **Version** | 1.1.0 |
 | **Trigger** | `hey setup corp provider`, `hey rotate corp key`, `hey corp status` |
 | **Dependencies** | `goose`, `curl`, `jq`, `secret-tool` (GNOME Keyring) |
 

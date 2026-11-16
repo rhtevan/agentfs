@@ -8,7 +8,7 @@ argument-hint: "[--project P] [--regions global,us-east5] [--family opus|sonnet|
 compatibility: "python3 with google-auth (system or litellm uv tool); GCP service account key"
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "1.2.0"
   model-tier: T2
   tags: [gcp, vertex-ai, claude, models, discovery, credentials, service-account]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, goose-gcp-provider, crc-ols]
@@ -33,10 +33,10 @@ configuration.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.1.0 |
+| **Version** | 1.2.0 |
 | **Trigger** | `hey refresh vertex models` (Command) · `hey vertex model list` · `hey vertex default model` · `hey select vertex credential` · `hey vertex credential list` (Query) |
 | **Dependencies** | python3 + google-auth, service-account key, network to `*aiplatform.googleapis.com` |
-| **Cache** | `${XDG_CACHE_HOME:-~/.cache}/gcp-vertex-models/models.json` (override: `GCP_VERTEX_MODELS_CACHE`) |
+| **Cache** | Private to this skill. Consumers MUST read it through `models.sh` (`list --json`, `default`, `project`), never by path. Location is overridable with `GCP_VERTEX_MODELS_CACHE`. |
 | **Consumers** | `litellm-vertex-ai-proxy` (setup/refresh + `select-sa.sh`), `litellm-proxy-status` (rank), `goose-gcp-provider` (gcp_vertex_ai default), `crc-ols` (install Phase 0: project/location/model/SA key) |
 
 ## Specification
@@ -87,11 +87,19 @@ capability only: family opus > sonnet > haiku, then newest version.
 
 ### Step 1 — Route the signal
 
-| Signal | Go to |
-|--------|-------|
-| `refresh vertex models` | Step 2 |
-| `vertex model list` | Step 3 |
-| `vertex default model` | Step 4 |
+Match the user's signal in the table below and execute that step. Each
+row is a complete dispatch: run the named step, then stop. If the
+signal matches no row, say so and list the signals in this table —
+do not guess a step.
+
+| Signal | Go to | Runs |
+|--------|-------|------|
+| `refresh vertex models` | Step 2 | `scripts/probe-models.sh` |
+| `vertex model list` | Step 3 | `scripts/models.sh list` |
+| `vertex default model` | Step 4 | `scripts/models.sh default` |
+| `vertex project` | Step 5 | `scripts/models.sh project` |
+| `select vertex credential` | Step 6 | `scripts/select-sa.sh` |
+| `vertex credential list` | Step 7 | `scripts/detect-sa.sh` |
 
 ### Step 2 — Refresh (Command)
 
@@ -125,6 +133,39 @@ time and the full ranking — show both. Use `--family sonnet` or
 `--family haiku` to pick within a family. Use `--region <r>` to pick
 only models that returned 200 in that region (goose `GCP_LOCATION`
 applies one region to the whole provider).
+
+### Step 5 — GCP project (Query)
+
+```bash
+bash ~/.agents/skills/gcp-vertex-models/scripts/models.sh project
+```
+
+Prints the GCP project recorded by the last probe, one line on stdout,
+exit 0. Exit 1 with a refresh hint when no cache exists. Consumers that
+need the project (for example `crc-ols` install Phase 0) call this
+instead of reading the cache file.
+
+### Step 6 — Select a service-account credential (Query)
+
+```bash
+bash ~/.agents/skills/gcp-vertex-models/scripts/select-sa.sh [--project P] [--sa-email E]
+```
+
+Prints exactly one path to a service-account `adc.json` on stdout,
+exit 0. Exit 1 when none match or more than one matches — in that case
+show the script's stderr and ask the user which to use. Never pick one
+yourself. Default compute service accounts and non-`service_account`
+files are rejected by the script.
+
+### Step 7 — List every GCP credential on the host (Query)
+
+```bash
+bash ~/.agents/skills/gcp-vertex-models/scripts/detect-sa.sh
+```
+
+Read-only report of the active gcloud project, account, region, and
+every service-account key file found. Never prints a private key.
+Use it when Step 6 reports an ambiguous or empty match.
 
 ## Output Contract
 

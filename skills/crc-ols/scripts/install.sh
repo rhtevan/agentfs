@@ -89,12 +89,9 @@ if ! $SKIP_PROVIDER; then
       [[ -z "$LOCATION" ]] && LOCATION="$D_REGION"
     fi
     if [[ -z "$PROJECT" ]]; then
-      CACHE="${GCP_VERTEX_MODELS_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/gcp-vertex-models/models.json}"
-      PROJECT=$(python3 -c "
-import json,sys
-try: print(json.load(open('$CACHE')).get('project',''))
-except Exception: pass
-" 2>/dev/null || echo "")
+      # Ask the owning skill, do not parse its cache file. The cache
+      # layout is gcp-vertex-models' private business.
+      PROJECT=$(bash "$GVM/models.sh" project 2>/dev/null || echo "")
     fi
   fi
 

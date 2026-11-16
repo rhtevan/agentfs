@@ -3,6 +3,7 @@
 # Usage:
 #   bash models.sh list    [--json] [--region R] [--max-age-days N]
 #   bash models.sh default [--family opus|sonnet|haiku] [--region R] [--max-age-days N]
+#   bash models.sh project
 #   <names on stdin> | bash models.sh rank [--family F]
 # Exit codes: 0 = ok, 1 = no cache / no usable model, 2 = usage error
 set -euo pipefail
@@ -25,7 +26,7 @@ while [[ $# -gt 0 ]]; do
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
-case "$MODE" in list|default|rank) ;; *) echo "Usage: models.sh list|default|rank [options]" >&2; exit 2 ;; esac
+case "$MODE" in list|default|rank|project) ;; *) echo "Usage: models.sh list|default|rank|project [options]" >&2; exit 2 ;; esac
 case "$FAMILY" in ""|opus|sonnet|haiku) ;; *) echo "bad --family: $FAMILY (opus|sonnet|haiku)" >&2; exit 2 ;; esac
 
 if [[ "$MODE" != rank && ! -f "$CACHE_FILE" ]]; then
@@ -75,6 +76,16 @@ def usable_region(m):
 usable = {m["model"]: usable_region(m) for m in doc["models"] if usable_region(m)}
 header = f'Probed: {doc["generated_at"]} ({age:.1f} days ago) project={doc["project"]} credential={doc["credential"]["identity"]}'
 warn = f"⚠️  Cache older than {max_age} days — run: refresh vertex models" if stale else ""
+
+if mode == "project":
+    # Expose the probed GCP project as a first-class output so consumers
+    # never have to parse the cache file themselves.
+    proj = doc.get("project") or ""
+    if not proj:
+        print("❌ No project recorded in cache — run: refresh vertex models", file=sys.stderr)
+        sys.exit(1)
+    print(proj)
+    sys.exit(0)
 
 if mode == "list":
     if as_json:

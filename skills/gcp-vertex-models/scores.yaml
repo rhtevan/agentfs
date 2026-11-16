@@ -1,30 +1,30 @@
 # scores.yaml — gcp-vertex-models
 skill: gcp-vertex-models
-version: 1.1.0
+version: 1.2.0
 model_tier: T2
 qualification_rule: T2
-qoo-qualified: false
+qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 68
-  band: Re-engineer
+  aggregate_score: 83.33333333333333
+  band: Tunable
   dimensions:
     script_coverage:
-      score: 75
+      score: 100
       pass: true
       confidence: 1.0
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.4316335773395986
+      confidence: 0.9999722250068926
     step_clarity:
       score: 100
       pass: true
-      confidence: 0.9525662520362614
+      confidence: 0.9999996423722521
     prose_executability:
-      score: 33
-      pass: false
-      confidence: 0.757874612486098
+      score: 100
+      pass: true
+      confidence: 1.0
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 0
       pass: false
-      confidence: 0.9890130589396956
-  evaluated: '2026-11-16T11:51:34-05:00'
+      confidence: 0.9525741476724274
+  evaluated: '2026-11-16T12:52:00-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 75
@@ -42,7 +42,7 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 0.9999996423722523
+      confidence: 0.9999997615814777
     cnl_compliance:
       score: 100
       pass: true
@@ -54,8 +54,8 @@ observable:
     sdm_delegation:
       score: 0
       pass: false
-      confidence: 0.9046505126460354
-  evaluated: '2026-11-16T11:51:34-05:00'
+      confidence: 0.9626730730490257
+  evaluated: '2026-11-16T12:52:00-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -73,17 +73,17 @@ operable:
       has_brain:
         score: 100
         pass: true
-        confidence: 0.9999996423722523
+        confidence: 0.9999998807907248
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9999998807907245
-    evaluated: '2026-11-16T11:51:34-05:00'
+        confidence: 1.0
+    evaluated: '2026-11-16T12:52:00-05:00'
 history:
-- date: '2026-11-16T11:51:34-05:00'
+- date: '2026-11-16T12:52:00-05:00'
   type: full
-  quality_score: 68
-  quality_band: Re-engineer
+  quality_score: 83.33333333333333
+  quality_band: Tunable
   observable_score: 75
   observable_band: Tunable
   build_score: 100
