@@ -2,13 +2,15 @@
 name: crc-ols
 description: >
   install ols, list ols providers, add ols provider,
-  switch ols provider, switch ols model, remove ols provider
-argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER"
+  switch ols provider, switch ols model, remove ols provider,
+  rotate ols key, ols credential status
+argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER | rotate-key PROVIDER"
 metadata:
   author: agentfs
-  version: "3.4.0"
+  version: "3.5.0"
   model-tier: T3
-  tags: [openshift, crc, lightspeed, ols, llm, provider-management]
+  tags: [openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation]
+  related_skills: [gcp-vertex-models, goose-corp-provider, crc-ctl, skupper-model-provider]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -31,11 +33,13 @@ Execute each step in order and verify before proceeding.
 
 | Operation | Script | Description |
 |-----------|--------|-------------|
-| `install` (or no args) | Prose (agent-orchestrated) | Install OLS operator, apply CRC fix, configure first provider, create OLSConfig |
-| `list` | `scripts/list.sh` | Show all providers, models, active default, and status |
+| `install` (or no args) | `scripts/install.sh [--dry-run]` | Install OLS operator, apply CRC fix, configure first provider, create OLSConfig. Idempotent; never mutates an existing OLSConfig |
+| `list` | `scripts/list.sh` | Show all providers, models, active default, status, and credential health |
 | `add-provider` | Prose (agent-orchestrated) | Add a provider: create secret, patch OLSConfig, verify rollout |
 | `switch-provider` | `scripts/switch-provider.sh PROVIDER MODEL` | Switch active provider+model, wait for reconciliation, verify |
 | `remove-provider` | `scripts/remove-provider.sh PROVIDER [--delete-secret]` | Remove a provider (cannot remove the active one — switch first) |
+| `rotate ols key` | `scripts/rotate-key.sh PROVIDER [--from-keyring] [--create] [--dry-run]` | Rotate or create a provider's credential: validate → write → reload → verify in-pod |
+| `ols credential status` | `scripts/list.sh` | Credential age vs rotation policy + live in-pod auth probe per provider |
 
 **Provider-Model relationship:** Each provider has one or more models.
 OLS requires both `defaultProvider` and `defaultModel` to be set
@@ -56,6 +60,52 @@ serves it.
 ## Operation: `install`
 
 Full installation of the Lightspeed Operator and initial provider configuration.
+
+**Use the script.** It performs every phase below, is idempotent, and refuses
+to mutate an existing OLSConfig:
+
+```bash
+# ALWAYS dry-run first — it reports the delta and emits a result signal.
+bash scripts/install.sh --dry-run --context crc-admin
+#   DRY_RUN_RESULT=CONVERGED → already installed, nothing to do
+#   DRY_RUN_RESULT=PENDING   → run again without --dry-run
+
+bash scripts/install.sh --context crc-admin
+```
+
+The phases below document what the script does and how to perform each step by
+hand when debugging a partial install.
+
+### Phase 0 — Resolve provider settings (never hand-edit placeholders)
+
+`install.sh` resolves the GCP project, location, model, and service-account key
+from the **`gcp-vertex-models`** skill. Nothing is hardcoded and no placeholder
+is ever sent to the cluster — the script aborts if one appears.
+
+```bash
+GVM=~/.agents/skills/gcp-vertex-models/scripts
+
+# Model + region: highest-ranked AVAILABLE model (opus > sonnet > haiku, newest).
+# Prints "<model> <region>" on stdout; diagnostics go to stderr.
+read -r MODEL LOCATION < <(bash $GVM/models.sh default 2>/dev/null)
+
+# Project: recorded in the probe cache by the last probe run.
+PROJECT=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser(
+  '~/.cache/gcp-vertex-models/models.json')))['project'])")
+
+# SA key: filters to type:service_account and rejects the default compute SA.
+SA_KEY=$(bash $GVM/select-sa.sh --project "$PROJECT")
+
+echo "$PROJECT / $LOCATION / $MODEL"
+echo "$SA_KEY"
+```
+
+If the cache is missing or stale, refresh it first: `bash $GVM/probe-models.sh`.
+
+> **Why not a placeholder:** the OLSConfig CRD does **not** validate `projectID`,
+> `location`, or the model name. A placeholder produces a provider that reports
+> `Ready` and then fails with a runtime 404 on the first query. `install.sh`
+> rejects any value matching `YOUR_*`, `CHANGEME`, or `<...>`.
 
 ### Phase 1 — Install the Lightspeed Operator
 
@@ -135,10 +185,12 @@ See [Provider Types Reference](#provider-types-reference) below for the credenti
 
 **Example — Google Vertex AI Anthropic:**
 
-First, select the correct SA key (rejects the default compute SA automatically):
+First, select the correct SA key (rejects the default compute SA automatically).
+Use the `$PROJECT` resolved in [Phase 0](#phase-0--resolve-provider-settings-never-hand-edit-placeholders) —
+passing a literal placeholder silently disables the `--project` filter:
 ```bash
-SA_KEY=$(bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/select-sa.sh \
-  --project YOUR_GCP_PROJECT)
+SA_KEY=$(bash ~/.agents/skills/gcp-vertex-models/scripts/select-sa.sh \
+  --project "$PROJECT")
 ```
 
 Then create the secret using the selected key:
@@ -170,10 +222,12 @@ oc create secret generic llmcreds \
 
 ### Phase 3 — Create the OLSConfig Custom Resource
 
-Replace `YOUR_GCP_PROJECT`, `YOUR_LOCATION`, and `YOUR_MODEL` with your values:
+Uses `$PROJECT`, `$LOCATION`, and `$MODEL` from
+[Phase 0](#phase-0--resolve-provider-settings-never-hand-edit-placeholders).
+Note the heredoc is **unquoted** (`<<EOF`) so the variables expand:
 
 ```bash
-oc apply -f - <<'EOF'
+oc apply -f - <<EOF
 apiVersion: ols.openshift.io/v1alpha1
 kind: OLSConfig
 metadata:
@@ -187,12 +241,12 @@ spec:
         name: llmcreds
       credentialKey: gcp-service-account.json
       googleVertexAnthropicConfig:
-        projectID: YOUR_GCP_PROJECT
-        location: YOUR_LOCATION
+        projectID: $PROJECT
+        location: $LOCATION
       models:
-      - name: YOUR_MODEL
+      - name: $MODEL
   ols:
-    defaultModel: YOUR_MODEL
+    defaultModel: $MODEL
     defaultProvider: google-anthropic
     maxIterations: 20
 EOF
@@ -216,13 +270,123 @@ oc exec deployment/lightspeed-app-server -n openshift-lightspeed \
 # Should return: {"alive":true}
 ```
 
+### Phase 5 — Trust a private CA (only for providers behind an internal CA)
+
+Skip this phase unless a provider endpoint is served by a certificate your
+cluster does not already trust (typical for corporate-internal model
+endpoints). Symptom: the app-server can resolve and reach the host, but TLS
+verification fails.
+
+**Diagnose first — confirm it is CA trust and not network:**
+
+```bash
+# Without -k: expect HTTP=000 and "exit code 60" (certificate verify failed)
+oc exec deployment/lightspeed-app-server -n openshift-lightspeed \
+  -c lightspeed-service-api -- \
+  curl -s -o /dev/null -w 'HTTP=%{http_code}\n' --connect-timeout 10 \
+  https://YOUR_PROVIDER_HOST/v1/models
+
+# With -k: HTTP=200 proves the endpoint is reachable and only trust is missing
+oc exec deployment/lightspeed-app-server -n openshift-lightspeed \
+  -c lightspeed-service-api -- \
+  curl -sk -o /dev/null -w 'HTTP=%{http_code}\n' --connect-timeout 10 \
+  https://YOUR_PROVIDER_HOST/v1/models
+```
+
+**Identify the root CA that validates the chain.** Do not guess — test each
+candidate anchor until one verifies:
+
+```bash
+openssl s_client -connect YOUR_PROVIDER_HOST:443 -showcerts </dev/null 2>/dev/null \
+  | openssl x509 -noout -issuer
+
+for ca in /etc/pki/ca-trust/source/anchors/*.pem; do
+  if openssl s_client -connect YOUR_PROVIDER_HOST:443 -CAfile "$ca" \
+       </dev/null 2>/dev/null | grep -q 'Verify return code: 0'; then
+    echo "ANCHOR: $ca"
+  fi
+done
+```
+
+**Apply the anchor.** The ConfigMap key MUST be `ca.crt`.
+
+```bash
+oc create configmap corp-ca \
+  --from-file=ca.crt=/path/to/your-root-ca.pem \
+  -n openshift-lightspeed
+
+oc patch olsconfig cluster --type=merge \
+  -p '{"spec":{"ols":{"additionalCAConfigMapRef":{"name":"corp-ca"}}}}'
+
+oc rollout status deployment/lightspeed-app-server -n openshift-lightspeed --timeout=240s
+```
+
+> **`additionalCAConfigMapRef` MERGES — it does not replace.**
+> The operator mounts your ConfigMap as a *separate* `additional-ca` volume at
+> `/etc/certs/ols-additional-ca`, leaving the existing `openshift-ca` volume
+> (backed by `kube-root-ca.crt`) untouched. An init step concatenates both into
+> `/etc/certs/cert-bundle/ols.pem`, which `SSL_CERT_FILE` points at.
+> **Put ONLY your private root CA in the ConfigMap.** Adding the cluster certs
+> "to be safe" silently duplicates them in the merged bundle.
+
+**Verify — the certificate count must rise by exactly the number you added:**
+
+```bash
+oc exec deployment/lightspeed-app-server -n openshift-lightspeed \
+  -c lightspeed-service-api -- bash -c '
+    echo -n "merged bundle: "; grep -c "BEGIN CERTIFICATE" /etc/certs/cert-bundle/ols.pem
+    echo -n "provider TLS:  HTTP="
+    curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 \
+      https://YOUR_PROVIDER_HOST/v1/models; echo
+    echo -n "cluster API:   HTTP="
+    curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 \
+      https://kubernetes.default.svc/version; echo'
+```
+
+Both `HTTP=200`. The cluster API check is a regression guard: it proves the
+merge did not displace the cluster's own trust anchors.
+
+**Rollback:**
+
+```bash
+oc patch olsconfig cluster --type=json \
+  -p '[{"op":"remove","path":"/spec/ols/additionalCAConfigMapRef"}]'
+```
+
 ---
 
 ## Operation: `add-provider`
 
 Add an additional LLM provider to an existing OpenShift Lightspeed deployment.
 
+**Use the script.** It performs all five steps below, guards against the two
+failure modes that break the app-server (shared secret, wrong model name), and
+is idempotent:
+
+```bash
+bash scripts/add-provider.sh NAME --type TYPE --model MODEL --url URL \
+  [--from-keyring] [--set-default] --dry-run --context crc-admin
+#   DRY_RUN_RESULT=CONVERGED → provider already exists
+#   DRY_RUN_RESULT=PENDING   → re-run without --dry-run
+```
+
+Worked example (an openai-compatible endpoint whose key is in the keyring):
+
+```bash
+bash scripts/add-provider.sh corp-models \
+  --type openai \
+  --url https://models.corp.redhat.com/oai/v1 \
+  --model Qwen3.8-27B-FP8 \
+  --from-keyring --set-default --context crc-admin
+```
+
+The steps below document what the script does, for manual debugging.
+
 ### Step 1: Identify the provider type
+
+```bash
+bash scripts/add-provider.sh --help
+```
 
 Ask the user for:
 - **Provider type** — one of: `openai`, `google_vertex_anthropic`, `azure_openai`, `watsonx`, `bam`
@@ -234,6 +398,24 @@ Ask the user for:
 ### Step 2: Create the credentials secret
 
 Create a **separate** secret for the new provider (do NOT modify existing secrets).
+
+**Preferred — scripted.** `rotate-key.sh` validates the key against the live
+endpoint *before* writing, so a bad key never reaches the cluster. The key flows
+keyring/prompt → `mktemp` (mode 600) → `oc` → `shred`, and is never printed:
+
+```bash
+# Key already in GNOME Keyring (stored by goose-corp-provider/scripts/store-key.sh):
+bash scripts/rotate-key.sh PROVIDER --from-keyring --create --context crc-admin
+
+# Otherwise prompt (no echo, not stored in shell history):
+bash scripts/rotate-key.sh PROVIDER --create --context crc-admin
+```
+
+The provider must already be in the OLSConfig — `rotate-key.sh` resolves the
+secret name, credential key, URL, and model from the CRD rather than taking
+them as arguments. `add-provider.sh --from-keyring` sequences this for you.
+
+The manual equivalent is below.
 
 **⚠️ Security: Never pass API keys as command-line arguments or paste them into an AI chat session.** Use the file-based approach below to avoid keys leaking into shell history, process listings, or conversation logs.
 
@@ -270,6 +452,10 @@ oc create secret generic NEW_SECRET_NAME \
 
 ```bash
 oc get olsconfig cluster -o jsonpath='{.spec.llm.providers[*].name}'
+
+# Or let the script check for you — it exits CONVERGED if the name is taken
+# and fails fast if the secret name collides with another provider:
+bash scripts/add-provider.sh NAME --type TYPE --model MODEL --url URL --dry-run
 ```
 
 This shows existing provider names to avoid conflicts.
@@ -277,8 +463,15 @@ This shows existing provider names to avoid conflicts.
 ### Step 4: Patch the OLSConfig to add the new provider
 
 Use a JSON patch to append the new provider to the existing providers array.
+`add-provider.sh` builds this patch for you and backs up the OLSConfig first:
 
-**Example — Adding an OpenAI-compatible provider (MaaS/LiteLLM):**
+```bash
+bash scripts/add-provider.sh NAME --type TYPE --model MODEL --url URL --context crc-admin
+```
+
+The hand-written equivalent:
+
+**Example — Adding an OpenAI-compatible provider:**
 ```bash
 oc patch olsconfig cluster --type=json -p '[
   {
@@ -327,6 +520,11 @@ oc patch olsconfig cluster --type=json -p '[
 ```
 
 ### Step 5: Verify the provider was added
+
+```bash
+# Scripted: providers, models, default, status, and credential health
+bash scripts/list.sh --context crc-admin
+```
 
 ```bash
 # List all providers
@@ -538,6 +736,9 @@ After completing any operation, verify through the OpenShift web console:
 | "failed to parse grammar" (llama.cpp) | OLS sends `response_format: json_schema` which llama-server cannot parse | Set `introspectionEnabled: false` — basic Q&A works, tool-use does not |
 | `clusterInteraction.enabled` silently ignored | Field does NOT exist in the CRD | Use `introspectionEnabled` instead |
 | `defaultModel` mismatch goes undetected | OLSConfig CRD does not validate model exists under the provider — mismatch causes runtime 404 | `switch-provider.sh` validates model exists under provider before patching |
+| Provider unreachable: in-pod `curl` → `HTTP=000`, `exit code 60` | Provider served by a private/corporate CA absent from the cluster trust bundle. `curl -k` → 200 confirms it is trust, not network | Add the root CA via `spec.ols.additionalCAConfigMapRef` — see [Phase 5](#phase-5--trust-a-private-ca-only-for-providers-behind-an-internal-ca) |
+| Rotation backup leaks the old key | `rotate-key.sh` writes `/tmp/<secret>.bak.<ts>.yaml` (mode 600) containing the PREVIOUS key, and `/tmp` survives until reboot or the 10-day tmpfiles sweep | `shred -u /tmp/<secret>.bak.*.yaml` once the new key is confirmed. Same applies to any `oc get secret -o yaml` you redirect to a file |
+| Duplicate certs in the merged CA bundle | Assuming `additionalCAConfigMapRef` *replaces* the trust bundle and pre-concatenating `kube-root-ca.crt` into it | It **merges** via a separate `additional-ca` volume. Put ONLY the private root CA in the ConfigMap; key MUST be `ca.crt` |
 
 ## Specification
 
@@ -550,6 +751,12 @@ After completing any operation, verify through the OpenShift web console:
 | S5 | Remove a non-default provider | `scripts/remove-provider.sh` → provider gone, status `Ready` |
 | S6 | Block removal of the active default provider | `scripts/remove-provider.sh` → exit 1 with clear error |
 | S7 | Detect Skupper provider model mismatch | `scripts/list.sh` → ❌ MISMATCH when configured model differs from live backend |
+| S8 | Trust a private/corporate CA so a provider's TLS verifies without `-k` | In-pod `curl` to the provider WITHOUT `-k` returns HTTP 200; cluster API still HTTP 200 |
+| S9 | Install idempotently and never mutate an existing OLSConfig | `scripts/install.sh --dry-run` on an installed cluster → `DRY_RUN_RESULT=CONVERGED`, `Changes: none` |
+| S10 | Resolve project/location/model/SA key from `gcp-vertex-models`, never a placeholder | `scripts/install.sh --dry-run` prints concrete values; `--project YOUR_GCP_PROJECT` exits 1 |
+| S11 | Rotate or create a provider credential with pre-flight validation and in-pod verification | `scripts/rotate-key.sh PROVIDER` → validated before write, secret stamped, in-pod probe HTTP 200 |
+| S12 | Refuse to write a secret when the new key fails validation | `scripts/rotate-key.sh` on a bad key → exit 1, `Secret NOT modified` |
+| S13 | Report credential age against the rotation policy and live auth state | `scripts/list.sh` → `=== Credential Health ===` with Age + Auth per provider |
 
 ## Tests
 
@@ -561,6 +768,15 @@ After completing any operation, verify through the OpenShift web console:
 | T4 | S5 | `bash scripts/remove-provider.sh skupper-model-rhtevan --context crc-admin` (after switching away) | `✅ Provider removed` |
 | T5 | S7 | `bash scripts/list.sh --context crc-admin` (with VAN running + models started) | Skupper providers show `✅ Live` |
 | T6 | S7 | `bash scripts/list.sh --context crc-admin` (with VAN stopped) | Skupper providers show `⚠️ UNREACHABLE` |
+| T7 | S8 | `oc exec deployment/lightspeed-app-server -n openshift-lightspeed -c lightspeed-service-api -- curl -s -o /dev/null -w '%{http_code}' https://models.corp.redhat.com/oai/v1/models` | `200` (no `-k`) |
+| T8 | S8 | `oc exec deployment/lightspeed-app-server -n openshift-lightspeed -c lightspeed-service-api -- grep -c 'BEGIN CERTIFICATE' /etc/certs/cert-bundle/ols.pem` | Count = baseline + certs in `corp-ca` (merge, not replace) |
+| T9 | S9 | `bash scripts/install.sh --dry-run --context crc-admin` (installed cluster) | `Changes: none` + `DRY_RUN_RESULT=CONVERGED`, exit 0 |
+| T10 | S10 | `bash scripts/install.sh --dry-run --context crc-admin` | Prints a real project/location/model + an SA-key path of type `service_account` |
+| T11 | S10 | `bash scripts/install.sh --dry-run --context crc-admin --project YOUR_GCP_PROJECT` | Exit 1, `Placeholder value ... refusing to install` |
+| T12 | S11 | `bash scripts/rotate-key.sh corp-models --from-keyring --dry-run --context crc-admin` | Prints secret/key/url/model resolved from the CRD + `DRY_RUN_RESULT=` |
+| T13 | S11 | `bash scripts/rotate-key.sh corp-models --from-keyring --context crc-admin` | `✅ HTTP 200` pre-flight, `Stamped: crc-ols/rotated-at=...`, in-pod probe `✅ HTTP 200` |
+| T14 | S12 | `bash scripts/rotate-key.sh nosuchprovider --dry-run --context crc-admin` | Exit 1, `Provider ... not found` + list of configured providers |
+| T15 | S13 | `bash scripts/list.sh --context crc-admin` | `Credential Health` shows `Age:` and `Auth:` for every provider |
 
 ## Changelog
 

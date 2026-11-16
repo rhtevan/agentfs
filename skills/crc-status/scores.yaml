@@ -1,6 +1,6 @@
 # scores.yaml — crc-status
 skill: crc-status
-version: 2.1.0
+version: 2.2.0
 model_tier: T1
 qualification_rule: T1
 qoo-qualified: true
@@ -16,15 +16,15 @@ quality:
     inference_hop_count:
       score: 100
       pass: true
-      confidence: 0.9398888925549091
+      confidence: 0.9525489457404431
     step_clarity:
       score: 67
       pass: true
-      confidence: 0.993450193950769
+      confidence: 0.9950541514774326
     prose_executability:
       score: 67
       pass: true
-      confidence: 0.9654721397245825
+      confidence: 0.9646302582028465
     model_portability:
       score: 100
       pass: true
@@ -32,8 +32,8 @@ quality:
     interface_opacity:
       score: 100
       pass: true
-      confidence: 0.9975274099865513
-  evaluated: '2026-11-08T21:56:10-05:00'
+      confidence: 0.994779918752388
+  evaluated: '2026-11-16T11:47:43-05:00'
 observable:
   schema: observable.yaml
   aggregate_score: 93.75
@@ -42,11 +42,11 @@ observable:
     trace_instrumentation:
       score: 100
       pass: true
-      confidence: 0.9997965511486371
+      confidence: 0.9995694822610256
     cnl_compliance:
       score: 75
       pass: false
-      confidence: 0.9975113966008661
+      confidence: 0.9978636940180877
     anti_fabrication:
       score: 100
       pass: true
@@ -54,8 +54,8 @@ observable:
     sdm_delegation:
       score: 100
       pass: true
-      confidence: 0.9525740412139765
-  evaluated: '2026-11-08T21:56:10-05:00'
+      confidence: 0.9399132203118942
+  evaluated: '2026-11-16T11:47:43-05:00'
 operable:
   build:
     schema: operable.yaml
@@ -69,7 +69,7 @@ operable:
       has_muscle:
         score: 100
         pass: true
-        confidence: 1.0
+        confidence: 0.9999998807907245
       has_brain:
         score: 100
         pass: true
@@ -77,10 +77,10 @@ operable:
       has_harness:
         score: 100
         pass: true
-        confidence: 0.9999921322487633
-    evaluated: '2026-11-08T21:56:10-05:00'
+        confidence: 0.9999870063564402
+    evaluated: '2026-11-16T11:47:43-05:00'
 history:
-- date: '2026-11-08T21:56:10-05:00'
+- date: '2026-11-16T11:47:43-05:00'
   type: full
   quality_score: 76.5
   quality_band: Tunable

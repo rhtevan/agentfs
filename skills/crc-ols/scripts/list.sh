@@ -40,6 +40,87 @@ echo "=== Status ==="
 oc ${OC_CONTEXT} get olsconfig cluster -o jsonpath='{.status.overallStatus}'
 echo ""
 
+# === Credential health ===
+# Two independent checks per provider:
+#   Age  — crc-ols/rotated-at (+ rotation-days), else creationTimestamp.
+#          A self-reported stamp: only accurate if every rotation went
+#          through rotate-key.sh. Treat as an early warning, not truth.
+#   Auth — probe the provider endpoint from inside the app-server pod,
+#          using the mounted key. This exercises the exact credential,
+#          network path and CA trust OLS itself uses. This is the truth.
+# OLS reports overallStatus Ready even when a provider key is dead, so
+# without this an expired credential is invisible.
+echo ""
+echo "=== Credential Health ==="
+# shellcheck disable=SC2086
+oc ${OC_CONTEXT} get olsconfig cluster -o json > /tmp/.ols-list-$$.json 2>/dev/null || true
+PROV_JSON=$(python3 - "/tmp/.ols-list-$$.json" <<'PYEOF' 2>/dev/null || echo ""
+import json,sys
+d=json.load(open(sys.argv[1]))
+for p in d['spec']['llm']['providers']:
+    models=p.get('models') or [{}]
+    print('\t'.join([p['name'],
+                     p['credentialsSecretRef']['name'],
+                     p.get('credentialKey','apitoken'),
+                     p.get('url','-') or '-',
+                     models[0].get('name','-')]))
+PYEOF
+)
+rm -f "/tmp/.ols-list-$$.json"
+
+while IFS=$'\t' read -r PNAME SECRET CKEY PURL PMODEL; do
+  [[ -z "$PNAME" ]] && continue
+
+  # --- age ---
+  # shellcheck disable=SC2086
+  META=$(oc ${OC_CONTEXT} get secret "$SECRET" -n openshift-lightspeed -o json 2>/dev/null \
+    | python3 -c "
+import json,sys
+from datetime import datetime,timezone
+try: m=json.load(sys.stdin)['metadata']
+except Exception: print('MISSING -1 -1'); raise SystemExit
+a=m.get('annotations') or {}
+ref=a.get('crc-ols/rotated-at') or m['creationTimestamp']
+src='rotated' if a.get('crc-ols/rotated-at') else 'created'
+limit=int(a.get('crc-ols/rotation-days') or 0)
+age=int((datetime.now(timezone.utc)-datetime.fromisoformat(ref.replace('Z','+00:00'))).total_seconds()//86400)
+print(f'{src} {age} {limit}')
+" 2>/dev/null || echo "MISSING -1 -1")
+  read -r ASRC AGE LIMIT <<< "$META"
+
+  if [[ "$ASRC" == "MISSING" ]]; then
+    AGE_TXT="❌ secret $SECRET not found"
+  elif [[ "$LIMIT" -gt 0 ]]; then
+    LEFT=$(( LIMIT - AGE ))
+    if   [[ $LEFT -lt 0 ]]; then AGE_TXT="❌ ${AGE}d old — OVERDUE by $(( -LEFT ))d"
+    elif [[ $LEFT -le 7 ]]; then AGE_TXT="⚠️  ${AGE}d old — rotate within ${LEFT}d"
+    else                         AGE_TXT="✅ ${AGE}d old — ${LEFT}d remaining"; fi
+  else
+    AGE_TXT="➖ ${AGE}d old (no rotation policy; from ${ASRC})"
+  fi
+
+  # --- auth (in-pod, external HTTP providers only) ---
+  AUTH_TXT="➖ not probed"
+  if [[ "$PURL" == http* ]] && ! echo "$PURL" | grep -q "listener-"; then
+    # shellcheck disable=SC2086
+    CODE=$(oc ${OC_CONTEXT} exec deployment/lightspeed-app-server -n openshift-lightspeed \
+      -c lightspeed-service-api -- bash -c \
+      "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 8 --max-time 25 \
+         -H \"Authorization: Bearer \$(cat /etc/apikeys/$SECRET/$CKEY 2>/dev/null)\" \
+         ${PURL%/}/models" 2>/dev/null || echo "000")
+    case "$CODE" in
+      200)     AUTH_TXT="✅ HTTP 200" ;;
+      401|403) AUTH_TXT="❌ HTTP $CODE — credential rejected" ;;
+      000)     AUTH_TXT="⚠️  unreachable (network or CA trust)" ;;
+      *)       AUTH_TXT="⚠️  HTTP $CODE" ;;
+    esac
+  fi
+
+  echo "  $PNAME ($SECRET)"
+  echo "    Age:  $AGE_TXT"
+  echo "    Auth: $AUTH_TXT"
+done <<< "$PROV_JSON"
+
 # === Skupper provider liveness check ===
 # For providers whose URL contains "listener-" (Skupper routes),
 # probe the /v1/models endpoint to verify the configured model is actually served.

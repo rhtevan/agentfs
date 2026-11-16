@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 11:24 | v2.2.0 — Add OLS credential rotation reminder: read-only annotation check, warns at <=7d and overdue; Add S4 + ols_credential_rotation_due output field |
 | 2026-11-08 18:57 | v2.1.0 — Re-scored under current standard: O 75→93.75, B 75→98.94, build+observable gated, sdm_delegation exemption |
 | 2026-11-05 19:30 | v2.1.0 — Add model-tier to frontmatter |
 | 2026-10-31 22:49 | v2.1.0 — Reframe Step 2 prose to remove opaque script key references, add Output Contract section — fix interface_opacity; Bump frontmatter version to 2.1.0; Bump overview table version to 2.1.0; Add Output Contract section — document script output fields as public interface; Update quality scores after interface_opacity fix — 59.8→76.5, now qoo-qualified |

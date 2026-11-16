@@ -2,6 +2,73 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 11:58
+- Add gotcha: rotation backup holds the old live key (skills/crc-ols/SKILL.md)
+- Warn that the pre-rotation backup holds the OLD live key and must be shredded (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 11:49
+- Add deterministic overrides for has_bones (filesystem fact, SDM false-negatived it) and prose_executability (vacuous 0 at 100% script coverage) (scripts/sdm-evaluate.sh)
+
+## 2026-11-16 11:47
+- Add --skill NAME (repeatable, implies --force) so a changed skill can be rescored without touching the rest of its tier (scripts/score-all.sh)
+
+## 2026-11-16 11:42
+- Remove out-of-scope score created by an over-broad rescore (skills/goose-gcp-provider/scores.yaml)
+
+## 2026-11-16 11:27
+- Script-back add-provider Step 4 (skills/crc-ols/SKILL.md)
+- Script-back add-provider Step 2 with rotate-key.sh --create (skills/crc-ols/SKILL.md)
+
+## 2026-11-16 11:26
+- Make add-provider.sh the documented path; script-back Steps 1,3,5 (skills/crc-ols/SKILL.md)
+- New add-provider.sh: scripts the 5 prose add-provider steps, with duplicate-secret guard, model validation, and rotate-key.sh delegation (skills/crc-ols/scripts/add-provider.sh)
+
+## 2026-11-16 11:24
+- Add S4 + ols_credential_rotation_due output field (skills/crc-status/SKILL.md)
+- Add OLS credential rotation reminder: read-only annotation check, warns at <=7d and overdue (skills/crc-status/scripts/check-status.sh)
+
+## 2026-11-16 11:23
+- B7: add S9-S13 specs and T9-T15 tests for install.sh, rotate-key.sh, credential health (skills/crc-ols/SKILL.md)
+- B7: add rotate ols key + ols credential status signals, credential tags, related_skills (skills/crc-ols/SKILL.md)
+- B-guard: abort on band SDM_UNAVAILABLE instead of persisting -1 over real scores (silent mass de-qualification) (scripts/score-all.sh)
+
+## 2026-11-16 11:22
+- B6: add crc-ols as consumer, credential signals, S6/S7 specs and T6-T9 tests for select-sa/detect-sa (skills/gcp-vertex-models/SKILL.md)
+
+## 2026-11-16 11:21
+- B6: remove Step 2 (test-sa.sh deleted), renumber Steps 2-5, repoint select-sa/detect-sa to gcp-vertex-models, replace T9 with probe-models permission check (skills/litellm-vertex-ai-proxy/SKILL.md)
+
+## 2026-11-16 11:20
+- B5a: install.sh in Usage table, new Phase 0 auto-resolution, repoint select-sa.sh to gcp-vertex-models, remove placeholder circularity; add rotate-key + credential status signals (skills/crc-ols/SKILL.md)
+- Fix 2 dry-run-detected bugs: OperatorGroup name/duplicate-detection, metrics-client-ca namespace and source (skills/crc-ols/scripts/install.sh)
+
+## 2026-11-16 11:19
+- New install.sh: idempotent OLS install with --dry-run, Phase 0 auto-resolution from gcp-vertex-models, placeholder guard (skills/crc-ols/scripts/install.sh)
+
+## 2026-11-16 11:12
+- Add S8 spec + T7/T8 tests for private CA trust (skills/crc-ols/SKILL.md)
+- Add 2 CA-trust gotcha rows (skills/crc-ols/SKILL.md)
+- Add Phase 5 — private CA trust via additionalCAConfigMapRef (verified merge semantics) (skills/crc-ols/SKILL.md)
+
+## 2026-11-16 11:00
+- Add a Credential Health section: secret age against crc-ols/rotation-days plus an in-pod auth probe that detects dead keys OLS reports as Ready (skills/crc-ols/scripts/list.sh)
+
+## 2026-11-16 10:59
+- Add rotate-key.sh: provider-agnostic credential rotation with keyring sourcing, pre-flight validation, backup, crc-ols/rotated-at stamping, force-reload and in-pod verification (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 10:52
+- Delete test-sa.sh — redundant with probe-models.sh, and its hardcoded us-east5 region now returns 429 for current-generation models (skills/litellm-vertex-ai-proxy/scripts/test-sa.sh)
+
+## 2026-11-16 10:51
+- Resolve credentials via select-sa.sh when GOOGLE_APPLICATION_CREDENTIALS is unset; warn instead of silently using application default credentials (skills/gcp-vertex-models/scripts/probe-models.sh)
+- Replace with a deprecation wrapper that execs the gcp-vertex-models path (skills/litellm-vertex-ai-proxy/scripts/detect-sa.sh)
+
+## 2026-11-16 10:50
+- Replace with a deprecation wrapper that execs the gcp-vertex-models path (skills/litellm-vertex-ai-proxy/scripts/select-sa.sh)
+- Move detect-sa.sh from litellm-vertex-ai-proxy; report GCP credential store state (skills/gcp-vertex-models/scripts/detect-sa.sh)
+- Move select-sa.sh from litellm-vertex-ai-proxy (credential discovery is a capability, not proxy deployment) (skills/gcp-vertex-models/scripts/select-sa.sh)
+- Replace the head -1 SA fallback with select-sa.sh and add a service_account type guard (an expired user ADC could be written into the systemd unit) (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+
 ## 2026-11-13 22:05
 - Repair historical corruption: backtick 7 raw HTML tags, remove an injected duplicate file header, rejoin an entry split by the dedup insert, restore a missing bullet, drop a duplicated 2026-08-13 12:32 section, normalise blank lines (log.md)
 - Fix the log lint false positive: hard-wrapped list continuation lines are valid Markdown (skills/agentfs-setup/scripts/pre-push-scan.sh)

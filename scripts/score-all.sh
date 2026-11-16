@@ -5,13 +5,17 @@
 # for Quality and Observable schemas, persists results to scores.yaml.
 #
 # Usage:
-#   score-all.sh [--force] [--tier T1|T2|T3|T4] [--dry-run] [--sleep N]
+#   score-all.sh [--force] [--tier T1|T2|T3|T4] [--skill NAME]... [--dry-run] [--sleep N]
 #
 # Flags:
-#   --force     Re-score skills that already have scores.yaml
-#   --tier TX   Only score skills matching the given model-tier
-#   --dry-run   List what would be scored without making SDM calls
-#   --sleep N   Seconds to sleep between skills (default: 2)
+#   --force      Re-score skills that already have scores.yaml
+#   --tier TX    Only score skills matching the given model-tier
+#   --skill NAME Only score this skill. Repeatable. Implies --force.
+#                Use this after changing a skill — a bare --tier run
+#                rescores every skill in the tier, including ones you
+#                did not touch.
+#   --dry-run    List what would be scored without making SDM calls
+#   --sleep N    Seconds to sleep between skills (default: 2)
 #
 # Exit codes:
 #   0 — All skills scored successfully
@@ -33,6 +37,7 @@ OPERABLE_SCHEMA="$SKILLS_DIR/schemas/operable.yaml"
 # --- Argument parsing ---
 FORCE=false
 TIER_FILTER=""
+SKILL_FILTER=""
 DRY_RUN=false
 SLEEP_SECS=2
 
@@ -40,6 +45,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --force) FORCE=true; shift ;;
     --tier) TIER_FILTER="$2"; shift 2 ;;
+    --skill) SKILL_FILTER="$SKILL_FILTER ${2:?} "; FORCE=true; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     --sleep) SLEEP_SECS="$2"; shift 2 ;;
     *) echo "Unknown flag: $1" >&2; exit 1 ;;
@@ -77,6 +83,11 @@ for skill_dir in "$SKILLS_DIR"/*/; do
 
   # Read model-tier from frontmatter
   model_tier=$(grep -oP 'model-tier:\s*\K\S+' "$skill_dir/SKILL.md" 2>/dev/null | head -1 || echo "unknown")
+
+  # Apply skill filter — scoring a changed skill means scoring THAT skill.
+  if [[ -n "$SKILL_FILTER" && "$SKILL_FILTER" != *" $skill_name "* ]]; then
+    continue
+  fi
 
   # Apply tier filter
   if [[ -n "$TIER_FILTER" && "$model_tier" != "$TIER_FILTER" ]]; then
@@ -131,6 +142,19 @@ for skill_dir in "$SKILLS_DIR"/*/; do
   quality_score=$(echo "$quality_json" | jq -r '.aggregate_score // 0')
   quality_band=$(echo "$quality_json" | jq -r '.band // "Unknown"')
 
+  # GUARD: sdm-evaluate.sh returns band=SDM_UNAVAILABLE with aggregate_score=-1
+  # and EXIT CODE 0 when the endpoint is down, so the `|| continue` above never
+  # fires. Writing that result would overwrite every real score with -1 and
+  # silently de-qualify the whole library. Abort the entire run instead — a
+  # down SDM is an environment fault, not a property of the skill.
+  if [[ "$quality_band" == "SDM_UNAVAILABLE" ]]; then
+    echo ""
+    echo "❌ SDM endpoint is unavailable — aborting."
+    echo "   Scored so far: $SCORED skill(s). No scores.yaml was overwritten for '$skill_name'."
+    echo "   Start the SDM endpoint (localhost:9000) and re-run."
+    exit 1
+  fi
+
   # Step 3: Observable evaluation
   # Uses --evidence with stripped gather output. The sdm_delegation evidence line
   # is formatted as "sdm_delegation: YES/NO" to match what the 14B SDM expects.
@@ -149,6 +173,14 @@ for skill_dir in "$SKILLS_DIR"/*/; do
   observable_score=$(echo "$observable_json" | jq -r '.aggregate_score // 0')
   observable_band=$(echo "$observable_json" | jq -r '.band // "Unknown"')
 
+  # GUARD: see the quality guard above.
+  if [[ "$observable_band" == "SDM_UNAVAILABLE" ]]; then
+    echo ""
+    echo "❌ SDM endpoint became unavailable mid-run — aborting."
+    echo "   Scored so far: $SCORED skill(s). No scores.yaml was overwritten for '$skill_name'."
+    exit 1
+  fi
+
   # Step 3b: Operable (Build) evaluation — BMBT only
   # Runtime CECX dimensions require trace evidence from actual execution.
   # Without traces, CECX scores are unreliable (SDM guesses from static analysis).
@@ -166,6 +198,14 @@ for skill_dir in "$SKILLS_DIR"/*/; do
   if [[ -n "$build_json" ]]; then
     build_score=$(echo "$build_json" | jq -r '.aggregate_score // 0')
     build_band=$(echo "$build_json" | jq -r '.band // "Unknown"')
+
+    # GUARD: see the quality guard above.
+    if [[ "$build_band" == "SDM_UNAVAILABLE" ]]; then
+      echo ""
+      echo "❌ SDM endpoint became unavailable mid-run — aborting."
+      echo "   Scored so far: $SCORED skill(s). No scores.yaml was overwritten for '$skill_name'."
+      exit 1
+    fi
   fi
 
   # Step 4: Compute qoo-qualified (tier-aware thresholds)

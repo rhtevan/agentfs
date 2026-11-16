@@ -4,7 +4,7 @@ description: >
   crc status, check crc, crc health
 metadata:
   author: agentfs
-  version: "2.1.0"
+  version: "2.2.0"
   model-tier: T1
   tags: [openshift, crc, status, console]
 user-invocable: true
@@ -30,6 +30,7 @@ Read-only health check for an OpenShift Local (CRC) cluster.
 | S1 | Gather CRC state deterministically | `check-status.sh` exits 0 with structured output |
 | S2 | Report status facts to user | Response contains crc_vm_state and cluster_running |
 | S3 | Stop when cluster is stopped | No steps attempted beyond status report |
+| S4 | Surface OLS credentials due for rotation | `check-status.sh` emits `ols_credential_rotation_due` when OLS is installed |
 
 ## Rules
 
@@ -88,6 +89,7 @@ format.
 | `oc_cli_found` | running only | Whether `oc` CLI is available |
 | `credentials` | running only | Console credentials from `crc console --credentials` |
 | `banner_exists` | running only | `yes`, `no`, or `unknown` |
+| `ols_credential_rotation_due` | running only, OLS installed | `none`, or a list of secrets `OVERDUE by Nd` / `expires in Nd`. Read-only (annotations only); full probe is crc-ols `ols credential status` |
 | `banner_name` | running only | Console notification resource name (if banner exists) |
 
 ## Scope

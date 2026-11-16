@@ -5,7 +5,7 @@ description: >
   refresh litellm models
 platforms: ['linux']
 metadata:
-  version: "3.4.1"
+  version: "4.0.0"
   model-tier: T2
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   related_skills: [gcp-vertex-models, litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
@@ -76,7 +76,7 @@ with `hey refresh litellm models` (workflow below); clients that fetch `/v1/mode
 ### Step 1 — Select Service Account
 
 ```bash
-SA_KEY=$(bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/select-sa.sh \
+SA_KEY=$(bash ~/.agents/skills/gcp-vertex-models/scripts/select-sa.sh \
   --project <project_id>)
 ```
 
@@ -86,25 +86,19 @@ automatically — it holds `roles/editor`, which is over-privileged.
 Exits non-zero if no suitable key is found or if ambiguous (use
 `--sa-email <email>` to disambiguate).
 
+> **Owned by `gcp-vertex-models`.** Credential selection is a GCP capability,
+> not a proxy-deployment concern. The old
+> `litellm-vertex-ai-proxy/scripts/select-sa.sh` and `detect-sa.sh` paths are
+> deprecation wrappers that `exec` the new location and will be removed in
+> v5.0.0.
+
 Use `detect-sa.sh` for a human-readable overview of all available keys:
 
 ```bash
-bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/detect-sa.sh
+bash ~/.agents/skills/gcp-vertex-models/scripts/detect-sa.sh
 ```
 
-### Step 2 — Test Service Account Permissions
-
-```bash
-bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/test-sa.sh \
-  --sa-key "$SA_KEY" \
-  --project <project_id> \
-  --region us-east5
-```
-
-Sends a minimal Vertex AI request using the SA key. If 403, the
-account needs `roles/aiplatform.user` — contact GCP admin.
-
-### Step 3 — Discover Available Models
+### Step 2 — Discover Available Models
 
 Load the `gcp-vertex-models` skill and run its refresh step:
 
@@ -114,15 +108,20 @@ bash ~/.agents/skills/gcp-vertex-models/scripts/probe-models.sh \
 ```
 
 Show the model × region table to the user. Continue only if it reports
-at least one usable model.
+at least one `available` model.
 
-### Step 4 — Install LiteLLM
+This also serves as the service-account permission check: a `403` on every
+model means the SA lacks `roles/aiplatform.user`. Probing every model × region
+is strictly stronger than testing one hardcoded model in one region, which can
+report a false failure when that region is at capacity (`429`).
+
+### Step 3 — Install LiteLLM
 
 ```bash
 uv tool install 'litellm[proxy]'
 ```
 
-### Step 5 — Setup Proxy (Config + systemd + Start)
+### Step 4 — Setup Proxy (Config + systemd + Start)
 
 **Dry run first** (writes to `/tmp/`, doesn't touch live config):
 
@@ -161,7 +160,7 @@ The setup script:
 - Enables linger, reloads systemd, enables and starts the service
 - Runs a health check to confirm proxy is up
 
-### Step 6 — Verify
+### Step 5 — Verify
 
 ```bash
 bash ~/.agents/skills/litellm-vertex-ai-proxy/scripts/verify.sh
@@ -253,8 +252,8 @@ journalctl --user -u litellm-proxy -f     # follow logs
 | T5 | S5 | `bash scripts/verify.sh 2>&1 \| grep S5` | S5 shows ✅ |
 | T6 | S1–S5 | `bash scripts/verify.sh` | Exit code 0, all checks pass |
 | T7 | S6 | `bash scripts/refresh-models.sh` | Exit 0; `DRY_RUN_RESULT=CONVERGED` right after setup |
-| T8 | — | `bash scripts/detect-sa.sh` | At least 1 SA key found |
-| T9 | — | `bash scripts/test-sa.sh --sa-key <key> --project <proj>` | ✅ Success response |
+| T8 | — | `bash ~/.agents/skills/gcp-vertex-models/scripts/detect-sa.sh` | At least 1 SA key found |
+| T9 | — | `bash ~/.agents/skills/gcp-vertex-models/scripts/probe-models.sh --project <proj> --credentials "$SA_KEY"` | Exit 0; ≥1 model with status `available` (all-`403` ⇒ missing `roles/aiplatform.user`) |
 | T10 | S1–S5 | `bash scripts/setup.sh --dry-run` | Ends with `DRY_RUN_RESULT=CONVERGED` or a `-`/`+` model diff + `PENDING` |
 | T11 | S1–S5 | Stop proxy → remove config → `bash scripts/setup.sh --force` → `bash scripts/verify.sh` | Full rebuild passes all checks |
 

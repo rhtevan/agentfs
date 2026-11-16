@@ -72,6 +72,25 @@ if [[ -z "$PROJECT" ]]; then
   echo "No project. Use --project or set ANTHROPIC_VERTEX_PROJECT_ID." >&2; exit 2
 fi
 
+# Resolve credentials deterministically. Without this, google.auth.default()
+# silently falls back to the user ADC file (~/.config/gcloud/
+# application_default_credentials.json), which authenticates as a different
+# identity against a different quota project — and still returns HTTP 200,
+# so the substitution is invisible in the results.
+if [[ -z "$CREDS" ]]; then
+  SELECT_SA="$(dirname "$0")/select-sa.sh"
+  if [[ -f "$SELECT_SA" ]]; then
+    CREDS=$(bash "$SELECT_SA" --project "$PROJECT" 2>/dev/null || echo "")
+  fi
+  if [[ -n "$CREDS" ]]; then
+    echo "Credential (select-sa.sh): $CREDS" >&2
+  else
+    echo "⚠️  No dedicated service-account key found — falling back to application default" >&2
+    echo "   credentials. The probing identity may differ from the one your services use." >&2
+    echo "   Pass --credentials <sa_key.json> to be explicit." >&2
+  fi
+fi
+
 # Pick a python that has google-auth (system first, then the litellm uv tool)
 PY=""
 for cand in python3 "${HOME}/.local/share/uv/tools/litellm/bin/python3"; do

@@ -64,9 +64,20 @@ if [[ -z "$PROJECT" ]]; then
 fi
 
 if [[ -z "$SA_KEY" ]]; then
-  SA_KEY=$(find ~/.config/gcloud/legacy_credentials -name "adc.json" 2>/dev/null | head -1 || echo "")
+  # Delegate to gcp-vertex-models/select-sa.sh — it filters to
+  # type:service_account and rejects the default compute SA. A bare
+  # `find ... | head -1` is NOT safe: legacy_credentials/ also holds
+  # authorized_user ADC files, and alphabetical order can surface an
+  # expired user credential ahead of the dedicated SA key.
+  SELECT_SA="$HOME/.agents/skills/gcp-vertex-models/scripts/select-sa.sh"
+  if [[ ! -x "$SELECT_SA" && ! -f "$SELECT_SA" ]]; then
+    echo "❌ --sa-key is required (gcp-vertex-models/select-sa.sh not found)"
+    exit 2
+  fi
+  SA_KEY=$(bash "$SELECT_SA" --project "$PROJECT" 2>/dev/null || echo "")
   if [[ -z "$SA_KEY" ]]; then
-    echo "❌ --sa-key is required (no SA key auto-detected)"
+    echo "❌ --sa-key is required (no dedicated service account key auto-detected)"
+    echo "   Run: bash $SELECT_SA --project $PROJECT"
     exit 2
   fi
   echo "Auto-detected SA key: $SA_KEY"
@@ -74,6 +85,17 @@ fi
 
 if [[ ! -f "$SA_KEY" ]]; then
   echo "❌ SA key file not found: $SA_KEY"
+  exit 1
+fi
+
+# Guard: systemd services cannot re-authenticate interactively, so a
+# user ADC refresh token would expire and the proxy would fail silently.
+# Only a service_account key is acceptable.
+SA_KEY_TYPE=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('type',''))" \
+  "$SA_KEY" 2>/dev/null || echo "")
+if [[ "$SA_KEY_TYPE" != "service_account" ]]; then
+  echo "❌ $SA_KEY is type '${SA_KEY_TYPE:-unparseable}', not 'service_account'."
+  echo "   systemd cannot refresh user credentials — the proxy would fail when the token expires."
   exit 1
 fi
 

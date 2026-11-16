@@ -90,6 +90,37 @@ credentials: $CREDENTIALS
 banner_exists: $BANNER_EXISTS
 banner_name: $BANNER_NAME
 EXTENDED
+
+  # --- OLS credential rotation reminder ---
+  # Cheap, read-only: annotations only. No in-pod exec, no network. The full
+  # probe (incl. live auth) lives in crc-ols `ols credential status`.
+  if oc get olsconfig cluster &>/dev/null; then
+    OLS_WARN=$(oc get secret -n openshift-lightspeed -o json 2>/dev/null | python3 -c "
+import json,sys
+from datetime import datetime,timezone
+try: items=json.load(sys.stdin).get('items',[])
+except Exception: sys.exit(0)
+now=datetime.now(timezone.utc)
+for it in items:
+    m=it.get('metadata',{}); a=m.get('annotations') or {}
+    r=a.get('crc-ols/rotated-at')
+    d=a.get('crc-ols/rotation-days')
+    if not r or not d: continue
+    try:
+        age=(now-datetime.fromisoformat(r.replace('Z','+00:00'))).total_seconds()//86400
+        left=int(d)-int(age)
+    except Exception: continue
+    if left < 0:   print(f\"{m['name']}: OVERDUE by {-left}d\")
+    elif left <= 7: print(f\"{m['name']}: expires in {left}d\")
+" 2>/dev/null)
+    if [[ -n "$OLS_WARN" ]]; then
+      echo "ols_credential_rotation_due: |"
+      echo "$OLS_WARN" | sed 's/^/  /'
+      echo "  action: bash ~/.agents/skills/crc-ols/scripts/rotate-key.sh <provider> --from-keyring"
+    else
+      echo "ols_credential_rotation_due: none"
+    fi
+  fi
 else
   cat <<STOPPED
 --- CLUSTER IS STOPPED ---

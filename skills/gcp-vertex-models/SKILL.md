@@ -1,16 +1,17 @@
 ---
 name: gcp-vertex-models
 description: >
-  refresh vertex models, vertex model list, vertex default model
+  refresh vertex models, vertex model list, vertex default model,
+  select vertex credential, vertex credential list
 platforms: ['linux']
 argument-hint: "[--project P] [--regions global,us-east5] [--family opus|sonnet|haiku]"
 compatibility: "python3 with google-auth (system or litellm uv tool); GCP service account key"
 metadata:
   author: agentfs
-  version: "1.0.1"
+  version: "1.1.0"
   model-tier: T2
-  tags: [gcp, vertex-ai, claude, models, discovery]
-  related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, goose-gcp-provider]
+  tags: [gcp, vertex-ai, claude, models, discovery, credentials, service-account]
+  related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, goose-gcp-provider, crc-ols]
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -32,11 +33,11 @@ configuration.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.0.0 |
-| **Trigger** | `hey refresh vertex models` (Command) · `hey vertex model list` · `hey vertex default model` (Query) |
+| **Version** | 1.1.0 |
+| **Trigger** | `hey refresh vertex models` (Command) · `hey vertex model list` · `hey vertex default model` · `hey select vertex credential` · `hey vertex credential list` (Query) |
 | **Dependencies** | python3 + google-auth, service-account key, network to `*aiplatform.googleapis.com` |
 | **Cache** | `${XDG_CACHE_HOME:-~/.cache}/gcp-vertex-models/models.json` (override: `GCP_VERTEX_MODELS_CACHE`) |
-| **Consumers** | `litellm-vertex-ai-proxy` (setup/refresh), `litellm-proxy-status` (rank), `goose-gcp-provider` (gcp_vertex_ai default) |
+| **Consumers** | `litellm-vertex-ai-proxy` (setup/refresh + `select-sa.sh`), `litellm-proxy-status` (rank), `goose-gcp-provider` (gcp_vertex_ai default), `crc-ols` (install Phase 0: project/location/model/SA key) |
 
 ## Specification
 
@@ -47,6 +48,8 @@ configuration.
 | S3 | Show the cached model × region table with age warning | `scripts/models.sh list` exits 0 |
 | S4 | Report the strongest usable model and its region | `scripts/models.sh default` prints `<model> <region>` that returned 200 |
 | S5 | Rank any list of model names deterministically | `scripts/verify.sh` check S5 |
+| S6 | Select exactly one dedicated service-account key, rejecting the default compute SA and any non-`service_account` file | `scripts/select-sa.sh` prints one path, exit 0; exit 1 when none or ambiguous |
+| S7 | Report every GCP credential on the host without ever printing a private key | `scripts/detect-sa.sh` lists keys; output contains no `private_key` |
 
 ## Tests
 
@@ -57,6 +60,10 @@ configuration.
 | T3 | S4 | `bash scripts/models.sh default --family sonnet` | One line `claude-sonnet-… <region>` |
 | T4 | S5 | `printf 'claude-opus-5\nclaude-fable-5\n' \| bash scripts/models.sh rank` | `claude-opus-5` only |
 | T5 | S3 | `GCP_VERTEX_MODELS_CACHE=/nonexistent bash scripts/models.sh list` | Exit 1, "No probe cache" |
+| T6 | S6 | `bash scripts/select-sa.sh` | One path to an `adc.json`, exit 0 |
+| T7 | S6 | `bash scripts/select-sa.sh --sa-email nosuch@example.com` | Exit 1, no path printed |
+| T8 | S7 | `bash scripts/detect-sa.sh \| grep -c private_key` | `0` |
+| T9 | S1, S6 | `env -u GOOGLE_APPLICATION_CREDENTIALS bash scripts/probe-models.sh --project <proj> 2>&1 \| grep credential` | Reports a `service_account`, never a silent user-ADC fallback |
 
 ## Rules
 

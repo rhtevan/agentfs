@@ -330,6 +330,51 @@ TOTAL_PASS=0
 TOTAL_DIMS=0
 DIMENSIONS_JSON="[]"
 
+# --- Deterministic overrides -------------------------------------------
+# Some dimensions are declared `evidence_source: filesystem` and are already
+# answered exactly by gather-skill-state.sh (Tier 1). Asking a probabilistic
+# model to re-derive a fact it was handed produces false negatives: on
+# 2026-11-16 the SDM returned has_bones=0 for goose-setup and
+# headroom-litellm-proxy, both of which ship an executable scripts/setup.sh.
+# Build fell 100 -> 50 and both lost QOO qualification with no change to the
+# skill. Facts are read here; only judgment goes to the model.
+#
+# det_override <dimension-name>
+#   echoes "<score> <pass> <detail>" and returns 0 when it owns the dimension,
+#   returns 1 when the model's answer should stand.
+det_override() {
+  case "$1" in
+    has_bones)
+      # "Does scripts/ contain at least one shell script?" — countable.
+      local n
+      n=$(printf '%s\n' "$EVIDENCE" | sed -n 's/^Scripts in scripts\/ directory:[[:space:]]*//p' | head -1)
+      [[ "$n" =~ ^[0-9]+$ ]] || return 1
+      if [[ "$n" -gt 0 ]]; then
+        echo "100 true deterministic: $n script(s) in scripts/"
+      else
+        echo "0 false deterministic: no scripts in scripts/"
+      fi
+      return 0 ;;
+    prose_executability)
+      # Scores only steps marked [SCRIPTED: no]. At 100% script coverage the
+      # input set is empty and the model returns 0 — i.e. reaching the goal
+      # lowers the score. Report full marks on an empty set, the way
+      # build_band already reports not-evaluated.
+      local cov tot
+      cov=$(printf '%s\n' "$EVIDENCE" | sed -n 's/^Script coverage:[[:space:]]*\([0-9]\+\) of \([0-9]\+\).*/\1 \2/p' | head -1)
+      [[ -n "$cov" ]] || return 1
+      read -r sc tot <<<"$cov"
+      [[ "$tot" =~ ^[0-9]+$ && "$sc" =~ ^[0-9]+$ ]] || return 1
+      # Only override when there is genuinely nothing to judge.
+      if [[ "$tot" -gt 0 && "$sc" -eq "$tot" ]]; then
+        echo "100 true not-evaluated: no prose-only steps (script coverage ${sc}/${tot})"
+        return 0
+      fi
+      return 1 ;;
+  esac
+  return 1
+}
+
 for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
   name="${DIMENSION_NAMES[$i]}"
   metric="${DIMENSION_METRICS[$i]}"
@@ -458,6 +503,16 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
       fi
       ;;
   esac
+
+  # Deterministic override wins over the model answer.
+  if _det=$(det_override "$name"); then
+    read -r _dscore _dpass _ddetail <<<"$_det"
+    _ddetail="${_det#* * }"
+    score_val="$_dscore"
+    pass="$_dpass"
+    confidence=1.0
+    detail="$_ddetail"
+  fi
 
   dim_json=$(jq -n \
     --arg n "$name" \
