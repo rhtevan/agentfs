@@ -3,7 +3,7 @@ name: agentfs-git-push
 description: >
   git push safety, pre-push scan, hey git workflow, hey git, git
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
   model-tier: T2
   tags: [agentfs, git, safety, pre-push, guardrail]
 user-invocable: true
@@ -198,6 +198,7 @@ run the workflow again for it.
 | `git commit` "nothing to commit" | All changes already committed or unstaged | Inform user — working tree is clean. Skip Steps 8–9. The scan still ran against the unpushed range, so Step 9 is still required if the branch is ahead. |
 | Scan prints `No changes to scan` but the branch is ahead | Forced `--mode cached` on a clean tree | Re-run without `--mode`, or with `--mode range`. Never treat this as CLEAN. |
 | Scan exits 2 `no upstream and no commits` | `--mode range` in a repo with no commits | Nothing to scan. Make a commit first. |
+| PII row FOUND on a `scores.yaml` with no contact details | Pre-7.9.3 phone regex matched the decimal tail of a confidence float | Fixed in `pre-push-scan.sh` v7.9.3 — phone matching now requires separators. If it recurs, the regex regressed: run `test-pre-push-scan.sh` and check cases C6.5–C6.8. |
 | `pre-push-scan.sh` not found | `agentfs-setup` skill not installed | Present error: "pre-push-scan.sh requires the agentfs-setup skill at ~/.agents/skills/agentfs-setup/" |
 
 ## Violations

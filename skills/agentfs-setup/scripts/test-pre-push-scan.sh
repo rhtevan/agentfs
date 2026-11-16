@@ -143,6 +143,35 @@ assert_output_contains "Detects PII" "PII.*FOUND" "$SCAN_OUTPUT"
 git reset -q HEAD pii.txt
 rm -f pii.txt
 
+# Phone-shape discrimination. The original pattern made every
+# separator optional, so any 10-digit run matched — including the
+# decimal tail of an SDM confidence float. That fired on every
+# scores.yaml in the library and taught the reader to ignore the PII
+# row. These cases pin both directions: real phone formats stay
+# caught, numeric data stays quiet.
+c6_check() {
+  local label="$1" content="$2" expect="$3"
+  printf '%s\n' "$content" > pii-shape.txt
+  git add pii-shape.txt
+  run_scan
+  if [[ "$expect" == "found" ]]; then
+    assert_output_contains "$label" "PII.*FOUND" "$SCAN_OUTPUT"
+  else
+    assert_output_contains "$label" "PII.*Clean" "$SCAN_OUTPUT"
+  fi
+  git reset -q HEAD pii-shape.txt
+  rm -f pii-shape.txt
+}
+
+c6_check "C6.1: dashed phone"          'call 555-867-5309 today'      found
+c6_check "C6.2: parenthesised phone"   'ring (212) 555-0199 please'   found
+c6_check "C6.3: +1 E.164 phone"        'dial +14155552671 now'        found
+c6_check "C6.4: dotted phone"          'fax 415.555.2671 asap'        found
+c6_check "C6.5: confidence float"      'confidence: 0.9626730730490257' clean
+c6_check "C6.6: repeating-decimal float" 'score: 83.33333333333334'   clean
+c6_check "C6.7: large integer constant" 'FNV offset basis 2166136261' clean
+c6_check "C6.8: power of two"          'addressable 4294967296 bytes' clean
+
 # ── Test 7: README audit signal ────────────────────────────────────
 # Category 7 was a "README staleness" string check until
 # agentfs-readme-audit v1.2.0 replaced it with the README_AUDIT_REQUIRED

@@ -22,6 +22,15 @@
   the PEM entry is a bare `-----BEGIN RSA PRIVATE KEY-----` header
   with no key body). None authenticate against anything.
 
+- Fictional phone numbers inside Category 6's own test vectors in
+  `skills/agentfs-setup/scripts/test-pre-push-scan.sh` and the regex
+  examples in the Category 6 comment block of `pre-push-scan.sh`.
+  All use the 555 exchange reserved for fiction (555-123-4567,
+  555-867-5309, (212) 555-0199, +14155552671, 415.555.2671) and
+  reach nobody. The scanner must contain phone-shaped strings to
+  prove it still catches real ones after the 2026-11-16 regex
+  tightening.
+
 - The literal placeholder `sk-litellm-local-no-auth` appearing in
   dsh-* and litellm-* skill files (SKILL.md, setup.sh,
   install-desktop.sh). The local LiteLLM proxy runs without a

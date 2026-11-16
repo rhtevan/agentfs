@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 14:54
+- Troubleshooting row for the pre-7.9.3 confidence-float PII false positive (skills/agentfs-git-push/SKILL.md)
+- Allowlist Category 6 fictional 555-exchange phone test vectors (.pre-push-allowlist)
+
+## 2026-11-16 14:53
+- Add Test 6 phone-shape discrimination cases C6.1-C6.8 (skills/agentfs-setup/scripts/test-pre-push-scan.sh)
+- Category 6: require phone separators so confidence-float decimal tails no longer match (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
 ## 2026-11-16 14:50
 - pre-check.sh disk check measures $HOME instead of / — on image-mode (bootc) rhel-ai '/' is a 40M read-only overlay that always reported 0G (false failure) (skills/hosted-model-ctl/scripts/pre-check.sh)
 

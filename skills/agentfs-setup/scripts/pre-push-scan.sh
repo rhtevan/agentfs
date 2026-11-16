@@ -208,8 +208,26 @@ report_category "Sensitive URLs" "$SENSITIVE_URLS"
 # ── Category 6: PII ───────────────────────────────────────────────
 # Email addresses
 EMAIL_MATCHES=$(echo "$ADDED_LINES" | grep -oE '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' || true)
-# Phone numbers (common formats)
-PHONE_MATCHES=$(echo "$ADDED_LINES" | grep -oE '(\+?1?[-. ]?\(?[0-9]{3}\)?[-. ]?[0-9]{3}[-. ]?[0-9]{4})' || true)
+# Phone numbers (common formats).
+#
+# Every separator in this pattern is REQUIRED somewhere: a bare run of
+# ten digits is not treated as a phone number. The previous pattern
+# made all of them optional, so any 10-digit substring matched — and
+# the decimal tail of an SDM confidence float is exactly that:
+#   0.9626730730490257  ->  ".9626730730"
+# That false positive fired on every scores.yaml in the library and
+# trained the reader to skip the PII row, which is the one row that
+# must never be skipped.
+#
+# A real phone number is recognisable by its SHAPE, not its length, so
+# require one of three unambiguous forms:
+#   1. +1 country code prefix   -> +14155552671, +1 (415) 555-2671
+#   2. parenthesised area code  -> (415) 555-2671
+#   3. separated triples        -> 415-555-2671, 415.555.2671
+# The lookarounds reject a match that is part of a longer number or
+# sits immediately after a decimal point.
+PHONE_RX='(?<![0-9.])(\+1[-. ]?\(?[0-9]{3}\)?[-. ]?[0-9]{3}[-. ]?[0-9]{4}|\([0-9]{3}\)[-. ]?[0-9]{3}[-. ]?[0-9]{4}|[0-9]{3}[-.][0-9]{3}[-.][0-9]{4})(?![0-9])'
+PHONE_MATCHES=$(echo "$ADDED_LINES" | grep -oP "$PHONE_RX" || true)
 PII=""
 [[ -n "$EMAIL_MATCHES" ]] && PII+="$EMAIL_MATCHES"
 [[ -n "$PHONE_MATCHES" ]] && PII+="${PII:+\n}$PHONE_MATCHES"
