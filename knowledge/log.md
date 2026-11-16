@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 16:36
+- Correct SystemOne port/response-shape claims (knowledge/llm-inference-constrained-gpu/decision-api-request-patterns.md)
+- Add SDM 4GB GPU hosting + AgentFS validation concept (knowledge/llm-inference-constrained-gpu/sdm-small-gpu-agentfs-validation.md)
+
 ## 2026-11-10 12:10
 - Add SOUL-AGENTS amplification principle: design guidance for when SOUL overlaps vs amplifies AGENTS.md rules, attention-bridge exception (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 

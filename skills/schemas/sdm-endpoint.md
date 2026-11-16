@@ -126,6 +126,37 @@ Latency scales linearly with question count.
 |-------|---------|--------|
 | `label_mass` | How much probability lands on valid answer tokens (0-1) | If < 0.8, evidence may be noisy |
 | `argmax_is_label` | Whether the model's top token is a valid answer | If `false`, result is unreliable |
+
+### Response Shape Variants
+
+Not every SystemOne server returns the full shape above. `sdm-evaluate.sh`
+handles both:
+
+| Server | `noul` answer | `confidence` (noul) | `diagnostics` |
+|--------|---------------|:---:|:---:|
+| vLLM (generic model, logit reading) | `noul` + `probabilities.yes/no` | ✅ | ✅ |
+| llama.cpp `llama-server` (native decision GGUF: vllm-d3, clef, lfm2-d1, laya, …) | `noul` only | ❌ (derived: `max(noul, 1-noul)`) | ❌ (reliability checks skipped, warning logged) |
+
+Negative-polarity boolean dimensions read `probabilities.no`, falling back
+to `1 - noul`. Before this fallback, every negative-polarity dimension
+(all 17 readme-alignment dimensions) failed against noul-only servers.
+
+## Validating a New SDM Endpoint
+
+Before pointing `SDM_ENDPOINT` at a different model or provider, run:
+
+```bash
+~/.agents/scripts/sdm-validate.sh --candidate <url> [--baseline http://localhost:9000] [--sample N]
+```
+
+It runs the `score-all.sh` evaluations against both endpoints without
+persisting scores, and gates on ≥90% pass/fail agreement with the baseline
+plus ground-truth accuracy on facts stated verbatim in the evidence.
+
+Reference result (2026-11-16): vllm-sr d3-mini 4B on llama.cpp (RTX A500,
+4 GB) scored 19/20 on generic decisions but only **69.7%** agreement and
+**9/61** ground truth on AgentFS evidence → FAIL. Generic decision benchmarks
+do not predict AgentFS usability.
 ```
 
 ## Error Handling

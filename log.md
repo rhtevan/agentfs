@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 16:36
+- Correct SystemOne port/response-shape claims (knowledge/llm-inference-constrained-gpu/decision-api-request-patterns.md)
+- Add SDM 4GB GPU hosting + AgentFS validation concept (knowledge/llm-inference-constrained-gpu/sdm-small-gpu-agentfs-validation.md)
+
+## 2026-11-16 16:33
+- sdm-endpoint.md: document response shape variants (vLLM vs llama.cpp noul-only) and sdm-validate.sh usage (skills/schemas/sdm-endpoint.md)
+- scripts/README.md: replace stale 'currently empty' note with SDM pipeline script table incl. sdm-validate.sh
+- New sdm-validate.sh: validate candidate SDM endpoint for AgentFS usability (baseline agreement + ground-truth facts, isolated, exit 0/1/2/3) (scripts/sdm-validate.sh)
+- sdm-evaluate.sh: support noul-only SDM responses (llama.cpp /v1/systemone) — negative polarity derives no=1-noul, confidence fallback, warn on missing diagnostics (scripts/sdm-evaluate.sh)
+
 ## 2026-11-16 15:10
 - Accept both SOUL load mechanisms: pre-7.7.0 @import and 7.7.0+ read instruction (skills/agentfs-setup/scripts/verify-setup.sh)
 

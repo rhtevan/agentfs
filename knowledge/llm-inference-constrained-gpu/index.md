@@ -25,11 +25,13 @@ models on an RTX A500 Laptop GPU.
 | [speculative-decoding-tradeoffs.md](./speculative-decoding-tradeoffs.md) | When speculative decoding hurts: bandwidth-bound GPUs, TP overhead, vLLM V1 scheduler issues |
 | [d3-decision-model-deployment.md](./d3-decision-model-deployment.md) | D3 Decision Model on L4: CUDA graph OOM (vision encoder), FP8 KV crash, optimization, NextToken vs SDM comparison |
 | [decision-api-request-patterns.md](./decision-api-request-patterns.md) | Validated request/response patterns for NextToken (`/v1/decisions`) and D3 System One (`/v1/systemone`) APIs with format pitfalls |
+| [sdm-small-gpu-agentfs-validation.md](./sdm-small-gpu-agentfs-validation.md) | SDM on a 4 GB GPU: per-question context, d3-mini/Qwen3-1.7B results, vLLM/llama.cpp gotchas, noul-only shape, `sdm-validate.sh` gate |
 
 ## Log
 
 | Date | Change |
 |------|--------|
+| 2026-11-16 | Added SDM small-GPU hosting + AgentFS validation concept (rhtevan-work d3-mini FAIL vs Qwen3-14B) |
 | 2026-10-22 | Added decision API request patterns concept (NextToken validated live, D3 from session evidence) |
 | 2026-10-15 | Added D3 decision model deployment concept |
 | 2026-10-15 | Added speculative decoding tradeoffs concept (L4 benchmark evidence) |

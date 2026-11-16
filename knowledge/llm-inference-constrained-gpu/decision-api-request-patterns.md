@@ -25,7 +25,7 @@ patterns for each.
 | **Score levels** | `"levels": [{"label": "..."}]` | `"criteria": ["low", "med", "high"]` |
 | **Score support** | ✅ Supported (validated) | ✅ Supported (native) |
 | **Output tokens** | 1 per question (logit reading) | 0 output tokens (structured) |
-| **Coexists with chat** | ✅ Same port as `/v1/chat/completions` | ❌ Dedicated port |
+| **Coexists with chat** | ✅ Same port as `/v1/chat/completions` | ✅ Same port on vLLM (:9000) |
 
 ## NextToken API (vLLM `/v1/decisions`)
 
@@ -306,6 +306,17 @@ of array, `noul` instead of `predicate`, and `criteria` instead of
 > Port 9001 was not live at validation time — the solo qw14b-40k profile
 > uses all 4 GPUs. D3 requests require the composite profile `qw14b+d3`
 > or standalone `d3-27b-8k` to be deployed.
+
+> **Correction (2026-11-16):** `/v1/systemone` is also served by vLLM on
+> **port 9000 with the generic Qwen3-14B-FP8** (same port as chat and
+> `/v1/decisions`) — it is not D3-only and does not need a dedicated port.
+> Real vLLM SystemOne responses include `probabilities{yes,no}` + `confidence`
+> for noul, `probabilities` for choice, `score` + `legend` + `probabilities`
+> for score, and a top-level `diagnostics{label_mass, argmax_is_label}` block.
+> llama.cpp returns a noul-only shape (no probabilities/diagnostics). The
+> response examples below are abbreviated — see
+> [sdm-small-gpu-agentfs-validation.md](./sdm-small-gpu-agentfs-validation.md)
+> and `~/.agents/skills/schemas/sdm-endpoint.md` for the authoritative shapes.
 
 ### Predicate (Noul)
 

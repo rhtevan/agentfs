@@ -325,6 +325,9 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
 # SystemOne returns answers as a dict keyed by question name
 ANSWERS=$(echo "$SDM_RESPONSE" | jq '.answers')
 DIAGNOSTICS=$(echo "$SDM_RESPONSE" | jq '.diagnostics // {}')
+if [[ "$DIAGNOSTICS" == "{}" ]]; then
+  log "WARNING: SDM response has no diagnostics (label_mass/argmax_is_label unavailable) — reliability checks skipped"
+fi
 TIMESTAMP=$(date -Iseconds)
 TOTAL_PASS=0
 TOTAL_DIMS=0
@@ -403,13 +406,14 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
       # SystemOne noul: read probabilities.yes or probabilities.no directly
       # No inversion hack needed — just read the right field
       if [[ "$polarity" == "negative" ]]; then
-        prob=$(echo "$answer" | jq -r '.probabilities.no // 0')
+        # noul-only responses (e.g. llama.cpp /v1/systemone) omit probabilities: derive no = 1 - noul
+        prob=$(echo "$answer" | jq -r '.probabilities.no // (if .noul != null then 1 - .noul else 0 end)')
       else
         prob=$(echo "$answer" | jq -r '.probabilities.yes // .noul // 0')
       fi
       # Normalize scientific notation for bc
       prob=$(awk "BEGIN {printf \"%.10f\", $prob}")
-      confidence=$(echo "$answer" | jq -r '.confidence // 0')
+      confidence=$(echo "$answer" | jq -r '.confidence // (if .noul != null then ([.noul, 1 - .noul] | max) else 0 end)')
       if (( $(echo "$prob >= 0.7" | bc -l) )); then
         pass=true; score_val=100
       elif (( $(echo "$prob >= 0.3" | bc -l) )); then
