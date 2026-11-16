@@ -2,6 +2,32 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 14:15
+- Update template-version example stamp to 7.9.0 (README.md)
+- Update structural-rules version reference to v7.9.0 (README.md)
+
+## 2026-11-16 14:14
+- Add T7: clean tree with unpushed secret must be caught, not reported as no-changes (skills/agentfs-git-push/SKILL.md)
+- Troubleshooting: add false-CLEAN and exit-2 rows (skills/agentfs-git-push/SKILL.md)
+- Step 2: document auto/range modes, exit 2, and the mandatory Scan scope check (skills/agentfs-git-push/SKILL.md)
+
+## 2026-11-16 14:13
+- S3: scan covers the unpushed commit range, not just the index (skills/agentfs-git-push/SKILL.md)
+- Allowlist the planted credential fixtures in test-pre-push-scan.sh (.pre-push-allowlist)
+- Add Test 11 (auto/range scan modes, usage exit codes, empty + never-pushed repos) and Test 12 (shape-based credential detection with false-positive guards) (skills/agentfs-setup/scripts/test-pre-push-scan.sh)
+
+## 2026-11-16 14:12
+- Fix no-upstream fallback: diff empty-tree..HEAD, not HEAD (which compares worktree and is empty on a clean tree) (skills/agentfs-setup/scripts/pre-push-scan.sh)
+- Fix arg-parse exit code: missing --mode/--range value must exit 2 (usage), not 1 (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
+## 2026-11-16 14:11
+- Add shape-based credential detection (AWS/GitHub/GitLab/Slack/Google/OpenAI/PEM) — keyword-assignment regex alone missed bare keys, failing documented test T4 (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
+## 2026-11-16 14:10
+- Report resolved scan scope in the no-changes message (skills/agentfs-setup/scripts/pre-push-scan.sh)
+- Implement auto/range mode resolution with resolve_range helper and scan-scope banner (skills/agentfs-setup/scripts/pre-push-scan.sh)
+- Add range/auto scan modes: document why cached-only is a false CLEAN on a clean tree with unpushed commits (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
 ## 2026-11-16 13:30
 - Add S15 spec and T19/T20 tests for --stamp-only (skills/crc-ols/SKILL.md)
 - Document --stamp-only (skills/crc-ols/SKILL.md)

@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
 # pre-push-scan.sh — Pre-push security scan for git repositories.
 #
-# Usage: bash pre-push-scan.sh [--mode cached|unstaged]
-#   --mode cached    Scan staged changes (default)
-#   --mode unstaged  Scan unstaged changes
+# Usage: bash pre-push-scan.sh [--mode auto|cached|unstaged|range] [--range REV]
+#   --mode auto      Scan staged changes; if the index is empty, fall
+#                    back to the unpushed commit range (default)
+#   --mode cached    Scan staged changes only
+#   --mode unstaged  Scan unstaged changes only
+#   --mode range     Scan the unpushed commit range @{upstream}..HEAD
+#   --range REV      Override the range expression used by 'range' mode
 #
 # Scans git diff output for secrets, hardcoded paths, username leakage,
 # IP addresses, sensitive URLs, and PII. Outputs a structured report.
 #
+# Why 'auto' is the default: a clean working tree with unpushed commits
+# is exactly the state a push happens in. Scanning only the index there
+# finds nothing and exits 0 — a false CLEAN at the moment it matters
+# most. 'auto' scans what is actually about to leave the machine.
+#
 # Exit codes:
 #   0 = all checks clean
 #   1 = findings detected
+#   2 = usage error, or 'range' requested with no resolvable upstream
 
 set -euo pipefail
 
@@ -22,24 +32,71 @@ else
 fi
 
 # ── Parse args ─────────────────────────────────────────────────────
-MODE="cached"
+MODE="auto"
+RANGE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode) MODE="$2"; shift 2 ;;
-    *) echo "Usage: bash pre-push-scan.sh [--mode cached|unstaged]"; exit 2 ;;
+    --mode)  [[ $# -ge 2 ]] || { echo "❌ --mode needs a value" >&2; exit 2; }; MODE="$2"; shift 2 ;;
+    --range) [[ $# -ge 2 ]] || { echo "❌ --range needs a value" >&2; exit 2; }; RANGE="$2"; shift 2 ;;
+    *) echo "Usage: bash pre-push-scan.sh [--mode auto|cached|unstaged|range] [--range REV]" >&2; exit 2 ;;
   esac
 done
 
-if [[ "$MODE" == "cached" ]]; then
-  DIFF_CMD="git diff --cached"
-else
-  DIFF_CMD="git diff"
-fi
+case "$MODE" in
+  auto|cached|unstaged|range) ;;
+  *) echo "❌ Unknown mode '$MODE'. Expected: auto|cached|unstaged|range" >&2; exit 2 ;;
+esac
+
+# Resolve the unpushed commit range. Prefer an explicit --range, else
+# the branch's configured upstream. No upstream means nothing has been
+# pushed yet, so every commit on this branch is unpushed — fall back to
+# the root. Returns non-zero if nothing can be resolved.
+resolve_range() {
+  if [[ -n "$RANGE" ]]; then echo "$RANGE"; return 0; fi
+  local up
+  if up=$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null) && [[ -n "$up" ]]; then
+    echo "${up}..HEAD"; return 0
+  fi
+  # No upstream: nothing on this branch has been pushed, so every commit
+  # is unpushed. Diff against the empty tree rather than HEAD — `git diff
+  # HEAD` compares the WORKTREE to HEAD, which is empty on a clean tree
+  # and would silently report nothing in exactly the never-pushed case
+  # this fallback exists to cover.
+  if git rev-parse --verify -q HEAD >/dev/null 2>&1; then
+    echo "$(git hash-object -t tree /dev/null)..HEAD"; return 0
+  fi
+  return 1
+}
+
+SCAN_SCOPE=""
+case "$MODE" in
+  cached)   DIFF_CMD="git diff --cached"; SCAN_SCOPE="staged changes" ;;
+  unstaged) DIFF_CMD="git diff";          SCAN_SCOPE="unstaged changes" ;;
+  range)
+    RESOLVED=$(resolve_range) || {
+      echo "❌ --mode range: no upstream and no commits — nothing to scan." >&2; exit 2; }
+    DIFF_CMD="git diff $RESOLVED"; SCAN_SCOPE="commit range $RESOLVED"
+    ;;
+  auto)
+    if [[ -n "$(git diff --cached --name-only 2>/dev/null || true)" ]]; then
+      DIFF_CMD="git diff --cached"; SCAN_SCOPE="staged changes"
+    elif RESOLVED=$(resolve_range 2>/dev/null) \
+         && [[ -n "$(git diff --name-only $RESOLVED 2>/dev/null || true)" ]]; then
+      # Index is empty but commits are unpushed — this is the state the
+      # old cached-only default silently reported as clean.
+      DIFF_CMD="git diff $RESOLVED"; SCAN_SCOPE="commit range $RESOLVED (index empty)"
+    else
+      DIFF_CMD="git diff --cached"; SCAN_SCOPE="staged changes"
+    fi
+    ;;
+esac
+
+echo "Scan scope: $SCAN_SCOPE" >&2
 
 # ── Get diff content ───────────────────────────────────────────────
 DIFF_CONTENT=$($DIFF_CMD 2>/dev/null || true)
 if [[ -z "$DIFF_CONTENT" ]]; then
-  echo "No changes to scan (mode: $MODE)."
+  echo "No changes to scan (mode: $MODE, scope: $SCAN_SCOPE)."
   exit 0
 fi
 
@@ -77,6 +134,27 @@ report_category() {
 
 # ── Category 1: Secrets / API keys ────────────────────────────────
 SECRETS=$(echo "$ADDED_LINES" | grep -iE '(secret|api_key|apikey|password|passwd|bearer|authorization)\s*[:=]' || true)
+
+# The assignment pattern above only fires on `keyword: value` or
+# `keyword=value`. A bare credential with no keyword in front of it —
+# an AWS key id on its own line, a PEM block, a pasted token — slips
+# straight through. These are shape-based patterns for credentials
+# that are self-identifying, chosen for a near-zero false-positive
+# rate: each prefix is vendor-assigned and means nothing else.
+KEY_SHAPES=$(echo "$ADDED_LINES" | grep -nE \
+  -e 'AKIA[0-9A-Z]{16}' \
+  -e 'ASIA[0-9A-Z]{16}' \
+  -e 'gh[pousr]_[A-Za-z0-9]{30,}' \
+  -e 'glpat-[A-Za-z0-9_-]{20,}' \
+  -e 'xox[baprs]-[A-Za-z0-9-]{10,}' \
+  -e 'AIza[0-9A-Za-z_-]{35}' \
+  -e 'sk-[A-Za-z0-9]{20,}' \
+  -e 'sk-(proj|ant|live)-[A-Za-z0-9_-]{20,}' \
+  -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' \
+  || true)
+if [[ -n "$KEY_SHAPES" ]]; then
+  SECRETS="${SECRETS:+$SECRETS$'\n'}$KEY_SHAPES"
+fi
 report_category "Secrets / API keys" "$SECRETS"
 
 # ── Category 2: Hardcoded user paths ──────────────────────────────

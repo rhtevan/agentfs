@@ -12,6 +12,16 @@
   description keywords in index files (e.g., model names like "granite"
   in skills/index.md coincidentally matching an SSH host alias)
 
+- Planted credential fixtures inside
+  `skills/agentfs-setup/scripts/test-pre-push-scan.sh`. The test suite
+  must contain credential-shaped strings in order to prove the scanner
+  detects them — a scanner test with no test vectors proves nothing.
+  All values are vendor-published documentation examples or obvious
+  fakes (`AKIAIOSFODNN7EXAMPLE` is AWS's own docs key;
+  `ghp_abcdefghijklmnopqrstuvwxyz0123456789` is sequential alphabet;
+  the PEM entry is a bare `-----BEGIN RSA PRIVATE KEY-----` header
+  with no key body). None authenticate against anything.
+
 - The literal placeholder `sk-litellm-local-no-auth` appearing in
   dsh-* and litellm-* skill files (SKILL.md, setup.sh,
   install-desktop.sh). The local LiteLLM proxy runs without a

@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 14:14 | v2.1.0 — S3: scan covers the unpushed commit range, not just the index; Step 2: document auto/range modes, exit 2, and the mandatory Scan scope check; Troubleshooting: add false-CLEAN and exit-2 rows; Add T7: clean tree with unpushed secret must be caught, not reported as no-changes; Step 2: document pre-push-scan --mode auto|range, exit code 2, and the mandatory 'Scan scope:' check; S3 widened to the unpushed range; add T7 and two troubleshooting rows for the false-CLEAN case |
 | 2026-11-08 22:19 | v2.1.0 — Add Rules section with anti-fabrication for Observable compliance; Bump version to 2.1.0; Add trace-lib.sh instrumentation; Add trace_step and trace_end |
 | 2026-11-05 19:30 | v2.0.1 — Add model-tier to frontmatter |
 | 2026-10-15 21:44 | v2.0.1 — Sync frontmatter version to match CHANGELOG latest (2.0.0 → 2.0.1) |

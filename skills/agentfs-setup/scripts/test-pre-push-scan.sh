@@ -261,6 +261,96 @@ assert_output_contains "C10.3: No memory files → None" "Memory files staged.*�
 git reset -q HEAD neutral-c10.txt
 rm -f neutral-c10.txt
 
+# ── Test 11: Scan modes (auto / range) ─────────────────────────────
+# Regression guard: a clean worktree with unpushed commits is the state
+# a push actually happens in. Scanning only the index there finds
+# nothing and exits 0 — a false CLEAN. These tests pin that behaviour.
+echo "=== Test 11: Scan modes (auto/range) ==="
+
+C11_ROOT="$(mktemp -d)"
+git init -q --bare "$C11_ROOT/remote"
+git init -q -b main "$C11_ROOT/work"
+(
+  cd "$C11_ROOT/work"
+  git config user.email t@example.com && git config user.name t
+  echo "# Directory Update Log" > log.md
+  git add -A && git commit -qm init
+  git remote add origin "$C11_ROOT/remote" && git push -q -u origin main
+  # Commit a credential, then leave the worktree clean.
+  printf 'AKIAIOSFODNN7EXAMPLE\n' > planted.txt
+  git add -A && git commit -qm planted
+)
+
+C11_CACHED=$(cd "$C11_ROOT/work" && bash "$SCAN_SCRIPT" --mode cached 2>&1 || true)
+assert_output_contains "C11.1: cached mode sees nothing (documents the gap)" \
+  "No changes to scan" "$C11_CACHED"
+
+C11_AUTO=$(cd "$C11_ROOT/work" && bash "$SCAN_SCRIPT" 2>&1 || true)
+assert_output_contains "C11.2: auto falls back to unpushed range" \
+  "Scan scope: commit range .*index empty" "$C11_AUTO"
+assert_output_contains "C11.3: auto detects secret in unpushed commit" \
+  "Secrets / API keys.*FOUND" "$C11_AUTO"
+
+C11_RANGE=$(cd "$C11_ROOT/work" && bash "$SCAN_SCRIPT" --mode range 2>&1 || true)
+assert_output_contains "C11.4: explicit range mode detects it too" \
+  "Secrets / API keys.*FOUND" "$C11_RANGE"
+
+# Never-pushed branch: no upstream, clean tree. Must diff empty-tree..HEAD,
+# not HEAD (which compares the worktree and is empty here).
+C11_NOUP="$(mktemp -d)"
+(
+  cd "$C11_NOUP" && git init -q -b main .
+  git config user.email t@example.com && git config user.name t
+  echo "# Directory Update Log" > log.md
+  printf 'AKIAIOSFODNN7EXAMPLE\n' > planted.txt
+  git add -A && git commit -qm init
+)
+C11_NOUP_OUT=$(cd "$C11_NOUP" && bash "$SCAN_SCRIPT" 2>&1 || true)
+assert_output_contains "C11.5: no upstream → scans whole branch" \
+  "Secrets / API keys.*FOUND" "$C11_NOUP_OUT"
+
+# Usage errors must exit 2, not 1.
+for c11_arg in "--mode bogus" "--mode" "--range" "--badflag"; do
+  c11_rc=0
+  (cd "$C11_ROOT/work" && bash "$SCAN_SCRIPT" $c11_arg >/dev/null 2>&1) || c11_rc=$?
+  assert_exit_code "C11.6: '$c11_arg' exits 2" 2 "$c11_rc"
+done
+
+# Empty repo (zero commits) must not error.
+C11_EMPTY="$(mktemp -d)"
+(cd "$C11_EMPTY" && git init -q -b main .)
+c11_rc=0
+(cd "$C11_EMPTY" && bash "$SCAN_SCRIPT" >/dev/null 2>&1) || c11_rc=$?
+assert_exit_code "C11.7: empty repo exits 0" 0 "$c11_rc"
+
+rm -rf "$C11_ROOT" "$C11_NOUP" "$C11_EMPTY"
+
+# ── Test 12: Shape-based credential detection ──────────────────────
+# The keyword-assignment regex only fires on `keyword: value`. A bare
+# credential on its own line has no keyword in front of it.
+echo "=== Test 12: Shape-based credentials ==="
+
+c12_check() {
+  local label="$1" payload="$2" want="$3"
+  echo "$payload" > shape-c12.txt
+  git add shape-c12.txt
+  run_scan
+  if [[ "$want" == "found" ]]; then
+    assert_output_contains "$label" "Secrets / API keys.*FOUND" "$SCAN_OUTPUT"
+  else
+    assert_output_contains "$label" "Secrets / API keys.*✅" "$SCAN_OUTPUT"
+  fi
+  git reset -q HEAD shape-c12.txt
+  rm -f shape-c12.txt
+}
+
+c12_check "C12.1: bare AWS access key id"  'AKIAIOSFODNN7EXAMPLE' found
+c12_check "C12.2: GitHub personal token"   'ghp_abcdefghijklmnopqrstuvwxyz0123456789' found
+c12_check "C12.3: PEM private key header"  '-----BEGIN RSA PRIVATE KEY-----' found
+c12_check "C12.4: Google API key"          'AIzaSyA1234567890abcdefghijklmnopqrstuvw' found
+c12_check "C12.5: ordinary prose is clean" 'The disk-storage and risk-sharing notes.' clean
+c12_check "C12.6: short sk- word is clean" 'Use the sk-demo flag for testing.' clean
+
 # ── Summary ────────────────────────────────────────────────────────
 echo ""
 echo "=== Summary ==="

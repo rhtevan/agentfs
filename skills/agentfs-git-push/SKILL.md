@@ -40,7 +40,7 @@ Execute each step in order and verify before proceeding.
 |:--:|-----------|---------------|
 | S1 | Resolve target repo from explicit arg, bare invocation default, or CWD detection | `scripts/resolve-target.sh` outputs correct `TARGET=` |
 | S2 | Stage all changes | `git diff --cached --stat` shows staged files |
-| S3 | Scan staged diff for secrets, paths, PII | `pre-push-scan.sh` exits 0 (clean) or produces findings report |
+| S3 | Scan everything about to be pushed — staged diff, or the unpushed commit range when the index is empty | `pre-push-scan.sh` exits 0 (clean) or produces findings report; `Scan scope:` names what was examined |
 | S4 | Filter scan findings against `.pre-push-allowlist` | Known FPs marked `✅`, real findings marked `⚠️` |
 | S5 | Trigger README audit when agentfs files staged | `README_AUDIT_REQUIRED` in scan output → `agentfs-readme-audit` loaded |
 | S6 | Trigger PII review when memory files staged | Memory files in findings → semantic PII review performed |
@@ -88,6 +88,18 @@ cd "$TARGET" && bash ~/.agents/skills/agentfs-setup/scripts/pre-push-scan.sh
 |:---------:|---------|-------------|
 | 0 | All checks clean | Continue to Step 3 |
 | 1 | Findings detected | Continue to Step 3 — findings are in stdout |
+| 2 | Usage error | Present the error. Do not proceed. |
+
+The scan defaults to `--mode auto`: it scans the staged diff, and
+when the index is empty it falls back to the unpushed commit range
+(`@{upstream}..HEAD`). This matters because a clean working tree
+with unpushed commits is a normal pre-push state — scanning only
+the index there would find nothing and report a false CLEAN.
+
+The first output line is `Scan scope: ...` on stderr. **Read it and
+report it.** If it says `staged changes` while `git status -sb`
+shows the branch is ahead of its upstream, the scan did not cover
+the commits you are about to push — re-run with `--mode range`.
 
 The scan output is structured Markdown. Parse it for findings and
 the `README_AUDIT_REQUIRED` flag.
@@ -183,7 +195,9 @@ run the workflow again for it.
 | `git push` rejected: "non-fast-forward" | Remote has commits not in local | `git pull --rebase` then retry push. Present the pull output to user first. |
 | `git push` rejected: "permission denied" | Auth failure (SSH key or token) | Present error. User must fix credentials. Do NOT retry. |
 | `git push` rejected: "protected branch" | Branch protection rules | Inform user. They may need to push to a different branch or create a PR. |
-| `git commit` "nothing to commit" | All changes already committed or unstaged | Inform user — working tree is clean. Skip Steps 8–9. |
+| `git commit` "nothing to commit" | All changes already committed or unstaged | Inform user — working tree is clean. Skip Steps 8–9. The scan still ran against the unpushed range, so Step 9 is still required if the branch is ahead. |
+| Scan prints `No changes to scan` but the branch is ahead | Forced `--mode cached` on a clean tree | Re-run without `--mode`, or with `--mode range`. Never treat this as CLEAN. |
+| Scan exits 2 `no upstream and no commits` | `--mode range` in a repo with no commits | Nothing to scan. Make a commit first. |
 | `pre-push-scan.sh` not found | `agentfs-setup` skill not installed | Present error: "pre-push-scan.sh requires the agentfs-setup skill at ~/.agents/skills/agentfs-setup/" |
 
 ## Violations
@@ -219,6 +233,7 @@ this conflicts with this safety workflow. The agent MUST:
 | T2 | S1 | `bash resolve-target.sh /path/to/repo` | `TARGET=/path/to/repo`, `CWD_ALSO=false` |
 | T3 | S1 | `bash resolve-target.sh /tmp` (non-git) | Exit 1 with error message |
 | T4 | S3 | Stage a file containing `AKIA` prefix → run `pre-push-scan.sh` | Findings report with secrets category flagged |
+| T7 | S3 | Commit a file containing `AKIA`, leave the tree clean, run `pre-push-scan.sh` with no flags | `Scan scope: commit range ...(index empty)` and secrets category flagged — not `No changes to scan` |
 | T5 | S5 | Stage a `skills/` change → run `pre-push-scan.sh` | Output contains `README_AUDIT_REQUIRED` |
 | T6 | S8 | Observe agent behavior after report | Agent waits — no `git commit` in the same turn |
 
