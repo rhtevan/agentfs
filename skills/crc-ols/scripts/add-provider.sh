@@ -173,13 +173,21 @@ if ! $SECRET_EXISTS; then
     # rotate-key.sh resolves secret/key/url/model from the CRD, validates the
     # key against the live endpoint BEFORE writing, and stamps the rotation
     # annotations. That is why the provider is patched in first.
+    # --force-unmanaged-provider: rotate-key.sh is scoped to the
+    # rotation-managed provider (corp-models) so a stray invocation
+    # cannot overwrite a credential that is not on a rotation cycle.
+    # Creating the secret for a brand-new provider is a deliberate,
+    # explicit act by this script, not a stray rotation, so the gate is
+    # bypassed here on purpose. The secret does not exist yet (checked
+    # above), so there is no working credential to destroy.
     bash "$HERE/rotate-key.sh" "$NAME" --from-keyring --create \
+      --force-unmanaged-provider \
       ${OC_CONTEXT:+--context "${OC_CONTEXT#--context }"} \
       --keyring-field "$KEYRING_FIELD" \
       || fail "credential creation failed — provider is in OLSConfig but has no secret. Restore: oc apply -f $BAK"
   else
     echo "  ⚠️  Secret '$SECRET' does not exist. Create it now with:"
-    echo "     bash $HERE/rotate-key.sh $NAME --create"
+    echo "     bash $HERE/rotate-key.sh $NAME --create --force-unmanaged-provider"
   fi
 fi
 

@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 13:30 | v2.3.0 — Fall back to creationTimestamp for stamp-only secrets; Action line matches which secret is due; Rotation check falls back to creationTimestamp when a secret carries crc-ols/rotation-days but no rotated-at (the --stamp-only case). Previously it required both annotations and silently skipped such secrets, disagreeing with crc-ols list.sh. The action line now names rotate-key.sh only when corp-llmcreds is the secret that is due. |
+| 2026-11-16 13:17 | v2.2.1 — Rotation action line names corp-models, the only managed provider; Rotation action line names corp-models instead of a <provider> placeholder, since rotate-key.sh now refuses other providers. |
 | 2026-11-16 11:24 | v2.2.0 — Add OLS credential rotation reminder: read-only annotation check, warns at <=7d and overdue; Add S4 + ols_credential_rotation_due output field |
 | 2026-11-08 18:57 | v2.1.0 — Re-scored under current standard: O 75→93.75, B 75→98.94, build+observable gated, sdm_delegation exemption |
 | 2026-11-05 19:30 | v2.1.0 — Add model-tier to frontmatter |

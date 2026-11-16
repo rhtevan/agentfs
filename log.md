@@ -2,6 +2,60 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 13:30
+- Add S15 spec and T19/T20 tests for --stamp-only (skills/crc-ols/SKILL.md)
+- Document --stamp-only (skills/crc-ols/SKILL.md)
+
+## 2026-11-16 13:29
+- Document --stamp-only in usage (skills/crc-ols/scripts/rotate-key.sh)
+- Action line matches which secret is due (skills/crc-status/scripts/check-status.sh)
+- Fall back to creationTimestamp for stamp-only secrets (skills/crc-status/scripts/check-status.sh)
+
+## 2026-11-16 13:28
+- Type guard exempts --stamp-only (writes no credential) (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 13:27
+- Implement --stamp-only path (skills/crc-ols/scripts/rotate-key.sh)
+- Stamp-only validation + scope gate exemption (skills/crc-ols/scripts/rotate-key.sh)
+- Parse --stamp-only (skills/crc-ols/scripts/rotate-key.sh)
+- Declare STAMP_ONLY flags (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 13:26
+- Rename flag to --force-unmanaged-provider (skills/crc-ols/SKILL.md)
+- Rename flag to --force-unmanaged-provider (skills/crc-ols/scripts/add-provider.sh)
+- Rename flag to --force-unmanaged-provider (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 13:22
+- S11 names corp-models (skills/crc-ols/SKILL.md)
+- Missing-arg message names the managed provider (skills/crc-ols/scripts/rotate-key.sh)
+- Usage header reflects corp-models scope (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 13:17
+- Add S14 spec for rotation scope (skills/crc-ols/SKILL.md)
+- Fix T14 expectation; add T16-T18 for the scope gate (skills/crc-ols/SKILL.md)
+- Usage table: rotate ols key names corp-models (skills/crc-ols/SKILL.md)
+
+## 2026-11-16 13:16
+- Document rotate-key.sh scope: corp-models only (skills/crc-ols/SKILL.md)
+- Rotation action line names corp-models, the only managed provider (skills/crc-status/scripts/check-status.sh)
+
+## 2026-11-16 13:15
+- Fix copy-pasteable hint to include the gate flag (skills/crc-ols/scripts/add-provider.sh)
+- Pass --i-know-what-im-doing when creating a new provider secret (skills/crc-ols/scripts/add-provider.sh)
+- Document --i-know-what-im-doing in usage header (skills/crc-ols/scripts/rotate-key.sh)
+- Add scope gate before any cluster read (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 13:14
+- Add MANAGED_PROVIDER scope + --i-know-what-im-doing escape hatch (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 13:00
+- Add gotchas: non-bearer credentials, fabricated rotation policy (skills/crc-ols/SKILL.md)
+- Do not fabricate a rotation policy for unstamped secrets (skills/crc-ols/scripts/rotate-key.sh)
+
+## 2026-11-16 12:59
+- DRY_RUN_RESULT: CONVERGED only when there is genuinely nothing to do (skills/crc-ols/scripts/rotate-key.sh)
+- Refuse to rotate non-bearer credentials (GCP SA JSON, watsonx) (skills/crc-ols/scripts/rotate-key.sh)
+
 ## 2026-11-16 12:51
 - Add Step 6 select-sa and Step 7 detect-sa (skills/gcp-vertex-models/SKILL.md)
 - Routing table: cover all 6 signals, add dispatch rule (skills/gcp-vertex-models/SKILL.md)

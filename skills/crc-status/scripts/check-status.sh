@@ -103,9 +103,15 @@ except Exception: sys.exit(0)
 now=datetime.now(timezone.utc)
 for it in items:
     m=it.get('metadata',{}); a=m.get('annotations') or {}
-    r=a.get('crc-ols/rotated-at')
     d=a.get('crc-ols/rotation-days')
-    if not r or not d: continue
+    if not d: continue
+    # Fall back to creationTimestamp when the secret carries a policy
+    # but was never rotated through rotate-key.sh (--stamp-only sets
+    # rotation-days alone, deliberately leaving rotated-at unset so the
+    # real age is preserved). Requiring both annotations silently
+    # skipped those secrets and disagreed with crc-ols list.sh.
+    r=a.get('crc-ols/rotated-at') or m.get('creationTimestamp')
+    if not r: continue
     try:
         age=(now-datetime.fromisoformat(r.replace('Z','+00:00'))).total_seconds()//86400
         left=int(d)-int(age)
@@ -116,7 +122,14 @@ for it in items:
     if [[ -n "$OLS_WARN" ]]; then
       echo "ols_credential_rotation_due: |"
       echo "$OLS_WARN" | sed 's/^/  /'
-      echo "  action: bash ~/.agents/skills/crc-ols/scripts/rotate-key.sh <provider> --from-keyring"
+      # corp-llmcreds is the only secret rotate-key.sh will act on; any
+      # other secret listed here is on a review interval, not a
+      # rotation cycle, and must be handled at its own provider.
+      if echo "$OLS_WARN" | grep -q '^corp-llmcreds:'; then
+        echo "  action: bash ~/.agents/skills/crc-ols/scripts/rotate-key.sh corp-models --from-keyring"
+      else
+        echo "  action: review at the credential's own provider — rotate-key.sh only manages corp-models"
+      fi
     else
       echo "ols_credential_rotation_due: none"
     fi

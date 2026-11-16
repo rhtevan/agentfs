@@ -7,7 +7,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER | rotate-key PROVIDER"
 metadata:
   author: agentfs
-  version: "3.6.0"
+  version: "3.8.0"
   model-tier: T3
   tags: [openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation]
   related_skills: [gcp-vertex-models, goose-corp-provider, crc-ctl, skupper-model-provider]
@@ -38,7 +38,7 @@ Execute each step in order and verify before proceeding.
 | `add-provider` | Prose (agent-orchestrated) | Add a provider: create secret, patch OLSConfig, verify rollout |
 | `switch-provider` | `scripts/switch-provider.sh PROVIDER MODEL` | Switch active provider+model, wait for reconciliation, verify |
 | `remove-provider` | `scripts/remove-provider.sh PROVIDER [--delete-secret]` | Remove a provider (cannot remove the active one — switch first) |
-| `rotate ols key` | `scripts/rotate-key.sh PROVIDER [--from-keyring] [--create] [--dry-run]` | Rotate or create a provider's credential: validate → write → reload → verify in-pod |
+| `rotate ols key` | `scripts/rotate-key.sh corp-models [--from-keyring] [--create] [--dry-run]` | Rotate the Corp credential (the only provider on a rotation cycle): validate → write → reload → verify in-pod |
 | `ols credential status` | `scripts/list.sh` | Credential age vs rotation policy + live in-pod auth probe per provider |
 
 **Provider-Model relationship:** Each provider has one or more models.
@@ -404,15 +404,46 @@ keyring/prompt → `mktemp` (mode 600) → `oc` → `shred`, and is never printe
 
 ```bash
 # Key already in GNOME Keyring (stored by goose-corp-provider/scripts/store-key.sh):
-bash scripts/rotate-key.sh PROVIDER --from-keyring --create --context crc-admin
+bash scripts/rotate-key.sh corp-models --from-keyring --create --context crc-admin
 
 # Otherwise prompt (no echo, not stored in shell history):
-bash scripts/rotate-key.sh PROVIDER --create --context crc-admin
+bash scripts/rotate-key.sh corp-models --create --context crc-admin
 ```
 
 The provider must already be in the OLSConfig — `rotate-key.sh` resolves the
 secret name, credential key, URL, and model from the CRD rather than taking
 them as arguments. `add-provider.sh --from-keyring` sequences this for you.
+
+> **`rotate-key.sh` is scoped to `corp-models`.**
+> It is the only OLS provider on a key-rotation cycle (30 days, issued by
+> Corp). Any other provider name exits 1 with guidance. This is deliberate:
+> rotating a provider that is *not* on a cycle replaces a working credential
+> with a typed string.
+>
+> | Provider | Credential | Rotation |
+> |----------|-----------|----------|
+> | `corp-models` | bearer token, GNOME Keyring | ✅ 30-day cycle — this script |
+> | `google-anthropic` | GCP service-account JSON | ❌ re-issue in IAM, then `oc set data --from-file` |
+> | `skupper-model-*` | lab tokens | ❌ no cycle |
+>
+> `--force-unmanaged-provider` bypasses the name check for a genuinely new
+> bearer-token provider; `add-provider.sh` passes it when creating a secret
+> that does not yet exist. The provider-**type** guard still applies and
+> cannot be bypassed.
+>
+> **Want a countdown on a credential this script will not rotate?** Use
+> `--stamp-only`, which sets `crc-ols/rotation-days` and nothing else —
+> no credential write, no reload, allowed on any provider:
+>
+> ```bash
+> bash scripts/rotate-key.sh google-anthropic --stamp-only --rotation-days 365 --context crc-admin
+> ```
+>
+> It deliberately leaves `crc-ols/rotated-at` unset. Stamping `rotated-at=now`
+> on a credential that is months old would reset its apparent age and hide
+> exactly what the countdown exists to surface; `list.sh` and `crc status`
+> fall back to `creationTimestamp` instead. The reminder then points at the
+> provider rather than at `rotate-key.sh`.
 
 The manual equivalent is below.
 
@@ -738,6 +769,8 @@ After completing any operation, verify through the OpenShift web console:
 | Provider unreachable: in-pod `curl` → `HTTP=000`, `exit code 60` | Provider served by a private/corporate CA absent from the cluster trust bundle. `curl -k` → 200 confirms it is trust, not network | Add the root CA via `spec.ols.additionalCAConfigMapRef` — see [Phase 5](#phase-5--trust-a-private-ca-only-for-providers-behind-an-internal-ca) |
 | Rotation backup leaks the old key | `rotate-key.sh` writes `/tmp/<secret>.bak.<ts>.yaml` (mode 600) containing the PREVIOUS key, and `/tmp` survives until reboot or the 10-day tmpfiles sweep | `shred -u /tmp/<secret>.bak.*.yaml` once the new key is confirmed. Same applies to any `oc get secret -o yaml` you redirect to a file |
 | Duplicate certs in the merged CA bundle | Assuming `additionalCAConfigMapRef` *replaces* the trust bundle and pre-concatenating `kube-root-ca.crt` into it | It **merges** via a separate `additional-ca` volume. Put ONLY the private root CA in the ConfigMap; key MUST be `ca.crt` |
+| `rotate-key.sh` refuses a provider with `❌ does not use a bearer token` | The provider's credential is a structured secret (GCP service-account JSON for `google_vertex_anthropic`, API-key+URL pairs for `watsonx`), not a pasteable token. It is revoked and re-issued at the provider, and has no calendar expiry | Re-issue in GCP IAM, then `oc set data secret/<name> -n openshift-lightspeed --from-file=<key>=<new-key.json>`. Do not stamp `crc-ols/rotation-days` on it — there is no 30-day cycle to track |
+| A secret shows a rotation countdown nobody configured | Reading the `--rotation-days` *default* as if it were policy. Only `crc-ols/rotation-days` on the secret is policy | Unstamped secrets report `no rotation policy set` / `➖`. Stamp one only for credentials that genuinely rotate on a cycle |
 | Credential probe reports `✅ HTTP 200` for a key that is invalid | `GET /v1/models` is **unauthenticated** on many OpenAI-compatible endpoints. Verified against `models.corp.redhat.com/oai/v1` on 2026-11-16: a garbage bearer token returns **200** from `/models` and **401** from `/chat/completions` | Probe authentication with a real inference call: `POST {url}/chat/completions` with `max_tokens: 1`. `list.sh` and `rotate-key.sh` do this. Never infer credential validity from `/models` |
 
 ## Specification
@@ -754,9 +787,11 @@ After completing any operation, verify through the OpenShift web console:
 | S8 | Trust a private/corporate CA so a provider's TLS verifies without `-k` | In-pod `curl` to the provider WITHOUT `-k` returns HTTP 200; cluster API still HTTP 200 |
 | S9 | Install idempotently and never mutate an existing OLSConfig | `scripts/install.sh --dry-run` on an installed cluster → `DRY_RUN_RESULT=CONVERGED`, `Changes: none` |
 | S10 | Resolve project/location/model/SA key from `gcp-vertex-models`, never a placeholder | `scripts/install.sh --dry-run` prints concrete values; `--project YOUR_GCP_PROJECT` exits 1 |
-| S11 | Rotate or create a provider credential with pre-flight validation and in-pod verification | `scripts/rotate-key.sh PROVIDER` → validated before write, secret stamped, in-pod probe HTTP 200 |
+| S11 | Rotate or create the Corp credential with pre-flight validation and in-pod verification | `scripts/rotate-key.sh corp-models` → validated before write, secret stamped, in-pod probe HTTP 200 |
 | S12 | Refuse to write a secret when the new key fails validation | `scripts/rotate-key.sh` on a bad key → exit 1, `Secret NOT modified` |
 | S13 | Report credential age against the rotation policy and live auth state | `scripts/list.sh` → `=== Credential Health ===` with Age + Auth per provider |
+| S15 | Put any credential under a review countdown without touching it | `scripts/rotate-key.sh PROVIDER --stamp-only --rotation-days N` → only `crc-ols/rotation-days` changes; `rotated-at` and secret data untouched |
+| S14 | Confine rotation to the one provider that is on a rotation cycle | `scripts/rotate-key.sh` exits 1 for any provider other than `corp-models`; the provider-type guard still refuses non-bearer credentials even with `--force-unmanaged-provider` |
 
 ## Tests
 
@@ -775,7 +810,12 @@ After completing any operation, verify through the OpenShift web console:
 | T11 | S10 | `bash scripts/install.sh --dry-run --context crc-admin --project YOUR_GCP_PROJECT` | Exit 1, `Placeholder value ... refusing to install` |
 | T12 | S11 | `bash scripts/rotate-key.sh corp-models --from-keyring --dry-run --context crc-admin` | Prints secret/key/url/model resolved from the CRD + `DRY_RUN_RESULT=` |
 | T13 | S11 | `bash scripts/rotate-key.sh corp-models --from-keyring --context crc-admin` | `✅ HTTP 200` pre-flight, `Stamped: crc-ols/rotated-at=...`, in-pod probe `✅ HTTP 200` |
-| T14 | S12 | `bash scripts/rotate-key.sh nosuchprovider --dry-run --context crc-admin` | Exit 1, `Provider ... not found` + list of configured providers |
+| T14 | S12 | `bash scripts/rotate-key.sh nosuchprovider --dry-run --context crc-admin` | Exit 1, `not the rotation-managed provider` (the scope gate fires before any cluster read) |
+| T16 | S14 | `bash scripts/rotate-key.sh google-anthropic --dry-run --context crc-admin` | Exit 1, `not the rotation-managed provider` |
+| T17 | S14 | `bash scripts/rotate-key.sh google-anthropic --dry-run --force-unmanaged-provider --context crc-admin` | Exit 1, `does not use a bearer token` — the type guard cannot be bypassed |
+| T18 | S14 | `bash scripts/rotate-key.sh corp-models --dry-run --context crc-admin` | Exit 0, `DRY_RUN_RESULT=CONVERGED` |
+| T19 | S15 | `bash scripts/rotate-key.sh skupper-model-rhel --stamp-only --dry-run --context crc-admin` | Exit 2, `--stamp-only requires --rotation-days N` |
+| T20 | S15 | `bash scripts/rotate-key.sh skupper-model-rhel --stamp-only --rotation-days 90 --dry-run --context crc-admin` | Exit 0, only the `rotation-days` change listed, `credential NOT touched` |
 | T15 | S13 | `bash scripts/list.sh --context crc-admin` | `Credential Health` shows `Age:` and `Auth:` for every provider |
 
 ## Changelog

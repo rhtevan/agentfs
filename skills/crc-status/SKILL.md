@@ -4,7 +4,7 @@ description: >
   crc status, check crc, crc health
 metadata:
   author: agentfs
-  version: "2.2.0"
+  version: "2.3.0"
   model-tier: T1
   tags: [openshift, crc, status, console]
 user-invocable: true
