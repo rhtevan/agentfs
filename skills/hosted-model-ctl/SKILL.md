@@ -10,7 +10,7 @@ argument-hint: "list hosted model | hosted model status | start hosted model | s
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "2.3.0"
+  version: "7.14.0"
   model-tier: T3
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
@@ -73,6 +73,7 @@ into useful token verification (2-6× speedup).
 | S4 | Start existing profile (mutual exclusion) | `scripts/start.sh PROFILE` → running |
 | S5a | Stop profile | `scripts/stop.sh PROFILE` → stopped, state cleared |
 | S5b | Stop all containers across both hosts | `scripts/stop.sh all` → all exited |
+| S5c | Read-only preview of setup/start/stop (Rule 7) | `--dry-run` → `DRY_RUN_RESULT=CONVERGED\|PENDING`, or `UNKNOWN` + exit 3 when the host cannot be probed |
 | S6 | Show status (includes active profile) | `scripts/status.sh [PROFILE]` → status report |
 | S7 | Test running model | `scripts/test.sh PROFILE` → 4 tests pass |
 | S8 | Generate platform report | `scripts/report.sh [HOST]` → markdown report |
@@ -82,6 +83,23 @@ into useful token verification (2-6× speedup).
 
 All operations are deterministic scripts in `scripts/`.
 Every command takes a **profile name**, not a model alias.
+
+### Dry-Run Contract (setup / start / stop)
+
+`setup.sh`, `start.sh` and `stop.sh` accept `--dry-run` (Rule 7). The agent MUST
+run the `--dry-run` form first and read the signal line:
+
+| Signal | Exit | Meaning | Agent action |
+|--------|:----:|---------|--------------|
+| `DRY_RUN_RESULT=CONVERGED` | 0 | Verified on the host: container running, matches the profile (image, model, TP, context, port, extra flags) and `/v1/models` serves the model (stop: container already stopped/absent) | Report "already configured"; skip apply |
+| `DRY_RUN_RESULT=PENDING` | 0 | Apply would change something; plan is printed | Run the same command without `--dry-run` |
+| `DRY_RUN_RESULT=UNKNOWN` + `DRY_RUN_REASON=host-unreachable\|podman-error` | 3 | Host state could not be read | Stop and report. Never treat as CONVERGED |
+
+Fail-closed: an ssh or podman failure is never reported as "not running".
+The apply path aborts with exit 3 and makes no changes when the probe fails.
+Unknown options or a second profile argument exit 2 (no silent ignore).
+
+Exit codes: `0` ok · `1` usage/precondition · `2` bad argument · `3` probe failed.
 
 ### 1. List
 
@@ -99,6 +117,7 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/pre-check.sh rhel-ai
 ### 3. Setup (Deploy)
 
 ```bash
+bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh --dry-run g3b-16k
 bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh g3b-16k
 bash ~/.agents/skills/hosted-model-ctl/scripts/setup.sh g8b-fp8-spec-128k
 ```
@@ -109,6 +128,7 @@ API readiness. First run downloads model weights (may take 5-20 min).
 ### 4. Start
 
 ```bash
+bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh --dry-run g3b-16k
 bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh g3b-16k
 bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh g8b-fp8-spec-128k
 ```
@@ -116,6 +136,7 @@ bash ~/.agents/skills/hosted-model-ctl/scripts/start.sh g8b-fp8-spec-128k
 ### 5. Stop
 
 ```bash
+bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh --dry-run g3b-16k
 bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g3b-16k
 bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh g8b-fp8-spec-128k
 bash ~/.agents/skills/hosted-model-ctl/scripts/stop.sh all

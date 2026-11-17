@@ -7,7 +7,7 @@ argument-hint: "diagnose | fix-wifi | fix-nm-wait-online"
 compatibility: "Fedora 40+ with NetworkManager and systemd"
 metadata:
   author: agentfs
-  version: "1.2.0"
+  version: "1.4.0"
   model-tier: T3
   tags: [fedora, network, boot, networkmanager, performance]
 user-invocable: true

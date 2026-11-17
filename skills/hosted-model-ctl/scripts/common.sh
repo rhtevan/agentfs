@@ -27,6 +27,7 @@ declare -A DEPLOY_PROFILES=(
   [qw14b-32k]="rhel-ai|model-qwen3-14b-32k|docker.io/vllm/vllm-openai:nightly|vllm|Qwen/Qwen3-14B-FP8|2|32768|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3||Qwen3 14B FP8 TP=2 @32K (GPU 0-1, no spec decode)|est. 25+ tok/s"
   [qw14b-40k]="rhel-ai|model-qwen3-14b-40k|docker.io/vllm/vllm-openai:nightly|vllm|Qwen/Qwen3-14B-FP8|4|40960|9000|--enable-auto-tool-choice --tool-call-parser hermes --reasoning-parser qwen3||Qwen3 14B FP8 TP=4 @40K (no spec decode)|est. 50+ tok/s"
   [d3-27b-8k]="rhel-ai|model-d3-27b-8k|docker.io/vllm/vllm-openai:nightly|vllm|vllm-sr/d3|2|8192|9001|--quantization fp8 --enforce-eager||D3 27B Decision Model FP8 TP=2 @8K (GPU 2-3)|~250-470ms/decision"
+  [d3-27b-32k]="rhel-ai|model-d3-27b-32k|docker.io/vllm/vllm-openai:nightly|vllm|vllm-sr/d3|4|32768|9000|--quantization fp8 --language-model-only||D3 27B Decision Model FP8 TP=4 @32K — dedicated SDM (text-only, CUDA graphs)|1.2-9.8s/request, GT 120/122"
   [d3f-9b-32k]="rhel-ai|model-d3f-9b-32k|docker.io/vllm/vllm-openai:nightly|vllm|vllm-sr/d3-flash|1|32768|9001|--quantization fp8 --enforce-eager||D3-Flash 9B Decision Model FP8 @32K (GPU 2)|~190-315ms/decision"
 )
 
@@ -54,7 +55,7 @@ declare -A GPU_DEVICES=(
 # One default profile per host. To change the default, edit this map.
 declare -A DEFAULT_PROFILES=(
   [rhtevan-work]="g3b-16k"
-  [rhel-ai]="qw14b-40k"
+  [rhel-ai]="d3-27b-32k"
 )
 
 # ── All Hosts ─────────────────────────────────────────────────
@@ -85,9 +86,10 @@ declare -A COMPOSITE_PROFILES=(
 # setup.sh reads these and adds -e flags to the podman run command.
 declare -A CONTAINER_ENV=(
   [d3-27b-8k]="PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True"
+  [d3-27b-32k]="PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True"
 )
 
-ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k qw14b-32k qw14b-40k d3-27b-8k d3f-9b-32k qw14b+d3)
+ALL_PROFILES=(g350m-2k g3b-16k g8b-spec-128k g8b-fp8-spec-128k qw14b-32k qw14b-40k d3-27b-8k d3-27b-32k d3f-9b-32k qw14b+d3)
 
 # ── Helper Functions ──────────────────────────────────────────
 
@@ -215,9 +217,175 @@ check_container_status() {
     echo "unknown (host unreachable)"
     return 0
   fi
-  local result
-  result=$(run_on_host "$host" "podman ps -a --filter name=$container --format '{{.Status}}' 2>/dev/null")
+  local result rc=0
+  # Anchored name filter (unanchored matched substrings of other names).
+  # A podman failure is reported as unknown — never folded into "not found".
+  result=$(run_on_host "$host" "podman ps -a --filter name=^${container}\$ --format '{{.Status}}'") || rc=$?
+  if (( rc != 0 )); then
+    echo "unknown (podman error, exit $rc)"
+    return 0
+  fi
   echo "${result:-not found}"
+}
+
+# ── Fail-closed host probe (7.14.0) ───────────────────────────
+# probe_host HOST — one ssh call; fills PROBE_PS with lines
+#   name|state|image|command        (podman ps -a --no-trunc)
+# Returns 0 = probe succeeded (PROBE_PS may legitimately be empty)
+#         3 = ssh failed (unreachable / auth)      → PROBE_ERR set
+#         4 = podman failed on a reachable host    → PROBE_ERR set
+# Unlike get_active_profile/run_on_host, a failure is NEVER reported as
+# "nothing running". Dry-run and apply paths must use this probe.
+PROBE_PS=""
+PROBE_ERR=""
+probe_host() {
+  local host="$1" out rc=0 errf
+  local cmd="podman ps -a --no-trunc --format '{{.Names}}|{{.State}}|{{.Image}}|{{.Command}}'"
+  PROBE_PS=""; PROBE_ERR=""
+  errf=$(mktemp)
+  if [[ "$host" == "localhost" ]]; then
+    out=$(eval "$cmd" 2>"$errf") || rc=$?
+  else
+    out=$(ssh -o ConnectTimeout=5 -o BatchMode=yes "$host" "$cmd" 2>"$errf") || rc=$?
+  fi
+  PROBE_ERR=$(tail -3 "$errf" | tr '\n' ' ')
+  rm -f "$errf"
+  if (( rc == 0 )); then
+    PROBE_PS="$out"; PROBE_ERR=""
+    return 0
+  fi
+  if [[ "$host" != "localhost" ]] && (( rc == 255 )); then
+    PROBE_ERR="ssh to $host failed: ${PROBE_ERR:-exit 255}"
+    return 3
+  fi
+  PROBE_ERR="podman on $host failed (exit $rc): ${PROBE_ERR:-no stderr}"
+  return 4
+}
+
+# probe_or_fail HOST DRY_RUN — run probe_host; on failure print the reason,
+# emit DRY_RUN_RESULT=UNKNOWN when DRY_RUN=true, and exit 3 (no changes made).
+probe_or_fail() {
+  local host="$1" dry="${2:-false}" rc=0
+  probe_host "$host" || rc=$?
+  (( rc == 0 )) && return 0
+  echo "❌ Cannot determine container state — $PROBE_ERR" >&2
+  if [[ "$dry" == "true" ]]; then
+    echo "DRY_RUN_RESULT=UNKNOWN"
+    if (( rc == 3 )); then echo "DRY_RUN_REASON=host-unreachable"; else echo "DRY_RUN_REASON=podman-error"; fi
+  else
+    echo "   Aborting — no changes made." >&2
+  fi
+  exit 3
+}
+
+# probe_state NAME → running|exited|created|paused|...|absent (from PROBE_PS)
+probe_state() {
+  local s
+  s=$(awk -F'|' -v n="$1" '$1==n {print $2; exit}' <<< "$PROBE_PS")
+  echo "${s:-absent}"
+}
+
+# probe_field NAME N → field N of the PROBE_PS line (3=image, 4=command).
+# Field 4 (command, last) is re-joined in case the command itself contains '|'.
+probe_field() {
+  awk -F'|' -v n="$1" -v f="$2" '$1==n { out=$f; if (f==4) for (i=5; i<=NF; i++) out=out "|" $i; print out; exit }' <<< "$PROBE_PS"
+}
+
+# probe_port_holders PORT [EXCLUDE] → running model-* containers whose command uses --port PORT
+probe_port_holders() {
+  local port="$1" exclude="${2:-}"
+  awk -F'|' -v p=" --port $port " -v x="$exclude" \
+    '$1 ~ /^model-/ && $2=="running" && $1!=x && index(" " $4 " ", p) {print $1}' <<< "$PROBE_PS"
+}
+
+# api_model_ids HOST PORT → model ids served on HOST:PORT; returns 1 if the API does not answer
+api_model_ids() {
+  local host="$1" port="$2" body
+  body=$(run_on_host "$host" "curl -s -m 5 -f http://127.0.0.1:${port}/v1/models") || return 1
+  jq -r '.data[].id' <<< "$body" 2>/dev/null || return 1
+}
+
+# profile_drift — compare the parsed profile (globals) with the probed container.
+# Prints one reason per line; empty output = container matches the profile spec.
+profile_drift() {
+  local state image cmd
+  state=$(probe_state "$CONTAINER")
+  if [[ "$state" == "absent" ]]; then echo "container $CONTAINER does not exist"; return 0; fi
+  [[ "$state" != "running" ]] && echo "container $CONTAINER is $state (not running)"
+  image=$(probe_field "$CONTAINER" 3)
+  cmd=" $(probe_field "$CONTAINER" 4) "
+  [[ "$image" != "$IMAGE" ]] && echo "image is $image (profile: $IMAGE)"
+  [[ "$cmd" != *" --port $PORT "* ]] && echo "not started with --port $PORT"
+  case "$ENGINE" in
+    vllm|vllm-spec)
+      [[ "$cmd" != *" --model $MODEL_ID "* ]] && echo "not serving --model $MODEL_ID"
+      [[ "$cmd" != *" --tensor-parallel-size $TP "* ]] && echo "not started with --tensor-parallel-size $TP"
+      [[ "$cmd" != *" --max-model-len $CONTEXT "* ]] && echo "not started with --max-model-len $CONTEXT"
+      ;;
+    llamacpp)
+      [[ "$cmd" != *" --ctx-size $CONTEXT "* ]] && echo "not started with --ctx-size $CONTEXT"
+      ;;
+  esac
+  [[ -n "$EXTRA" && "$cmd" != *" $EXTRA "* ]] && echo "extra flags differ (profile: $EXTRA)"
+  return 0
+}
+
+# dry_run_composite SCRIPT SUB... — run SCRIPT --dry-run per sub-profile and
+# aggregate: any UNKNOWN → UNKNOWN (exit 3); any PENDING → PENDING; else CONVERGED.
+dry_run_composite() {
+  local script="$1"; shift
+  local agg="CONVERGED" sub out rc r
+  for sub in "$@"; do
+    echo ""
+    echo "── Sub-profile: $sub ──"
+    rc=0
+    out=$(bash "$script" --dry-run "$sub" 2>&1) || rc=$?
+    printf '%s\n' "$out" | grep -v '^DRY_RUN_' || true
+    r=$(grep -m1 '^DRY_RUN_RESULT=' <<< "$out" | cut -d= -f2 || true)
+    echo "  → $sub: ${r:-NO SIGNAL (exit $rc)}"
+    case "$r" in
+      CONVERGED) ;;
+      PENDING) [[ "$agg" == "CONVERGED" ]] && agg="PENDING" ;;
+      *) agg="UNKNOWN" ;;
+    esac
+  done
+  echo ""
+  echo "DRY_RUN_RESULT=$agg"
+  [[ "$agg" == "UNKNOWN" ]] && exit 3
+  exit 0
+}
+
+# parse_cli_args NAME "USAGE" "EXTRA_FLAGS" "$@" — shared strict argument parser.
+# Sets PROFILE, DRY_RUN, REMOVE. Unknown options or a second positional → exit 2.
+parse_cli_args() {
+  local name="$1" usage="$2" extra="$3"; shift 3
+  PROFILE=""; DRY_RUN=false; REMOVE=false
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dry-run) DRY_RUN=true ;;
+      --remove)
+        if [[ " $extra " == *" --remove "* ]]; then REMOVE=true
+        else echo "❌ $name: unknown option '$1'" >&2; echo "Usage: $usage" >&2; exit 2; fi ;;
+      -h|--help) echo "Usage: $usage"; exit 0 ;;
+      -*) echo "❌ $name: unknown option '$1'" >&2; echo "Usage: $usage" >&2; exit 2 ;;
+      *)
+        if [[ -n "$PROFILE" ]]; then
+          echo "❌ $name: unexpected argument '$1' (profile already '$PROFILE')" >&2
+          echo "Usage: $usage" >&2; exit 2
+        fi
+        PROFILE="$1" ;;
+    esac
+    shift
+  done
+  if [[ -z "$PROFILE" ]]; then
+    echo "Usage: $usage" >&2; echo "" >&2; list_profiles >&2; exit 1
+  fi
+  if [[ "$PROFILE" != "all" || " $extra " != *" all "* ]] \
+     && [[ -z "${DEPLOY_PROFILES[$PROFILE]:-}" && -z "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
+    echo "❌ $name: unknown profile '$PROFILE'" >&2
+    echo "Available: ${ALL_PROFILES[*]}" >&2; exit 2
+  fi
+  return 0
 }
 
 wait_for_model() {

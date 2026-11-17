@@ -37,3 +37,10 @@
   master_key and authenticates nothing; DSH only requires its
   apiKeyEnv variable to be non-empty. Not a credential. Lines
   matching the secrets pattern via `API_KEY=` are false positives.
+
+- The SSH host aliases `rhel-ai` and `rhtevan-work` in hosted-model-ctl,
+  skupper-model-provider, goose-skupper-provider and related skill or
+  knowledge files (profile HOST fields, DEFAULT_PROFILES keys, CHANGELOG
+  and log.md entries, deployment/fitting docs). They are ~/.ssh/config
+  aliases required by the profile format, not resolvable hostnames, IPs,
+  or usernames. Accepted by the user 2026-11-16.

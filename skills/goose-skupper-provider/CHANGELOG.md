@@ -3,11 +3,12 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 19:41 | v5.7.0 — CHANGELOG typo fixed: 'vv' version prefix → 'v' (documentation only) |
 | 2026-11-09 20:43 | v5.7.0 — Add --dry-run support with DRY_RUN_RESULT signals |
 | 2026-11-08 22:58 | v5.6.0 — Add Rules + trace + bump to 5.6.0; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; CNL restructure Operations, remove internal descriptions |
 | 2026-11-05 19:31 | v5.5.0 — Add model-tier to frontmatter |
 | 2026-10-15 09:47 | v5.5.0 — Fix: setup.sh now restores active_provider after teardown+setup (recreate). Teardown removes active_provider but setup never set it back, leaving Goose Desktop with no provider on restart. |
-| 2026-09-09 21:27 | vv5.4.0 — Changed base_url from localhost to host.containers.internal in setup.sh JSON generator and SKILL.md. Enables dual-resolution for host and container environments. |
+| 2026-09-09 21:27 | v5.4.0 — Changed base_url from localhost to host.containers.internal in setup.sh JSON generator and SKILL.md. Enables dual-resolution for host and container environments. |
 | 2026-08-26 17:07 | v5.3.0 — Fix test.sh T6 chat completion for reasoning models: increase max_tokens to 200, add reasoning_content fallback |
 | 2026-08-26 14:08 | v5.2.0 — Set supports_streaming:false in setup.sh and PROVIDER.md. Workaround for goose v1.47.0 streaming tool-call parser bug: vLLM hermes sends name and initial args as separate entries in the same streaming chunk — goose drops the args-only entry, truncating tool call arguments. Non-streaming avoids the accumulation path entirely. Updated post-write validation assertion to match. |
 | 2026-08-26 11:07 | v5.1.0 — Skill check fixes: Added Signal Routing Table with 10 signal patterns, routing rules, and preconditions. Expanded opening paragraph with why/when context. Signal phrases updated: added test/recreate/check, removed ambiguous bare query. Fixed heredoc injection risk: values passed via env vars with single-quoted PYEOF. Removed redundant changelog from PROVIDER.md (links to CHANGELOG.md). Made T8 concrete with injection test command. Fixed double-v in v5.0.0 changelog entry. |

@@ -3,7 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
-| 2026-11-09 20:34 | v1.2.0 — Add --dry-run flag parsing; Add dry-run logic to copy loop with DRY_RUN_RESULT/APPLY_RESULT signals |
+| 2026-11-16 19:39 | v1.4.0 — Version history corrected: 2026-11-09 v1.2.0→v1.4.0 (per-script version mislabel); metadata.version 1.2.0→1.4.0 |
+| 2026-11-09 20:34 | v1.4.0 — Add --dry-run flag parsing; Add dry-run logic to copy loop with DRY_RUN_RESULT/APPLY_RESULT signals (recorded as v1.2.0, corrected 2026-11-16) |
 | 2026-11-08 21:33 | v1.3.0 — Add anti-fabrication rules and CNL compliance for Observable qualification; New script: copy project skills to USER scope with force/selective options; Restructure to script-driven CNL workflow for Build+Quality qualification |
 | 2026-11-05 19:32 | v1.2.0 — Add model-tier to frontmatter |
 | 2026-08-26 22:24 | v— — Terminology: mode → scope. Added LITE scope guard note where applicable. |

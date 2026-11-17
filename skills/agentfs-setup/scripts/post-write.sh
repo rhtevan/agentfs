@@ -185,6 +185,25 @@ if [[ -n "$SKILL_DIR" ]]; then
     echo "  Re-run with: bash post-write.sh <file> \"<description>\" --version <ver>"
     exit 1
   fi
+
+  # Guard: --version is the SKILL version and must never go backwards.
+  # Runs before any log/changelog write so a rejected call leaves no trace.
+  # (A per-script version — set-default.sh v2.2.0 — passed here regressed
+  # hosted-model-ctl 7.10.1 → 2.2.0; 13 other skills regressed likewise.)
+  if [[ -n "$VERSION" && -f "$SKILL_DIR/CHANGELOG.md" ]]; then
+    if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      echo "[post-write] ❌ --version '$VERSION' is not MAJOR.MINOR.PATCH (no 'v' prefix)."
+      exit 1
+    fi
+    LATEST_VER=$(grep -oE '^\|[^|]*\|[[:space:]]*v+[0-9]+\.[0-9]+\.[0-9]+' "$SKILL_DIR/CHANGELOG.md" \
+      | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+$' || true)   # newest row (table is newest-first)
+    if [[ -n "$LATEST_VER" && "$VERSION" != "$LATEST_VER" ]] \
+       && [[ "$(printf '%s\n%s\n' "$VERSION" "$LATEST_VER" | sort -V | tail -1)" == "$LATEST_VER" ]]; then
+      echo "[post-write] ❌ --version $VERSION is LOWER than the newest CHANGELOG entry $LATEST_VER ($SKILL_DIR/CHANGELOG.md)."
+      echo "  --version is the skill version, not a script version. Use $LATEST_VER (same release) or higher."
+      exit 1
+    fi
+  fi
 fi
 
 # ── Step 1: Log entries ────────────────────────────────────────────

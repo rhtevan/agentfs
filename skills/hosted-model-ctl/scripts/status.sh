@@ -29,9 +29,12 @@ echo "  TP:          $TP"
 echo "  Context:     $CONTEXT"
 echo
 
-if ! host_reachable "$PROFILE_HOST"; then
-  echo "❌ Host $PROFILE_HOST is unreachable."
-  exit 1
+probe_rc=0
+probe_host "$PROFILE_HOST" || probe_rc=$?
+if (( probe_rc != 0 )); then
+  echo "❌ State unknown — $PROBE_ERR"
+  echo "   (not reporting 'not active': the host could not be probed)"
+  exit 3
 fi
 
 # Container status

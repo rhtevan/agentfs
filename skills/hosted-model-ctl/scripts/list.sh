@@ -29,6 +29,12 @@ echo
 
 # Show active profiles
 for host in "${ALL_HOSTS[@]}"; do
+  probe_rc=0
+  probe_host "$host" || probe_rc=$?
+  if (( probe_rc != 0 )); then
+    echo "  $host: ❓ state unknown — $PROBE_ERR"
+    continue
+  fi
   active=$(get_active_profile "$host")
   if [[ -n "$active" ]]; then
     if [[ -n "${COMPOSITE_PROFILES[$active]:-}" ]]; then
@@ -53,11 +59,13 @@ echo
 for host in "${ALL_HOSTS[@]}"; do
   echo "--- ${host} ---"
 
-  if host_reachable "$host"; then
+  probe_rc=0
+  probe_host "$host" || probe_rc=$?
+  if (( probe_rc == 0 )); then
     host_status="online"
   else
     host_status="unreachable"
-    echo "  ⚠️  Host $host is unreachable"
+    echo "  ⚠️  $PROBE_ERR — container states unknown"
   fi
 
   printf "  %-22s %-42s %-6s %-15s %s\n" "PROFILE" "MODEL" "PORT" "SPEED" "STATUS"

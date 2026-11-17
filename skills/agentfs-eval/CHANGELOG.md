@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-16 19:44 | v2.6.0 — Version history corrected: 2026-09-29 v7.2.0 (AgentFS template version) relabeled v1.7.0 |
 | 2026-11-08 18:41 | v2.6.0 — Add Rules section with anti-fabrication rules, add trace to all 6 scripts |
 | 2026-11-05 19:30 | v2.5.0 — Add model-tier to frontmatter |
 | 2026-10-31 17:02 | v2.5.0 — Restructure SKILL.md: move Session Audit Mode before Full Eval Sequence, add ROUTING STOP and END signals for weaker model comprehension; Remove duplicate Session Audit Mode section from old position (now relocated above Full Eval Sequence); Bump metadata version to 2.5.0 |
@@ -14,7 +15,7 @@
 | 2026-10-28 22:28 | v2.0.0 — Major restructure: unified Full Eval Sequence (11 steps, Tier 0-3), consistent Tier naming (Tier 0=template, 1=structural, 2=behavioral, 3=QOO operable), dynamic provider/model selection (Step 5), template-eval.sh simplified to Tier 0 only (B1-B3 deprecated), template-scores.md marked LEGACY, old Execution Steps + QOO sections demoted to Reference, absorbed agentfs-violation-chk as Session Audit Mode, version bump 1.8.0→2.0.0 |
 | 2026-10-02 15:06 | v1.8.0 — Removed R4 (skill-accuracy) — skill evaluation moved to skill-eval. agentfs-eval now focuses on workspace health only. |
 | 2026-10-02 12:35 | v1.7.1 — Fixed A3 EXPECTED_RULES 8→7: Rule 8 (Path Hygiene) was removed in v7.0.0 but check script was not updated |
-| 2026-09-29 21:27 | v7.2.0 — v7.2.0 — rules consolidated 10→8, severity tags removed |
+| 2026-09-29 21:27 | v1.7.0 — AgentFS template v7.2.0: rules consolidated 10→8, severity tags removed (recorded as v7.2.0, corrected 2026-11-16) |
 | 2026-09-29 14:44 | v1.7.0 — Updated A3 and A8 assertions for v7.0.0 heading-format rules |
 | 2026-09-27 23:47 | v1.6.2 — Tighten behavioral tests: expected first tool is search_nodes only (not search_nodes OR load_skill), load_skill moved to anti-pattern list |
 | 2026-09-27 23:35 | v1.6.1 — Fix B2 expected tool order: search_nodes before load_skill, matching Rule 2 fallthrough sequence |

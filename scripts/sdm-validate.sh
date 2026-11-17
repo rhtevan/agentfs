@@ -12,12 +12,20 @@
 # Usage:
 #   sdm-validate.sh --candidate <url> [--baseline <url>] [--sample N]
 #                   [--gate 0.90] [--out <dir>]
+#   sdm-validate.sh --baseline-only [--baseline <url>] --out <dir>
+#   sdm-validate.sh --candidate <url> --baseline-dir <dir> [--gate 0.90]
 #
 #   --candidate URL  SDM base URL to validate (required)
 #   --baseline  URL  Trusted SDM base URL (default: http://localhost:9000)
 #   --sample N       Evaluate the first N skills only (default: all)
 #   --gate F         Minimum agreement and ground-truth accuracy (default: 0.90)
 #   --out DIR        Output directory (default: /tmp/sdm-validate-<timestamp>)
+#   --baseline-only  Evaluate the baseline only and stop. The output directory
+#                    (evidence/ + baseline/ + meta.json) is reusable with
+#                    --baseline-dir — use it before replacing the baseline SDM.
+#   --baseline-dir D Reuse a saved baseline instead of calling --baseline.
+#                    The candidate is evaluated on the SAVED evidence, so both
+#                    sides judge identical inputs even if skills changed since.
 #
 # Isolation: schemas are copied into the output directory, so operable
 # persistence lands there. No scores.yaml or observations/ are written.
@@ -43,6 +51,7 @@ log() { echo "[sdm-validate] $*" >&2; }
 
 CANDIDATE=""; BASELINE="http://localhost:9000"; SAMPLE=0; GATE="0.90"
 OUT="/tmp/sdm-validate-$(date +%Y%m%d-%H%M%S)"
+BASELINE_ONLY=0; BASELINE_DIR=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --candidate) CANDIDATE="${2:-}"; shift 2 ;;
@@ -50,16 +59,29 @@ while [[ $# -gt 0 ]]; do
     --sample)    SAMPLE="${2:-0}"; shift 2 ;;
     --gate)      GATE="${2:-0.90}"; shift 2 ;;
     --out)       OUT="${2:-}"; shift 2 ;;
-    -h|--help)   sed -n '2,31p' "$0"; exit 0 ;;
+    --baseline-only) BASELINE_ONLY=1; shift ;;
+    --baseline-dir)  BASELINE_DIR="${2:-}"; shift 2 ;;
+    -h|--help)   sed -n '2,40p' "$0"; exit 0 ;;
     *) die "Unknown argument: $1" ;;
   esac
 done
-[[ -n "$CANDIDATE" ]] || die "--candidate <url> is required"
+if [[ "$BASELINE_ONLY" -eq 1 ]]; then
+  [[ -z "$CANDIDATE" && -z "$BASELINE_DIR" ]] || die "--baseline-only takes no --candidate/--baseline-dir"
+else
+  [[ -n "$CANDIDATE" ]] || die "--candidate <url> is required"
+fi
+if [[ -n "$BASELINE_DIR" ]]; then
+  [[ -d "$BASELINE_DIR/baseline" && -d "$BASELINE_DIR/evidence" && -f "$BASELINE_DIR/baseline/timing.txt" ]] \
+    || die "--baseline-dir $BASELINE_DIR is not a saved baseline (needs evidence/, baseline/, baseline/timing.txt)"
+fi
 command -v jq >/dev/null || die "jq is required"
 command -v python3 >/dev/null || die "python3 is required"
 [[ -x "$SDM_EVALUATE" || -f "$SDM_EVALUATE" ]] || die "sdm-evaluate.sh not found"
 
-for ep in "$CANDIDATE" "$BASELINE"; do
+ENDPOINTS=()
+[[ -n "$CANDIDATE" ]] && ENDPOINTS+=("$CANDIDATE")
+[[ -z "$BASELINE_DIR" ]] && ENDPOINTS+=("$BASELINE")
+for ep in "${ENDPOINTS[@]}"; do
   if ! curl -s --max-time 10 "$ep/v1/models" | jq -e '.data[0].id' >/dev/null 2>&1; then
     echo "❌ SDM endpoint unreachable: $ep" >&2; exit 2
   fi
@@ -68,19 +90,37 @@ done
 mkdir -p "$OUT"/{schemas,evidence,baseline,candidate}
 cp "$SKILLS_DIR"/schemas/{quality,observable,operable}.yaml "$OUT/schemas/"
 log "Output: $OUT"
-log "Baseline:  $BASELINE ($(curl -s "$BASELINE/v1/models" | jq -r '.data[0].id'))"
-log "Candidate: $CANDIDATE ($(curl -s "$CANDIDATE/v1/models" | jq -r '.data[0].id'))"
+if [[ -n "$BASELINE_DIR" ]]; then
+  log "Baseline:  saved $BASELINE_DIR ($(jq -r '.model // "unknown"' "$BASELINE_DIR/meta.json" 2>/dev/null))"
+else
+  BASELINE_MODEL=$(curl -s "$BASELINE/v1/models" | jq -r '.data[0].id')
+  log "Baseline:  $BASELINE ($BASELINE_MODEL)"
+fi
+[[ -n "$CANDIDATE" ]] && log "Candidate: $CANDIDATE ($(curl -s "$CANDIDATE/v1/models" | jq -r '.data[0].id'))"
 
 # --- Collect skills and evidence ---
 SKILLS=()
-for d in "$SKILLS_DIR"/*/; do
-  n=$(basename "$d")
-  [[ "$n" == "schemas" || ! -f "$d/SKILL.md" ]] && continue
-  bash "$GATHER" "$d" > "$OUT/evidence/$n.txt" 2>/dev/null || continue
-  [[ -s "$OUT/evidence/$n.txt" ]] || continue
-  SKILLS+=("$n")
-  [[ "$SAMPLE" -gt 0 && ${#SKILLS[@]} -ge "$SAMPLE" ]] && break
-done
+if [[ -n "$BASELINE_DIR" ]]; then
+  # Reuse saved evidence + baseline results (identical inputs for both sides)
+  for f in "$BASELINE_DIR"/evidence/*.txt; do
+    n=$(basename "$f" .txt)
+    [[ -f "$BASELINE_DIR/baseline/$n.operable.json" ]] || continue
+    cp "$f" "$OUT/evidence/"
+    cp "$BASELINE_DIR"/baseline/"$n".*.json "$OUT/baseline/"
+    grep "^$n " "$BASELINE_DIR/baseline/timing.txt" >> "$OUT/baseline/timing.txt" || true
+    SKILLS+=("$n")
+    [[ "$SAMPLE" -gt 0 && ${#SKILLS[@]} -ge "$SAMPLE" ]] && break
+  done
+else
+  for d in "$SKILLS_DIR"/*/; do
+    n=$(basename "$d")
+    [[ "$n" == "schemas" || ! -f "$d/SKILL.md" ]] && continue
+    bash "$GATHER" "$d" > "$OUT/evidence/$n.txt" 2>/dev/null || continue
+    [[ -s "$OUT/evidence/$n.txt" ]] || continue
+    SKILLS+=("$n")
+    [[ "$SAMPLE" -gt 0 && ${#SKILLS[@]} -ge "$SAMPLE" ]] && break
+  done
+fi
 log "Skills: ${#SKILLS[@]}"
 
 # --- Run evaluations (same invocations as score-all.sh) ---
@@ -103,7 +143,15 @@ run_side() {
   done
   log "$label done"
 }
-run_side baseline "$BASELINE"
+if [[ -z "$BASELINE_DIR" ]]; then
+  run_side baseline "$BASELINE"
+  jq -n --arg m "$BASELINE_MODEL" --arg e "$BASELINE" --arg t "$(date -Iseconds)" --argjson n "${#SKILLS[@]}" \
+    '{model: $m, endpoint: $e, captured: $t, skills: $n}' > "$OUT/meta.json"
+fi
+if [[ "$BASELINE_ONLY" -eq 1 ]]; then
+  log "Baseline saved: $OUT (reuse with --baseline-dir $OUT)"
+  exit 0
+fi
 run_side candidate "$CANDIDATE"
 
 # --- Analyze ---

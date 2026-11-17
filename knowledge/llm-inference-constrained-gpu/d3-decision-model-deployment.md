@@ -8,7 +8,7 @@ evidence: "Deployed on 2×L4 (Ada sm_89, 23 GB each). vLLM 0.32.0rc1, vllm-sr/d3
 # D3 Decision Model Deployment on L4 GPUs
 
 Decision 3.0 (vllm-sr/d3) is a family of purpose-built Structured Decision
-Models on the Qwen3.5 backbone. Deploying them on NVIDIA L4 GPUs reveals
+Models on the Qwen3.5 architecture (d3 27B is fine-tuned from `Qwen/Qwen3.8-27B`; d3-flash from Qwen3.5-9B; d3-mini from Qwen3.5-4B — HF `base_model`, verified 2026-11-16). Deploying them on NVIDIA L4 GPUs reveals
 several architecture-specific constraints not documented elsewhere.
 
 ## D3 Family Sizing
@@ -106,6 +106,53 @@ Key observations:
   on uncertain questions (0.73 vs 0.95 confidence on ambiguous scenarios)
 - D3-27B uses a different API schema (`/v1/systemone`) with richer
   score-type response structure (label + confidence on ordinal scales)
+
+## Dedicated SDM: d3-27b-32k on 4×L4 (2026-11-16)
+
+Profile `d3-27b-32k`: TP=4, `--max-model-len 32768`, `--quantization fp8`,
+**`--language-model-only`**, port 9000, vLLM nightly (0.32.0rc1.dev190).
+
+**CUDA graphs now work.** `--language-model-only` sets every modality limit to
+0, so vLLM skips the vision-encoder profiling that caused the 18.4 GB OOM. Pooling
+models get `cudagraph_mode=PIECEWISE` (capture 24 s, 0.07 GiB). KV cache: 10.46 GiB
+per GPU (9.5M tokens, 291× concurrency at 32K). Startup 227 s.
+
+**Architecture mapping is automatic.** The HF checkpoint is a bare `Qwen3_5Model`;
+vLLM's config converter sees `decision_config.json` and resolves
+`D3ForSequenceClassification` (runner `pooling`, `D3Strategy`). Check the log line
+`Resolved architecture: D3ForSequenceClassification`.
+
+**Prefix caching is disabled for pooling models** (`enable_prefix_caching=False`).
+Each question re-prefills the full state, so latency scales linearly with question
+count (~1.6 s per question at ~3K tokens). NextToken models share the state prefix.
+
+| Real AgentFS payload | Qwen3-14B cold | Qwen3-14B warm | **D3-27B (always cold)** |
+|----------------------|:---:|:---:|:---:|
+| 6q, ~3K-token evidence | 1.29 s | 0.10 s | **9.8 s** |
+| 4q, ~3K-token evidence | 1.17 s | 0.07 s | **6.4 s** |
+| 6q, ~530-token evidence | 0.43 s | 0.08 s | **1.9 s** |
+| 4q, ~520-token evidence | 0.31 s | 0.07 s | **1.2 s** |
+
+**AgentFS accuracy** (`sdm-validate.sh`, 61 skills × quality/observable/operable,
+vs saved Qwen3-14B baseline):
+
+| Metric | Qwen3-14B (NextToken) | D3-27B |
+|--------|:---:|:---:|
+| Ground truth `trace_instrumentation` | 56/61 | **61/61** |
+| Ground truth `sdm_delegation` | 53/61 | **59/61** |
+| Ground truth total | 109/122 (89.3%) | **120/122 (98.4%)** |
+| Uncertain band (score 50) | 16/854 | 39/854 |
+| Mean confidence | 0.954 | 0.880 |
+| Mean end-to-end per evaluation (quality/operable/observable) | 4.2 / 4.2 / 2.8 s | 6.8 / 5.8 / 3.4 s |
+
+Pass/fail agreement 88.4% (quality 82.0%). Disagreements are mostly D3 passing
+where Qwen failed (prose_executability 16, inference_hop_count 11,
+sdm_delegation 10) — on the ground-truth dimension D3 is the one that is right.
+Largest split: `interface_opacity` (Qwen pass / D3 fail in 29 skills), no
+verbatim fact, spot check inconclusive.
+
+**Diagnostics are constant:** `D3Strategy` returns `label_mass=1.0`,
+`argmax_is_label=true` — `sdm-evaluate.sh` reliability checks never fire.
 
 ## Deployment Recipe
 

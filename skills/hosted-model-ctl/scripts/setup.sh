@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 # setup.sh — Deploy a deployment profile
-# Usage: bash setup.sh PROFILE
+# Usage: bash setup.sh [--dry-run] PROFILE
 # Idempotent: removes existing container before creating.
 # All deployments go through profiles — no individual model aliases.
+#
+# --dry-run (read-only, Rule 7): probes the host and prints one signal
+#   DRY_RUN_RESULT=CONVERGED  container running, matches profile spec, API serves the model
+#   DRY_RUN_RESULT=PENDING    apply would change something (plan printed)
+#   DRY_RUN_RESULT=UNKNOWN    state could not be determined (exit 3) — do NOT apply
+# Exit codes: 0 ok · 1 usage/precondition · 2 bad argument · 3 host/podman probe failed
 
 source "$(dirname "$0")/common.sh"
 
-PROFILE="${1:-}"
-
-if [[ -z "$PROFILE" ]]; then
-  echo "Usage: setup.sh PROFILE" >&2
-  echo "" >&2
-  list_profiles >&2
-  exit 1
-fi
+parse_cli_args setup.sh "setup.sh [--dry-run] PROFILE" "" "$@"
 
 # ── Composite profile handling ──────────────────────────────────
 if [[ -n "${COMPOSITE_PROFILES[$PROFILE]:-}" ]]; then
   echo "=== Setup (composite): $PROFILE ==="
   read -ra SUB_PROFILES <<< "${COMPOSITE_PROFILES[$PROFILE]}"
+  $DRY_RUN && dry_run_composite "$(dirname "$0")/setup.sh" "${SUB_PROFILES[@]}"
   # Resolve host from first sub-profile
   parse_profile "${SUB_PROFILES[0]}"
   COMPOSITE_HOST="$PROFILE_HOST"
@@ -52,10 +52,38 @@ if [[ -n "$SPEC_CONFIG" ]]; then
 fi
 echo
 
-# Check host reachable
-if ! host_reachable "$PROFILE_HOST"; then
-  echo "❌ Host $PROFILE_HOST is unreachable." >&2
-  exit 1
+# Probe host state — fail closed: ssh or podman failure aborts (exit 3), no changes.
+probe_or_fail "$PROFILE_HOST" "$DRY_RUN"
+
+if $DRY_RUN; then
+  drift=$(profile_drift)
+  served=""
+  if [[ -z "$drift" ]]; then
+    if served=$(api_model_ids "$PROFILE_HOST" "$PORT"); then
+      if [[ "$ENGINE" != "llamacpp" ]] && ! grep -qxF "$MODEL_ID" <<< "$served"; then
+        drift="API on :$PORT serves '$(echo $served)', not $MODEL_ID"
+      fi
+    else
+      drift="container running but API on :$PORT not answering /v1/models"
+    fi
+  fi
+  if [[ -z "$drift" ]]; then
+    echo "✅ $CONTAINER is running, matches the profile, API serves $(echo $served)"
+    echo "DRY_RUN_RESULT=CONVERGED"
+    exit 0
+  fi
+  echo "Not converged:"
+  printf '%s\n' "$drift" | sed 's/^/  - /'
+  echo "Plan (apply):"
+  while read -r holder; do
+    [[ -n "$holder" ]] && echo "  - stop + remove $holder (holds port $PORT)"
+  done < <(probe_port_holders "$PORT" "$CONTAINER")
+  state=$(probe_state "$CONTAINER")
+  [[ "$state" != "absent" ]] && echo "  - remove existing $CONTAINER ($state)"
+  echo "  - podman run $CONTAINER: $IMAGE --model $MODEL_ID TP=$TP ctx=$CONTEXT port=$PORT ${EXTRA}"
+  echo "  - wait for /v1/models on $PROFILE_HOST:$PORT"
+  echo "DRY_RUN_RESULT=PENDING"
+  exit 0
 fi
 
 # Stop and remove any model container on this port (port-based mutual exclusion)

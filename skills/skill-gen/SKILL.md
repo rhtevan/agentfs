@@ -6,7 +6,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "4.0.0"
+  version: "4.3.0"
   model-tier: T4
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true

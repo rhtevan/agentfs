@@ -28,7 +28,7 @@ where Q=Quality, S=Speed, C=Context, Z=Size. Cloud baseline (Opus) = 100.
 | g8b-spec-128k | rhel-ai | 60 | 22 | 12 | 14 | **29.9** | Gap analysis | No FP8/CUDA graphs — use fp8 variant |
 | g8b-fp8-spec-128k | rhel-ai | 60 | 50 | 12 | 27 | **39.3** | Gap analysis | Best speed, but 8B context degrades past 16-32K |
 | qw14b-32k | rhel-ai | 70 | 30 | 16 | 55 | **40.3** | Gap analysis | Highest quality, leaves GPU 2-3 free |
-| **qw14b-40k** ✅ | rhel-ai | 60 | 51 | 20 | 27 | **42.0** | Gap analysis | Best balance — default profile |
+| **qw14b-40k** ✅ | rhel-ai | 60 | 51 | 20 | 27 | **42.0** | Gap analysis | Best gen-ai balance — default until 2026-11-16 (now `d3-27b-32k`, decision-only SDM) |
 | qw14b+d3 | rhel-ai | 70 | 30 | 16 | 27 | **38.6** | Gap analysis | Composite: gen-ai + SOTA decisions |
 
 > **Reading the table:** All self-hosted profiles score in the "Gap analysis"
@@ -175,7 +175,7 @@ parallel decision model or other workload.
 standard attention. Allocating 64K or 128K wastes VRAM on KV cache the model
 can't usefully attend to.
 
-### `qw14b-40k` ✅ Default
+### `qw14b-40k` (former default until 2026-11-16)
 
 | Setting | Value |
 |---------|-------|
@@ -213,6 +213,27 @@ hard limit). Trades GPU availability (all 4 consumed) for 118% faster generation
 **Context rationale:** 40K is the Qwen3-14B architectural limit
 (`max_position_embeddings=40960` in config.json, no RoPE scaling).
 The original 64K target failed at deploy time — vLLM refuses to exceed this.
+
+### `d3-27b-32k` ✅ Default — Dedicated SDM (validated 2026-11-16)
+
+| Setting | Value |
+|---------|-------|
+| **Model** | `vllm-sr/d3` (Decision 3.0, 27B, fine-tuned from Qwen3.8-27B) |
+| **Container** | `model-d3-27b-32k` |
+| **Port** | 9000 (replaces qw14b-40k — no Skupper / `SDM_ENDPOINT` change) |
+| **TP** | 4 (all GPUs) |
+| **Context** | 32,768 |
+| **Flags** | `--quantization fp8 --language-model-only` + `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` |
+| **CUDA graphs** | ✅ PIECEWISE (`--language-model-only` skips the vision-encoder OOM) |
+| **VRAM** | ~19.7 GB / 23.0 GB per GPU; KV 10.46 GiB/GPU |
+| **Cold start** | ~4 min (227 s engine init, 82 s compile) |
+| **API** | `/v1/systemone` only (pooling runner, `D3ForSequenceClassification`); no chat |
+| **Latency** | 1.2 s (4q, 0.5K tok) – 9.8 s (6q, 3K tok); no prefix caching for pooling models |
+| **AgentFS ground truth** | **120/122** vs Qwen3-14B 109/122 (`sdm-validate.sh`) |
+
+**Trade-off:** most accurate SDM measured for AgentFS, ~5–8× slower per request
+than Qwen3-14B (NextToken, prefix-cached). See
+`knowledge/llm-inference-constrained-gpu/d3-decision-model-deployment.md`.
 
 ### `qw14b+d3` (full name: `qw14b-fp8-32k+d3-27b-fp8-8k`)
 

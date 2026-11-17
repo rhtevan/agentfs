@@ -308,7 +308,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.9.4 enforces 7 operational rules as numbered subsections
+AgentFS v7.10.0 enforces 7 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -322,6 +322,7 @@ external enforcement only: routing, hooks, process obligations.
 | 4 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
 | 5 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
 | 6 | Scope & Post-Write | Writing to or deleting any file under `.agents/` or `~/.agents/` | Scope: memories PROJECT-only, skills default USER. After EACH write immediately run `post-write.sh` — do not respond until it completes. After EACH deletion run `post-write.sh --deleted`. Graduate mature patterns via `hey harvest`. |
+| 7 | Dry-Run Gate | A skill workflow step runs a Command script (creates, modifies, or deletes files, services, or configuration) | Run with `--dry-run` first if supported. `DRY_RUN_RESULT=CONVERGED` → report "already configured", skip apply. `DRY_RUN_RESULT=PENDING` → apply. Exit 0 means the dry-run succeeded, not "no changes" — read the signal. |
 
 **Design constraint:** Rules must use guard-style When clauses
 (evaluable before execution). Effect-based triggers — whose conditions
@@ -583,7 +584,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.9.4 -->
+<!-- agentfs-template-version: 7.10.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:

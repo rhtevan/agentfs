@@ -2,6 +2,76 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-16 20:02
+- pre-push allowlist: accept SSH host aliases rhel-ai/rhtevan-work in hosted-model/skupper skill and knowledge files (user-approved 2026-11-16) (.pre-push-allowlist)
+- README: Structural Rules table adds Rule 7 Dry-Run Gate (D5 drift); version references 7.9.4 → 7.10.0 (D6 drift) (README.md)
+
+## 2026-11-16 19:55
+- SKILL.md: Dry-Run Contract section (CONVERGED/PENDING/UNKNOWN, exit codes, fail-closed), S5c spec row, --dry-run examples for setup/start/stop (skills/hosted-model-ctl/SKILL.md)
+
+## 2026-11-16 19:54
+- common.sh: probe_field joins only the command field (image comparison bug found in validation) (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-11-16 19:53
+- list.sh: probe_host per host; unreachable/podman error shown as 'state unknown' instead of 'no active profile' (skills/hosted-model-ctl/scripts/list.sh)
+- status.sh: probe_host before reporting; unprobeable host → 'state unknown' exit 3 instead of 'not active' (skills/hosted-model-ctl/scripts/status.sh)
+- stop.sh: --dry-run (CONVERGED/PENDING/UNKNOWN incl. all/composite/--remove), strict args exit 2, unprobeable host never reported as stopped, podman stop/rm failures surface their exit code (skills/hosted-model-ctl/scripts/stop.sh)
+- start.sh: --dry-run (CONVERGED/PENDING/UNKNOWN), unknown args exit 2, fail-closed probe, port-holder mutual exclusion with checked podman stop (skills/hosted-model-ctl/scripts/start.sh)
+- setup.sh: --dry-run (CONVERGED requires running + spec match + API serves model; PENDING prints plan), unknown args exit 2, probe failure aborts with exit 3 (skills/hosted-model-ctl/scripts/setup.sh)
+
+## 2026-11-16 19:52
+- common.sh: fail-closed probe_host (ssh 255→3, podman→4), probe_or_fail (DRY_RUN_RESULT=UNKNOWN, exit 3), profile_drift, api_model_ids, dry_run_composite, strict parse_cli_args; check_container_status anchored + reports podman errors as unknown (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-11-16 19:44
+- Version history corrected: 2026-11-09 v2.1.0 relabeled v7.4.0 (keeps the committed 7.x line); metadata.version 2.1.0→7.4.0 (skills/okf-bundle-harvest/SKILL.md)
+- Version history corrected: 2026-10-02 v2.1.0→v3.6.0, 2026-10-28 v6.1.0→v3.7.1, 2026-11-08 v4.0.0→v4.3.0; 2 vv typos fixed; metadata.version 4.0.0→4.3.0 (4.1-4.3 bumps never reached SKILL.md) (skills/skill-gen/SKILL.md)
+- Version history corrected: 2026-10-23 v7.3.8→v7.4.1, 2026-11-08 18:40 v7.8.0→v7.7.2 (SKILL.md versions at the time) (skills/agentfs-setup/SKILL.md)
+- Version history corrected: 2026-10-31 v3.0.2 relabeled v3.1.0 (release in effect) (skills/agentfs-readme-audit/SKILL.md)
+- Version history corrected: 2026-10-23 v6.1.1 relabeled v3.3.0 (SKILL.md stayed 3.3.0); vv6.1.1 typo fixed (skills/crc-ols/SKILL.md)
+- Version history corrected: 2026-09-29 v7.2.0 (AgentFS template version) relabeled v2.0.0 (skills/agentfs-git-push/SKILL.md)
+- Version history corrected: 2026-09-29 v7.2.0 (AgentFS template version) relabeled v1.7.0 (skills/agentfs-eval/SKILL.md)
+
+## 2026-11-16 19:41
+- CHANGELOG typo fixed: 'vv' version prefix → 'v' (documentation only) (skills/skupper-model-provider/SKILL.md)
+- CHANGELOG typo fixed: 'vv' version prefix → 'v' (documentation only) (skills/goose-skupper-provider/SKILL.md)
+- CHANGELOG typo fixed: 'vv' version prefix → 'v' (documentation only) (skills/goose-litellm-provider/SKILL.md)
+
+## 2026-11-16 19:40
+- Version history corrected: 2026-11-09 v1.1.0→v1.3.0, 2026-11-13 v1.1.1→v1.3.1, v1.2.0→v1.4.0; metadata.version 1.2.0→1.4.0 (skills/dsh-litellm-provider/SKILL.md)
+- Version history corrected: 2026-11-09 v2.0.0→v2.4.0, 2026-11-13 v2.1.0→v2.5.0; vv2.1.0 typo fixed; metadata.version 2.1.0→2.5.0 (skills/goose-headroom-provider/SKILL.md)
+
+## 2026-11-16 19:39
+- Version history corrected: 2026-11-09 v1.2.0→v1.4.0 (per-script version mislabel); metadata.version 1.2.0→1.4.0 (skills/skill-merge/SKILL.md)
+- Version history corrected: 2026-11-09 v2.1.0→v3.4.0 (per-script version mislabel); metadata.version 2.1.0→3.4.0 (skills/okf-bundle-gen/SKILL.md)
+- Version history corrected: 2026-11-09 v1.1.0→v1.4.0, v1.2.0→v1.5.0 (per-script version mislabels); metadata.version 1.2.0→1.5.0 (skills/agentfs-ctx-chk/SKILL.md)
+- Version history corrected: 2026-11-09 v1.1.0→v1.3.0, v1.2.0→v1.4.0 (per-script version mislabels); metadata.version 1.2.0→1.4.0 (skills/fedora-nm-boot-slow/SKILL.md)
+- Version history corrected: 2026-11-09 v1.1.0 relabeled v2.2.0 (per-script version mislabel); metadata.version 1.1.0→2.2.0 (skills/crc-ctl/SKILL.md)
+
+## 2026-11-16 19:35
+- [OVERRIDE] Rule 5 Checkpoint skipped by user for CHANGELOG/SKILL.md version-label corrections across 17 skills (documentation-only; user approved 2026-11-16 19:35)
+
+## 2026-11-16 19:31
+- Default rhel-ai profile: qw14b-40k → d3-27b-32k (dedicated D3 SDM; chat moved to Corp provider) (skills/hosted-model-ctl/references/deployment-profiles.md)
+- Default rhel-ai profile: qw14b-40k → d3-27b-32k (dedicated D3 SDM; chat moved to Corp provider) (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-11-16 19:28
+- post-write.sh: reject --version lower than the newest CHANGELOG entry or not MAJOR.MINOR.PATCH (guard runs before any log/changelog write) (skills/agentfs-setup/scripts/post-write.sh)
+
+## 2026-11-16 19:27
+- Corrected version history: 2.2.0→7.11.0, 2.3.0→7.12.0, 7.11.0→7.13.0 (script versions had been recorded as skill versions) (skills/hosted-model-ctl/SKILL.md)
+
+## 2026-11-16 18:38
+- d3-27b-32k: record validated latency and AgentFS ground truth (skills/hosted-model-ctl/scripts/common.sh)
+- d3-27b-32k: record validated latency and AgentFS ground truth (skills/hosted-model-ctl/references/deployment-profiles.md)
+- D3 dedicated SDM results (TP=4 32K, language-model-only CUDA graphs, latency, AgentFS ground truth 120/122 vs 109/122); base model correction (knowledge/llm-inference-constrained-gpu/d3-decision-model-deployment.md)
+
+## 2026-11-16 17:56
+- Add d3-27b-32k profile: D3 27B FP8 TP=4 @32K on port 9000 (dedicated SDM, --language-model-only) (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-11-16 17:54
+- Add machine-local .sdm-baselines dir (gitignored) (.sdm-baselines/.gitignore)
+- sdm-validate.sh: --baseline-only capture and --baseline-dir reuse (compare after baseline SDM is replaced) (scripts/sdm-validate.sh)
+
 ## 2026-11-16 16:36
 - Correct SystemOne port/response-shape claims (knowledge/llm-inference-constrained-gpu/decision-api-request-patterns.md)
 - Add SDM 4GB GPU hosting + AgentFS validation concept (knowledge/llm-inference-constrained-gpu/sdm-small-gpu-agentfs-validation.md)
