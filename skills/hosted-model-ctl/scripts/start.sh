@@ -2,7 +2,7 @@
 # start.sh — Start a deployment profile
 # Usage: bash start.sh [--dry-run] PROFILE
 # Starts an existing (stopped) container for the given profile.
-# Enforces mutual exclusion — stops other profiles on same host/port.
+# Enforces mutual exclusion — stops containers on the same port or overlapping GPUs.
 #
 # --dry-run (read-only, Rule 7):
 #   DRY_RUN_RESULT=CONVERGED  container running and API serves the model
@@ -50,8 +50,8 @@ if [[ "$state" == "absent" ]]; then
   exit 1
 fi
 
-# Running containers that hold our port (other profiles on same host+port)
-mapfile -t HOLDERS < <(probe_port_holders "$PORT" "$CONTAINER")
+# Running containers that conflict: same port, or overlapping GPUs (7.15.0)
+mapfile -t HOLDERS < <( { probe_port_holders "$PORT" "$CONTAINER"; probe_gpu_holders "$PROFILE" "$CONTAINER" | cut -d'|' -f1; } | awk 'NF && !seen[$0]++')
 
 if $DRY_RUN; then
   if [[ "$state" == "running" ]]; then
@@ -65,7 +65,7 @@ if $DRY_RUN; then
     echo "  - $CONTAINER is running but /v1/models on :$PORT does not serve $MODEL_ID yet — wait for it"
   else
     echo "Plan (apply):"
-    for h in "${HOLDERS[@]}"; do [[ -n "$h" ]] && echo "  - stop $h (holds port $PORT)"; done
+    for h in "${HOLDERS[@]}"; do [[ -n "$h" ]] && echo "  - stop $h (holds port $PORT or overlapping GPUs)"; done
     echo "  - podman start $CONTAINER (currently $state)"
     echo "  - wait for /v1/models on $PROFILE_HOST:$PORT"
   fi
@@ -79,7 +79,7 @@ else
   # Mutual exclusion: stop other containers holding the same host+port
   for h in "${HOLDERS[@]}"; do
     [[ -z "$h" ]] && continue
-    echo "  Stopping conflicting $h on port $PORT..."
+    echo "  Stopping conflicting $h (port $PORT or overlapping GPUs)..."
     stop_rc=0
     stop_out=$(run_on_host "$PROFILE_HOST" "podman stop $h 2>&1") || stop_rc=$?
     if (( stop_rc != 0 )); then

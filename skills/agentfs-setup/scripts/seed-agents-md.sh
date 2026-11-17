@@ -241,9 +241,13 @@ If keywords match a Signal Dispatch entry below → execute that action directly
    Keep all other words exactly as the user typed them.
    Do NOT add, remove, reorder, or rephrase any word.
    Example: user says `hey crc status` → keywords = `crc status`.
-2. Call \`search_nodes(query: "<keywords>")\` — the parameter name
-   is \`query\`, not \`keywords\`. This call is mandatory; the
-   policy hook blocks all other tools until it completes.
+2. Call \`search_nodes(query: "<keywords>")\` as your FIRST tool
+   call — before any other tool, including the session-start reads
+   (SOUL.md, Rule 3 USER.md); do those after dispatch. Defer only
+   the reads: on turn 1 the Rule 3 canary is still the first line
+   of your reply, written with this call. The parameter name is
+   \`query\`, not \`keywords\`. The policy hook blocks all other
+   tools until it completes.
    KGM search matches exact words, not fuzzy meaning.
    Rephrased or expanded queries will miss.
 3. If result is a skill → call `load_skill` with the skill name.
@@ -349,6 +353,8 @@ that creates, modifies, or deletes files, services, or configuration).
 2. Parse stdout for the result signal:
    - \`DRY_RUN_RESULT=CONVERGED\` → report "already configured", skip apply.
    - \`DRY_RUN_RESULT=PENDING\` → proceed to apply (run without \`--dry-run\`).
+   - Any other value (e.g. \`UNKNOWN\`), no signal line, or a non-zero
+     exit → STOP. Report the output to the user. Do NOT apply.
 3. Exit code 0 from \`--dry-run\` means the dry-run itself succeeded,
    NOT that no changes are needed. Read the output signal.
 4. Do NOT treat \`DRY_RUN_RESULT=PENDING\` as a failure.

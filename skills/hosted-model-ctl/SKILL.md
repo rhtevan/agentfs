@@ -10,7 +10,7 @@ argument-hint: "list hosted model | hosted model status | start hosted model | s
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "7.14.0"
+  version: "7.15.0"
   model-tier: T3
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
@@ -98,6 +98,12 @@ run the `--dry-run` form first and read the signal line:
 Fail-closed: an ssh or podman failure is never reported as "not running".
 The apply path aborts with exit 3 and makes no changes when the probe fails.
 Unknown options or a second profile argument exit 2 (no silent ignore).
+
+Mutual exclusion (setup/start): containers on the **same port** are stopped
+(setup also removes them); containers on **overlapping GPUs** are stopped, not removed.
+GPU sets come from `GPU_DEVICES` (profiles without an entry use all GPUs); an unknown
+running container that serves a model is assumed to hold all GPUs. The dry-run plan
+lists every conflict. Composite sub-plans are each computed from the current host state.
 
 Exit codes: `0` ok · `1` usage/precondition · `2` bad argument · `3` probe failed.
 

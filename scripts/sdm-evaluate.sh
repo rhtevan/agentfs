@@ -25,6 +25,11 @@
 #   SDM_ENDPOINT  — Base URL (default: http://localhost:9000)
 #   SDM_MODEL     — Model ID (default: auto-detect)
 #   SDM_TIMEOUT   — Request timeout (default: 10)
+#   SDM_MIN_CONFIDENCE — Flag dimensions below this model confidence (default: 0.7).
+#                   Adds low_confidence:true + "low confidence (x.xx)" to detail and a
+#                   top-level low_confidence_count. Scores are NOT changed. Needed because
+#                   some models (e.g. D3 pooling) always return label_mass=1.0 and
+#                   argmax_is_label=true, so the diagnostics-based checks never fire.
 
 set -euo pipefail
 
@@ -331,6 +336,9 @@ fi
 TIMESTAMP=$(date -Iseconds)
 TOTAL_PASS=0
 TOTAL_DIMS=0
+MIN_CONF="${SDM_MIN_CONFIDENCE:-0.7}"
+LOW_CONF_COUNT=0
+LOW_CONF_NAMES=""
 DIMENSIONS_JSON="[]"
 
 # --- Deterministic overrides -------------------------------------------
@@ -518,6 +526,15 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
     detail="$_ddetail"
   fi
 
+  # Confidence-based reliability flag (model-agnostic; informational, score unchanged)
+  low_conf=false
+  if (( $(echo "$(awk "BEGIN {printf \"%.10f\", $confidence}") < $MIN_CONF" | bc -l) )); then
+    low_conf=true
+    LOW_CONF_COUNT=$((LOW_CONF_COUNT + 1))
+    LOW_CONF_NAMES="${LOW_CONF_NAMES:+$LOW_CONF_NAMES, }$name"
+    detail="${detail:+$detail; }low confidence ($(awk "BEGIN {printf \"%.2f\", $confidence}"))"
+  fi
+
   dim_json=$(jq -n \
     --arg n "$name" \
     --argjson p "$pass" \
@@ -527,7 +544,8 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
     --argjson w "$weight" \
     --argjson lm "$label_mass" \
     --argjson ao "$(echo "$argmax_ok" | jq -R 'if . == "true" then true else false end')" \
-    '{name: $n, pass: $p, score: $s, confidence: $c, detail: $d, weight: $w, label_mass: $lm, argmax_is_label: $ao}')
+    --argjson lc "$low_conf" \
+    '{name: $n, pass: $p, score: $s, confidence: $c, detail: $d, weight: $w, label_mass: $lm, argmax_is_label: $ao, low_confidence: $lc}')
 
   DIMENSIONS_JSON=$(echo "$DIMENSIONS_JSON" | jq --argjson d "$dim_json" '. + [$d]')
 
@@ -567,6 +585,7 @@ RECORD=$(jq -n \
   --argjson pass_rate "$PASS_RATE" \
   --argjson total_dims "$TOTAL_DIMS" \
   --argjson total_pass "$TOTAL_PASS" \
+  --argjson low_conf "$LOW_CONF_COUNT" \
   '{
     skill: $skill,
     schema_type: $schema_type,
@@ -577,6 +596,7 @@ RECORD=$(jq -n \
     pass_rate: $pass_rate,
     dimensions_total: $total_dims,
     dimensions_passed: $total_pass,
+    low_confidence_count: $low_conf,
     dimensions: $dims
   }')
 
@@ -609,4 +629,7 @@ if [[ "$SCHEMA_TYPE" == "operable" ]]; then
   fi
 fi
 
+if (( LOW_CONF_COUNT > 0 )); then
+  log "WARNING: $LOW_CONF_COUNT dimension(s) below confidence $MIN_CONF: $LOW_CONF_NAMES — treat these scores as uncertain"
+fi
 log "Evaluation complete: $SKILL_NAME — $AGGREGATE ($BAND) [$TOTAL_PASS/$TOTAL_DIMS passed]"

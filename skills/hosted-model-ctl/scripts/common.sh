@@ -298,6 +298,48 @@ probe_port_holders() {
     '$1 ~ /^model-/ && $2=="running" && $1!=x && index(" " $4 " ", p) {print $1}' <<< "$PROBE_PS"
 }
 
+# ── GPU mutual exclusion (7.15.0) ─────────────────────────────
+# profile_gpus PROFILE → GPU subset from GPU_DEVICES (e.g. "2,3") or "all"
+profile_gpus() { echo "${GPU_DEVICES[$1]:-all}"; }
+
+# gpus_overlap A B → 0 when the GPU sets intersect ("all" overlaps everything)
+gpus_overlap() {
+  [[ "$1" == "all" || "$2" == "all" ]] && return 0
+  local g
+  for g in ${1//,/ }; do [[ ",$2," == *",$g,"* ]] && return 0; done
+  return 1
+}
+
+# container_profile NAME → non-composite profile whose CONTAINER is NAME (empty if none).
+# Reads DEPLOY_PROFILES directly so the caller's parsed-profile globals are not clobbered.
+container_profile() {
+  local p c
+  for p in "${!DEPLOY_PROFILES[@]}"; do
+    IFS='|' read -r _ c _ <<< "${DEPLOY_PROFILES[$p]}"
+    [[ "$c" == "$1" ]] && { echo "$p"; return 0; }
+  done
+  return 0
+}
+
+# probe_gpu_holders PROFILE [EXCLUDE] → "name|gpus" for running model containers (from
+# PROBE_PS) whose GPU set overlaps PROFILE's. A running non-profile container that serves
+# a model (--model in its command) is assumed to hold all GPUs. Non-model containers
+# (e.g. the Skupper router) are ignored.
+probe_gpu_holders() {
+  local mine name state cmd p theirs
+  mine=$(profile_gpus "$1")
+  while IFS='|' read -r name state _ cmd; do
+    [[ "$name" == model-* && "$state" == "running" && "$name" != "${2:-}" ]] || continue
+    p=$(container_profile "$name")
+    if [[ -n "$p" ]]; then theirs=$(profile_gpus "$p")
+    elif [[ " $cmd " == *" --model "* ]]; then theirs="all"
+    else continue
+    fi
+    gpus_overlap "$mine" "$theirs" && echo "$name|$theirs"
+  done <<< "$PROBE_PS"
+  return 0
+}
+
 # api_model_ids HOST PORT → model ids served on HOST:PORT; returns 1 if the API does not answer
 api_model_ids() {
   local host="$1" port="$2" body

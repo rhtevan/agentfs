@@ -54,9 +54,30 @@ value. QOO qualification must be tier-aware.
 | Tier | Model Class | Min. Capability | Characteristics |
 |------|------------|-----------------|-----------------|
 | **T1** | Any model (8B+) | Basic instruction following | Script-driven, ≤3 steps, no judgment. Model is a shell invoker. |
-| **T2** | Mid-range (14B+) | Structured reasoning | Scripts do heavy lifting, model follows a recipe. Conditionals are simple if/else. Some multi-mode dispatch. |
-| **T3** | Strong (30B+) | Moderate judgment | Conditional workflows with interpretation, domain context, diagnostic reasoning. May require multi-hop inference. |
+| **T2** | Self-hostable mid-range: open-weight, ≥14B, fits the **rhel-ai baseline** (4× NVIDIA L4, ~21.4 GiB usable each at 0.95 util) with ≥64K context | Structured reasoning | Scripts do heavy lifting, model follows a recipe. Conditionals are simple if/else. Some multi-mode dispatch. |
+| **T3** | Strong, non-frontier, **not** hostable on the rhel-ai baseline (open-weight >rhel-ai capacity, or closed mid-tier) | Moderate judgment | Conditional workflows with interpretation, domain context, diagnostic reasoning. May require multi-hop inference. |
 | **T4** | Frontier only | Creative/analytical | Multi-mode dispatch, generative output, evaluation/judgment-heavy, complex compositional reasoning. |
+
+> **Tier definition change (2026-11-16).** T2 was "Mid-range (14B+)" and
+> T3 "Strong (30B+)". T2 is now defined by *deployability*: a T2 pass
+> means AgentFS rules hold on models you can host on your own hardware.
+> rhel-ai is a sizing baseline only — nothing is deployed there for
+> classification. Fit = weights/GPU + KV cache at 64K + ~2 GiB runtime
+> overhead ≤ usable VRAM, with kernel padding where known (e.g. MXFP4
+> Marlin pads +14% on Ada). Within a tier, pick representatives near
+> the tier floor so a pass is not inflated by an over-strong model.
+
+### Tier Representatives (Corp provider, `custom_corp`)
+
+Used by `update-compliance.sh --tier Tx` (source of truth:
+`agentfs-setup/compliance-profile.yaml` → `representatives`).
+
+| Tier | Model | Why |
+|------|-------|-----|
+| T4 | `claude-sonnet-5.5` | Current frontier |
+| T3 | `NVIDIA-Nemotron-3-Super-120B-A12B-BF16` (serves FP8) | 2026 agentic-tuned, 12B active; 32.1 GiB/GPU at TP4 — not rhel-ai hostable |
+| T2 | `nvidia-nemotron-3-nano-30b-a3b-fp8-ga` | 30B (3B active), fits 2× L4 (TP2) at 64K (17.4 GiB/GPU). Replaced `gpt-oss-20b` 2026-11-17 (Corp harmony tool-call corruption) |
+| T1 | `granite-4.1-8b` | Reference only (T1 compliance is not a goal) |
 
 ### Classification Axes
 

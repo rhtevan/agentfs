@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # setup.sh — Deploy a deployment profile
 # Usage: bash setup.sh [--dry-run] PROFILE
+# Mutual exclusion: stops+removes containers on the same port; stops containers on overlapping GPUs.
 # Idempotent: removes existing container before creating.
 # All deployments go through profiles — no individual model aliases.
 #
@@ -55,6 +56,15 @@ echo
 # Probe host state — fail closed: ssh or podman failure aborts (exit 3), no changes.
 probe_or_fail "$PROFILE_HOST" "$DRY_RUN"
 
+# GPU conflicts that are not already port holders (port holders are stopped + removed below)
+gpu_only_holders() {
+  local ports
+  ports=$(probe_port_holders "$PORT" "$CONTAINER")
+  probe_gpu_holders "$PROFILE" "$CONTAINER" | while IFS='|' read -r n g; do
+    grep -qxF "$n" <<< "$ports" || echo "$n|$g"
+  done
+}
+
 if $DRY_RUN; then
   drift=$(profile_drift)
   served=""
@@ -78,6 +88,9 @@ if $DRY_RUN; then
   while read -r holder; do
     [[ -n "$holder" ]] && echo "  - stop + remove $holder (holds port $PORT)"
   done < <(probe_port_holders "$PORT" "$CONTAINER")
+  while IFS='|' read -r gh gg; do
+    [[ -n "$gh" ]] && echo "  - stop $gh (GPUs $gg overlap $(profile_gpus "$PROFILE"))"
+  done < <(gpu_only_holders)
   state=$(probe_state "$CONTAINER")
   [[ "$state" != "absent" ]] && echo "  - remove existing $CONTAINER ($state)"
   echo "  - podman run $CONTAINER: $IMAGE --model $MODEL_ID TP=$TP ctx=$CONTEXT port=$PORT ${EXTRA}"
@@ -100,6 +113,18 @@ run_on_host "$PROFILE_HOST" "
     fi
   done
 " || true
+# GPU mutual exclusion: stop (do not remove) containers whose GPUs overlap this profile.
+# Without this, a profile on a GPU subset would start next to a container using all GPUs → OOM.
+while IFS='|' read -r gh gg; do
+  [[ -z "$gh" ]] && continue
+  echo "Stopping $gh (GPUs $gg overlap $(profile_gpus "$PROFILE"))"
+  g_rc=0
+  g_out=$(run_on_host "$PROFILE_HOST" "podman stop $gh 2>&1") || g_rc=$?
+  if (( g_rc != 0 )); then
+    echo "❌ podman stop $gh failed (exit $g_rc): $g_out" >&2
+    exit "$g_rc"
+  fi
+done < <(gpu_only_holders)
 # Also stop by container name in case it exists but is not running
 run_on_host "$PROFILE_HOST" "podman rm -f $CONTAINER 2>/dev/null" || true
 

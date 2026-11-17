@@ -54,6 +54,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")"; pwd)"
 SEED_SCRIPT="$SCRIPT_DIR/seed-agents-md.sh"
 SKILL_FILE="$SCRIPT_DIR/../SKILL.md"
 
+# Reject option-like or extra arguments. Previously any $1 was taken as
+# PROJECT_DIR, so e.g. '--dry-run' became a path with no AGENTS.md and
+# triggered initial setup (seed-agents-md.sh) on it. This script has no
+# dry-run mode.
+if [[ $# -gt 1 ]]; then
+  echo "[sync-agents-md] ERROR: too many arguments (usage: sync-agents-md.sh [PROJECT_DIR])" >&2
+  exit 2
+fi
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  -*) echo "[sync-agents-md] ERROR: unknown option '$1' (this script has no options; usage: sync-agents-md.sh [PROJECT_DIR])" >&2; exit 2 ;;
+esac
 PROJECT_DIR="${1:-$(pwd)}"
 AGENTS="$PROJECT_DIR/AGENTS.md"
 
@@ -238,14 +250,16 @@ if [[ -f "$COMPLIANCE_PROFILE" ]]; then
       echo "[sync-agents-md] ⚠️  Compliance profile is STALE — rules changed"
       echo "[sync-agents-md]    Profile: ${PROFILE_HASH} (v${PROFILE_VERSION})"
       echo "[sync-agents-md]    Current: ${CURRENT_HASH} (v${TEMPLATE_VERSION})"
-      echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T4"
-      echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T2"
+      echo "[sync-agents-md]    Run (from a project repo, one tier at a time):"
+      echo "[sync-agents-md]      bash ~/.agents/scripts/update-compliance.sh --tier T4 --runs 5"
+      echo "[sync-agents-md]      bash ~/.agents/scripts/update-compliance.sh --tier T3 --runs 5"
+      echo "[sync-agents-md]      bash ~/.agents/scripts/update-compliance.sh --tier T2 --runs 5"
     fi
   elif [[ "$PROFILE_VERSION" != "$TEMPLATE_VERSION" ]]; then
     # Pre-1.1 profile, or AGENTS.md unreadable — fall back to versions.
     echo ""
     echo "[sync-agents-md] ⚠️  Compliance profile may be STALE (v${PROFILE_VERSION} ≠ v${TEMPLATE_VERSION})"
     echo "[sync-agents-md]    No rules hash available — cannot tell if rules changed."
-    echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --tier T4"
+    echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --check"
   fi
 fi

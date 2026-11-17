@@ -2,6 +2,29 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 10:08
+- F7 scope expanded: contract file, normalize, exact-allow/loose-explain hooks, boundary checks (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 09:53
+- Queue F7: KGM extension name contract (approved) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 08:29
+- T2 representative -> nemotron-3-nano-ga (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 08:26
+- F2 resolved: T2 nano baseline; F6 severity corrected (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- F2 resolved: T2 nano baseline; F6 severity corrected (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-11-16 23:13
+- Add follow-up F6: sync-agents-md staleness check skipped when up to date (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-16 23:09
+- dry-run-and-compliance-plan.md: B.1 delivered (t_r7dry), status corrected, Phase D.2 update, follow-ups F1-F5 (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- benchmark-results.md: v5 Corp tier baselines after Rule 7 fail-closed (T4 100%, T3 76%, T2 60%), findings and harness changes (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-11-16 22:30
+- Redefine T2 as rhel-ai-hostable (≥14B, ≥64K) and T3 as strong non-hostable; add Corp tier representatives (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
 ## 2026-11-16 18:38
 - D3 dedicated SDM results (TP=4 32K, language-model-only CUDA graphs, latency, AgentFS ground truth 120/122 vs 109/122); base model correction (knowledge/llm-inference-constrained-gpu/d3-decision-model-deployment.md)
 

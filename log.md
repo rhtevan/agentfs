@@ -2,6 +2,168 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 17:13
+- post-write backfill for the v7.15.0 GPU mutual-exclusion change (common.sh helpers; setup.sh/start.sh GPU-overlap conflicts) — no code change (skills/hosted-model-ctl/scripts/start.sh)
+- post-write backfill for the v7.15.0 GPU mutual-exclusion change (common.sh helpers; setup.sh/start.sh GPU-overlap conflicts) — no code change (skills/hosted-model-ctl/scripts/setup.sh)
+- post-write backfill for the v7.15.0 GPU mutual-exclusion change (common.sh helpers; setup.sh/start.sh GPU-overlap conflicts) — no code change (skills/hosted-model-ctl/scripts/common.sh)
+- sync-agents-md: reject extra/option-like args (exit 2), add --help; '--dry-run' no longer treated as PROJECT_DIR [backfill] (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-11-17 17:12
+- sdm-evaluate: SDM_MIN_CONFIDENCE (default 0.7) low-confidence flag per dimension + low_confidence_count; scores unchanged [backfill] (scripts/sdm-evaluate.sh)
+- README: version references v7.10.0 -> v7.12.1 (Structural Rules, template stamp) [backfill: post-write missed at edit time] (README.md)
+- compliance profile: output_dir paths rewritten to ~-relative (no /home/`<user>`) (skills/agentfs-setup/compliance-profile.yaml)
+- update-compliance: store output_dir as ~-relative (pre-push hardcoded-path finding) (scripts/update-compliance.sh)
+
+## 2026-11-17 17:04
+- compliance profile: T4/T3/T2 recorded at rules 121f7b47 (7.12.1), harness 63d657f4a421, 49-run parallel campaign 20261117_161414 (skills/agentfs-setup/compliance-profile.yaml)
+- benchmark: PROVIDER_ERR_RE covers Network/Stream decode/Authentication errors (retry live, exclude on regrade) (scripts/benchmark.sh)
+
+## 2026-11-17 16:14
+- benchmark: r7dry_lines counts only executions of apply-demo.sh (cat no longer = apply); t_r4s reason order (dry-run branch first) (scripts/benchmark.sh)
+
+## 2026-11-17 15:52
+- update-compliance.sh: 49-run defaults (cap 5, sized per rule), R6=t_r6, flock on profile write (scripts/update-compliance.sh)
+- benchmark.sh parallel-safe: t_r3+t_r7 merged into t_r6, BENCHMARK_SCRATCH_DIR, leak attribution by transcript, session_evidence filtered by provider+model (scripts/benchmark.sh)
+
+## 2026-11-17 15:19
+- compliance-profile: archive T4 v6 entry (rules hash cec986ad63df6117) before 7.12.1 restart (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 15:11
+- agentfs-setup 7.12.1 (skills/agentfs-setup/SKILL.md)
+- Rule 1 step 2: defer only the session reads; canary stays first line on turn 1 (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-17 14:24
+- agentfs-setup 7.12.0: R1 ordering clarified (skills/agentfs-setup/SKILL.md)
+- Rule 1 step 2: search_nodes is the FIRST tool call, before session-start reads (SOUL.md, R3 USER.md) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-17 14:23
+- update-compliance.sh: drop legacy t_r4/t_r4c diagnostic names (scripts/update-compliance.sh)
+- benchmark.sh cleanup: drop dead t2..t8 + sentinel default, test groups (compliance/soul/qoo/all), remove t_r4/t_r4c aliases, evidence hook_blocks/first_tool from session DB (scripts/benchmark.sh)
+
+## 2026-11-17 14:02
+- compliance-profile: T4 claude-sonnet-5.5 re-recorded 92% (R4 reclassified, t_r2git grader fix, harness_sha 1773543b644b) (skills/agentfs-setup/compliance-profile.yaml)
+- update-compliance.sh: R4=t_r4x+t_r4s+t_ii; t_r3c_* R3 diagnostics excluded from totals; dry-run PENDING when harness_sha differs (scripts/update-compliance.sh)
+- benchmark.sh: R4 reclassified — new t_r4s (skip dry-run vs R7), canary-conflict tests renamed t_r3c_implicit/t_r3c_explicit (t_r4/t_r4c legacy aliases) (scripts/benchmark.sh)
+
+## 2026-11-17 13:48
+- benchmark.sh: t_r2git confirm regex accepts 'Reply/say/type X to push/go/yes' (5 false FAILs on T4) (scripts/benchmark.sh)
+- compliance-profile: T4 claude-sonnet-5.5 recorded under harness v6 (83%, regrade of 85 runs incl. R4 explicit tests) (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 13:47
+- update-compliance.sh: R4 = t_r4c+t_r4x+t_ii; t_r4 reported as diagnostic (not pooled) (scripts/update-compliance.sh)
+- benchmark.sh: R4 explicit-conflict tests t_r4c (skip canary) and t_r4x (direct AGENTS.md edit, evidence r4x_agents_changed) (scripts/benchmark.sh)
+
+## 2026-11-17 13:46
+- compliance-profile: restore comment markers stripped by yaml dump; archive entry re-inserted textually (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 13:25
+- compliance-profile: archive pre-v6 T4/T3/T2 entries (T2 keyring annotation) before harness v6 rerun (skills/agentfs-setup/compliance-profile.yaml)
+- benchmark.sh v6: t_ii resume uses session extensions (fix KGM name collision); multi-turn goose errors graded ERROR; t_r4 reason shows first prose line (scripts/benchmark.sh)
+
+## 2026-11-17 13:13
+- update-compliance.sh v6: 12 default tests, R2 runs x10, per-rule pooling, overall=mean of rule rates (scripts/update-compliance.sh)
+- benchmark.sh v6: frozen harness, evidence footer, --regrade/--runs-override, canary-at-top, new tests t_r4/t_r2git/t_r7dry_conv/t_r7dry_pend (scripts/benchmark.sh)
+
+## 2026-11-17 12:42
+- benchmark.sh: R2 checkers ignore 2>&1 and >/dev/null redirects (false FAILs on read-only probes) (scripts/benchmark.sh)
+
+## 2026-11-17 12:34
+- benchmark.sh: keyring key preload + keyring errors excluded as provider errors; t_r2b realistic 3-file R2 variant (opt-in) (scripts/benchmark.sh)
+
+## 2026-11-17 11:20
+- update-compliance: persistent output dir ~/.local/state/agentfs/benchmarks (AGENTFS_BENCH_DIR) — /tmp evidence lost in 2026-11-17 crash (scripts/update-compliance.sh)
+
+## 2026-11-17 10:47
+- update-compliance: result rows derived from --tests (hardcoded list dropped t_r1); row count must match benchmark Total+Errored; BENCHMARK_OUTPUT_FILE replay mode with BENCHMARK_OUTPUT_DIR (scripts/update-compliance.sh)
+
+## 2026-11-17 10:11
+- benchmark.sh: pristine sandbox reset before every run (incl. retries; re-cd after reset) — fixes cross-run/cross-model contamination of t_r3/t_r7 (scripts/benchmark.sh)
+
+## 2026-11-17 10:08
+- F7 scope expanded: contract file, normalize, exact-allow/loose-explain hooks, boundary checks (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 09:53
+- Queue F7: KGM extension name contract (approved) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 09:47
+- update-compliance --dry-run: CONVERGED requires the tier entry to cover all requested tests (t_r1 gap) (scripts/update-compliance.sh)
+- Representatives: T3 -> glm-5-3, T2 -> Qwen3.8-27B-FP8; prior T3/T2 baselines archived (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 09:38
+- benchmark.sh: pinned extensions (--no-profile, KGM name contract), isolated per-run KGM copy + KGM-write FAIL, system.md rules-hash preflight, t_r1 Signal Dispatch fixture, per-run USER-scope leak guard (quarantine + log restore), BENCHMARK_SANDBOX_DIR (scripts/benchmark.sh)
+- Removed MEMORY.md leaked into USER scope by granite-5-230b screen run (t_r7 scope violation) (memories/MEMORY.md)
+
+## 2026-11-17 09:22
+
+## 2026-11-17 09:13
+- update-compliance: add t_r1 (R1 Signal Dispatch) to default tests and per_rule (scripts/update-compliance.sh)
+
+## 2026-11-17 08:29
+- T2 representative -> nemotron-3-nano-ga (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 08:26
+- fix pooled T2 figure 72% (skills/agentfs-setup/compliance-profile.yaml)
+- F2 resolved: T2 nano baseline; F6 severity corrected (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- F2 resolved: T2 nano baseline; F6 severity corrected (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-11-17 08:25
+- T2 nano official baseline 60%; evolution note updated (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 08:15
+- F2: T2 representative -> nemotron-3-nano-ga; gpt-oss-20b T2 baseline archived (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-16 23:13
+- Add follow-up F6: sync-agents-md staleness check skipped when up to date (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- update-compliance --check: show runs_per_test instead of runs=None (scripts/update-compliance.sh)
+
+## 2026-11-16 23:10
+- sync-agents-md.sh: reject option-like/extra args (exit 2) — '--dry-run' was taken as PROJECT_DIR and triggered initial setup (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-11-16 23:09
+- dry-run-and-compliance-plan.md: B.1 delivered (t_r7dry), status corrected, Phase D.2 update, follow-ups F1-F5 (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- benchmark-results.md: v5 Corp tier baselines after Rule 7 fail-closed (T4 100%, T3 76%, T2 60%), findings and harness changes (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- compliance-profile.yaml: Corp baselines recorded (T4 100%, T3 76%, T2 60% — below target, serving confound noted); evolution note (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-16 22:54
+- update-compliance.sh: provider errors (429/server) discarded+retried with backoff (outcome-blind); persistent errors excluded from pass rate (scripts/update-compliance.sh)
+- benchmark.sh: provider errors (429/server) discarded+retried with backoff (outcome-blind); persistent errors excluded from pass rate (scripts/benchmark.sh)
+
+## 2026-11-16 22:37
+- benchmark.sh: t_r3 requires post-write.sh in a tool call; t_r7 checks scope on the filesystem; sandbox git output silenced (scripts/benchmark.sh)
+
+## 2026-11-16 22:32
+- benchmark.sh: t_r2 resets scratch dir per run; act detection counts only mutating tool calls (scripts/benchmark.sh)
+
+## 2026-11-16 22:31
+- compliance-profile.yaml schema 1.2: tier_definitions, representatives (custom_corp), required_tiers, old T4/T2 moved to archived_baselines (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-16 22:30
+- Redefine T2 as rhel-ai-hostable (≥14B, ≥64K) and T3 as strong non-hostable; add Corp tier representatives (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- sync-agents-md.sh: stale-profile hint lists T4/T3/T2 runs (update-compliance.sh now supports T1-T4) (skills/agentfs-setup/scripts/sync-agents-md.sh)
+- update-compliance.sh: T1-T4 tiers, representatives from profile, writes validated_tiers, per-tier rules hash, --dry-run, R7 test mapping (scripts/update-compliance.sh)
+
+## 2026-11-16 22:28
+- benchmark.sh: opus default, no $HOME CWD fallback, t_r7dry Rule 7 test, stricter t_r2, ID-diff session cleanup (scripts/benchmark.sh)
+
+## 2026-11-16 22:26
+- Removed USER.md leaked into USER scope by benchmark run with $HOME CWD fallback (memories/USER.md)
+
+## 2026-11-16 20:16
+- sdm-evaluate.sh: low-confidence flag (SDM_MIN_CONFIDENCE, default 0.7) — per-dimension low_confidence + detail note, top-level low_confidence_count, stderr WARNING; scores unchanged (D3 diagnostics are constant) (scripts/sdm-evaluate.sh)
+
+## 2026-11-16 20:15
+- SKILL.md: document GPU mutual exclusion in the Dry-Run Contract; version 7.15.0 (skills/hosted-model-ctl/SKILL.md)
+- start.sh: conflicts = port holders ∪ GPU-overlap holders (dry-run plan and apply) (skills/hosted-model-ctl/scripts/start.sh)
+
+## 2026-11-16 20:14
+- setup.sh: GPU mutual exclusion — dry-run plan lists GPU-overlap conflicts; apply stops (not removes) them with checked podman stop (skills/hosted-model-ctl/scripts/setup.sh)
+- common.sh: GPU mutual exclusion helpers — profile_gpus, gpus_overlap, container_profile, probe_gpu_holders (unknown model containers assumed to hold all GPUs) (skills/hosted-model-ctl/scripts/common.sh)
+- README version references 7.10.0 → 7.11.0 (sync-readme-version after Rule 7 template change) (README.md)
+
+## 2026-11-16 20:13
+- Version 7.10.0 → 7.11.0 for the Rule 7 template change (skills/agentfs-setup/SKILL.md)
+- AGENTS.md template Rule 7 (Dry-Run Gate) fail-closed: any other signal (e.g. UNKNOWN), no signal, or non-zero exit → STOP and report, never apply (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-11-16 20:02
 - pre-push allowlist: accept SSH host aliases rhel-ai/rhtevan-work in hosted-model/skupper skill and knowledge files (user-approved 2026-11-16) (.pre-push-allowlist)
 - README: Structural Rules table adds Rule 7 Dry-Run Gate (D5 drift); version references 7.9.4 → 7.10.0 (D6 drift) (README.md)

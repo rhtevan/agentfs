@@ -2,14 +2,15 @@
 title: Dry-Run Pattern Adoption & AgentFS Compliance Profile
 parent: agentfs-engineering-evolution
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-16
 tags: [dry-run, cqs, compliance, benchmark, agentfs, action-plan]
 ---
 
 # Dry-Run Pattern Adoption & AgentFS Compliance Profile
 
 - **Type:** Action Plan
-- **Status:** STABLE PAUSE — Obj 1 Phases 1+2+3A+3B(partial) complete, Obj 2 complete. 30/66 Command scripts have --dry-run (45%). Remaining 36 are low-priority (internal tooling or rarely agent-invoked). Resume on-demand when individual scripts are next touched.
+- **Status:** STABLE PAUSE — Obj 1 Phases 1+2+3A+3B(partial) complete, Obj 2 B.1 was NOT built (status corrected 2026-11-16) — now complete. 30/66 Command scripts have --dry-run (45%). Remaining 36 are low-priority (internal tooling or rarely agent-invoked). Resume on-demand when individual scripts are next touched.
+- **Update 2026-11-16:** Phase D.2 triggered by Rule 7 fail-closed change. B.1 delivered as `t_r7dry`; Corp tier baselines recorded (T4 100%, T3 76%, T2 60% — below ≥90% target). See benchmark-results.md v5 and Follow-ups below.
 - **Depends on:** QOO qualification (complete), benchmark harness v2 (active)
 - **Risk constraint:** No degradation of current AGENTS.md compliance
   profile (Frontier 100%, Qwen3-14B 93%)
@@ -368,9 +369,9 @@ Update procedure:
 
 | Step | Action | Deliverable |
 |:----:|--------|-------------|
-| B.1 | Add T10 test for `--dry-run` interpretation (Phase 1 dependency) | Test script |
+| B.1 | ✅ (2026-11-16) Add T10 test for `--dry-run` interpretation — delivered as `t_r7dry` in benchmark.sh | Test script |
 | B.2 | Add `--output-yaml` mode to benchmark.sh | Machine-readable output |
-| B.3 | Create `update-compliance.sh` that runs harness → updates YAML | Automation script |
+| B.3 | ✅ Create `update-compliance.sh` that runs harness → updates YAML (2026-11-16: fixed — it previously wrote no tier data) | Automation script |
 | B.4 | Document minimum run count per tier (≥5 for stochastic models) | Convention doc |
 
 #### ~~Phase C — T1 Benchmark~~ (REMOVED)
@@ -440,3 +441,18 @@ architecturally known.
 | SDM rescoring clobbers manual Build corrections | QOO regression | Re-apply corrections after each rescore (known pattern) |
 | T1 model benchmark reveals AGENTS.md is T2+ only | No T1 compatibility | Acceptable — documents the real boundary |
 | Deprecated `--check` alias confusion | Agent calls `--check` from memory | One release cycle, then remove |
+
+---
+
+## Follow-ups (2026-11-16)
+
+| # | Item | Why |
+|:-:|------|-----|
+| F1 | **R2 Pre-Flight rule wording** — propose a CNL fix (e.g. explicit "creating ≥2 files counts") and re-benchmark | Fails across all non-frontier tiers, non-monotonic with capability |
+| F2 | ✅ **Resolved 2026-11-17** — T2 representative swapped to nemotron-3-nano-ga; official run 60% (screen 84%; pooled 72%). gpt-oss-20b baseline archived | Measures rules, not serving corruption |
+| F3 | **Unify compliance pipelines** — `update-compliance.sh` (compliance-profile.yaml) and agentfs-eval Tier 3 QOO (scores.yaml) measure the same thing with different test sets | Two records, divergent numbers |
+| F4 | `goose-recipe-session-cleanup/delete.sh` leaves orphan rows in `thread_messages` / `session_tags` | Found while implementing benchmark session cleanup |
+| F5 | Canary check accepts non-word canaries (`2953-9218`, `hello-world`); R5 Checkpoint has no test | Coverage gaps |
+
+| F6 | `sync-agents-md.sh` compliance staleness check runs only after a real sync — the script exits 0 at "already up to date" (lines 80/119) before the check (~line 232), so the warning fires once (on the first project synced after a template bump, which Rule 5 step 4 mandates) and is never repeated if ignored | Low: one-shot warning, no nag (severity corrected 2026-11-17) |
+| F7 | **KGM name contract** (approved 2026-11-17, scope expanded) — prefix is user-chosen (verified `kgmtest:` → `kgmtest__search_nodes`). (1) single source of truth `~/.agents/scripts/agentfs-contract.sh` (`KGM_EXT_KEY`, `KGM_INDEX`) sourced by all 10 scripts + lint forbidding the literal elsewhere; (2) goose-kgm normalize with `--dry-run`: identify the KGM entry by identity (server-memory + AgentFS index), rename to canonical key, disable duplicates; (3) hooks: exact match to allow, `*__search_nodes` only to deny with a diagnostic naming the fix; (4) boundary checks in kgm status, agentfs-eval, `hey sync goose agentfs`, SessionStart log; first verify whether goose derives the prefix from config key or `name` field. ~12 files; Rule 5 checkpoint + Rule 2 Tier 2 | A renamed KGM extension deadlocks every `hey` dispatch with no diagnostic |
