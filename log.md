@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 16:03
+- verify-config.sh: counters use PASS=$((PASS+1)); ((PASS++)) returned 1 at zero and set -e aborted after the first check (skills/goose-maas-provider/scripts/verify-config.sh)
+- goose-maas-provider v1.5.1: keyring checks by full attributes, names only (no secret output)
+- SKILL.md: key verification lists key names only; secret-tool search printed secret values (skills/goose-maas-provider/SKILL.md)
+- verify-config.sh: check MAAS key in goose's rust-keyring item by full attributes (search matched stale revoked copies) (skills/goose-maas-provider/scripts/verify-config.sh)
+
 ## 2026-11-18 16:02
 - crc-ols v3.8.1: add-provider.sh keyring lookup by full rust-keyring attributes
 - add-provider.sh: read goose's rust-keyring item by full attributes; service-only lookup matched 3 items and could return an empty key, silently skipping model validation (skills/crc-ols/scripts/add-provider.sh)

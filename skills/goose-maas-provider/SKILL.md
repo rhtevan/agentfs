@@ -4,7 +4,7 @@ description: >
   configure goose maas, goose maas provider, goose remote provider
 platforms: ['linux']
 metadata:
-  version: "1.5.0"
+  version: "1.5.1"
   model-tier: T4
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
   related_skills: [goose-litellm-provider, litellm-proxy-status]
@@ -278,10 +278,12 @@ the key interactively.
 ### Verifying the Key
 
 ```bash
-secret-tool search service goose 2>/dev/null | grep CUSTOM_MAAS
+secret-tool lookup application rust-keyring service goose target default username secrets \
+  | jq -r 'keys[]'
 ```
 
-This should show the key is present in the keyring.
+This lists key **names** only — `CUSTOM_MAAS_API_KEY` should appear.
+Never use `secret-tool search`: it prints secret values.
 
 ### Key Not Found on Session Restore
 
@@ -492,7 +494,7 @@ echo "     active_provider: custom_maas"
 - [ ] `"timeout_seconds": 300` (not `null`)
 - [ ] `config.yaml` has `custom_maas` in `providers:` with `enabled: true` and `model: llama-scout-17b`
 - [ ] `config.yaml` has `GOOSE_TOOLSHIM: true` (required for tool calls)
-- [ ] API key stored in GNOME Keyring (`secret-tool search service goose`)
+- [ ] API key stored in GNOME Keyring (`secret-tool lookup application rust-keyring service goose target default username secrets | jq -r 'keys[]'`)
 - [ ] Endpoint reachable: `curl -s -o /dev/null -w "%{http_code}" <base_url>` → 200
 - [ ] Auth works: `curl <base_url>/v1/models -H "Authorization: Bearer <key>"` → model list
 - [ ] Tool calls work: model calls tools by short names, goose maps them correctly

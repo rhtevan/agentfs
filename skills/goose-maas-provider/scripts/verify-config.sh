@@ -19,9 +19,9 @@ PASS=0
 FAIL=0
 WARN=0
 
-check_pass() { echo "  ✅ $1"; ((PASS++)); }
-check_fail() { echo "  ❌ $1"; ((FAIL++)); }
-check_warn() { echo "  ⚠️  $1"; ((WARN++)); }
+check_pass() { echo "  ✅ $1"; PASS=$((PASS+1)); }
+check_fail() { echo "  ❌ $1"; FAIL=$((FAIL+1)); }
+check_warn() { echo "  ⚠️  $1"; WARN=$((WARN+1)); }
 
 echo "MaaS Provider Configuration Verification"
 echo "═════════════════════════════════════════"
@@ -142,7 +142,8 @@ fi
 
 # 4. API key in keyring
 if command -v secret-tool &>/dev/null; then
-  if secret-tool search service goose 2>/dev/null | grep -q 'CUSTOM_MAAS'; then
+  if secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null \
+      | jq -e '.CUSTOM_MAAS_API_KEY // empty' >/dev/null 2>&1; then
     check_pass "API key found in GNOME Keyring"
   else
     check_warn "API key not found in GNOME Keyring — run 'goose configure' to store"
