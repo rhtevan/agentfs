@@ -2,6 +2,27 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 19:15
+- F10 fixed: cleanup leak root cause WAL lock contention (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 19:06
+- 7.13.0 status; F8 recorded; F9 R7 guard hook, F10 cleanup gap (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Tier table: T3/T2 100% at 7.13.0 (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 19:02
+- benchmark-results: v7.13.0 campaign (R4 wording + preflight hook) — all tiers 100%, hook-denial audit (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-11-17 17:55
+- benchmark-results: JIT-Reminder R2 hook validation addendum (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- dry-run plan: F8 preflight-reminder built + validated (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 17:25
+- dry-run plan: 2026-11-17 status (D.2 working, 7.12.1 campaign results, gate identities), F2 superseded, F8 JIT-Reminder R2 hook (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- qoo plan: tier representatives T3 glm-5-3 (96%), T2 Qwen3.8-27B-FP8 (87%); gemma rejected (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 17:24
+- benchmark-results: v7.12.1 uniform parallel campaign (results, decisions, findings, harness v6 changes) (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
 ## 2026-11-17 10:08
 - F7 scope expanded: contract file, normalize, exact-allow/loose-explain hooks, boundary checks (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

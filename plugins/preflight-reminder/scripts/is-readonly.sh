@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# preflight-reminder: classify a shell command. Exit 0 = read-only, 1 = mutating.
+# Conservative: anything not recognised as read-only counts as mutating
+# (the cost of a false "mutating" is one extra reminder; never a skipped one).
+set -uo pipefail
+cmd="$1"
+# Output redirection to a file (not fd dup, not /dev/null) mutates.
+stripped="$(printf '%s' "$cmd" | sed -E 's/[0-9]?>&[0-9]//g; s#[0-9]?>>? */dev/null##g')"
+printf '%s' "$stripped" | grep -qE '(^|[^<])>' && exit 1
+# Exempt AgentFS bookkeeping (Rule 6 post-write, Rule 5 checkpoint).
+printf '%s' "$cmd" | grep -qE '(post-write|checkpoint)\.sh' && exit 0
+RO=" cat head tail less more ls ll tree find fd rg grep egrep fgrep ag wc stat file du df pwd echo printf which type command whoami id date env printenv hostname uname jq yq sort uniq cut tr awk column diff cmp sha256sum md5sum basename dirname realpath readlink test true false cd sleep ps pgrep ss lsof nproc free uptime journalctl systemctl-status "
+# Split on ; && || | and newlines into segments; check each command word.
+while IFS= read -r seg; do
+  seg="$(printf '%s' "$seg" | sed -E 's/^[[:space:]]*(\(|\{)?[[:space:]]*//; s/^([A-Za-z_][A-Za-z0-9_]*=[^ ]* +)*//')"
+  [[ -z "$seg" ]] && continue
+  w1="${seg%% *}"; rest="${seg#"$w1"}"; rest="${rest# }"
+  w2="${rest%% *}"
+  case "$w1" in
+    sed) printf '%s' "$rest" | grep -qE '(^| )-[a-zA-Z]*i' && exit 1; continue ;;
+    awk) printf '%s' "$rest" | grep -qE 'inplace|system\(' && exit 1; continue ;;
+    find) printf '%s' "$rest" | grep -qE -- '-(delete|exec|execdir|ok)\b' && exit 1; continue ;;
+    git) case "$w2" in status|diff|log|show|branch|rev-parse|ls-files|ls-remote|remote|config|describe|blame|grep|shortlog|reflog|cat-file|for-each-ref|"") 
+           [[ "$w2" == branch && "$rest" =~ (-d|-D|-m|-M|--delete) ]] && exit 1
+           [[ "$w2" == remote && "$rest" =~ (add|remove|rm|rename|set-url) ]] && exit 1
+           [[ "$w2" == config && ! "$rest" =~ (--get|--list|-l) ]] && exit 1
+           continue ;; *) exit 1 ;; esac ;;
+    systemctl) case "$w2" in status|is-active|is-enabled|list-units|show|cat) continue ;; *) exit 1 ;; esac ;;
+    sqlite3) printf '%s' "$rest" | grep -qiE '\b(insert|update|delete|drop|create|alter|replace)\b' && exit 1; continue ;;
+  esac
+  [[ "$RO" == *" $w1 "* ]] || exit 1
+done < <(printf '%s\n' "$cmd" | sed -E 's/(\&\&|\|\||;|\|)/\n/g')
+exit 0

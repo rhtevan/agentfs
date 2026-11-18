@@ -11,6 +11,8 @@ tags: [dry-run, cqs, compliance, benchmark, agentfs, action-plan]
 - **Type:** Action Plan
 - **Status:** STABLE PAUSE — Obj 1 Phases 1+2+3A+3B(partial) complete, Obj 2 B.1 was NOT built (status corrected 2026-11-16) — now complete. 30/66 Command scripts have --dry-run (45%). Remaining 36 are low-priority (internal tooling or rarely agent-invoked). Resume on-demand when individual scripts are next touched.
 - **Update 2026-11-16:** Phase D.2 triggered by Rule 7 fail-closed change. B.1 delivered as `t_r7dry`; Corp tier baselines recorded (T4 100%, T3 76%, T2 60% — below ≥90% target). See benchmark-results.md v5 and Follow-ups below.
+- **Update 2026-11-17:** D.2 staleness works end to end (7.12.0/7.12.1 rule changes flagged every tier STALE). Uniform parallel campaign at rules 7.12.1: T4 claude-sonnet-5.5 100%, T3 glm-5-3 96%, T2 Qwen3.8-27B-FP8 87% (below ≥90%: R2 25%). Gate now tracks harness_sha + writer_sha + hooks_sha. Next: JIT-Reminder R2 hook (F1). See benchmark-results.md "v7.12.1 Campaign".
+- **Update 2026-11-17 (7.13.0):** R4 step 2 wording ("the request itself is not approval. Then stop…") + preflight-reminder hook. Campaign 20261117_180330: T4/T3/T2 all 100% on every scored rule, gate CONVERGED. Scores are system compliance (AGENTS.md + hooks), graded by effect. Ceiling reached: harder tests needed for tier discrimination. Open follow-ups: R7 guard hook (F9, deferred). F10 cleanup leak fixed (WAL lock contention).
 - **Depends on:** QOO qualification (complete), benchmark harness v2 (active)
 - **Risk constraint:** No degradation of current AGENTS.md compliance
   profile (Frontier 100%, Qwen3-14B 93%)
@@ -386,7 +388,7 @@ architecturally known.
 | Step | Action | Deliverable |
 |:----:|--------|-------------|
 | D.1 | Add compliance check to agentfs-setup sync workflow | Pre-sync gate |
-| D.2 | When `seed-agents-md.sh` changes → flag "compliance profile stale" | Warning in log.md |
+| D.2 | When `seed-agents-md.sh` changes → flag "compliance profile stale" | Warning in log.md — ✅ working (2026-11-17); `update-compliance.sh --dry-run` also PENDING on harness/writer/hooks change |
 | D.3 | Document in agentfs-setup SKILL.md: "re-benchmark after template changes" | Convention |
 
 ### Effort Estimate
@@ -449,10 +451,13 @@ architecturally known.
 | # | Item | Why |
 |:-:|------|-----|
 | F1 | **R2 Pre-Flight rule wording** — propose a CNL fix (e.g. explicit "creating ≥2 files counts") and re-benchmark | Fails across all non-frontier tiers, non-monotonic with capability |
-| F2 | ✅ **Resolved 2026-11-17** — T2 representative swapped to nemotron-3-nano-ga; official run 60% (screen 84%; pooled 72%). gpt-oss-20b baseline archived | Measures rules, not serving corruption |
+| F2 | ✅ **Resolved 2026-11-17** — T2 representative swapped to nemotron-3-nano-ga; official run 60% (screen 84%; pooled 72%). gpt-oss-20b baseline archived. **Superseded same day:** 14-model screen → T3 glm-5-3, T2 Qwen3.8-27B-FP8 (87% at 7.12.1); gemma-4-31b-it evaluated, rejected (78%) | Measures rules, not serving corruption |
 | F3 | **Unify compliance pipelines** — `update-compliance.sh` (compliance-profile.yaml) and agentfs-eval Tier 3 QOO (scores.yaml) measure the same thing with different test sets | Two records, divergent numbers |
 | F4 | `goose-recipe-session-cleanup/delete.sh` leaves orphan rows in `thread_messages` / `session_tags` | Found while implementing benchmark session cleanup |
 | F5 | Canary check accepts non-word canaries (`2953-9218`, `hello-world`); R5 Checkpoint has no test | Coverage gaps |
 
 | F6 | `sync-agents-md.sh` compliance staleness check runs only after a real sync — the script exits 0 at "already up to date" (lines 80/119) before the check (~line 232), so the warning fires once (on the first project synced after a template bump, which Rule 5 step 4 mandates) and is never repeated if ignored | Low: one-shot warning, no nag (severity corrected 2026-11-17) |
 | F7 | **KGM name contract** (approved 2026-11-17, scope expanded) — prefix is user-chosen (verified `kgmtest:` → `kgmtest__search_nodes`). (1) single source of truth `~/.agents/scripts/agentfs-contract.sh` (`KGM_EXT_KEY`, `KGM_INDEX`) sourced by all 10 scripts + lint forbidding the literal elsewhere; (2) goose-kgm normalize with `--dry-run`: identify the KGM entry by identity (server-memory + AgentFS index), rename to canonical key, disable duplicates; (3) hooks: exact match to allow, `*__search_nodes` only to deny with a diagnostic naming the fix; (4) boundary checks in kgm status, agentfs-eval, `hey sync goose agentfs`, SessionStart log; first verify whether goose derives the prefix from config key or `name` field. ~12 files; Rule 5 checkpoint + Rule 2 Tier 2 | A renamed KGM extension deadlocks every `hey` dispatch with no diagnostic |
+| F8 | **JIT-Reminder R2 hook** — ✅ built + validated 2026-11-17: plugin `preflight-reminder` 1.0.0 (UserPromptSubmit arms per turn; PreToolUse denies the first *mutating* call — write/edit/non-read-only shell — plus the rest of its parallel batch (2 s window), with a reminder to plan then retry in the same turn; git push still waits). Rule text unchanged. R2 validation (12 runs each): Qwen 3/12 → 12/12, gemma 0/12 → 11/12, all edits completed. benchmark.sh grades the effect (hook-denied blocks dropped, verdict tagged `hook-assisted`). Recorded in the 7.13.0 campaign (all tiers 100%, CONVERGED) | R2 was the only rule below target at T2 |
+| F9 | **R7 guard hook (proposed, not approved)** — PreToolUse deny on a Command-script apply with no prior `--dry-run` in the session, unless the prompt contains `[OVERRIDE]`. Targets gemma-class t_r4s failures (skip the dry-run on request) | Awaiting user decision |
+| F10 | **Session cleanup leak** — ✅ fixed 2026-11-17. Root cause: sessions.db is WAL with busy_timeout=0; T4's cleanup DELETE hit `database is locked` (T3/T2/gemma still writing), stderr was discarded and the session was counted as removed (not a rename issue — cleanup already diffs IDs). Fix in benchmark.sh: `.timeout 15000`, BEGIN IMMEDIATE, verify-after-delete, 3 retries, FAILED ids logged. Reproduced + unit-tested on a scratch DB | Done |

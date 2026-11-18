@@ -3,7 +3,7 @@ name: agentfs-setup
 description: >
   setup agentfs, sync agentfs, upgrade agentfs
 metadata:
-  version: "7.12.1"
+  version: "7.13.0"
   model-tier: T3
   tags: [agentfs, setup, scaffolding, guardrails, sync]
 ---

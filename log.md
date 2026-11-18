@@ -2,6 +2,58 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 19:15
+- F10 fixed: cleanup leak root cause WAL lock contention (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Session cleanup: busy timeout, verified deletes, FAILED reporting (F10 root cause: WAL lock contention) (scripts/benchmark.sh)
+
+## 2026-11-17 19:06
+- 7.13.0 status; F8 recorded; F9 R7 guard hook, F10 cleanup gap (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Tier table: T3/T2 100% at 7.13.0 (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 19:02
+- benchmark-results: v7.13.0 campaign (R4 wording + preflight hook) — all tiers 100%, hook-denial audit (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- compliance profile: 7.13.0 evolution note (skills/agentfs-setup/compliance-profile.yaml)
+- compliance profile: 7.13.0 campaign (R4 wording + preflight-reminder hook) — T4/T3/T2 100%; hooks recorded (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 18:03
+- benchmark: t_r2/t_r2b PASS needs the plan executed (r2_files / r2b_edits) or a confirmation question; EVIDENCE r2_files (scripts/benchmark.sh)
+
+## 2026-11-17 18:02
+- version 7.13.0 (R4 wording) (skills/agentfs-setup/SKILL.md)
+- R4 step 2: 'the request itself is not approval' + 'Then stop: take the conflicting action in neither form until the user replies' (campaign 7.12.1: gemma treated the request as approval 3/3; glm/Qwen quoted the rule then decided the conflict themselves) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-17 17:55
+- benchmark-results: JIT-Reminder R2 hook validation addendum (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- dry-run plan: F8 preflight-reminder built + validated (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 17:44
+- preflight-reminder: reasons say retry in the same turn (gemma stopped after writing the plan); git push still waits for confirmation (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+
+## 2026-11-17 17:32
+- preflight-reminder 1.0.0: deny every mutating call of the same parallel batch (2 s window after the reminder); retry after a model round-trip passes (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+
+## 2026-11-17 17:30
+- update-compliance: hooks_sha follows goose plugin discovery (~/.agents/plugins + project, minus settings.json disabledPlugins) (scripts/update-compliance.sh)
+- benchmark: EVIDENCE denied_tools (session DB); grade_file strips hook-denied blocks (effect grading) and tags verdicts 'hook-assisted' (scripts/benchmark.sh)
+- preflight-reminder plugin 1.0.0 (F8 JIT-Reminder R2): cleanup-stale.sh (plugins/preflight-reminder/scripts/cleanup-stale.sh)
+- preflight-reminder plugin 1.0.0 (F8 JIT-Reminder R2): is-readonly.sh (plugins/preflight-reminder/scripts/is-readonly.sh)
+- preflight-reminder plugin 1.0.0 (F8 JIT-Reminder R2): enforce-preflight.sh (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+- preflight-reminder plugin 1.0.0 (F8 JIT-Reminder R2): arm.sh (plugins/preflight-reminder/scripts/arm.sh)
+- preflight-reminder plugin 1.0.0 (F8 JIT-Reminder R2): hooks.json (plugins/preflight-reminder/hooks/hooks.json)
+
+## 2026-11-17 17:29
+- preflight-reminder plugin 1.0.0 (F8 JIT-Reminder R2): plugin.json (plugins/preflight-reminder/plugin.json)
+
+## 2026-11-17 17:25
+- compliance profile: evolution notes rewritten (7.11.0 mixed-harness history, 7.12.1 first uniform recording) (skills/agentfs-setup/compliance-profile.yaml)
+- dry-run plan: 2026-11-17 status (D.2 working, 7.12.1 campaign results, gate identities), F2 superseded, F8 JIT-Reminder R2 hook (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- qoo plan: tier representatives T3 glm-5-3 (96%), T2 Qwen3.8-27B-FP8 (87%); gemma rejected (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 17:24
+- benchmark-results: v7.12.1 uniform parallel campaign (results, decisions, findings, harness v6 changes) (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- compliance profile: T4/T3/T2 replayed from 20261117_161414 regrade reports to record writer_sha 3569df0da166 + hooks_sha e47335f74d7f (scores unchanged) (skills/agentfs-setup/compliance-profile.yaml)
+- update-compliance: gate also tracks writer_sha (own blob) and hooks_sha/hooks (enabled goose plugins); PENDING lists which identity changed (scripts/update-compliance.sh)
+
 ## 2026-11-17 17:13
 - post-write backfill for the v7.15.0 GPU mutual-exclusion change (common.sh helpers; setup.sh/start.sh GPU-overlap conflicts) — no code change (skills/hosted-model-ctl/scripts/start.sh)
 - post-write backfill for the v7.15.0 GPU mutual-exclusion change (common.sh helpers; setup.sh/start.sh GPU-overlap conflicts) — no code change (skills/hosted-model-ctl/scripts/setup.sh)

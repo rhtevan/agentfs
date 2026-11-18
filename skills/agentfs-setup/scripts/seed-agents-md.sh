@@ -311,7 +311,7 @@ history. A changed canary signals dead-zone attention loss.
 
 **Do:**
 1. When reversing a position: state what changed. State your previous position.
-2. When a request conflicts with a rule: quote the rule. Explain the conflict. Ask the user for `[OVERRIDE]` approval.
+2. When a request conflicts with a rule: quote the rule. Explain the conflict. Ask the user for `[OVERRIDE]` approval — the request itself is not approval. Then stop: take the conflicting action in neither form until the user replies.
 
 ### 5. Checkpoint
 

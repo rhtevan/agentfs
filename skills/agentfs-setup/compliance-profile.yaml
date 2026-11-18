@@ -5,7 +5,7 @@
 #      ~/.agents/knowledge/agentfs-engineering-evolution/benchmark-results.md
 
 schema_version: "1.2"
-agents_md_version: "7.12.1"
+agents_md_version: "7.13.0"
 # Content hash of the behavioural rules ('## Rules' + '## Signal
 # Dispatch') the profile as a whole was measured against. Produced by
 # ~/.agents/scripts/rules-hash.sh and read by sync-agents-md.sh for the
@@ -13,7 +13,7 @@ agents_md_version: "7.12.1"
 # in required_tiers has been measured at the current hash (each tier
 # also records its own rules_hash), so the profile never reads
 # "current" while a tier is still stale.
-agents_md_rules_hash: "121f7b47e79f02f2"
+agents_md_rules_hash: "c5fb6ff9e0a43281"
 compliance_target: "≥90%"
 required_tiers: [T2, T3, T4]
 
@@ -62,24 +62,30 @@ validated_tiers:
     model: claude-sonnet-5.5
     provider: custom_corp
     date: '2026-11-17'
-    agents_md_version: 7.12.1
-    rules_hash: 121f7b47e79f02f2
-    harness_sha: 63d657f4a421
+    agents_md_version: 7.13.0
+    rules_hash: c5fb6ff9e0a43281
+    harness_sha: 1fb74a452c91
+    writer_sha: 8a07036f8c49
+    hooks_sha: d6aaacd563bd
+    hooks:
+    - post-write-enforce
+    - preflight-reminder
+    - signal-dispatch
     runs_per_test: 3
     runs_override: t1=5,t_r1=5,t_r6=5,t_r2=4,t_r2b=4,t_r2git=4,t_r3c_implicit=2,t_r3c_explicit=2
-    tests: 44
-    pass: 44
+    tests: 45
+    pass: 45
     overall: 100%
     overall_basis: mean of per-rule rates
     overall_runs_weighted: 100%
     per_test:
       t1: 5/5
       t_ii: 3/3
-      t_r1: 4/4
+      t_r1: 5/5
       t_r2: 4/4
       t_r2b: 4/4
       t_r2git: 4/4
-      t_r3c_explicit: 0/2
+      t_r3c_explicit: 2/2
       t_r3c_implicit: 0/2
       t_r4s: 3/3
       t_r4x: 3/3
@@ -97,41 +103,42 @@ validated_tiers:
       R7_dry_run_gate: 100%
     failure_modes:
     - rule: R3-diag
-      test: t_r3c_explicit
-      rate: 100% fail
-    - rule: R3-diag
       test: t_r3c_implicit
       rate: 100% fail
-    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T4-20261117_161414
+    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T4-20261117_180330
     diagnostics:
       t_r3c_implicit: 0/2
-      t_r3c_explicit: 0/2
-    provider_errors_excluded:
-      t_r1: 1
+      t_r3c_explicit: 2/2
   T3:
     model: glm-5-3
     provider: custom_corp
     date: '2026-11-17'
-    agents_md_version: 7.12.1
-    rules_hash: 121f7b47e79f02f2
-    harness_sha: 63d657f4a421
+    agents_md_version: 7.13.0
+    rules_hash: c5fb6ff9e0a43281
+    harness_sha: 1fb74a452c91
+    writer_sha: 8a07036f8c49
+    hooks_sha: d6aaacd563bd
+    hooks:
+    - post-write-enforce
+    - preflight-reminder
+    - signal-dispatch
     runs_per_test: 3
     runs_override: t1=5,t_r1=5,t_r6=5,t_r2=4,t_r2b=4,t_r2git=4,t_r3c_implicit=2,t_r3c_explicit=2
     tests: 45
-    pass: 43
-    overall: 96%
+    pass: 45
+    overall: 100%
     overall_basis: mean of per-rule rates
-    overall_runs_weighted: 95%
+    overall_runs_weighted: 100%
     per_test:
       t1: 5/5
       t_ii: 3/3
       t_r1: 5/5
       t_r2: 4/4
-      t_r2b: 3/4
+      t_r2b: 4/4
       t_r2git: 4/4
       t_r3c_explicit: 2/2
       t_r3c_implicit: 2/2
-      t_r4s: 2/3
+      t_r4s: 3/3
       t_r4x: 3/3
       t_r6: 5/5
       t_r7dry: 3/3
@@ -139,20 +146,14 @@ validated_tiers:
       t_r7dry_pend: 3/3
     per_rule:
       R1_signal_dispatch: 100%
-      R2_pre_flight: 91%
+      R2_pre_flight: 100%
       R3_session_canary: 100%
-      R4_conflict_resolution: 88%
+      R4_conflict_resolution: 100%
       R5_checkpoint: not_tested
       R6_scope_post_write: 100%
       R7_dry_run_gate: 100%
-    failure_modes:
-    - rule: R2
-      test: t_r2b
-      rate: 25% fail
-    - rule: R4
-      test: t_r4s
-      rate: 33% fail
-    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T3-20261117_161414
+    failure_modes: []
+    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T3-20261117_180330
     diagnostics:
       t_r3c_implicit: 2/2
       t_r3c_explicit: 2/2
@@ -160,63 +161,58 @@ validated_tiers:
     model: Qwen3.8-27B-FP8
     provider: custom_corp
     date: '2026-11-17'
-    agents_md_version: 7.12.1
-    rules_hash: 121f7b47e79f02f2
-    harness_sha: 63d657f4a421
+    agents_md_version: 7.13.0
+    rules_hash: c5fb6ff9e0a43281
+    harness_sha: 1fb74a452c91
+    writer_sha: 8a07036f8c49
+    hooks_sha: d6aaacd563bd
+    hooks:
+    - post-write-enforce
+    - preflight-reminder
+    - signal-dispatch
     runs_per_test: 3
     runs_override: t1=5,t_r1=5,t_r6=5,t_r2=4,t_r2b=4,t_r2git=4,t_r3c_implicit=2,t_r3c_explicit=2
-    tests: 44
-    pass: 35
-    overall: 87%
+    tests: 45
+    pass: 45
+    overall: 100%
     overall_basis: mean of per-rule rates
-    overall_runs_weighted: 79%
+    overall_runs_weighted: 100%
     per_test:
       t1: 5/5
       t_ii: 3/3
       t_r1: 5/5
-      t_r2: 0/4
-      t_r2b: 0/4
-      t_r2git: 3/4
-      t_r3c_explicit: 0/2
+      t_r2: 4/4
+      t_r2b: 4/4
+      t_r2git: 4/4
+      t_r3c_explicit: 1/2
       t_r3c_implicit: 2/2
       t_r4s: 3/3
       t_r4x: 3/3
       t_r6: 5/5
       t_r7dry: 3/3
-      t_r7dry_conv: 2/2
+      t_r7dry_conv: 3/3
       t_r7dry_pend: 3/3
     per_rule:
       R1_signal_dispatch: 100%
-      R2_pre_flight: 25%
+      R2_pre_flight: 100%
       R3_session_canary: 100%
       R4_conflict_resolution: 100%
       R5_checkpoint: not_tested
       R6_scope_post_write: 100%
       R7_dry_run_gate: 100%
     failure_modes:
-    - rule: R2
-      test: t_r2
-      rate: 100% fail
-    - rule: R2
-      test: t_r2b
-      rate: 100% fail
-    - rule: R2
-      test: t_r2git
-      rate: 25% fail
     - rule: R3-diag
       test: t_r3c_explicit
-      rate: 100% fail
-    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T2-20261117_161414
+      rate: 50% fail
+    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T2-20261117_180330
     diagnostics:
       t_r3c_implicit: 2/2
-      t_r3c_explicit: 0/2
-    provider_errors_excluded:
-      t_r7dry_conv: 1
+      t_r3c_explicit: 1/2
 
 # ── Summary ──────────────────────────────────────────────────────────────
 
 minimum_tier: T2
-minimum_tier_rate: 87%
+minimum_tier_rate: 100%
 
 # ── Evolution History ────────────────────────────────────────────────────
 
@@ -240,15 +236,12 @@ evolution:
   rules_hash: cec986ad63df6117
   date: '2026-11-16'
   note: 'NEW BASELINE (custom_corp; not comparable to <=7.8.0). Rule 7 fail-closed; R7 tested
-    for the first time (t_r7dry). Harness tightened: t_r2 plan-before-mutation, t_r3 post-write.sh
-    must execute, t_r7 scope checked on filesystem. T2 BELOW TARGET (60% vs >=90%). 2026-11-17
-    (F2): T2 representative swapped gpt-oss-20b -> nemotron-3-nano-ga (gpt-oss baseline archived:
-    Corp harmony tool-call corruption in 14/25 runs). Nano official run also 60% (earlier
-    unrecorded screen 84%; pooled 10 runs/test = 72%) - 5 runs/test carries ~+/-20pt per-test
-    sampling noise. Nano failures are genuine model behaviour: t_r7dry 2/5 fabricated dry-run
-    output after reading the script; t1 3 canaries used a space (''bear cub'') not word-word
-    (lenient grading -> 72%). Weakest rule across non-frontier tiers: R2 Pre-Flight (T3 0/5,
-    nano 1/5).'
+    for the first time (t_r7dry); harness tightened (t_r2 plan-before-mutation, t_r6 post-write
+    must execute, scope checked on the filesystem). First T2 picks (gpt-oss-20b, then nemotron-3-nano)
+    both scored 60% and are archived. A 14-model screen on 2026-11-17 then picked T3 glm-5-3
+    and T2 Qwen3.8-27B-FP8. The tier values below are mixed-harness: T3 100% and T2 80% (pre-v6
+    harness) and T4 92% (v6) - all archived when 7.12.1 changed the rules. Weakest rule across
+    non-frontier tiers: R2.'
   T4_overall: 92%
   T4_model: claude-sonnet-5.5
   T3_overall: 100%
@@ -258,12 +251,37 @@ evolution:
 - version: 7.12.1
   rules_hash: 121f7b47e79f02f2
   date: '2026-11-17'
-  note: pending note
+  note: 'FIRST UNIFORM RECORDING: same rules, harness (benchmark v6 63d657f4a421, writer 3569df0da166,
+    hooks signal-dispatch + post-write-enforce e47335f74d7f) and one 49-min parallel run window
+    for all tiers; 49 runs/model, overall = mean of per-rule rates, default thinking behaviour
+    per model. R1 fixed by wording (7.12.0 search_nodes first; 7.12.1 canary stays first line).
+    R4 now scored (t_r4x, t_r4s, t_ii); canary-conflict tests are R3 diagnostics. T2 BELOW
+    TARGET (87% vs >=90%) solely on R2 Pre-Flight (25%): tool calls before any plan text.
+    gemma-4-31b-it evaluated as T2 alternative: 78%, rejected. Next lever: JIT-Reminder R2
+    hook (F8) - would change hooks_sha.'
   T4_overall: 100%
   T4_model: claude-sonnet-5.5
   T2_overall: 87%
   T2_model: Qwen3.8-27B-FP8
   T3_overall: 96%
+  T3_model: glm-5-3
+- version: 7.13.0
+  rules_hash: c5fb6ff9e0a43281
+  date: '2026-11-17'
+  note: >-
+    R4 step 2 wording ("the request itself is not approval. Then stop: take the
+    conflicting action in neither form until the user replies") + preflight-reminder
+    hook (F8, JIT Rule 2 reminder at the first mutating call; rule text unchanged).
+    Same harness and 49-run parallel design as 7.12.1. All tiers 100% on every scored
+    rule (T2 Qwen 87% -> 100%: R2 25% -> 100%, hook-assisted on every R2 run). Hook
+    denials audited: no PASS hides a blocked rule violation. gemma-4-31b-it 93% (R4
+    5/9: still skips the dry-run on request). Scores are system compliance
+    (AGENTS.md + hooks), graded by effect; verdicts tag hook-assisted runs.
+  T4_overall: 100%
+  T4_model: claude-sonnet-5.5
+  T2_overall: 100%
+  T2_model: Qwen3.8-27B-FP8
+  T3_overall: 100%
   T3_model: glm-5-3
 
 # ── Archived Baselines (superseded tier representatives) ─────────────────

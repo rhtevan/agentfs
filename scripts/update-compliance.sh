@@ -42,8 +42,11 @@
 #   measure how binding a model treats R3, not R4 (vehicle-dependent).
 #
 # Dry-run staleness: an entry is PENDING if the rules hash, model,
-# provider, test coverage OR the benchmark.sh blob sha (harness_sha)
-# differs — a changed grader makes a recorded score stale.
+# provider, test coverage, OR any harness identity differs:
+#   harness_sha — benchmark.sh blob (graders, prompts, fixtures)
+#   writer_sha  — this script's blob (pooling, scoring)
+#   hooks_sha   — enabled goose hook plugins (enforcement changes behaviour)
+# A changed grader, scorer or hook set makes a recorded score stale.
 # overall = mean of the tested rules' rates (each rule weighs the same,
 # regardless of run counts); overall_runs_weighted is kept for reference.
 #
@@ -96,6 +99,41 @@ if [[ -n "$AGENTS_MD" && -f "$AGENTS_MD" ]]; then
 fi
 
 # --- Profile reader (prints KEY=VALUE lines) ---
+# Harness identity (see "Dry-run staleness"): sets HARNESS_SHA, WRITER_SHA,
+# HOOKS_SHA and HOOKS_LIST. Hook plugins follow goose's own discovery:
+# every <dir>/hooks/hooks.json under ~/.agents/plugins/ and
+# <project>/.agents/plugins/, minus names in "disabledPlugins" of
+# ~/.config/goose/settings.json or <project>/.config/goose/settings.json.
+# hooks_sha covers every file of each active plugin (*.log excluded).
+harness_ids() {
+  HARNESS_SHA=$(git hash-object "$BENCHMARK_SH" 2>/dev/null | cut -c1-12); HARNESS_SHA=${HARNESS_SHA:-unknown}
+  WRITER_SHA=$(git hash-object "${BASH_SOURCE[0]}" 2>/dev/null | cut -c1-12); WRITER_SHA=${WRITER_SHA:-unknown}
+  local proj="${BENCHMARK_PROJECT_CWD:-$PWD}" dirs
+  dirs=$(python3 - "$HOME" "$proj" <<'PYH'
+import sys, os, json, glob
+home, proj = sys.argv[1], sys.argv[2]
+disabled = set()
+for sf in (f"{home}/.config/goose/settings.json", f"{proj}/.config/goose/settings.json"):
+    try: disabled |= set(json.load(open(sf)).get("disabledPlugins") or [])
+    except (OSError, ValueError): pass
+seen = []
+for root in (f"{home}/.agents/plugins", f"{proj}/.agents/plugins"):
+    for hj in sorted(glob.glob(f"{root}/*/hooks/hooks.json")):
+        d = os.path.dirname(os.path.dirname(hj))
+        if os.path.basename(d) not in disabled and os.path.realpath(d) not in map(os.path.realpath, seen):
+            seen.append(d)
+print("\n".join(seen))
+PYH
+)
+  HOOKS_LIST=$(for d in $dirs; do basename "$d"; done | paste -sd, -)
+  HOOKS_SHA=$(for d in $dirs; do
+      (cd "$d" 2>/dev/null && find . -type f ! -name '*.log' | LC_ALL=C sort | while read -r f; do
+         echo "$(basename "$d")/${f#./} $(git hash-object "$f")"; done)
+    done | sha256sum | cut -c1-12)
+  if [[ -z "$dirs" ]]; then HOOKS_SHA="none"; fi
+  return 0
+}
+
 profile_query() {
   python3 - "$PROFILE_YAML" "$@" <<'PY'
 import sys, yaml
@@ -106,7 +144,7 @@ if mode == "rep":
     print(f"REP_PROVIDER={r.get('provider','')}"); print(f"REP_MODEL={r.get('model','')}")
 elif mode == "tier":
     t = (d.get("validated_tiers") or {}).get(sys.argv[3]) or {}
-    for k in ("model", "provider", "rules_hash", "overall", "date", "harness_sha"):
+    for k in ("model", "provider", "rules_hash", "overall", "date", "harness_sha", "writer_sha", "hooks_sha"):
         print(f"T_{k.upper()}={t.get(k,'')}")
     print(f"T_TESTS={','.join(sorted((t.get('per_test') or {}).keys()))}")
 elif mode == "check":
@@ -182,13 +220,15 @@ if $DRY_RUN; then
     exit 3
   fi
   eval "$(profile_query tier "$TIER")"
-  CUR_HARNESS_SHA=$(git hash-object "$BENCHMARK_SH" 2>/dev/null | cut -c1-12)
+  harness_ids
+  CUR_HARNESS_SHA="$HARNESS_SHA"
   # Converged only if the entry also covers every requested test — a new
   # test (e.g. t_r1) leaves its rule unmeasured until the tier is rerun.
   MISSING_TESTS=""
   for _t in ${TESTS//,/ }; do [[ ",$T_TESTS," == *",$_t,"* ]] || MISSING_TESTS+="$_t "; done
   if [[ "$T_RULES_HASH" == "$RULES_HASH" && "$T_MODEL" == "$MODEL" && "$T_PROVIDER" == "$PROVIDER" && -z "$MISSING_TESTS" \
-        && -n "$CUR_HARNESS_SHA" && "$T_HARNESS_SHA" == "$CUR_HARNESS_SHA" ]]; then
+        && -n "$CUR_HARNESS_SHA" && "$T_HARNESS_SHA" == "$CUR_HARNESS_SHA" \
+        && "$T_WRITER_SHA" == "$WRITER_SHA" && "$T_HOOKS_SHA" == "$HOOKS_SHA" ]]; then
     echo "  $TIER already measured for this model at this rules hash ($T_OVERALL, $T_DATE)."
     echo "DRY_RUN_RESULT=CONVERGED"
   else
@@ -196,6 +236,8 @@ if $DRY_RUN; then
     echo "  (current entry: model='${T_MODEL:-none}' rules_hash='${T_RULES_HASH:-none}')."
     [[ -n "$MISSING_TESTS" && -n "$T_MODEL" ]] && echo "  (current entry lacks tests: ${MISSING_TESTS% })"
     [[ -n "$T_MODEL" && "$T_HARNESS_SHA" != "$CUR_HARNESS_SHA" ]] && echo "  (harness changed: entry harness_sha='${T_HARNESS_SHA:-none}', current='${CUR_HARNESS_SHA:-unknown}')"
+    [[ -n "$T_MODEL" && "$T_WRITER_SHA" != "$WRITER_SHA" ]] && echo "  (writer changed: entry writer_sha='${T_WRITER_SHA:-none}', current='$WRITER_SHA')"
+    [[ -n "$T_MODEL" && "$T_HOOKS_SHA" != "$HOOKS_SHA" ]] && echo "  (hooks changed: entry hooks_sha='${T_HOOKS_SHA:-none}', current='$HOOKS_SHA' [$HOOKS_LIST])"
     echo "DRY_RUN_RESULT=PENDING"
   fi
   exit 0
@@ -245,15 +287,16 @@ if [[ "$ROWS_N" -ne $(( TOTAL + ${ERR_N:-0} )) ]]; then
   echo "ERROR: parsed $ROWS_N result rows but benchmark reports Total=$TOTAL + Errored=${ERR_N:-0} — profile not updated" >&2
   exit 1
 fi
-HARNESS_SHA=$(git hash-object "$BENCHMARK_SH" 2>/dev/null | cut -c1-12 || echo unknown)
+harness_ids
 
 # Tiers may record concurrently: serialize the profile read-modify-write.
 exec 9>"${PROFILE_YAML}.lock"
 flock -w 900 9 || { echo "ERROR: timed out waiting for profile lock ${PROFILE_YAML}.lock" >&2; exit 1; }
 RESULT_ROWS="$RESULT_ROWS" python3 - "$PROFILE_YAML" "$TIER" "$PROVIDER" "$MODEL" "$RUNS" \
-  "$AGENTS_MD_VERSION" "$RULES_HASH" "$HARNESS_SHA" "$OUTPUT_DIR" "$RUNS_OVERRIDE" <<'PY'
+  "$AGENTS_MD_VERSION" "$RULES_HASH" "$HARNESS_SHA" "$OUTPUT_DIR" "$RUNS_OVERRIDE" \
+  "$WRITER_SHA" "$HOOKS_SHA" "$HOOKS_LIST" <<'PY'
 import os, re, sys, yaml, datetime
-path, tier, provider, model, runs, ver, rhash, hsha, outdir, runs_override = sys.argv[1:11]
+path, tier, provider, model, runs, ver, rhash, hsha, outdir, runs_override, wsha, ksha, klist = sys.argv[1:14]
 text = open(path).read()
 d = yaml.safe_load(text) or {}
 
@@ -306,6 +349,7 @@ entry = {
     "model": model, "provider": provider,
     "date": datetime.date.today().isoformat(),
     "agents_md_version": ver, "rules_hash": rhash, "harness_sha": hsha,
+    "writer_sha": wsha, "hooks_sha": ksha, "hooks": klist.split(",") if klist else [],
     "runs_per_test": int(runs), "runs_override": runs_override or None,
     "tests": total_t, "pass": total_p, "overall": overall,
     "overall_basis": "mean of per-rule rates", "overall_runs_weighted": overall_runs,
