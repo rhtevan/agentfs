@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 22:34
+- F14 stale rule numbers fixed; F15 dropped items (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 22:20
+- F4 fixed, F5 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-17 22:03
 - F6 fixed (agentfs-setup 7.13.1) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

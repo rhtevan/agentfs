@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 22:34
+- F14 stale rule numbers fixed; F15 dropped items (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Re-recorded by regrade of 20261117_210655 after plugin.json description change (verdicts identical) (skills/agentfs-setup/compliance-profile.yaml)
+- Fidelity test updated to 7.13 rule layout (9 stale checks; 70/70) (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
+- post-write-enforce 1.1.1: description Rule 3 -> Rule 6 (Scope & Post-Write) (plugins/post-write-enforce/plugin.json)
+
+## 2026-11-17 22:20
+- F4 fixed, F5 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Re-recorded by regrade of 20261117_210655 with F5 canary check (verdicts unchanged) (skills/agentfs-setup/compliance-profile.yaml)
+- F5: canary check letters only (p{L}), rejects digit canaries (scripts/benchmark.sh)
+- F4: delete thread_messages and session_tags too (FK cascade is off; left orphan rows) (skills/goose-recipe-session-cleanup/scripts/delete.sh)
+
 ## 2026-11-17 22:03
 - F6 fixed (agentfs-setup 7.13.1) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

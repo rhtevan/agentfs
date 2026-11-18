@@ -4,7 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-17 22:02 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-17 22:34 |
+| [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean goose sessions, cleanup recipe sessions, remove orphaned sessions, clean desktop sessions, clean terminal sessions | 2026-11-17 22:20 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-11-17 20:37 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-17 17:13 |
 | [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-16 19:44 |
@@ -56,7 +57,6 @@
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | generate bash completion, bash completion, tab completion | 2026-11-09 20:54 |
 | [fedora-window-list](./fedora-window-list/SKILL.md) | fedora, gnome, desktop, taskbar | toggle window list, taskbar toggle, gnome taskbar | 2026-11-09 20:54 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-11-09 20:54 |
-| [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean goose sessions, cleanup recipe sessions, remove orphaned sessions, clean desktop sessions, clean terminal sessions | 2026-11-09 20:54 |
 | [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-09 20:54 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-11-09 20:32 |
 | [skill-harvest](./skill-harvest/SKILL.md) | agentfs, skills, memory, procedural, graduation, harvest | harvest skills, harvest procedures, graduate skills | 2026-11-09 10:51 |

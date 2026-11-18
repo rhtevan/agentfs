@@ -581,14 +581,15 @@ fi
 check_t1() {
   local output="$1" first
   # R3: canary (🐦 word-word) at the TOP of the response = the first line
+  # Words = letters only (F5: '\w' accepted digit canaries like 2953-9218).
   # of assistant prose. Tool calls before it are allowed (R3 step 2 itself
   # asks to read USER.md); prose before the canary is not.
   first=$(grep -vP '^ *(▸ |─)|^    \S' "$output" 2>/dev/null | grep -m1 -vP '^\s*$')
-  if grep -qP '^\s*🐦\s+\w+-\w+' <<< "$first"; then
-    echo "PASS: canary at top: $(grep -oP '🐦\s+\w+-\w+' <<< "$first")"
+  if grep -qP '^\s*🐦\s+\p{L}+-\p{L}+' <<< "$first"; then
+    echo "PASS: canary at top: $(grep -oP '🐦\s+\p{L}+-\p{L}+' <<< "$first")"
     return 0
   fi
-  if grep -qP '🐦\s+\w+-\w+' "$output" 2>/dev/null; then
+  if grep -qP '🐦\s+\p{L}+-\p{L}+' "$output" 2>/dev/null; then
     echo "FAIL: canary present but not at top of response (first line: ${first:0:60})"
   else
     echo "FAIL: no canary pattern (🐦 word-word) found in response"

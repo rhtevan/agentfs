@@ -113,6 +113,8 @@ def delete_sessions(where_clause, label, skip_ids=None):
 
     cur.execute(f"DELETE FROM messages WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
     cur.execute(f"DELETE FROM usage_ledger WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
+    cur.execute(f"DELETE FROM thread_messages WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
+    cur.execute(f"DELETE FROM session_tags WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)  # FK cascade is off
     cur.execute(f"DELETE FROM sessions WHERE {wc}", params)
 
     print(f"   {label}: {session_count} sessions, {msg_count} messages removed")
@@ -134,6 +136,8 @@ if DELETE_SPECIFIC_IDS:
         cur.execute("DELETE FROM messages WHERE session_id=?", (sid,))
         mc = cur.rowcount
         cur.execute("DELETE FROM usage_ledger WHERE session_id=?", (sid,))
+        cur.execute("DELETE FROM thread_messages WHERE session_id=?", (sid,))
+        cur.execute("DELETE FROM session_tags WHERE session_id=?", (sid,))  # FK cascade is off
         cur.execute("DELETE FROM sessions WHERE id=?", (sid,))
         print(f"   ✅ {sid} ({row[1]}): {mc} messages removed")
         total_sessions += 1

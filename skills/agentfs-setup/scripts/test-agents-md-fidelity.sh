@@ -6,7 +6,7 @@
 #
 # Validates:
 #   - v7.2 section structure (numbered prose rules, no severity tags)
-#   - All 8 rules present with named headers in When/Do format
+#   - All 7 rules present with named headers in When/Do format
 #   - Signal Dispatch table completeness
 #   - Script existence and references
 #   - Behavioral keywords and fidelity
@@ -97,11 +97,11 @@ assert_not_contains "No unnumbered rule headings under Rules" '^### [A-Z][a-z].*
 echo "=== Named Rules (numbered, When/Do prose) ==="
 assert_contains "Rule 1: Signal Dispatch" '^### 1\. Signal Dispatch$'
 assert_contains "Rule 2: Pre-Flight" '^### 2\. Pre-Flight$'
-assert_contains "Rule 3: Post-Write" '^### 3\. Post-Write$'
-assert_contains "Rule 4: Session Canary" '^### 4\. Session Canary$'
-assert_contains "Rule 5: Conflict Resolution" '^### 5\. Conflict Resolution$'
-assert_contains "Rule 6: Checkpoint" '^### 6\. Checkpoint$'
-assert_contains "Rule 7: Scope Rules" '^### 7\. Scope Rules$'
+assert_contains "Rule 3: Session Canary" '^### 3\. Session Canary$'
+assert_contains "Rule 4: Conflict Resolution" '^### 4\. Conflict Resolution$'
+assert_contains "Rule 5: Checkpoint" '^### 5\. Checkpoint$'
+assert_contains "Rule 6: Scope & Post-Write" '^### 6\. Scope & Post-Write$'
+assert_contains "Rule 7: Dry-Run Gate" '^### 7\. Dry-Run Gate$'
 # Removed rules must not be present
 assert_not_contains "No Session Start rule" '^### [0-9]+\. Session Start'
 assert_not_contains "No Index-First Reading rule" '^### [0-9]+\. Index-First Reading'
@@ -175,15 +175,15 @@ assert_contains "Keyword: Conflict Resolution" 'Conflict Resolution'
 # ── Behavioral Fidelity ───────────────────────────────────────────
 echo "=== Behavioral Fidelity ==="
 # Session Canary rule (absorbs Session Start)
-assert_contains "AGENTS.md wins conflicts" 'authoritative.*other context'
+assert_contains "Rules are mandatory, override needs approval" 'All rules are mandatory.*\[OVERRIDE\]'
 assert_contains "Read USER.md on start" 'USER\.md.*preferences'
-assert_contains "Re-read memories on re-verify" 'MEMORY\.md.*USER\.md.*re-verification'
+assert_contains "Re-read memories on re-verify" 'Re-read .*MEMORY\.md'
 # Scope Rules
 assert_contains "Graduation to OKF" '[Gg]raduat'
 assert_contains "PROJECT scope for memories" 'PROJECT scope only'
 assert_contains "Graduation via harvest" 'hey harvest'
-assert_contains "Default skills to USER" '[Dd]efault.* USER'
-assert_contains "Project skill signal words" 'project skill.*for this project.*local skill'
+assert_contains "Default skills to USER" 'skills in USER scope.*by default'
+assert_contains "Project skill signal words" 'project skill.*local skill'
 # Conflict Resolution rule
 assert_contains "Quote conflicting rule" '[Qq]uote.*rule'
 # Checkpoint rule

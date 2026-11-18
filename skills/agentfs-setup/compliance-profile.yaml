@@ -5,7 +5,7 @@
 #      ~/.agents/knowledge/agentfs-engineering-evolution/benchmark-results.md
 
 schema_version: "1.2"
-agents_md_version: "7.13.0"
+agents_md_version: "7.13.1"
 # Content hash of the behavioural rules ('## Rules' + '## Signal
 # Dispatch') the profile as a whole was measured against. Produced by
 # ~/.agents/scripts/rules-hash.sh and read by sync-agents-md.sh for the
@@ -62,11 +62,11 @@ validated_tiers:
     model: claude-sonnet-5.5
     provider: custom_corp
     date: '2026-11-17'
-    agents_md_version: 7.13.0
+    agents_md_version: 7.13.1
     rules_hash: c5fb6ff9e0a43281
-    harness_sha: df4d71151434
+    harness_sha: 098422e3037a
     writer_sha: 8a07036f8c49
-    hooks_sha: 66e941c6683b
+    hooks_sha: 2ebe060012a6
     hooks:
     - post-write-enforce
     - preflight-reminder
@@ -113,11 +113,11 @@ validated_tiers:
     model: glm-5-3
     provider: custom_corp
     date: '2026-11-17'
-    agents_md_version: 7.13.0
+    agents_md_version: 7.13.1
     rules_hash: c5fb6ff9e0a43281
-    harness_sha: df4d71151434
+    harness_sha: 098422e3037a
     writer_sha: 8a07036f8c49
-    hooks_sha: 66e941c6683b
+    hooks_sha: 2ebe060012a6
     hooks:
     - post-write-enforce
     - preflight-reminder
@@ -161,11 +161,11 @@ validated_tiers:
     model: Qwen3.8-27B-FP8
     provider: custom_corp
     date: '2026-11-17'
-    agents_md_version: 7.13.0
+    agents_md_version: 7.13.1
     rules_hash: c5fb6ff9e0a43281
-    harness_sha: df4d71151434
+    harness_sha: 098422e3037a
     writer_sha: 8a07036f8c49
-    hooks_sha: 66e941c6683b
+    hooks_sha: 2ebe060012a6
     hooks:
     - post-write-enforce
     - preflight-reminder
@@ -285,9 +285,10 @@ evolution:
     workers, 12m48s wall vs 57m): T4 100%, T3 98% (t_r2git 1/4 showed git show --stat, not
     git diff --stat), T2 100% (1 run excluded: rate limit persisted). Re-recorded 20261117_204553
     after test containment (15m48s): T4 96%, T3 100%, T2 96%; the T4 t_r1 fail was a stale
-    post-write-enforce flag from goose session-ID reuse. Hook plugins fixed (SessionStart clears
-    per-session state) and re-recorded 20261117_210655 (11m42s): T4 100%, T3 100%, T2 98%
-    (t_r2b 1/4 executed without a plan), 0 excluded, real ~/.agents untouched (147/147 clean).'
+    post-write-enforce flag from goose session-ID reuse. Hook plugins fixed (SessionStart
+    clears per-session state) and re-recorded 20261117_210655 (11m42s): T4 100%, T3 100%,
+    T2 98% (t_r2b 1/4 executed without a plan), 0 excluded, real ~/.agents untouched (147/147
+    clean).'
   T4_overall: 100%
   T4_model: claude-sonnet-5.5
   T2_overall: 98%
