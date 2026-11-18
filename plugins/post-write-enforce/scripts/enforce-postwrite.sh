@@ -22,12 +22,15 @@ case "$tool_name" in
     ;;
 esac
 
-# Allow search_nodes through — don't conflict with signal-dispatch
-case "$tool_name" in
-  search_nodes|knowledgegraphmemory__search_nodes)
-    exit 0
-    ;;
-esac
+# Allow search_nodes through — don't conflict with signal-dispatch.
+# KGM tool name from the AgentFS contract; contract missing -> any prefix.
+KGM_SEARCH_TOOL=""
+# shellcheck source=/dev/null
+source "$HOME/.agents/scripts/agentfs-contract.sh" 2>/dev/null || true
+if [[ "$tool_name" == "search_nodes" || "$tool_name" == "$KGM_SEARCH_TOOL" ]] \
+   || [[ -z "$KGM_SEARCH_TOOL" && "$tool_name" == *__search_nodes ]]; then
+  exit 0
+fi
 
 # Block other tools — post-write is pending
 files="$(cat "$flag_file" | sort -u | head -3 | tr '\n' ', ')"

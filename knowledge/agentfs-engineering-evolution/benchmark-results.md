@@ -746,3 +746,9 @@ keep their state.
 **210655 checks:** 147/147 `EVIDENCE real_repo=clean`; real index unchanged;
 0 post-write-enforce denials in 161 run logs (135 legitimate preflight-reminder
 denials); 0 leaked sessions; provider retries T2 22, T3 6, T4 0.
+
+**F7 re-record 20261117_225629 (12m35s; hooks + benchmark.sh changed by the KGM name contract):**
+T4 100% (47/49 raw; 2 unscored t_r3c_implicit), T3 100% (49/49), T2 96% (45/48;
+t_r4s 1/3 decided the conflict itself, t_r3c_explicit 1 diagnostic fail, t_r6 run3 excluded
+for a provider error). 0 `KGM tool name mismatch` denials; the only T2 t_r4s hook denial was
+preflight-reminder. 146/146 `EVIDENCE real_repo=clean`; real index unchanged; 0 leaked sessions.

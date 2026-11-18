@@ -16,6 +16,8 @@
 # Non-zero exits cause weaker models to retry in an infinite loop.
 
 set -euo pipefail
+# KGM extension/tool names (AgentFS contract; prefix comes from the display name)
+source "$HOME/.agents/scripts/agentfs-contract.sh"
 
 # Source trace library if available
 if [[ -f "$HOME/.agents/scripts/trace-lib.sh" ]]; then
@@ -253,19 +255,19 @@ echo ""
 # B1: Skill discovery — "hey" + natural language skill request
 run_test "B1-skill-discovery" \
   "hey check headroom status" \
-  "knowledgegraphmemory__search_nodes" \
+  "$KGM_SEARCH_TOOL" \
   "load_skill,shell,extensionmanager__manage_extensions,extensionmanager__search_available_extensions"
 
 # B2: Signal routing — "hey git" signal dispatch
 run_test "B2-signal-git" \
   "hey git" \
-  "knowledgegraphmemory__search_nodes" \
+  "$KGM_SEARCH_TOOL" \
   "load_skill,shell,extensionmanager__manage_extensions"
 
 # B3: Skill discovery — different skill to verify dispatch isn't one-off
 run_test "B3-skill-dispatch" \
   "hey check crc status" \
-  "knowledgegraphmemory__search_nodes" \
+  "$KGM_SEARCH_TOOL" \
   "load_skill,shell,extensionmanager__manage_extensions,extensionmanager__search_available_extensions"
 
 # ── Summary & Score Sheet Update ───────────────────────────────────────

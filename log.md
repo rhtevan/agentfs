@@ -2,6 +2,39 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 09:02
+- README: signal-dispatch row describes one-time block (fail-open) and F7 mismatch notice (README.md)
+
+## 2026-11-17 23:10
+- F7 re-record 20261117_225629 (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- F7 Done (lean): prefix-from-name finding, V1-V6 results (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- F7 re-record 20261117_225629: T4 100 / T3 100 / T2 96 (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-17 22:57
+- F7: document agentfs-contract.sh and agentfs-contract-lint.sh (scripts/README.md)
+
+## 2026-11-17 22:55
+- F7 1.2.0: search_nodes allow-through from agentfs-contract.sh (plugins/post-write-enforce/plugin.json)
+- F7 2.2.0: KGM tool name from agentfs-contract.sh; wrong-prefix mismatch notice (plugins/signal-dispatch/plugin.json)
+- F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch (skills/goose-kgm/scripts/reindex-kgm.sh)
+- F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch (skills/goose-kgm/scripts/status-kgm.sh)
+- F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch (skills/goose-kgm/scripts/disable-kgm.sh)
+- F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch (skills/goose-kgm/scripts/enable-kgm.sh)
+- F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch (skills/goose-kgm/scripts/teardown-kgm.sh)
+- F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch (skills/goose-kgm/scripts/setup-kgm.sh)
+- F7: expected KGM tool from agentfs-contract.sh (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-11-17 22:51
+- F7: KGM extension name from agentfs-contract.sh (scripts/benchmark.sh)
+
+## 2026-11-17 22:50
+- F7: KGM tool name from contract; wrong-prefix search_nodes gets a cause+fix message (plugins/post-write-enforce/scripts/enforce-postwrite.sh)
+- F7: KGM tool name from contract; wrong-prefix search_nodes gets a cause+fix message (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-11-17 22:49
+- F7: lint forbidding hardcoded contract names in code (scripts/agentfs-contract-lint.sh)
+- F7: KGM name contract (key, display name, derived tool prefix) (scripts/agentfs-contract.sh)
+
 ## 2026-11-17 22:34
 - F14 stale rule numbers fixed; F15 dropped items (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - Re-recorded by regrade of 20261117_210655 after plugin.json description change (verdicts identical) (skills/agentfs-setup/compliance-profile.yaml)

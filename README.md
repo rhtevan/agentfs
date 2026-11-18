@@ -338,7 +338,7 @@ live in every goose session). Rule text is unchanged; hooks only block and remin
 
 | Plugin | Rule | Behaviour |
 |--------|------|-----------|
-| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks other tools until `search_nodes` runs |
+| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks the first other tool once with a reminder to run `search_nodes` (fail-open); a wrongly named KGM tool gets a one-time notice with the fix |
 | `preflight-reminder` | 2 | Blocks the first mutating tool call of each turn once with a Pre-Flight reminder |
 | `post-write-enforce` | 6 | After a write under `.agents/`, blocks other tools until `post-write.sh` runs |
 

@@ -15,6 +15,7 @@ done
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
 trace_init "goose-kgm" "1.8.0" 2>/dev/null || true
 
 CONFIG="$HOME/.config/goose/config.yaml"
@@ -22,7 +23,7 @@ JSONL_PATH="$HOME/.agents/knowledge/.kgm-index.jsonl"
 
 # ── Dry-run check ──────────────────────────────────────────────────
 if $DRY_RUN; then
-  if grep -q 'knowledge-graph-memory\|knowledgegraphmemory' "$CONFIG" 2>/dev/null; then
+  if grep -q "knowledge-graph-memory\|$KGM_EXT_KEY" "$CONFIG" 2>/dev/null; then
     echo "[dry-run] WOULD: Remove KGM extension from $CONFIG"
     CHANGES=$((CHANGES + 1))
   else
@@ -45,7 +46,7 @@ if $DRY_RUN; then
 fi
 
 # ── Remove extension entry ─────────────────────────────────────────
-if ! grep -q 'knowledge-graph-memory\|knowledgegraphmemory' "$CONFIG" 2>/dev/null; then
+if ! grep -q "knowledge-graph-memory\|$KGM_EXT_KEY" "$CONFIG" 2>/dev/null; then
   echo "ℹ️  KGM extension not found in $CONFIG — nothing to remove."
 else
   python3 << 'PYEOF'

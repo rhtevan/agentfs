@@ -1,5 +1,5 @@
 {
   "name": "signal-dispatch",
-  "version": "2.1.0",
-  "description": "Deterministic enforcement of the 'hey' signal dispatch prefix. Reads table-matched patterns from patterns.txt (single source of truth). Blocks non-dispatch tool calls when a hey-prefixed prompt is detected, injecting a JIT reminder to call search_nodes first."
+  "version": "2.2.0",
+  "description": "Deterministic enforcement of the 'hey' signal dispatch prefix. Reads table-matched patterns from patterns.txt (single source of truth). Blocks non-dispatch tool calls when a hey-prefixed prompt is detected, injecting a JIT reminder to call search_nodes first. KGM tool name comes from scripts/agentfs-contract.sh; a wrong-prefix search_nodes gets one mismatch notice."
 }

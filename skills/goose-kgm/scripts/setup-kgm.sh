@@ -15,6 +15,7 @@ done
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
 trace_init "goose-kgm" "1.8.0" 2>/dev/null || true
 
 CONFIG="$HOME/.config/goose/config.yaml"
@@ -29,7 +30,7 @@ if [[ ! -f "$CONFIG" ]]; then
 fi
 
 # Check if already configured
-if grep -q 'knowledge-graph-memory\|knowledgegraphmemory' "$CONFIG" 2>/dev/null; then
+if grep -q "knowledge-graph-memory\|$KGM_EXT_KEY" "$CONFIG" 2>/dev/null; then
   echo "✅ KGM extension already configured in $CONFIG"
   echo "   Use enable-kgm.sh to enable it."
   if $DRY_RUN; then echo "DRY_RUN_RESULT=CONVERGED"; fi
@@ -37,7 +38,7 @@ if grep -q 'knowledge-graph-memory\|knowledgegraphmemory' "$CONFIG" 2>/dev/null;
 fi
 
 if $DRY_RUN; then
-  echo "[dry-run] WOULD: Add knowledgegraphmemory extension to $CONFIG"
+  echo "[dry-run] WOULD: Add $KGM_EXT_KEY extension to $CONFIG"
   CHANGES=$((CHANGES + 1))
   echo "[dry-run] WOULD: Ensure symlinks for server-memory"
   CHANGES=$((CHANGES + 1))
@@ -61,10 +62,10 @@ with open(config_path, 'r') as f:
 if 'extensions' not in config:
     config['extensions'] = {}
 
-config['extensions']['knowledgegraphmemory'] = {
+config['extensions'][os.environ['KGM_EXT_KEY']] = {
     'enabled': False,
     'type': 'stdio',
-    'name': 'Knowledge Graph Memory',
+    'name': os.environ['KGM_EXT_NAME'],
     'description': 'Deterministic search index over OKF knowledge bundles via MCP',
     'cmd': 'npx',
     'args': ['-y', '@modelcontextprotocol/server-memory'],
@@ -76,7 +77,7 @@ config['extensions']['knowledgegraphmemory'] = {
 with open(config_path, 'w') as f:
     yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
-print(f"✅ Added knowledgegraphmemory extension to {config_path}")
+print(f"✅ Added {os.environ['KGM_EXT_KEY']} extension to {config_path}")
 print(f"   MEMORY_FILE_PATH: {jsonl_path}")
 print(f"   enabled: false (use enable-kgm.sh to activate)")
 PYEOF

@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-17 22:55 | v2.6.1 — F7: expected KGM tool from agentfs-contract.sh |
 | 2026-11-16 19:44 | v2.6.0 — Version history corrected: 2026-09-29 v7.2.0 (AgentFS template version) relabeled v1.7.0 |
 | 2026-11-08 18:41 | v2.6.0 — Add Rules section with anti-fabrication rules, add trace to all 6 scripts |
 | 2026-11-05 19:30 | v2.5.0 — Add model-tier to frontmatter |

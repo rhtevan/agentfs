@@ -28,5 +28,7 @@ AGENTS.md rule scripts (`checkpoint.sh`, `post-write.sh`) remain in
 | `run-parallel.sh` | `smoke\|real [--shards "T4=2,T3=6,T2=4"] [--tiers ...]` — dry-run gate, per-tier work queue across N workers with isolated project/sandbox copies, merge, regrade, record |
 | `update-compliance.sh` | Records results into `compliance-profile.yaml` (`--tier Tx`, `--dry-run` gate, `--check`) |
 | `rules-hash.sh` | Hashes the AGENTS.md `## Rules` + `## Signal Dispatch` sections |
+| `agentfs-contract.sh` | Sourced, not executed. Single source of the KGM names: config key, display `name`, derived tool prefix (goose builds the prefix from `name`) |
+| `agentfs-contract-lint.sh` | Fails if the KGM key literal appears in `plugins/`, `scripts/`, `skills/` outside the contract |
 
 Endpoint contract: [`skills/schemas/sdm-endpoint.md`](../skills/schemas/sdm-endpoint.md).

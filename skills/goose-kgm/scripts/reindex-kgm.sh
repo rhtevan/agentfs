@@ -12,6 +12,7 @@ set -euo pipefail
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
+source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
 trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
 
 KNOWLEDGE_DIR="$HOME/.agents/knowledge"
@@ -22,13 +23,13 @@ CONFIG="$HOME/.config/goose/config.yaml"
 
 # ── Optional: check if KGM is enabled ─────────────────────────────
 if [[ "${1:-}" == "--check-enabled" ]]; then
-  if ! grep -q 'knowledgegraphmemory' "$CONFIG" 2>/dev/null; then
+  if ! grep -qF "$KGM_EXT_KEY" "$CONFIG" 2>/dev/null; then
     exit 0  # Not configured — silent skip
   fi
   ENABLED=$(python3 -c "
 import yaml, os
 config = yaml.safe_load(open(os.path.expanduser('~/.config/goose/config.yaml')))
-ext = config.get('extensions', {}).get('knowledgegraphmemory', {})
+ext = config.get('extensions', {}).get('$KGM_EXT_KEY', {})
 print('yes' if ext.get('enabled') else 'no')
 ")
   if [[ "$ENABLED" != "yes" ]]; then

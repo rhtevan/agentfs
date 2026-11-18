@@ -49,9 +49,10 @@
 #
 # 2026-11-17 changes:
 #   - Pinned extension set: goose run --no-profile --with-builtin
-#     developer,tom,skills + KGM as 'knowledgegraphmemory' (the name is a
-#     contract: signal-dispatch / post-write-enforce hooks and
-#     template-behavioral.sh match 'knowledgegraphmemory__search_nodes').
+#     developer,tom,skills + KGM named $KGM_TOOL_PREFIX (the name is a
+#     contract, scripts/agentfs-contract.sh: signal-dispatch /
+#     post-write-enforce hooks and template-behavioral.sh match
+#     $KGM_SEARCH_TOOL).
 #     BENCHMARK_PIN_EXTENSIONS=0 falls back to the user profile.
 #   - KGM isolation: every run gets a fresh copy of the real KGM index
 #     (+ t_r1 fixture entity); model writes never reach the real graph.
@@ -236,7 +237,9 @@ if [[ -f "$_cp_json" ]] && command -v secret-tool >/dev/null 2>&1; then
 fi
 
 # --- Pinned goose extension set ---
-# KGM must be named 'knowledgegraphmemory': tool names are
+# KGM extension/tool names (AgentFS contract; prefix comes from the display name)
+source "$HOME/.agents/scripts/agentfs-contract.sh"
+# KGM must be named $KGM_TOOL_PREFIX (agentfs-contract.sh): tool names are
 # '<extension>__<tool>' and the AgentFS hooks match that exact prefix.
 KGM_REAL_INDEX="${KGM_REAL_INDEX:-$HOME/.agents/knowledge/.kgm-index.jsonl}"
 KGM_RUN_INDEX="$OUTPUT_DIR/.kgm-run-index.jsonl"
@@ -244,7 +247,7 @@ BENCHMARK_PIN_EXTENSIONS="${BENCHMARK_PIN_EXTENSIONS:-1}"
 goose_ext_args() {
   if [[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]]; then
     printf '%s\0' --no-profile --with-builtin developer,tom,skills \
-      --with-extension "knowledgegraphmemory:MEMORY_FILE_PATH=$KGM_RUN_INDEX npx -y @modelcontextprotocol/server-memory"
+      --with-extension "${KGM_TOOL_PREFIX}:MEMORY_FILE_PATH=$KGM_RUN_INDEX npx -y @modelcontextprotocol/server-memory"
   fi
 }
 # Fresh isolated KGM copy per run (+ t_r1 fixture entity).
@@ -1596,7 +1599,7 @@ cat <<REPORT
 | Runs per test | $RUNS${RUNS_OVERRIDE:+ (override: $RUNS_OVERRIDE)} |
 | Mode | $([[ -n "$REGRADE_DIR" ]] && echo "REGRADE of saved transcripts (current checkers)" || echo live) |
 | Timestamp | $TIMESTAMP |
-| Extensions | $([[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]] && echo 'pinned: developer,tom,skills,knowledgegraphmemory (isolated KGM copy)' || echo 'user profile (unpinned)') |
+| Extensions | $([[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]] && echo "pinned: developer,tom,skills,${KGM_TOOL_PREFIX} (isolated KGM copy)" || echo 'user profile (unpinned)') |
 | Rules hash | ${_h_prj:-n/a} (system.md ${_h_sys:-n/a}) |
 
 ### Results
