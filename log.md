@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 15:55
+- frontmatter: user-invocable: true (skill-check S01) (skills/agentfs-eval/SKILL.md)
+
 ## 2026-11-18 15:52
 - runtime note: F19 noise finding (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
 - F17-F19 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
