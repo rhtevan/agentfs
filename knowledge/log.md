@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 22:03
+- F6 fixed (agentfs-setup 7.13.1) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-17 21:26
 - Tier table: final 7.13.0 parallel numbers (T3 100, T2 98) (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
 

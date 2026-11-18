@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 22:03
+- F6 fixed (agentfs-setup 7.13.1) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 22:02
+- README version reference 7.13.0 -> 7.13.1 (sync-readme-version) (README.md)
+- F6: compliance staleness check runs on every exit path (was only after a real sync, so it warned once); suggests run-parallel.sh real instead of sequential --runs 5 (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
 ## 2026-11-17 21:33
 - README D9: hook plugins table + run-parallel.sh (scripts/README.md)
 - README D9: hook plugins table + run-parallel.sh (README.md)

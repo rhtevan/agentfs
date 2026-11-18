@@ -15,6 +15,7 @@
 #      - SPECKIT block content
 #   3. Checks current template version vs installed version
 #   4. If versions match, reports 'already up to date' and exits
+#      (the compliance staleness check still runs on this path)
 #   5. Regenerates AGENTS.md from current template via seed-agents-md.sh
 #      with the detected scope (preserves scope across sync)
 #   6. Re-injects preserved project-owned rows using awk (idempotent)
@@ -69,6 +70,48 @@ esac
 PROJECT_DIR="${1:-$(pwd)}"
 AGENTS="$PROJECT_DIR/AGENTS.md"
 
+# ── Compliance profile staleness check ────────────────────────────
+# Runs on EVERY exit path (initial seed, already-up-to-date, synced):
+# before F6 (2026-11-17) it ran only after a real sync, so the warning
+# fired once and was never repeated while the profile stayed stale.
+compliance_staleness_check() {
+  # TEMPLATE_VERSION is unset on the initial-seed path (set -u safe).
+  local COMPLIANCE_PROFILE RULES_HASH_SH PROFILE_VERSION PROFILE_HASH CURRENT_HASH
+  local TV="${TEMPLATE_VERSION:-$(grep -oP 'version:\s*"\K[^"]+' "$SKILL_FILE" 2>/dev/null | head -1 || echo unknown)}"
+  COMPLIANCE_PROFILE="${HOME}/.agents/skills/agentfs-setup/compliance-profile.yaml"
+  RULES_HASH_SH="${HOME}/.agents/scripts/rules-hash.sh"
+  if [[ -f "$COMPLIANCE_PROFILE" ]]; then
+    # '|| true': pre-1.1 profiles have no rules-hash line; grep exits 1
+    # on no match and 'set -e' would abort the sync at its last step.
+    PROFILE_VERSION=$(grep -m1 '^agents_md_version:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"' || true)
+    PROFILE_HASH=$(grep -m1 '^agents_md_rules_hash:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"' || true)
+    CURRENT_HASH=""
+    [[ -f "$RULES_HASH_SH" ]] && CURRENT_HASH=$(bash "$RULES_HASH_SH" "$AGENTS" 2>/dev/null || echo "")
+
+    # Staleness is a property of the RULES, not the version string. The
+    # template version tracks agentfs-setup's frontmatter, so it moves
+    # for changes that never touch AGENTS.md. Warn only when the rules
+    # the profile was measured against actually differ.
+    if [[ -n "$PROFILE_HASH" && -n "$CURRENT_HASH" ]]; then
+      if [[ "$PROFILE_HASH" != "$CURRENT_HASH" ]]; then
+        echo ""
+        echo "[sync-agents-md] ⚠️  Compliance profile is STALE — rules changed"
+        echo "[sync-agents-md]    Profile: ${PROFILE_HASH} (v${PROFILE_VERSION})"
+        echo "[sync-agents-md]    Current: ${CURRENT_HASH} (v${TV})"
+        echo "[sync-agents-md]    Re-record all tiers (from a project repo, ~12-16 min):"
+        echo "[sync-agents-md]      bash ~/.agents/scripts/run-parallel.sh real"
+        echo "[sync-agents-md]    Status: bash ~/.agents/scripts/update-compliance.sh --check"
+      fi
+    elif [[ "$PROFILE_VERSION" != "$TV" ]]; then
+      # Pre-1.1 profile, or AGENTS.md unreadable — fall back to versions.
+      echo ""
+      echo "[sync-agents-md] ⚠️  Compliance profile may be STALE (v${PROFILE_VERSION} ≠ v${TV})"
+      echo "[sync-agents-md]    No rules hash available — cannot tell if rules changed."
+      echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --check"
+    fi
+  fi
+}
+
 if [[ ! -f "$SEED_SCRIPT" ]]; then
   echo "[sync-agents-md] ERROR: seed-agents-md.sh not found at $SEED_SCRIPT" >&2
   exit 1
@@ -77,6 +120,7 @@ fi
 if [[ ! -f "$AGENTS" ]]; then
   echo "[sync-agents-md] No AGENTS.md found at $AGENTS — running initial setup instead."
   bash "$SEED_SCRIPT" "$PROJECT_DIR"
+  compliance_staleness_check
   exit 0
 fi
 
@@ -116,6 +160,7 @@ elif [[ "$CURRENT_VERSION" == "$TEMPLATE_VERSION" ]]; then
   # AGENTS.md is already current, so it must run on this early exit too.
   README_SYNC="${HOME}/.agents/scripts/sync-readme-version.sh"
   [[ -f "$README_SYNC" ]] && bash "$README_SYNC" || true
+  compliance_staleness_check
   exit 0
 else
   echo "[sync-agents-md] Current: v$CURRENT_VERSION → Template: v$TEMPLATE_VERSION"
@@ -229,37 +274,4 @@ if [[ -f "$README_SYNC" ]]; then
   bash "$README_SYNC" || echo "[sync-agents-md] ⚠️  README version sync failed — check ~/.agents/README.md"
 fi
 
-# --- Compliance profile staleness check ---
-COMPLIANCE_PROFILE="${HOME}/.agents/skills/agentfs-setup/compliance-profile.yaml"
-RULES_HASH_SH="${HOME}/.agents/scripts/rules-hash.sh"
-if [[ -f "$COMPLIANCE_PROFILE" ]]; then
-  # '|| true': pre-1.1 profiles have no rules-hash line; grep exits 1
-  # on no match and 'set -e' would abort the sync at its last step.
-  PROFILE_VERSION=$(grep -m1 '^agents_md_version:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"' || true)
-  PROFILE_HASH=$(grep -m1 '^agents_md_rules_hash:' "$COMPLIANCE_PROFILE" | awk '{print $2}' | tr -d '"' || true)
-  CURRENT_HASH=""
-  [[ -f "$RULES_HASH_SH" ]] && CURRENT_HASH=$(bash "$RULES_HASH_SH" "$AGENTS" 2>/dev/null || echo "")
-
-  # Staleness is a property of the RULES, not the version string. The
-  # template version tracks agentfs-setup's frontmatter, so it moves
-  # for changes that never touch AGENTS.md. Warn only when the rules
-  # the profile was measured against actually differ.
-  if [[ -n "$PROFILE_HASH" && -n "$CURRENT_HASH" ]]; then
-    if [[ "$PROFILE_HASH" != "$CURRENT_HASH" ]]; then
-      echo ""
-      echo "[sync-agents-md] ⚠️  Compliance profile is STALE — rules changed"
-      echo "[sync-agents-md]    Profile: ${PROFILE_HASH} (v${PROFILE_VERSION})"
-      echo "[sync-agents-md]    Current: ${CURRENT_HASH} (v${TEMPLATE_VERSION})"
-      echo "[sync-agents-md]    Run (from a project repo, one tier at a time):"
-      echo "[sync-agents-md]      bash ~/.agents/scripts/update-compliance.sh --tier T4 --runs 5"
-      echo "[sync-agents-md]      bash ~/.agents/scripts/update-compliance.sh --tier T3 --runs 5"
-      echo "[sync-agents-md]      bash ~/.agents/scripts/update-compliance.sh --tier T2 --runs 5"
-    fi
-  elif [[ "$PROFILE_VERSION" != "$TEMPLATE_VERSION" ]]; then
-    # Pre-1.1 profile, or AGENTS.md unreadable — fall back to versions.
-    echo ""
-    echo "[sync-agents-md] ⚠️  Compliance profile may be STALE (v${PROFILE_VERSION} ≠ v${TEMPLATE_VERSION})"
-    echo "[sync-agents-md]    No rules hash available — cannot tell if rules changed."
-    echo "[sync-agents-md]    Run: bash ~/.agents/scripts/update-compliance.sh --check"
-  fi
-fi
+compliance_staleness_check
