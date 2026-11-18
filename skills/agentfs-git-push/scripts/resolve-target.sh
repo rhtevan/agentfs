@@ -12,6 +12,10 @@
 #   0 = resolved successfully
 #   1 = resolved target is not a git repo
 #   2 = usage error
+#
+# Env:
+#   AGENTFS_GIT_DEFAULT_TARGET  default target when no arg is given
+#                               (default: ~/.agents)
 
 set -euo pipefail
 
@@ -21,7 +25,9 @@ source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "agentfs-git-push" "2.1.0" 2>/dev/null || true
 
 EXPLICIT="${1:-}"
-DEFAULT_TARGET="$HOME/.agents"
+# AGENTFS_GIT_DEFAULT_TARGET overrides the bare-invocation default
+# (benchmark.sh points it at its sandbox so tests never touch ~/.agents).
+DEFAULT_TARGET="${AGENTFS_GIT_DEFAULT_TARGET:-$HOME/.agents}"
 
 # ── Resolve primary target ───────────────────────────────────────────
 if [[ -n "$EXPLICIT" ]]; then

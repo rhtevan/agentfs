@@ -75,8 +75,8 @@ Used by `update-compliance.sh --tier Tx` (source of truth:
 | Tier | Model | Why |
 |------|-------|-----|
 | T4 | `claude-sonnet-5.5` | Current frontier |
-| T3 | `glm-5-3` | Open-weight, ~756 GB — not rhel-ai hostable. Selected 2026-11-17 from a 14-model screen (only non-frontier model to pass R2). Compliance 100% at rules 7.13.0 (96% at 7.12.1). Previous: Nemotron-3-Super-120B (76%, archived) |
-| T2 | `Qwen3.8-27B-FP8` | Fits 2× L4 (TP2) at 64K (18.4 GiB/GPU). Selected 2026-11-17 from the 14-model screen. Compliance 100% at rules 7.13.0 with the preflight-reminder hook (was 87% at 7.12.1: R2 25%). `gemma-4-31b-it` evaluated as alternative, rejected (78% at 7.12.1; 93% at 7.13.0, R4 5/9). Previous: nemotron-3-nano (60%), gpt-oss-20b (Corp harmony corruption), both archived |
+| T3 | `glm-5-3` | Open-weight, ~756 GB — not rhel-ai hostable. Selected 2026-11-17 from a 14-model screen (only non-frontier model to pass R2). Compliance 100% at rules 7.13.0 (parallel re-record 20261117_210655; 96% at 7.12.1). Previous: Nemotron-3-Super-120B (76%, archived) |
+| T2 | `Qwen3.8-27B-FP8` | Fits 2× L4 (TP2) at 64K (18.4 GiB/GPU). Selected 2026-11-17 from the 14-model screen. Compliance 98% at rules 7.13.0 with the preflight-reminder hook (parallel re-record 20261117_210655: t_r2b 1/4 executed without a plan; was 87% at 7.12.1: R2 25%). `gemma-4-31b-it` evaluated as alternative, rejected (78% at 7.12.1; 93% at 7.13.0, R4 5/9). Previous: nemotron-3-nano (60%), gpt-oss-20b (Corp harmony corruption), both archived |
 | T1 | `granite-4.1-8b` | Reference only (T1 compliance is not a goal) |
 
 ### Classification Axes

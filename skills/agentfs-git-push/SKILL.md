@@ -3,7 +3,7 @@ name: agentfs-git-push
 description: >
   git push safety, pre-push scan, hey git workflow, hey git, git
 metadata:
-  version: "2.1.1"
+  version: "2.2.0"
   model-tier: T2
   tags: [agentfs, git, safety, pre-push, guardrail]
 user-invocable: true
@@ -231,6 +231,7 @@ this conflicts with this safety workflow. The agent MUST:
 | Test | Spec | How to Verify | Expected Result |
 |:----:|:----:|---------------|-----------------|
 | T1 | S1 | `cd /tmp/some-project && bash resolve-target.sh` | `TARGET=~/.agents`, `CWD_ALSO=true` if CWD has changes |
+| T8 | S1 | `AGENTFS_GIT_DEFAULT_TARGET=/path/to/repo bash resolve-target.sh` | `TARGET=/path/to/repo` (env overrides the `~/.agents` default; used by benchmark sandboxes) |
 | T2 | S1 | `bash resolve-target.sh /path/to/repo` | `TARGET=/path/to/repo`, `CWD_ALSO=false` |
 | T3 | S1 | `bash resolve-target.sh /tmp` (non-git) | Exit 1 with error message |
 | T4 | S3 | Stage a file containing `AKIA` prefix → run `pre-push-scan.sh` | Findings report with secrets category flagged |

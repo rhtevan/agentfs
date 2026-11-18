@@ -43,6 +43,16 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/session-start.sh"
+          }
+        ]
+      }
     ]
   }
 }

@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-17 21:26
+- Tier table: final 7.13.0 parallel numbers (T3 100, T2 98) (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+
+## 2026-11-17 21:25
+- F9 R7 guard hook declined (27/27 without hook) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 21:20
+- 204553/210655 results + session-ID reuse root cause (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- F13 session-ID reuse hook-state fix; final re-record (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-17 20:46
+- Test containment for real ~/.agents (F12); t_ii retry (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Test containment for real ~/.agents (F12); t_ii retry (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
+## 2026-11-17 20:29
+- Sharded parallel campaign: 12m48s, T4 100/T3 98/T2 100 (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Sharded parallel campaign: 12m48s, T4 100/T3 98/T2 100 (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+
 ## 2026-11-17 19:15
 - F10 fixed: cleanup leak root cause WAL lock contention (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

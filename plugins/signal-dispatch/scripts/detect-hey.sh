@@ -14,6 +14,9 @@ message="$(printf '%s' "$payload" | jq -r '.message // ""')"
 
 dispatch_dir="/tmp/goose-dispatch"
 mkdir -p "$dispatch_dir"
+# Dispatch is per prompt: drop any state from an earlier prompt (or an
+# earlier session that had the same reused ID) before deciding.
+rm -f "${dispatch_dir}/${session_id}" "${dispatch_dir}/${session_id}.keywords" 2>/dev/null || true
 
 # Extract keywords: strip leading "hey " (case-insensitive)
 keywords="$(echo "$message" | sed -E 's/^[Hh]ey[[:space:]]+//')"

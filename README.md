@@ -153,7 +153,7 @@ profiles — purely a capability and knowledge store.
 ├── skills/          # Shared agent workflows (SKILL.md format)
 ├── knowledge/       # Shared knowledge bundles (Open Knowledge Format)
 ├── plugins/         # Goose hooks plugins (deterministic enforcement)
-├── scripts/         # Shared scripts (SDM, benchmark, dispatch fidelity checker, gather-state, test fixtures)
+├── scripts/         # Shared scripts (SDM, compliance benchmark + parallel driver, dispatch fidelity checker, gather-state, test fixtures)
 ├── assets/          # Static assets (images, diagrams)
 ├── index.md         # Navigation hub — start here
 └── log.md           # Activity log (reverse chronological)
@@ -332,6 +332,20 @@ rate on all model sizes). See [design-spec.md](skills/agentfs-setup/references/d
 **Signal Dispatch** is a separate table in AGENTS.md. All signals are
 unified under the `hey` prefix. Deterministic enforcement is provided
 by the `signal-dispatch` plugin via Goose `PreToolUse` hooks.
+
+**Hook plugins** (`plugins/`, discovered by goose from `plugins/<name>/hooks/hooks.json`;
+live in every goose session). Rule text is unchanged; hooks only block and remind:
+
+| Plugin | Rule | Behaviour |
+|--------|------|-----------|
+| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks other tools until `search_nodes` runs |
+| `preflight-reminder` | 2 | Blocks the first mutating tool call of each turn once with a Pre-Flight reminder |
+| `post-write-enforce` | 6 | After a write under `.agents/`, blocks other tools until `post-write.sh` runs |
+
+Per-session state lives in `/tmp/goose-{dispatch,preflight,postwrite}/<session-id>`.
+goose reuses session IDs, so each plugin clears its state on `SessionStart` (new sessions only).
+Compliance scores in `compliance-profile.yaml` measure AGENTS.md + hooks; verdicts tag hook-assisted runs.
+Re-record with `scripts/run-parallel.sh real` (sharded per tier, ~12 min for 3 tiers × 49 runs).
 
 Path hygiene (never use `/home/<user>/` in output) is enforced by
 `pre-push-scan.sh` Category 2 rather than a dedicated rule.

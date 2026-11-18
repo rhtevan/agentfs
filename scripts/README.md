@@ -20,4 +20,13 @@ AGENTS.md rule scripts (`checkpoint.sh`, `post-write.sh`) remain in
 | `score-all.sh` | Batch Quality + Observable + Operable (build) scoring → `scores.yaml` |
 | `sdm-validate.sh` | Validate a candidate SDM endpoint for AgentFS usability before switching `SDM_ENDPOINT` (agreement with baseline + ground-truth facts; no scores persisted) |
 
+## Compliance benchmark
+
+| Script | Purpose |
+|--------|---------|
+| `benchmark.sh` | Runs the AGENTS.md compliance tests against one model (`--queue FILE` for work-queue mode, `--regrade DIR`). Contains tests: sandbox git target, network push blocked, real `~/.agents` index guard |
+| `run-parallel.sh` | `smoke\|real [--shards "T4=2,T3=6,T2=4"] [--tiers ...]` — dry-run gate, per-tier work queue across N workers with isolated project/sandbox copies, merge, regrade, record |
+| `update-compliance.sh` | Records results into `compliance-profile.yaml` (`--tier Tx`, `--dry-run` gate, `--check`) |
+| `rules-hash.sh` | Hashes the AGENTS.md `## Rules` + `## Signal Dispatch` sections |
+
 Endpoint contract: [`skills/schemas/sdm-endpoint.md`](../skills/schemas/sdm-endpoint.md).

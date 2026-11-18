@@ -658,3 +658,91 @@ parallel design; 57 min wall clock; 0 errored runs.
 4. **Ceiling effect.** With all tiers at 100%, the suite no longer
    discriminates T2–T4; samples are 4–12 runs per rule. Future signal
    needs harder tests (multi-turn drift, longer contexts), not more runs.
+
+## Sharded Parallel Campaign — run-parallel.sh v2 (2026-11-17)
+
+Goal: same 49 runs/tier, overall wall time < 20 min (was 57 min, bound
+by T3 glm at ~69 s/run sequential).
+
+**Design.** `benchmark.sh --queue FILE` pops `<test> <run>` units under
+flock; `run-parallel.sh` (now versioned in `~/.agents/scripts/`) builds
+one longest-first queue per tier and starts N workers, each with its own
+project copy, sandbox and scratch dir (session evidence matches by
+working dir, so same-model workers must not share one). After the
+workers finish: merge, completeness check (every unit exactly once, queue
+drained, else not recorded), regrade with current checkers, record via
+update-compliance replay.
+
+**Capacity probe (before building).** 13 concurrent streams (sonnet 2,
+glm 6, Qwen 5), short prompt: no errors; per-run latency equal to the
+sequential baseline. The 106–150 s outliers produced 5–7k output tokens
+(long thinking) at normal decode speed — model variance, not queueing.
+
+**Results** (TS 20261117_201357, workers T4×2 / T3×6 / T2×4):
+
+| Tier | Wall | Score | Failures |
+|---|---|---|---|
+| T4 sonnet-5.5 | 10m46s | 100% | diagnostics only (t_r3c_implicit 0/2) |
+| T3 glm-5-3 | 11m43s | 98% | t_r2git run1: confirm asked but `git show --stat` instead of `git diff --stat` (R2 11/12) |
+| T2 Qwen3.8-27B | 12m48s | 100% | diagnostics only; t_r6 run5 excluded (rate limit persisted after 3 attempts) |
+
+Overall wall time **12m48s** (was 57 min). Gate CONVERGED on all tiers.
+
+**Findings.**
+1. **The provider rate-limits under load.** Smoke (T2×5): 8 of 14
+   Qwen units rate-limited on attempt 1. Real (T2×4): 24 rate-limit
+   retries on T2 and 5 on T3, 1 run excluded. The limits come from the
+   provider, so more workers past this point add retries, not speed.
+   An excluded run shrinks the sample: watch `Errored` in the report.
+2. **Real runs were slower per unit than estimated.** T4 needed 10m46s
+   on 2 workers (12.4 min sequential). Retries and the shared provider
+   cost more than the probe showed. Still under 15 min.
+3. **Verified no cross-worker session mix-up.** EVIDENCE first_tool
+   matched the transcript's first tool on all 42 smoke transcripts, with
+   none missing; 0 leaked sessions in smoke and real.
+
+### Addendum — test containment for the real ~/.agents repo (2026-11-17)
+
+**Incident.** The agentfs-git-push skill defaults to `~/.agents`. In 4
+t_r2git runs (gemma: 16:14, 17:44, 18:03 campaigns) the model ran
+`cd ~/.agents && git add -A`, staging the user's real repo. glm and Qwen
+ran read-only `git status`/`git log` there in several runs. A transcript
+scan and the reflog show no test commit, push, reset or checkout.
+
+**Fix (3 layers).**
+1. agentfs-git-push 2.2.0: `resolve-target.sh` honours
+   `AGENTFS_GIT_DEFAULT_TARGET`; benchmark.sh sets it to the sandbox.
+2. benchmark.sh exports `GIT_CONFIG_*` `pushInsteadOf` rules for https,
+   http, ssh and git@ that point at a dead URL. Every network push from
+   a test fails; local sandbox remotes and fetches still work.
+3. Per-run guard on the real repo. If the index content
+   (`git ls-files -s`) changed, it is restored from the start snapshot.
+   A moved HEAD is flagged 🚨 and never reset. Transcripts record
+   `EVIDENCE real_repo=clean|index_restored|head_moved`.
+
+Grading is unchanged. T3's t_r2git failure (`git show --stat` instead of
+`git diff --stat`) stays FAIL by decision: the rule says what it says.
+
+**Also fixed:** t_ii/t1_multi had no provider-error retry, so a single
+`Rate limit exceeded: token budget exceeded` became an ERROR. It now
+retries like the single-turn tests, with a fresh session name for each
+attempt. Tested with a stub goose.
+
+### Re-records after containment and the session-ID hook fix (2026-11-17)
+
+| Run | Wall | T4 sonnet | T3 glm | T2 Qwen | Excluded | Notes |
+|-----|------|-----------|--------|---------|----------|-------|
+| 20261117_204553 | 15m48s | 96% | 100% | 96% | T2: 3 (rate limit) | First run with containment. T4 t_r1 run2 falsely blocked by a stale post-write-enforce flag |
+| 20261117_210655 | 11m42s | 100% | 100% | 98% | 0 | After the hook fix. Only scored fail: T2 t_r2b run1 (executed without a plan, 3 hook denials) |
+
+**Root cause of the 204553 T4 failure:** goose session IDs (`YYYYMMDD_N`) are
+reused. ID 20261118_47 belonged to three earlier T3 workers before T4-w2 got it.
+A post-write flag left in `/tmp/goose-postwrite/<sid>` by an earlier holder made
+the hook deny `load_skill`. The model correctly refused to run post-write.sh for
+a file it had never written. Fix: every plugin's SessionStart hook clears its own
+per-session state. SessionStart fires only for new sessions, so resumed sessions
+keep their state.
+
+**210655 checks:** 147/147 `EVIDENCE real_repo=clean`; real index unchanged;
+0 post-write-enforce denials in 161 run logs (135 legitimate preflight-reminder
+denials); 0 leaked sessions; provider retries T2 22, T3 6, T4 0.

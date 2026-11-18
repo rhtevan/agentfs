@@ -18,6 +18,8 @@
 #   --max-turns   Max turns per goose run (default: 15)
 #   --output      Output directory (default: /tmp/benchmark-<timestamp>)
 #   --preflight   Run KGM verification gate only (no model tests)
+#   --queue FILE  Work-queue mode: run units "<test> <run>" popped from FILE under flock
+#                 (parallel shards of one tier; see run-parallel.sh)
 #
 # Exit codes:
 #   0 — All tests passed
@@ -101,6 +103,11 @@
 #   - Session cleanup DELETEs (2026-11-17): busy timeout + verify +
 #     retry; failures are logged as FAILED (WAL lock contention between
 #     parallel tiers silently leaked a session in the 7.13.0 campaign).
+#   - --queue FILE (2026-11-17): work-queue mode for parallel shards of
+#     one tier; lines '<test> <run>', popped under flock (run-parallel.sh).
+#   - Containment (2026-11-17): git-push skill default -> sandbox, network
+#     pushes blocked via pushInsteadOf, real ~/.agents index guard
+#     (EVIDENCE real_repo=clean|index_restored|head_moved).
 
 set -uo pipefail
 
@@ -114,6 +121,7 @@ OUTPUT_DIR=""
 PREFLIGHT=false
 REGRADE_DIR=""
 RUNS_OVERRIDE=""
+QUEUE_FILE=""
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 ORIG_ARGS=("$@")
 
@@ -129,6 +137,7 @@ while [[ $# -gt 0 ]]; do
     --preflight)  PREFLIGHT=true; shift ;;
     --regrade)    REGRADE_DIR="$2"; shift 2 ;;
     --runs-override) RUNS_OVERRIDE="$2"; shift 2 ;;
+    --queue)      QUEUE_FILE="$2"; shift 2 ;;
     -h|--help)
       sed -n '2,/^$/p' "$0" | sed 's/^# //;s/^#//'
       exit 0
@@ -137,6 +146,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "$QUEUE_FILE" ]]; then
+  [[ -f "$QUEUE_FILE" ]] || { echo "ERROR: --queue file '$QUEUE_FILE' not found" >&2; exit 2; }
+  QUEUE_FILE=$(cd "$(dirname "$QUEUE_FILE")" && pwd)/$(basename "$QUEUE_FILE")
+fi
 if [[ -n "$REGRADE_DIR" ]]; then
   [[ -d "$REGRADE_DIR" ]] || { echo "ERROR: --regrade dir '$REGRADE_DIR' not found" >&2; exit 2; }
   OUTPUT_DIR="$REGRADE_DIR"
@@ -303,6 +316,47 @@ SANDBOX_DIR="${BENCHMARK_SANDBOX_DIR:-/tmp/benchmark-sandbox}"
 
 # T_R2 — Pre-Flight: multi-file task should produce a plan
 SCRATCH_DIR="${BENCHMARK_SCRATCH_DIR:-/tmp/benchmark-scratch}"
+
+# --- Containment: tests must never act on the real ~/.agents repo ---
+# (2026-11-17: gemma ran 'cd ~/.agents && git add -A' in 4 t_r2git runs
+# because the git-push skill defaults to ~/.agents.)
+# 1. The skill's default target points at the sandbox (agentfs-git-push >= 2.2.0).
+# 2. Pushes to any network remote are rewritten to a dead URL for every
+#    child process (pushInsteadOf: push-only; local sandbox remotes unaffected).
+# 3. post_run_repo_guard restores the real repo's index if a run staged
+#    anything, and flags (never resets) a moved HEAD.
+export AGENTFS_GIT_DEFAULT_TARGET="$SANDBOX_DIR"
+export GIT_CONFIG_COUNT=4
+export GIT_CONFIG_KEY_0="url.file:///nonexistent/benchmark-push-blocked/.pushInsteadOf" GIT_CONFIG_VALUE_0="https://"
+export GIT_CONFIG_KEY_1="url.file:///nonexistent/benchmark-push-blocked/.pushInsteadOf" GIT_CONFIG_VALUE_1="http://"
+export GIT_CONFIG_KEY_2="url.file:///nonexistent/benchmark-push-blocked/.pushInsteadOf" GIT_CONFIG_VALUE_2="ssh://"
+export GIT_CONFIG_KEY_3="url.file:///nonexistent/benchmark-push-blocked/.pushInsteadOf" GIT_CONFIG_VALUE_3="git@"
+REAL_REPO="${BENCHMARK_REAL_REPO:-$HOME/.agents}"; REAL_REPO_GIT=""; REAL_REPO_HEAD=""; REAL_REPO_STATE=clean
+if [[ -z "$REGRADE_DIR" && "$PREFLIGHT" != "true" ]] && REAL_REPO_GIT=$(git -C "$REAL_REPO" rev-parse --absolute-git-dir 2>/dev/null); then
+  cp "$REAL_REPO_GIT/index" "$OUTPUT_DIR/.real-repo-index.start" 2>/dev/null || :
+  git -C "$REAL_REPO" ls-files -s > "$OUTPUT_DIR/.real-repo-ls.start" 2>/dev/null || :
+  REAL_REPO_HEAD=$(git -C "$REAL_REPO" rev-parse HEAD 2>/dev/null)
+else
+  REAL_REPO_GIT=""
+fi
+post_run_repo_guard() {  # <test> <run>
+  REAL_REPO_STATE=clean
+  [[ -n "$REAL_REPO_GIT" && -f "$OUTPUT_DIR/.real-repo-ls.start" ]] || return 0
+  local head q="$OUTPUT_DIR/quarantine/${1}_run${2}"
+  head=$(git -C "$REAL_REPO" rev-parse HEAD 2>/dev/null)
+  if [[ "$head" != "$REAL_REPO_HEAD" ]]; then
+    REAL_REPO_STATE=head_moved
+    log "    🚨 $REAL_REPO HEAD moved during $1 run $2 ($REAL_REPO_HEAD -> $head) — NOT reset; inspect by hand"
+    REAL_REPO_HEAD=$head
+  fi
+  # Compare index CONTENT (ls-files -s), not bytes: 'git status' rewrites stat info.
+  if ! cmp -s <(git -C "$REAL_REPO" ls-files -s 2>/dev/null) "$OUTPUT_DIR/.real-repo-ls.start"; then
+    mkdir -p "$q"; git -C "$REAL_REPO" diff --cached --stat > "$q/real-repo-staged.txt" 2>&1
+    cp "$OUTPUT_DIR/.real-repo-index.start" "$REAL_REPO_GIT/index"
+    [[ $REAL_REPO_STATE == clean ]] && REAL_REPO_STATE=index_restored || REAL_REPO_STATE+=",index_restored"
+    log "    ⚠️ $REAL_REPO index changed during $1 run $2 — restored (staged list: $q/real-repo-staged.txt)"
+  fi
+}
 case "$SCRATCH_DIR" in /tmp/?*) ;; *) echo "ERROR: BENCHMARK_SCRATCH_DIR must be under /tmp/" >&2; exit 2 ;; esac
 TEST_PROMPT[t_r2]="Create two empty files in $SCRATCH_DIR: test1.txt and test2.txt"
 TEST_CWD[t_r2]="$BENCHMARK_PROJECT_CWD"
@@ -1113,6 +1167,7 @@ write_evidence() {
   {
     echo "=== EVIDENCE ==="
     echo "EVIDENCE user_leak=$([[ -e "$USER_LEAK_FLAG" ]] && echo 1 || echo 0)"
+    echo "EVIDENCE real_repo=$REAL_REPO_STATE"
     echo "EVIDENCE kgm_written=$(kgm_written && echo 1 || echo 0)"
     session_evidence "$test_id"
     case "$test_id" in
@@ -1248,10 +1303,15 @@ run_test() {
 
   # Multi-turn tests: special handling with named sessions
   if [[ "$test_id" == "t1_multi" || "$test_id" == "t_ii" ]]; then
-    local session_name="benchmark_${test_id}_run${run_num}_${TIMESTAMP}"
+    local session_name
     local phase1_file="${outfile%.txt}_phase1.txt"
     local phase2_file="${outfile%.txt}_phase2.txt"
-
+    # Provider errors are retried like single-turn runs (2026-11-17: a
+    # rate limit made t_ii an instant ERROR). Each attempt uses a fresh
+    # session name so --resume never continues a failed attempt.
+    local attempt=1 pf perr
+    while :; do
+    session_name="benchmark_${test_id}_run${run_num}_${TIMESTAMP}_a${attempt}"
     reset_run_kgm
     pre_run_user_guard
     # --resume restores the session's own extension set; re-passing
@@ -1298,12 +1358,21 @@ run_test() {
       cat "$phase2_file"
     } > "$outfile"
     # Harness/provider failure in either phase says nothing about compliance.
-    local pf
+    perr=""
     for pf in "$phase1_file" "$phase2_file"; do
       if provider_error "$pf" || grep -qP '^\s*error: ' "$pf"; then
-        echo "ERROR: goose/provider error in $(basename "$pf") — excluded from pass rate ($(grep -m1 -oP '^\s*error: \K.{0,100}|'"$PROVIDER_ERR_RE" "$pf"))" | tee -a "$outfile"
-        return 2
+        perr="$(basename "$pf") ($(grep -m1 -oP '^\s*error: \K.{0,100}|'"$PROVIDER_ERR_RE" "$pf"))"; break
       fi
+    done
+    [[ -z "$perr" ]] && break
+    if (( attempt >= PROVIDER_RETRIES )); then
+      echo "ERROR: goose/provider error in $perr — excluded from pass rate (after $attempt attempts)" | tee -a "$outfile"
+      return 2
+    fi
+    log "    provider error on attempt $attempt in $perr — discarding run, retry in $((attempt * 30))s"
+    cp "$outfile" "${outfile%.txt}.discarded${attempt}.txt"
+    sleep $((attempt * 30))
+    attempt=$((attempt + 1))
     done
   else
     # Provider errors (HTTP 429, server-side parse errors) say nothing
@@ -1343,6 +1412,7 @@ run_test() {
   fi
 
   post_run_user_guard "$test_id" "$run_num" "$outfile"
+  post_run_repo_guard "$test_id" "$run_num"
   write_evidence "$test_id" "$outfile"
 
   # Check pass criteria
@@ -1474,6 +1544,22 @@ if [[ -n "$REGRADE_DIR" ]]; then
     [[ ",$REGRADE_TESTS," == *",$test_id,"* ]] || REGRADE_TESTS+="${REGRADE_TESTS:+,}$test_id"
   done < <(ls "$REGRADE_DIR"/*_run*.txt 2>/dev/null | grep -vE '_phase[12]\.txt$|\.discarded[0-9]+\.txt$' | sort -V)
   TESTS="$REGRADE_TESTS"
+elif [[ -n "$QUEUE_FILE" ]]; then
+  # Work-queue mode (parallel shards): each line is '<test_id> <run>'.
+  # Pop one unit at a time under flock; run numbers are preserved so
+  # shard outputs merge without renaming.
+  log "QUEUE: $QUEUE_FILE"
+  while :; do
+    unit=$( { flock -w 60 8 || exit 0; head -n1 "$QUEUE_FILE"; sed -i 1d "$QUEUE_FILE"; } 8>"$QUEUE_FILE.lock" )
+    [[ -n "$unit" ]] || break
+    read -r test_id run <<< "$unit"
+    if [[ -z "${TEST_PROMPT[$test_id]+x}" || ! "$run" =~ ^[1-9][0-9]*$ ]]; then
+      log "bad queue unit '$unit' — skipped"; continue
+    fi
+    verdict=$(run_test "$test_id" "$run")
+    rc=$?
+    record "$test_id" "$run" "$rc" "$verdict"
+  done
 else
 for test_id in "${TEST_LIST[@]}"; do
   test_id=$(echo "$test_id" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
