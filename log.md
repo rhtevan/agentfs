@@ -2,6 +2,51 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 15:52
+- runtime note: F19 noise finding (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- F17-F19 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Step 6: warn --tests replaces tier entry (skills/agentfs-eval/SKILL.md)
+- --check partial hint: run-parallel --tiers (--tests replaces tier entry) (scripts/update-compliance.sh)
+
+## 2026-11-18 15:45
+- F17 vote_count note + S17 line budget (reference section moved) (skills/agentfs-eval/SKILL.md)
+- moved Execution Details reference out of SKILL.md (skills/agentfs-eval/references/execution-details.md)
+- F17: vote_count 3->1 (correlated in-session votes) (skills/agentfs-eval/rubrics/sycophancy-detection.yaml)
+- F17: vote_count 3->1 (correlated in-session votes) (skills/agentfs-eval/rubrics/memory-classification.yaml)
+- F18: stage names Static Checks / Build QOO / Runtime CECX (Tier reserved for model T1-T4); SDM-unavailable note (skills/skill-eval/SKILL.md)
+
+## 2026-11-18 15:20
+- F3 closed; F16-F19 added (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- schema: runtime dims computed deterministically (F3) (skills/schemas/operable-agents-md.yaml)
+- scores.yaml: operable.runtime -> pointer to compliance-profile (F3) (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- F3: Stage S0-S3 terms; Steps 6-11 (Tier 3 QOO benchmark + SDM runtime) replaced by Runtime Compliance from compliance-profile (update-compliance --check + runtime-compliance.sh); SDM only for build-time (--phase build) (skills/agentfs-eval/SKILL.md)
+
+## 2026-11-18 15:19
+- new: deterministic runtime CECX dims from compliance profile (skills/agentfs-eval/scripts/runtime-compliance.sh)
+
+## 2026-11-18 14:49
+- run-parallel passes --remeasure (campaign = explicit decision); fixes CONVERGED gate stop (scripts/run-parallel.sh)
+- --remeasure: explicit re-measure decision makes dry-run PENDING (scripts/update-compliance.sh)
+
+## 2026-11-18 14:45
+- README Rule 2: Standard / Spec-Driven Mode (README.md)
+- Pre-Flight description: modes, not tiers (skills/agentfs-setup/SKILL.md)
+- Rules 1-2 terms: 'Tier' reserved for model T1-T4. R1 fallback: Index Browse / Open Discretion; R2: Standard Mode / Spec-Driven Mode (wording only) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-18 14:42
+- profile header: hashes are provenance only (skills/agentfs-setup/compliance-profile.yaml)
+- dry-run: drop version key (moves for non-rules changes) (scripts/update-compliance.sh)
+- Semantic change control: sync-agents-md drops rules-hash STALE warning (version notice + classify prompt); update-compliance --check/--dry-run no longer compare hashes or harness SHAs (skills/agentfs-setup/scripts/sync-agents-md.sh)
+
+## 2026-11-18 14:41
+- dry-run: converge on model/provider/version/tests; header docs (scripts/update-compliance.sh)
+- tier query: version instead of hashes (scripts/update-compliance.sh)
+- update-compliance --check: semantic change control, no hash staleness (scripts/update-compliance.sh)
+
+## 2026-11-18 14:00
+
+## 2026-11-18 13:34
+
 ## 2026-11-18 09:02
 - README: signal-dispatch row describes one-time block (fail-open) and F7 mismatch notice (README.md)
 

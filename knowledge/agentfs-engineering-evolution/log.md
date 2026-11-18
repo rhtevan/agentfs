@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 15:52
+- F17-F19 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-18 15:20
+- F3 closed; F16-F19 added (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-17 23:10
 - F7 re-record 20261117_225629 (knowledge/agentfs-engineering-evolution/benchmark-results.md)
 - F7 Done (lean): prefix-from-name finding, V1-V6 results (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)

@@ -4,8 +4,10 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-17 23:10 |
-| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-17 22:55 |
+| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-18 15:52 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-18 15:52 |
+| [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-18 15:45 |
+| [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-18 14:00 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-17 22:55 |
 | [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean goose sessions, cleanup recipe sessions, remove orphaned sessions, clean desktop sessions, clean terminal sessions | 2026-11-17 22:20 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-11-17 20:37 |
@@ -27,7 +29,6 @@
 | [gcp-vertex-models](./gcp-vertex-models/SKILL.md) | gcp, vertex-ai, claude, models, discovery, credentials, service-account | refresh vertex models, vertex model list, vertex default model, select vertex credential, vertex credential list | 2026-11-16 14:37 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-16 14:18 |
 | [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-11-16 13:31 |
-| [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-16 12:52 |
 | [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex, refresh litellm models | 2026-11-16 11:51 |
 | [goose-setup](./goose-setup/SKILL.md) | goose, config, instructions, persistent | setup goose, goose global instructions, goose persistent instructions | 2026-11-16 11:49 |
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | headroom, proxy, litellm, systemd, compression, context-optimization, installation | install headroom, setup headroom proxy, headroom service | 2026-11-16 11:49 |
@@ -57,7 +58,6 @@
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | generate bash completion, bash completion, tab completion | 2026-11-09 20:54 |
 | [fedora-window-list](./fedora-window-list/SKILL.md) | fedora, gnome, desktop, taskbar | toggle window list, taskbar toggle, gnome taskbar | 2026-11-09 20:54 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-11-09 20:54 |
-| [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-09 20:54 |
 | [fedora-obsidian-fix](./fedora-obsidian-fix/SKILL.md) | fedora, obsidian, wayland, snap, desktop-fix | fix obsidian, obsidian file dialog, obsidian open button broken, obsidian snap wayland fix, obsidian portal denied | 2026-11-09 20:32 |
 | [skill-harvest](./skill-harvest/SKILL.md) | agentfs, skills, memory, procedural, graduation, harvest | harvest skills, harvest procedures, graduate skills | 2026-11-09 10:51 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | goose, maas, litellm, custom-provider, reasoning, configuration | configure goose maas, goose maas provider, goose remote provider | 2026-11-09 10:50 |
