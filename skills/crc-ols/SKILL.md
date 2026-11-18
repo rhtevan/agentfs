@@ -7,7 +7,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER | rotate-key PROVIDER"
 metadata:
   author: agentfs
-  version: "3.8.0"
+  version: "3.8.1"
   model-tier: T3
   tags: [openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation]
   related_skills: [gcp-vertex-models, goose-corp-provider, crc-ctl, skupper-model-provider]

@@ -112,7 +112,7 @@ trace_step 2 "validate-model" 0 "$MODEL" 2>/dev/null || true
 # The OLSConfig CRD does NOT validate model names. A typo yields a provider
 # that reports Ready and then 404s on the first query. Check while we can.
 if [[ -n "$PURL" ]] && $FROM_KEYRING && command -v secret-tool >/dev/null 2>&1; then
-  K=$(secret-tool lookup service goose 2>/dev/null \
+  K=$(secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null \
       | python3 -c "import json,sys;print(json.load(sys.stdin).get('$KEYRING_FIELD',''))" 2>/dev/null || echo "")
   if [[ -n "$K" ]]; then
     if curl -s --max-time 30 "${PURL%/}/models" -H "Authorization: Bearer $K" 2>/dev/null \

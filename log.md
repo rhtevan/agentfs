@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 16:02
+- crc-ols v3.8.1: add-provider.sh keyring lookup by full rust-keyring attributes
+- add-provider.sh: read goose's rust-keyring item by full attributes; service-only lookup matched 3 items and could return an empty key, silently skipping model validation (skills/crc-ols/scripts/add-provider.sh)
+
 ## 2026-11-18 15:55
 - frontmatter: user-invocable: true (skill-check S01) (skills/agentfs-eval/SKILL.md)
 
