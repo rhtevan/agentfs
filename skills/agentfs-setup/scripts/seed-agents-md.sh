@@ -255,12 +255,12 @@ If keywords match a Signal Dispatch entry below → execute that action directly
    skill from memory or training data.
 4. If result is a knowledge bundle → read the file at the given path.
 5. If no result → retry: drop the rightmost keyword and search again.
-6. If still no result → fall through to Tier 2.
+6. If still no result → fall through to Index Browse.
 
-**Non-`hey` prompts → Tier 2:**
+**Non-`hey` prompts → Index Browse:**
 Browse `~/.agents/skills/index.md` and `~/.agents/knowledge/index.md`. Follow links to content.
 
-**Tier 2 fails → Tier 3:**
+**Index Browse fails → Open Discretion:**
 Use available tools and knowledge at your discretion.
 
 ### 2. Pre-Flight
@@ -271,15 +271,15 @@ pairs are exempt.
 
 **Do:**
 
-Assess task complexity, then follow the matching tier:
+Assess task complexity, then follow the matching mode:
 
-**Tier 1 — Standard** (steps are independent, single phase):
+**Standard Mode** (steps are independent, single phase):
 1. State the plan: what files change, in what order, what outcome.
 2. Fold in constraints: Checkpoint if destructive,
    \`git diff --stat\` + confirmation if \`git push\`.
 3. Execute. Confirm the stated outcome before responding.
 
-**Tier 2 — Specification-Driven** (steps have dependencies,
+**Spec-Driven Mode** (steps have dependencies,
 multi-phase, or user explicitly requests structured execution):
 1. Define pass/fail criteria (**Validation Gate**).
 2. Decompose into numbered actions with expected outcomes.

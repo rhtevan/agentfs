@@ -308,7 +308,7 @@ See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 
 ## Structural Rules
 
-AgentFS v7.13.1 enforces 7 operational rules as numbered subsections
+AgentFS v7.14.0 enforces 7 operational rules as numbered subsections
 (`### N. Name`) with When/Do pairs in AGENTS.md. Behavioral
 norms (no validation phrases, no assumed inputs, risk naming) live in
 SOUL.md Principles — the self-discipline layer. AGENTS.md rules handle
@@ -317,7 +317,7 @@ external enforcement only: routing, hooks, process obligations.
 | # | Name | When | Do |
 |---|------|------|----|
 | 1 | Signal Dispatch | User message starts with `hey` | Route per Signal Dispatch table (Path A) or search_nodes (Path B). Progressive narrowing on miss. |
-| 2 | Pre-Flight | Before any task that modifies ≥2 files, has step dependencies, or includes `git push` | Two tiers: **Tier 1 (Standard)** — state plan, fold in constraints, execute. **Tier 2 (Specification-Driven)** — define validation gate, numbered actions with expected outcomes, fold in constraints, execute incrementally, run gate before claiming done. |
+| 2 | Pre-Flight | Before any task that modifies ≥2 files, has step dependencies, or includes `git push` | Two modes: **Standard Mode** — state plan, fold in constraints, execute. **Spec-Driven Mode** — define validation gate, numbered actions with expected outcomes, fold in constraints, execute incrementally, run gate before claiming done. |
 | 3 | Session Canary | Session begins or continuity check | Rules already in context, authoritative. Read USER.md. On turn 1, start response with ephemeral two-word canary. Re-verify every 10 turns (or after compaction). Silent self-violation check at re-verification. |
 | 4 | Conflict Resolution | Reversing a position or request conflicts with a rule | State what changed. Quote the rule, explain the conflict, ask for `[OVERRIDE]`. |
 | 5 | Checkpoint | Before destructive `.agents/` op; also before editing `seed-agents-md.sh` | `checkpoint.sh create <files>`. Bump `version:` in SKILL.md if editing seed template. Execute. Run `sync-agents-md.sh` if template edited. `checkpoint.sh clear`. |
@@ -598,7 +598,7 @@ sections, regenerates from template, re-injects preserved sections).
 Every generated AGENTS.md carries a version stamp on line 1:
 
 ```html
-<!-- agentfs-template-version: 7.13.1 -->
+<!-- agentfs-template-version: 7.14.0 -->
 ```
 
 AGENTS.md is divided into two ownership zones:
