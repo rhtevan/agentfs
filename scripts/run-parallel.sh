@@ -42,9 +42,9 @@ ORDER="t_r2git t_r3c_explicit t_r6 t_r2b t_r7dry t_r4s t_r1 t_r2 t_r7dry_conv t_
 if [[ $MODE == smoke ]]; then
   export PROFILE_YAML=$S/smoke-profile-$TS.yaml
   cp "$HOME/.agents/skills/agentfs-setup/compliance-profile.yaml" "$PROFILE_YAML"
-  UARGS=(--runs 1 --runs-override ""); RUNS=1; OVR=""
+  UARGS=(--remeasure --runs 1 --runs-override ""); RUNS=1; OVR=""
 else
-  UARGS=()
+  UARGS=(--remeasure)   # running a campaign IS the explicit re-measure decision
   OVR=$(grep -oP '^RUNS_OVERRIDE="\K[^"]*' "$UC"); RUNS=$(grep -oP 'MODEL=""; RUNS=\K\d+' "$UC")
 fi
 PROFILE=${PROFILE_YAML:-$HOME/.agents/skills/agentfs-setup/compliance-profile.yaml}

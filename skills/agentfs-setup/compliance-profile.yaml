@@ -6,13 +6,10 @@
 
 schema_version: "1.2"
 agents_md_version: "7.13.1"
-# Content hash of the behavioural rules ('## Rules' + '## Signal
-# Dispatch') the profile as a whole was measured against. Produced by
-# ~/.agents/scripts/rules-hash.sh and read by sync-agents-md.sh for the
-# staleness warning. update-compliance.sh moves it ONLY when every tier
-# in required_tiers has been measured at the current hash (each tier
-# also records its own rules_hash), so the profile never reads
-# "current" while a tier is still stale.
+# Provenance only (2026-11-18): rules_hash / harness_sha / writer_sha /
+# hooks_sha are recorded but no script compares them. Re-measuring is a
+# semantic decision: update-compliance.sh --check lists rules-template
+# commits since the records; classify none | smoke | partial | full.
 agents_md_rules_hash: "c5fb6ff9e0a43281"
 compliance_target: "≥90%"
 required_tiers: [T2, T3, T4]

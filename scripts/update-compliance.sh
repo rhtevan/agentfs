@@ -21,7 +21,9 @@
 #   --tests LIST        Default: t1,t_r1,t_r2,t_r2b,t_r2git,t_r6,t_r3c_implicit,
 #                       t_r3c_explicit,t_r4x,t_r4s,t_ii,t_r7dry,t_r7dry_conv,t_r7dry_pend
 #   --dry-run           Print plan + DRY_RUN_RESULT=CONVERGED|PENDING|UNKNOWN.
-#   --check             Show the profile and whether it is stale.
+#   --check             Show the profile and rules-template changes since it.
+#   --remeasure         The user decided to re-measure (after classifying a
+#                       change): dry-run reports PENDING even if converged.
 #
 # Environment:
 #   PROFILE_YAML           Profile path (default: agentfs-setup/compliance-profile.yaml)
@@ -41,19 +43,19 @@
 #   — user request vs the R3 canary. They
 #   measure how binding a model treats R3, not R4 (vehicle-dependent).
 #
-# Dry-run staleness: an entry is PENDING if the rules hash, model,
-# provider, test coverage, OR any harness identity differs:
-#   harness_sha — benchmark.sh blob (graders, prompts, fixtures)
-#   writer_sha  — this script's blob (pooling, scoring)
-#   hooks_sha   — enabled goose hook plugins (enforcement changes behaviour)
-# A changed grader, scorer or hook set makes a recorded score stale.
+# Change control (2026-11-18): semantic, not hash-based. Nothing marks
+# a tier stale automatically. --check lists rules-template commits since
+# the records; the agent classifies the diff, the user confirms:
+#   none (cosmetic) | smoke (wording) | partial (some rules) | full.
+# Dry-run is PENDING only if model, provider or test coverage differs
+# from the recorded entry.
+# Still recorded as provenance (never compared): rules_hash,
+#   harness_sha (benchmark.sh), writer_sha (this script), hooks_sha.
 # overall = mean of the tested rules' rates (each rule weighs the same,
 # regardless of run counts); overall_runs_weighted is kept for reference.
 #
-# Staleness: each tier records the rules hash it was measured against.
-# The top-level agents_md_rules_hash (read by sync-agents-md.sh) only
-# moves when EVERY tier in required_tiers matches the current hash, so
-# the profile never reads "current" while a tier is still stale.
+# The top-level agents_md_rules_hash is provenance only (no reader
+# compares it since 2026-11-18).
 #
 # Exit codes:
 #   0 — Profile updated (or dry-run/check completed)
@@ -70,7 +72,7 @@ BENCHMARK_SH="${SCRIPT_DIR}/benchmark.sh"
 TIER=""; PROVIDER=""; MODEL=""; RUNS=3
 TESTS="t1,t_r1,t_r2,t_r2b,t_r2git,t_r6,t_r3c_implicit,t_r3c_explicit,t_r4x,t_r4s,t_ii,t_r7dry,t_r7dry_conv,t_r7dry_pend"
 RUNS_OVERRIDE="t1=5,t_r1=5,t_r6=5,t_r2=4,t_r2b=4,t_r2git=4,t_r3c_implicit=2,t_r3c_explicit=2"
-CHECK_ONLY=false; DRY_RUN=false
+CHECK_ONLY=false; DRY_RUN=false; REMEASURE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -82,6 +84,7 @@ while [[ $# -gt 0 ]]; do
     --runs-override) RUNS_OVERRIDE="${2:-}"; shift 2 ;;
     --check)    CHECK_ONLY=true; shift ;;
     --dry-run)  DRY_RUN=true; shift ;;
+    --remeasure) REMEASURE=true; shift ;;
     -h|--help)  sed -n '2,/^$/p' "$0" | sed 's/^# //;s/^#//'; exit 0 ;;
     *)          echo "ERROR: unknown option: $1" >&2; exit 2 ;;
   esac
@@ -144,18 +147,20 @@ if mode == "rep":
     print(f"REP_PROVIDER={r.get('provider','')}"); print(f"REP_MODEL={r.get('model','')}")
 elif mode == "tier":
     t = (d.get("validated_tiers") or {}).get(sys.argv[3]) or {}
-    for k in ("model", "provider", "rules_hash", "overall", "date", "harness_sha", "writer_sha", "hooks_sha"):
+    for k in ("model", "provider", "agents_md_version", "overall", "date"):
         print(f"T_{k.upper()}={t.get(k,'')}")
     print(f"T_TESTS={','.join(sorted((t.get('per_test') or {}).keys()))}")
 elif mode == "check":
-    cur = sys.argv[3]
-    print(f"Profile rules hash: {d.get('agents_md_rules_hash','')} (v{d.get('agents_md_version','')})")
+    print(f"Profile version:    v{d.get('agents_md_version','')}")
     print(f"Minimum tier:       {d.get('minimum_tier','')} ({d.get('minimum_tier_rate','')}) target {d.get('compliance_target','')}")
     print("Validated tiers:")
     for name, t in sorted((d.get("validated_tiers") or {}).items(), reverse=True):
-        st = "current" if cur and t.get("rules_hash") == cur else "STALE"
+        cc = f" change_class={t['change_class']}" if t.get("change_class") else ""
         print(f"  {name}: {t.get('model')} ({t.get('provider')}) {t.get('overall')} "
-              f"runs={t.get('runs_per_test', t.get('runs'))} date={t.get('date')} [{st}]")
+              f"runs={t.get('runs_per_test', t.get('runs'))} v{t.get('agents_md_version')} date={t.get('date')}{cc}")
+elif mode == "oldest_date":
+    ds = [str(t.get("date")) for t in (d.get("validated_tiers") or {}).values() if t.get("date")]
+    print(min(ds) if ds else "")
     missing = [x for x in d.get("required_tiers", []) if x not in (d.get("validated_tiers") or {})]
     if missing: print(f"  Not yet measured: {', '.join(missing)}")
 PY
@@ -164,18 +169,31 @@ PY
 # --- Check mode ---
 if $CHECK_ONLY; then
   echo "=== AgentFS Compliance Profile ==="
-  echo "AGENTS.md under test: ${AGENTS_MD:-<none>} (v${AGENTS_MD_VERSION}, rules hash ${RULES_HASH:-unavailable})"
-  profile_query check "$RULES_HASH"
-  profile_hash=$(grep -m1 '^agents_md_rules_hash:' "$PROFILE_YAML" | awk '{print $2}' | tr -d '"' || true)
+  echo "AGENTS.md under test: ${AGENTS_MD:-<none>} (v${AGENTS_MD_VERSION})"
+  profile_query check
+  # Semantic change control (2026-11-18): nothing here marks a tier stale.
+  # List the template commits since the oldest record; the agent classifies
+  # the diff and the user confirms: none | smoke | partial | full.
+  TEMPLATE_SH="${HOME}/.agents/skills/agentfs-setup/scripts/seed-agents-md.sh"
+  since=$(profile_query oldest_date)
   echo ""
-  if [[ -z "$RULES_HASH" ]]; then
-    echo "⚠ Cannot verify: rules hash unavailable (no readable AGENTS.md)"
-  elif [[ "$profile_hash" != "$RULES_HASH" ]]; then
-    echo "⚠ STALE: AGENTS.md rules changed since this profile was measured"
-    echo "  Run: update-compliance.sh --tier <T2|T3|T4> --runs 5   (for each stale tier)"
+  echo "Rules template changes since ${since:-<no record>} (records carry a date only;"
+  echo "commits on that day may predate the measurement):"
+  if [[ -n "$since" ]] && git -C "${HOME}/.agents" rev-parse >/dev/null 2>&1; then
+    log=$(git -C "${HOME}/.agents" log --since="$since 00:00" --format='  %h %ci %s' -- "$TEMPLATE_SH" || true)
+    echo "${log:-  (none)}"
+    git -C "${HOME}/.agents" diff --quiet -- "$TEMPLATE_SH" \
+      || echo "  ⚠ uncommitted template edits — commit before recording, or the change is untraceable"
   else
-    echo "✅ Profile is current (rules hash ${RULES_HASH})"
+    echo "  (unavailable: no record date or ~/.agents is not a git repo)"
   fi
+  echo ""
+  echo "Classify the diff (git -C ~/.agents diff <commit> -- $TEMPLATE_SH):"
+  echo "  none     cosmetic — keep scores"
+  echo "  smoke    wording, intent unchanged — run-parallel.sh smoke (recommended)"
+  echo "  partial  functional, some rules — run-parallel.sh real --tiers <affected tiers>"
+  echo "           (--tests REPLACES the whole tier entry; use it only with a scratch PROFILE_YAML)"
+  echo "  full     release / several rules — run-parallel.sh real"
   exit 0
 fi
 
@@ -220,24 +238,24 @@ if $DRY_RUN; then
     exit 3
   fi
   eval "$(profile_query tier "$TIER")"
-  harness_ids
-  CUR_HARNESS_SHA="$HARNESS_SHA"
-  # Converged only if the entry also covers every requested test — a new
-  # test (e.g. t_r1) leaves its rule unmeasured until the tier is rerun.
+  # Converged = this model/provider is already recorded and covers every
+  # requested test. Version, hashes and harness/hook SHAs are provenance only
+  # (the version moves for non-rules skill changes too);
+  # whether a rules or harness change needs re-measuring is a semantic call
+  # (see --check), not a hash comparison.
   MISSING_TESTS=""
   for _t in ${TESTS//,/ }; do [[ ",$T_TESTS," == *",$_t,"* ]] || MISSING_TESTS+="$_t "; done
-  if [[ "$T_RULES_HASH" == "$RULES_HASH" && "$T_MODEL" == "$MODEL" && "$T_PROVIDER" == "$PROVIDER" && -z "$MISSING_TESTS" \
-        && -n "$CUR_HARNESS_SHA" && "$T_HARNESS_SHA" == "$CUR_HARNESS_SHA" \
-        && "$T_WRITER_SHA" == "$WRITER_SHA" && "$T_HOOKS_SHA" == "$HOOKS_SHA" ]]; then
-    echo "  $TIER already measured for this model at this rules hash ($T_OVERALL, $T_DATE)."
+  if $REMEASURE; then
+    echo "  Would re-measure $TIER (explicit --remeasure; entry: model='${T_MODEL:-none}' v${T_AGENTS_MD_VERSION:-none})."
+    echo "DRY_RUN_RESULT=PENDING"
+  elif [[ "$T_MODEL" == "$MODEL" && "$T_PROVIDER" == "$PROVIDER" && -z "$MISSING_TESTS" ]]; then
+    echo "  $TIER already measured for this model (v${T_AGENTS_MD_VERSION}, $T_OVERALL, $T_DATE)."
+    echo "  Rules changed since? Classify via --check; re-measuring is an explicit decision."
     echo "DRY_RUN_RESULT=CONVERGED"
   else
     echo "  Would run benchmark.sh and write validated_tiers.$TIER"
-    echo "  (current entry: model='${T_MODEL:-none}' rules_hash='${T_RULES_HASH:-none}')."
+    echo "  (current entry: model='${T_MODEL:-none}' v${T_AGENTS_MD_VERSION:-none}; under test v$AGENTS_MD_VERSION)."
     [[ -n "$MISSING_TESTS" && -n "$T_MODEL" ]] && echo "  (current entry lacks tests: ${MISSING_TESTS% })"
-    [[ -n "$T_MODEL" && "$T_HARNESS_SHA" != "$CUR_HARNESS_SHA" ]] && echo "  (harness changed: entry harness_sha='${T_HARNESS_SHA:-none}', current='${CUR_HARNESS_SHA:-unknown}')"
-    [[ -n "$T_MODEL" && "$T_WRITER_SHA" != "$WRITER_SHA" ]] && echo "  (writer changed: entry writer_sha='${T_WRITER_SHA:-none}', current='$WRITER_SHA')"
-    [[ -n "$T_MODEL" && "$T_HOOKS_SHA" != "$HOOKS_SHA" ]] && echo "  (hooks changed: entry hooks_sha='${T_HOOKS_SHA:-none}', current='$HOOKS_SHA' [$HOOKS_LIST])"
     echo "DRY_RUN_RESULT=PENDING"
   fi
   exit 0
