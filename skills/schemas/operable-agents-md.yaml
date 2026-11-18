@@ -76,6 +76,13 @@ dimensions:
   #   Correctness 0.40, Efficiency 0.25,
   #   Comprehension 0.25, Complexity 0.10
 
+  # Runtime dimensions (2026-11-18, F3): NOT scored by SDM. Computed
+  # deterministically from compliance-profile.yaml by
+  # agentfs-eval/scripts/runtime-compliance.sh; no_fabrication is enforced
+  # by the benchmark graders. SDM scores --phase build only. Definitions
+  # below remain the contract for those computations.
+  # stochastic_variance = share of pooled tests with mixed outcomes (0<k<n).
+
   # -- Correctness (weight 0.40) --
 
   - name: rule_pass_rate

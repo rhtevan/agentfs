@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.6.1"
+  version: "2.8.0"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 ---
@@ -12,7 +12,8 @@ metadata:
 # AgentFS Eval
 
 Assess the health and maturity of an AgentFS workspace through
-three layers of progressively deeper verification.
+four stages of progressively deeper verification (S0–S3)
+plus runtime compliance from the compliance profile.
 
 ## Rules
 
@@ -25,7 +26,7 @@ do not estimate.
 
 | User says                                          | Run                                                                                               |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| "agentfs score", "agentfs status"                  | Tier 0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score.                      |
+| "agentfs score", "agentfs status"                  | Stage S0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score.                      |
 | "eval agentfs", "agentfs health", "maturity check" | Full eval. Execute ALL steps in the Full Eval Sequence below. Do NOT skip steps.                  |
 | "check violations", "self audit"                   | Session audit mode. Follow the Session Audit Mode section below. Diagnostic only — no scores persisted. |
 
@@ -73,7 +74,7 @@ later step because it seems more relevant to the conversation.
 Use the user-provided path. Default to the current working directory.
 Verify `.agents/` exists. If absent, report L0 and stop.
 
-### Step 2 — Tier 0: Template Quality Check
+### Step 2 — Stage S0: Template Quality Check
 
 ```bash
 bash ~/.agents/skills/agentfs-eval/scripts/template-check.sh "$TARGET"
@@ -81,7 +82,7 @@ bash ~/.agents/skills/agentfs-eval/scripts/template-check.sh "$TARGET"
 
 Report the score. Continue to Step 3.
 
-### Step 3 — Tier 1: Structural Assertions
+### Step 3 — Stage S1: Structural Assertions
 
 ```bash
 bash ~/.agents/skills/agentfs-eval/scripts/agentfs-check.sh "$TARGET"
@@ -89,7 +90,7 @@ bash ~/.agents/skills/agentfs-eval/scripts/agentfs-check.sh "$TARGET"
 
 Report pass/fail per assertion. Continue to Step 4.
 
-### Step 4 — Tier 2: Behavioral Assertions
+### Step 4 — Stage S2: Behavioral Assertions
 
 ```bash
 bash ~/.agents/skills/agentfs-eval/scripts/agentfs-behavior.sh "$TARGET"
@@ -97,7 +98,7 @@ bash ~/.agents/skills/agentfs-eval/scripts/agentfs-behavior.sh "$TARGET"
 
 Report pass/warn/N/A per assertion. Continue to Step 5.
 
-### Step 5 — Tier 3: Semantic Assertions (L4 qualification)
+### Step 5 — Stage S3: Semantic Assertions (L4 qualification)
 
 For each rubric YAML file in the skill's `rubrics/` directory
 (`memory-classification.yaml`, `reference-verification.yaml`,
@@ -117,7 +118,8 @@ For each rubric YAML file in the skill's `rubrics/` directory
    b. Answer the closed-ended question — select ONLY from the
       enumerated choices.
    c. Record the answer.
-   d. Repeat `vote_count` times if specified (take majority vote).
+   d. Use the rubric's `vote_count` (1 since 2026-11-18: repeated votes in one
+      session context are correlated and add no independence).
 5. Score: compare answers against `pass_answers` and `fail_answers`.
 6. Report pass/fail per entry with the `fail_routing` message if failed.
 
@@ -127,130 +129,82 @@ on content quality.
 
 Report pass/fail/N/A per rubric. Continue to Step 6.
 
-### Step 6 — Tier 3 QOO: Select Providers and Models (optional)
+### Step 6 — Runtime Compliance: Status
 
-If the user says "skip tier 3 qoo" or "skip benchmarks", skip
-Steps 6–11 and proceed directly to Step 12.
-
-List available providers and models:
+If the user says "skip runtime compliance" (legacy: "skip tier 3 qoo",
+"skip benchmarks"), skip Steps 6–7 and continue to Step 8.
 
 ```bash
-for f in ~/.config/goose/custom_providers/*.json; do
-  name=$(python3 -c "import json; print(json.load(open('$f'))['name'])")
-  models=$(python3 -c "import json; ms=json.load(open('$f'))['models']; print(', '.join(m['name'] for m in ms))")
-  echo "  $name: $models"
-done
+bash ~/.agents/scripts/update-compliance.sh --check
 ```
 
-Ask the user to select a frontier provider/model and a target
-provider/model. Do NOT proceed until the user confirms both.
+Report each tier's record (model, overall, version, date) and the
+rules-template changes listed since the records. If changes are listed,
+read the diff, propose a class — `none` (cosmetic), `smoke` (wording,
+intent unchanged), `partial` (functional, some rules), `full` (release
+or several rules) — and ask the user to confirm. Do NOT run a benchmark
+unless the user explicitly asks; re-measuring is
+`run-parallel.sh smoke|real [--tiers …]`. Never record with
+`update-compliance.sh --tests …` into the real profile: it replaces the
+whole tier entry (other rules become `not_tested`).
 
-### Step 7 — Tier 3 QOO: Frontier Benchmark (1 run)
+### Step 7 — Runtime Compliance: Dimensions
 
 ```bash
-bash ~/.agents/scripts/benchmark.sh \
-  --provider <frontier_provider> --model <frontier_model> --runs 1
+bash ~/.agents/skills/agentfs-eval/scripts/runtime-compliance.sh
 ```
 
-Record per-test results. Continue to Step 8.
+Computes the CECX runtime dimensions deterministically from
+`compliance-profile.yaml`, per target tier (T3, T2) against the
+frontier tier (T4): `rule_pass_rate`, `frontier_target_delta`,
+`per_rule_comprehension`, `stochastic_variance`. `no_fabrication` is
+enforced by the benchmark graders (full tool chain required per run).
+Report every ❌ with the rule names. Do NOT re-score these with SDM.
 
-### Step 8 — Tier 3 QOO: Target Benchmark (5 runs)
+### Step 8 — Build-time Operable (SDM, optional)
+
+Compose build evidence:
 
 ```bash
-bash ~/.agents/scripts/benchmark.sh \
-  --provider <target_provider> --model <target_model> --runs 5
+bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/agentfs-build-evidence.txt
 ```
 
-Record per-test results. Continue to Step 9.
-
-### Step 9 — Tier 3 QOO: SDM Operable Score
-
-Compose evidence using hybrid extraction (structural + semantic):
-
-**9a. Structural facts:**
+Append a `=== Semantic Evidence (Build) ===` section: for each build
+dimension in `~/.agents/skills/schemas/operable-agents-md.yaml`
+(has_bones, has_muscle, has_brain, has_harness), write a 1–3 sentence
+evidence statement citing specific rules and scripts. Then score:
 
 ```bash
-bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/benchmark-evidence.txt
-```
-
-**9b. Semantic evidence:**
-
-Read the operable schema:
-
-```bash
-cat ~/.agents/skills/schemas/operable-agents-md.yaml
-```
-
-Read AGENTS.md. For each build-time dimension (has_bones, has_muscle,
-has_brain, has_harness), write a 1-3 sentence evidence statement
-citing specific rules and scripts. For each runtime dimension, extract
-evidence from the benchmark results in Steps 7 and 8.
-
-Write to `/tmp/benchmark-evidence.txt`:
-
-```
-=== Structural Facts ===
-<paste gather-skill-state.sh output>
-
-=== Semantic Evidence (Build) ===
-has_bones: <evidence about script delegation in rules>
-has_muscle: <evidence about CNL compliance>
-has_brain: <evidence about bounded vs unbounded judgments>
-has_harness: <evidence about benchmark coverage>
-
-=== Benchmark Results (Runtime) ===
-<per-test frontier/target pass rates from Steps 7-8>
-<per-run variance, fabrication failures>
-```
-
-**9c. SDM scoring:**
-
-```bash
-bash ~/.agents/scripts/sdm-evaluate.sh /tmp/benchmark-evidence.txt \
+bash ~/.agents/scripts/sdm-evaluate.sh /tmp/agentfs-build-evidence.txt \
   ~/.agents/skills/schemas/operable-agents-md.yaml \
-  --evidence /tmp/benchmark-evidence.txt
+  --evidence /tmp/agentfs-build-evidence.txt --phase build
 ```
 
-If the output contains `"band": "SDM_UNAVAILABLE"`, report:
-"⚠️ SDM unavailable — QOO operable score skipped."
-Skip Steps 10–11. Proceed directly to Step 12.
+If the output contains `"band": "SDM_UNAVAILABLE"`, report
+"⚠️ SDM unavailable — build-time operable skipped." and continue.
 
-### Step 10 — Tier 3 QOO: Gap Analysis
+### Step 9 — Persist Scores
 
-For each test, compute frontier pass rate vs target pass rate.
-Classify each gap: model-level, CNL weakness, or platform limitation.
+Update `~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml`:
 
-### Step 11 — Tier 3 QOO: Persist Scores
+1. **`operable.build.dimensions`** — from the Step 8 SDM JSON (skip if
+   SDM was unavailable; keep the existing values).
+2. **`operable.runtime`** — keep it a pointer: `source:
+   compliance-profile.yaml`, `computed_by: runtime-compliance.sh`,
+   `evaluated: <date>`, `pass: <all target tiers pass>`. Do NOT copy
+   per-rule numbers; the compliance profile is the single record.
+3. **`history`** — append one entry (date, type `operable`, one-line note).
 
-Update the artifact scores file:
+Do NOT rewrite the entire file. Preserve the `quality` section (owned
+by `hey upgrade agentfs`), `observable` section, and existing history
+entries. Run post-write.sh after writing.
 
-```
-~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml
-```
+### Step 10 — Produce Consolidated Report
 
-Read the existing file. Update these sections from Step 9 SDM output:
-
-1. **`operable.build.dimensions`** — copy each build-phase dim's
-   `score`, `pass`, `confidence` from SDM JSON `.dimensions[]`.
-2. **`operable.runtime.dimensions`** — copy each runtime-phase dim.
-3. **`operable.runtime.aggregate_score`** and **`band`** — from SDM
-   JSON root `.aggregate_score` and `.band`.
-4. **`operable.runtime.benchmark`** — update provider, model, runs,
-   pass_rate, per-test results from Steps 7-8.
-5. **`operable.runtime.gap_analysis`** — from Step 10.
-6. **`operable.runtime.evaluated`** — SDM JSON `.timestamp`.
-7. **`history`** — append a new entry with date, type `operable`,
-   score (aggregate), band, and a one-line note.
-
-Do NOT rewrite the entire file. Preserve the `quality` section
-(owned by `hey upgrade agentfs`), `observable` section, and
-existing history entries. Run post-write.sh after writing.
-
-### Step 12 — Produce Consolidated Report
-
-Report ALL results in one summary: Tier 0 score, Tier 1 pass/fail,
-Tier 2 pass/warn, Tier 3 Semantic pass/fail/N/A, Tier 3 QOO operable
-score (or "SKIPPED — SDM unavailable"), gap analysis, maturity level.
+Report ALL results in one summary: Stage S0 score, S1 pass/fail,
+S2 pass/warn, S3 Semantic pass/fail/N/A, runtime compliance per tier
+(Step 7), build-time operable (or "SKIPPED — SDM unavailable"),
+maturity level.
 
 ## Overview
 
@@ -259,9 +213,9 @@ score (or "SKIPPED — SDM unavailable"), gap analysis, maturity level.
 | **Version** | 1.0 |
 | **Trigger** | Explicit only — user asks to run eval |
 | **Scope** | Evaluates a PROJECT or LITE-scoped `.agents/` directory |
-| **LITE scope** | Skips skills/profiles Tier 1 checks; adds LITE exclusion assertions |
+| **LITE scope** | Skips skills/profiles Stage S1 checks; adds LITE exclusion assertions |
 | **Dependencies** | `bash`, `find`, `grep`, `stat`, `git` (optional but recommended) |
-| **LLM required** | Layer 3 only (semantic rubrics) |
+| **LLM required** | Stage S3 (semantic rubrics); Step 8 build-time SDM (optional) |
 
 ## Recommended Usage
 
@@ -287,7 +241,7 @@ it defaults to the current working directory.
 - **Reduces sycophancy pressure** — no incentive to report good
   results to please the user who just watched it work
 - **More capable models** give stronger classification accuracy
-  for Layer 3 semantic rubrics
+  for Stage S3 semantic rubrics
 
 ## Maturity Levels
 
@@ -295,113 +249,17 @@ it defaults to the current working directory.
 |-------|------|--------------|
 | **L0** | Absent | No `.agents/` directory exists |
 | **L1** | Scaffolded | `.agents/` exists with valid structure |
-| **L2** | Structurally Sound | All Layer 1 assertions pass |
-| **L3** | Behaviorally Safe | Layer 1 + Layer 2 assertions pass |
-| **L4** | Semantically Accurate | Layer 1 + Layer 2 + Layer 3 assertions pass |
+| **L2** | Structurally Sound | All Stage S1 assertions pass |
+| **L3** | Behaviorally Safe | Stage S1 + Stage S2 assertions pass |
+| **L4** | Semantically Accurate | Stage S1 + Stage S2 + Stage S3 assertions pass |
 | **L5** | Self-Correcting | Agent can run eval, detect violations, and fix them |
 
 ## Reference: Execution Details
 
-The Full Eval Sequence above is the authoritative execution flow.
-The sections below provide implementation details for each layer.
+See `references/execution-details.md` (detailed walk-through of Steps 1–5 and the
+maturity-level calculation).
 
-### Step 1: Determine Target
-
-If the user provides a path, use it. Otherwise use the current
-working directory.
-
-```bash
-TARGET="${user_provided_path:-.}"
-```
-
-Verify `.agents/` exists at the target:
-
-```bash
-if [ ! -d "$TARGET/.agents" ]; then
-  echo "L0 — Absent: No .agents/ directory at $TARGET"
-  # Stop here — nothing to evaluate
-fi
-```
-
-If `.agents/` does not exist, report **L0 (Absent)** and stop.
-
-### Step 2: Run Layer 1 — Structural Assertions
-
-Run the structural check script:
-
-```bash
-bash <skill-dir>/scripts/agentfs-check.sh "$TARGET"
-```
-
-This produces a pass/fail report for 7 structural assertions.
-No LLM involvement — pure shell.
-
-### Step 3: Run Layer 2 — Behavioral Assertions
-
-Run the behavioral check script:
-
-```bash
-bash <skill-dir>/scripts/agentfs-behavior.sh "$TARGET"
-```
-
-This checks for accumulated evidence (git history, log.md entries,
-MEMORY.md content) and runs behavioral assertions against what it
-finds. Assertions without sufficient evidence report `N/A`.
-
-No LLM involvement — pure shell.
-
-### Step 4: Run Layer 3 — Semantic Assertions
-
-For each rubric YAML file in `<skill-dir>/rubrics/`:
-
-1. Read the rubric file
-2. Read the target content specified by the rubric
-3. If target content is empty or absent → report `N/A` for this rubric
-4. For each entry/item in the target content:
-   a. Apply the `prompt_template` from the rubric, substituting the
-      entry content into the `{entry}` placeholder
-   b. Answer the closed-ended question — select ONLY from the
-      enumerated choices
-   c. Record the answer
-   d. Repeat `vote_count` times if specified (take majority vote)
-5. Score: compare answers against `pass_answers` and `fail_answers`
-6. Report pass/fail per entry with the `fail_routing` message if failed
-
-**Critical: The LLM acts as a CLASSIFIER, not a judge.** Answer only
-the specific question asked. Do not provide open-ended commentary
-on content quality.
-
-### Step 5: Produce Report
-
-Use the template at `<skill-dir>/templates/report.md` to structure
-the output. Include:
-
-- Target path and date
-- Git status (tracked? how many commits?)
-- Per-layer results with pass/fail/N/A per assertion
-- Details for any failures or warnings
-- Overall maturity level (lowest layer with all-pass determines level)
-- Recommendations for reaching the next level
-
-### Maturity Level Calculation
-
-```
-If .agents/ does not exist           → L0 (Absent)
-Else if .agents/ exists              → L1 (Scaffolded)
-  If ALL Layer 1 assertions pass     → L2 (Structurally Sound)
-    If ALL Layer 2 assertions pass   → L3 (Behaviorally Safe)
-      If ALL Layer 3 assertions pass → L4 (Semantically Accurate)
-```
-
-Assertions reporting `N/A` (insufficient evidence) are **excluded**
-from the pass/fail calculation — they do not block advancement but
-are noted in the report.
-
-L5 (Self-Correcting) is assessed by a human observing whether the
-agent can run eval, detect violations, and fix them in the same
-session. It is not automatically scored.
-
-## Layer 1: Structural Assertions
+## Stage S1: Structural Assertions
 
 Pure shell. Always runnable. Script: `scripts/agentfs-check.sh`
 
@@ -415,7 +273,7 @@ Pure shell. Always runnable. Script: `scripts/agentfs-check.sh`
 | S6 | **Changelog Monotonicity** | Files containing a `Changelog` section have timestamps in descending order |
 | S7 | **Orphan Detection** | Files under `.agents/` (excluding `log.md`, `index.md`, `.session-marker`, `.checkpoint`) not linked from any `index.md` |
 
-## Layer 2: Behavioral Assertions
+## Stage S2: Behavioral Assertions
 
 Pure shell. Requires accumulated evidence. Script: `scripts/agentfs-behavior.sh`
 
@@ -462,7 +320,7 @@ signals from QOO-qualified skills (more maintainable, better coverage).
 `template-behavioral.sh` is retained for backward compatibility but
 is no longer called by the default evaluation flow.
 
-## Layer 3: Semantic Assertions
+## Stage S3: Semantic Assertions
 
 Constrained LLM classification. Rubrics in `rubrics/` directory.
 
@@ -477,15 +335,17 @@ Constrained LLM classification. Rubrics in `rubrics/` directory.
 
 - **Hallucination resistance**: LLM classifies presented content,
   not recalled content — nothing to hallucinate
-- **Stochasticity resistance**: Fixed answer choices bound variance;
-  majority vote (`vote_count: 3`) reduces noise
+- **Stochasticity resistance**: Fixed answer choices bound variance.
+  Known limit (F17): votes are taken in one session context, so they
+  are correlated and self-graded; independent votes need an external
+  stateless grader (SDM-class), unavailable as of 2026-11-18
 - **Sycophancy resistance**: Classification task with no user
   preference to agree with
 
 ### L3 → L2 Graduation
 
-Over time, patterns observed in Layer 3 results can be graduated
-to Layer 2 deterministic checks. **This is NOT automatic.** It is
+Over time, patterns observed in Stage S3 results can be graduated
+to Stage S2 deterministic checks. **This is NOT automatic.** It is
 a human-driven skill update:
 
 1. Human runs eval several times, reads reports
@@ -507,15 +367,14 @@ AGENTS.md QOO applicability:
 | Quality | ✅ | `quality-agents-md.yaml` (adapted) | MCACS dims adapted for declarative policy. Universal `quality.yaml` is SKILL-specific. |
 | Observable | ❌ | N/A | Passive document — no self-instrumentation, no trace_step(). |
 | Operable (BMBT build) | ✅ | `operable-agents-md.yaml` (adapted) | Bones (scripts), muscle (CNL rules), harness (benchmark). |
-| Operable (CECX runtime) | ✅ | `operable-agents-md.yaml` (adapted) | Benchmark pass rates as evidence, not trace JSONL. |
+| Operable (CECX runtime) | ✅ | `operable-agents-md.yaml` (adapted) | Computed deterministically from `compliance-profile.yaml` (`runtime-compliance.sh`). No SDM. |
 
-Steps 6-11 in the Full Eval Sequence implement Operable (BMBT build
-+ CECX runtime). Quality build-time is handled by `agentfs-setup`
-("upgrade agentfs"). Both use adapted schemas (`quality-agents-md.yaml`,
-`operable-agents-md.yaml`) with hybrid evidence architecture (frontier
-semantic extraction + SDM scoring).
+Steps 6–7 implement CECX runtime from the compliance profile (single
+record, measured by `update-compliance.sh` / `run-parallel.sh`).
+Step 8 implements BMBT build via SDM (`--phase build`). Quality
+build-time is handled by `agentfs-setup` ("upgrade agentfs").
 
-Gap classification categories:
+When Step 7 reports ❌, classify the cause:
 - **model-level** — model lacks capability (e.g., ignores canary rule)
 - **CNL weakness** — rule prose is ambiguous or insufficiently imperative
 - **platform limitation** — test environment gap (e.g., missing sandbox state)
@@ -545,11 +404,13 @@ This skill is designed to enforce three non-negotiable principles:
 - `scripts/template-behavioral.sh` → `load_skill(name: "agentfs-eval/scripts/template-behavioral.sh")`
 - `scripts/template-eval.sh` → `load_skill(name: "agentfs-eval/scripts/template-eval.sh")`
 - `scripts/merge-score-entry.sh` → `load_skill(name: "agentfs-eval/scripts/merge-score-entry.sh")`
+- `scripts/runtime-compliance.sh` → `load_skill(name: "agentfs-eval/scripts/runtime-compliance.sh")`
 - `rubrics/memory-classification.yaml` → `load_skill(name: "agentfs-eval/rubrics/memory-classification.yaml")`
 - `rubrics/reference-verification.yaml` → `load_skill(name: "agentfs-eval/rubrics/reference-verification.yaml")`
 - `rubrics/sycophancy-detection.yaml` → `load_skill(name: "agentfs-eval/rubrics/sycophancy-detection.yaml")`
 
 - `templates/report.md` → `load_skill(name: "agentfs-eval/templates/report.md")`
+- `references/execution-details.md` → `load_skill(name: "agentfs-eval/references/execution-details.md")`
 - `references/design-decisions.md` → `load_skill(name: "agentfs-eval/references/design-decisions.md")`
 - `references/template-scores.md` → `load_skill(name: "agentfs-eval/references/template-scores.md")`
 

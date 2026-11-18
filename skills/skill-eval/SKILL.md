@@ -7,7 +7,7 @@ argument-hint: "hey check skill <name> | hey eval skill <name> | hey assess skil
 compatibility: "bash, shellcheck (optional), yq, jq"
 metadata:
   author: agentfs
-  version: "2.5.0"
+  version: "2.6.0"
   model-tier: T4
   tags: [agentfs, skills, evaluation, quality, audit, qoo, operable]
 user-invocable: true
@@ -28,10 +28,14 @@ skill internals.
 
 - `bash`, `grep`, `find`, `wc`
 - `shellcheck` (optional — S05 skipped if absent)
-- `yq`, `jq` (required for Tier 1 QOO scoring)
+- `yq`, `jq` (required for Build QOO scoring)
 - LLM required only for S23–S26 rubric checks
-- SDM endpoint at localhost:9000 (required for Tier 1 QOO — skipped
-  if unavailable)
+- SDM endpoint at localhost:9000 (required for Build QOO and Runtime
+  CECX scoring — skipped if unavailable; unavailable as of 2026-11-18,
+  so those stages report SKIPPED)
+
+Stage names: **Static Checks** (S01–S26), **Build QOO**, **Runtime CECX**.
+"Tier" is reserved for model tiers T1–T4 (`model-tier:` frontmatter).
 
 ## Rules
 
@@ -47,10 +51,10 @@ skills. Preserve `quality` and `observable` when writing `operable`.
 
 | User says | Run |
 |-----------|-----|
-| "check skill \<name\>" | Tier 0 only. Run `skill-check.sh`. Stop after reporting. |
+| "check skill \<name\>" | Static Checks only. Run `skill-check.sh`. Stop after reporting. |
 | "eval skill \<name\>" | Full eval. Execute ALL steps in the Full Eval Sequence below. |
 | "assess skill \<name\>" | Comprehensive assessment. Execute ALL steps in the Assess Sequence below. |
-| "check all skills" | List skills → ask human permission → run Tier 0 against each → summary. |
+| "check all skills" | List skills → ask human permission → run Static Checks against each → summary. |
 
 **ROUTING STOP: Find your match above, then jump to that section.
 Do NOT read past the matched section. Do NOT run the Full Eval
@@ -58,7 +62,7 @@ Sequence unless the match says "Full eval".**
 
 ## Modes
 
-### Mode 1: Single Skill — Tier 0 Only (check skill)
+### Mode 1: Single Skill — Static Checks Only (check skill)
 
 1. Resolve skill path — check USER (`~/.agents/skills/<name>/`)
    then PROJECT (`./.agents/skills/<name>/`).
@@ -73,7 +77,7 @@ Sequence unless the match says "Full eval".**
 
 **END OF TIER 0 ONLY. Stop here.**
 
-### Mode 2: All Skills — Tier 0 Only (check all skills)
+### Mode 2: All Skills — Static Checks Only (check all skills)
 
 1. List all skills at the target scope (USER or PROJECT).
 2. Present the list and ask for human confirmation before proceeding.
@@ -98,7 +102,7 @@ Verify `SKILL.md` exists. If absent, report and stop.
 
 Set `SKILL_DIR` to the resolved absolute path.
 
-### Step 2 — Tier 0: Deterministic Checks (S01–S22)
+### Step 2 — Static Checks: Deterministic Checks (S01–S22)
 
 Run the deterministic check script:
 
@@ -108,7 +112,7 @@ bash ~/.agents/skills/skill-eval/scripts/skill-check.sh "$SKILL_DIR"
 
 Record pass/fail/warn/skip counts. Continue to Step 3.
 
-### Step 3 — Tier 0: LLM Rubric Checks (S23–S26)
+### Step 3 — Static Checks: LLM Rubric Checks (S23–S26)
 
 For each rubric YAML file in `~/.agents/skills/skill-eval/rubrics/`:
 
@@ -125,7 +129,7 @@ question asked. Do not provide open-ended commentary.
 
 Continue to Step 4.
 
-### Step 4 — Tier 1: Gather Structural Facts
+### Step 4 — Build QOO: Gather Structural Facts
 
 Run the gather-state script to produce deterministic facts:
 
@@ -136,7 +140,7 @@ bash ~/.agents/scripts/gather-skill-state.sh "$SKILL_DIR" > /tmp/skill-eval-evid
 Read the output file. It contains pre-computed metrics for all
 QOO dimensions. Continue to Step 5.
 
-### Step 5 — Tier 1: BMBT Build-time Operable Score
+### Step 5 — Build QOO: BMBT Build-time Operable Score
 
 Run SDM evaluation against the operable schema using build-time
 dimensions:
@@ -158,7 +162,7 @@ Extract the build-phase dimensions from the SDM JSON output:
 Record each dimension's score, pass/fail, and confidence.
 Continue to Step 6.
 
-### Step 6 — Tier 1: Quality + Observable Read
+### Step 6 — Build QOO: Quality + Observable Read
 
 **6a. Read existing scores:**
 
@@ -188,7 +192,7 @@ in the final report. Do NOT persist them — `quality` and
 
 Continue to Step 7.
 
-### Step 7 — Tier 2: CECX Runtime Operable Score
+### Step 7 — Runtime CECX: CECX Runtime Operable Score
 
 Search for the latest execution trace for this skill:
 
@@ -282,14 +286,14 @@ Date: YYYY-MM-DD HH:MM
 Version: <metadata.version>
 Path: <skill-dir>
 
-### Tier 0 — Deterministic (S01–S22)
+### Static Checks — Deterministic (S01–S22)
 Pass: N | Fail: N | Warn: N | Skip: N
 <details for failures and warnings>
 
-### Tier 0 — LLM Rubric (S23–S26)
+### Static Checks — LLM Rubric (S23–S26)
 <per-rubric pass/fail/N/A>
 
-### Tier 1 — Build-time Operable (BMBT)
+### Build QOO — Build-time Operable (BMBT)
 | Dimension | Score | Pass | Confidence |
 |-----------|:-----:|:----:|:----------:|
 | has_bones | ... | ... | ... |
@@ -298,13 +302,13 @@ Pass: N | Fail: N | Warn: N | Skip: N
 | has_harness | ... | ... | ... |
 Aggregate: <score> | Band: <band>
 
-### Tier 1 — Quality (MCACS) — read-only
+### Build QOO — Quality (MCACS) — read-only
 <existing scores from scores.yaml or fresh SDM scores>
 
-### Tier 1 — Observable — read-only
+### Build QOO — Observable — read-only
 <existing scores from scores.yaml or fresh SDM scores>
 
-### Tier 2 — Runtime Operable (CECX)
+### Runtime CECX — Runtime Operable (CECX)
 <per-dimension scores or "N/A — no traces">
 Aggregate: <score> | Band: <band>
 
@@ -322,7 +326,7 @@ Aggregate: <score> | Band: <band>
 ## Assess Sequence (assess skill)
 
 Comprehensive assessment that chains Score Skill (Quality + Observable)
-with Full Eval (Tier 0 + BMBT + CECX) into a single pass. Evidence is
+with Full Eval (Static Checks + BMBT + CECX) into a single pass. Evidence is
 gathered once and reused across all SDM calls.
 
 Execute ALL steps in order. Do NOT skip steps.
@@ -379,7 +383,7 @@ Append a history entry with type `quality+observable`.
 
 Immediately run post-write.sh after writing.
 
-### Step 6 — Tier 0: Deterministic Checks
+### Step 6 — Static Checks: Deterministic Checks
 
 ```bash
 bash ~/.agents/skills/skill-eval/scripts/skill-check.sh "$SKILL_DIR"
@@ -387,7 +391,7 @@ bash ~/.agents/skills/skill-eval/scripts/skill-check.sh "$SKILL_DIR"
 
 Record pass/fail/warn/skip counts.
 
-### Step 7 — Tier 0: LLM Rubric Checks (S23–S26)
+### Step 7 — Static Checks: LLM Rubric Checks (S23–S26)
 
 Same as Full Eval Step 3. For each rubric YAML in
 `~/.agents/skills/skill-eval/rubrics/`, apply the rubric
@@ -452,11 +456,11 @@ Date: YYYY-MM-DD HH:MM
 Version: <metadata.version>
 Path: <skill-dir>
 
-### Tier 0 — Deterministic (S01–S22)
+### Static Checks — Deterministic (S01–S22)
 Pass: N | Fail: N | Warn: N | Skip: N
 <details for failures and warnings>
 
-### Tier 0 — LLM Rubric (S23–S26)
+### Static Checks — LLM Rubric (S23–S26)
 <per-rubric pass/fail>
 
 ### QOO Scores
@@ -566,12 +570,12 @@ but does NOT persist them. Those sections are owned by `skill-gen`.
   `observable` sections in `scores.yaml`.
 - **`agentfs-eval`** — Evaluates workspace health. Does NOT inspect
   skill internals — that responsibility belongs to `skill-eval`.
-- **`skill-check`** — Alias. `skill-check.sh` is the Tier 0
+- **`skill-check`** — Alias. `skill-check.sh` is the Static Checks
   deterministic engine used by this skill.
 
 ## Supporting Files
 
-- `scripts/skill-check.sh` — Tier 0 deterministic checks (S01–S22)
+- `scripts/skill-check.sh` — Static Checks deterministic checks (S01–S22)
 - `rubrics/prose-to-script.yaml` — S23 rubric
 - `rubrics/duplicate-procedures.yaml` — S24 rubric
 - `rubrics/prompt-injection.yaml` — S25 rubric

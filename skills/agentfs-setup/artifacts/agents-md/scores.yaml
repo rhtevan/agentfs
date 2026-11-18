@@ -42,67 +42,22 @@ operable:
     evaluated: "2026-11-03T11:34:02-05:00"
 
   runtime:
+    # F3 (2026-11-18): pointer only. Runtime compliance is recorded once, in
+    # compliance-profile.yaml (update-compliance.sh / run-parallel.sh), and the
+    # CECX runtime dimensions are computed from it by
+    # agentfs-eval/scripts/runtime-compliance.sh (deterministic, no SDM).
+    # The former SDM runtime block (v7.7.2, 2026-11-03, aggregate 94.4,
+    # user-picked frontier/target models) is in git history; not comparable.
     schema: operable-agents-md.yaml
-    aggregate_score: 94.4
-    band: Operable
-    pass_rate: 88.8
-    dimensions:
-      rule_pass_rate: { score: 100, pass: true, weight: 0.40, confidence: 1.0 }
-      no_fabrication: { score: 100, pass: true, weight: 0.40, confidence: 1.0 }
-      frontier_target_delta: { score: 100, pass: true, weight: 0.25, confidence: 1.0, detail: "Delta 0% with plugin-corrected dispatch (frontier 100%, target 100%). Strict delta 23.3% (target 76.7%)." }
-      per_rule_comprehension: { score: 80, pass: false, weight: 0.25, confidence: 0.48, detail: "1 rule below 80% strict: qoo_agentfs_readme_audit 0% (plugin-corrected to 100%). Model ordering gap, not comprehension." }
-      stochastic_variance: { score: 100, pass: true, weight: 0.10, confidence: 0.49, detail: "t1 0% variance (was 40%), t_r3 0% variance (was 40%). qoo_crc_status 40% variance on strict ordering." }
-    note: >
-      Runtime CECX: 8/9 dims pass (SDM aggregate 94.4 Operable).
-      Key improvements from v7.6.0→v7.7.0 primacy-zone architecture:
-      R3 Canary 60%→100%, R6 Post-Write 60%→100%. Dispatch ordering
-      gap (14B tries load_skill before search_nodes) is deterministically
-      enforced by signal-dispatch plugin — three-layer architecture
-      working as designed. With plugin correction: 30/30 = 100%.
-      Strict (without plugin): 23/30 = 76.7%.
-    benchmark:
-      frontier:
-        provider: custom_redhat
-        model: claude-sonnet-4-6
-        runs: 1
-        pass_rate: 100
-      target:
-        provider: custom_skupper
-        model: Qwen/Qwen3-14B-FP8
-        runs: 5
-        pass_rate: 76.7
-        pass_rate_plugin_corrected: 100
-      results:
-        t1_canary: { frontier: 100, target: 100 }
-        qoo_agentfs_readme_audit: { frontier: 100, target: 0, target_plugin_corrected: 100, detail: "All 5 runs: model tries load_skill first, plugin blocks, model recovers with search_nodes → load_skill" }
-        qoo_crc_status: { frontier: 100, target: 60, target_plugin_corrected: 100, detail: "2/5 runs: model tries load_skill first, plugin blocks, model recovers" }
-        t_r2_preflight: { frontier: 100, target: 100 }
-        t_r3_postwrite: { frontier: 100, target: 100 }
-        t_r7_scope: { frontier: 100, target: 100 }
-    gap_analysis:
-      - rule: R1 Signal Dispatch (ordering)
-        test: qoo_agentfs_readme_audit
-        frontier: 100
-        target: 0
-        target_plugin_corrected: 100
-        diagnosis: >
-          14B model consistently calls load_skill before search_nodes
-          on "hey audit readme". Signal-dispatch plugin blocks the
-          premature call and model recovers correctly. This is a
-          model-level ordering preference, not a comprehension failure.
-          The three-layer enforcement architecture (system.md primacy +
-          MOIM recency + plugin hooks) handles this deterministically.
-      - rule: R1 Signal Dispatch (ordering)
-        test: qoo_crc_status
-        frontier: 100
-        target: 60
-        target_plugin_corrected: 100
-        diagnosis: >
-          14B model tries load_skill first in 2/5 runs on "hey crc
-          status". Plugin corrects in both cases. Less consistent than
-          audit readme — model sometimes dispatches correctly without
-          plugin intervention.
-    evaluated: "2026-11-03T11:34:02-05:00"
+    source: compliance-profile.yaml
+    computed_by: agentfs-eval/scripts/runtime-compliance.sh
+    evaluated: "2026-11-18"
+    pass: false
+    note: >-
+      T3 glm-5-3 passes all four dimensions. T2 Qwen3.8-27B-FP8 fails
+      per_rule_comprehension on the recorded entry (R4 77%, t_r4s 1/3);
+      re-measure t_r4s 5/5 (F19) puts pooled R4 at 86% — small-sample
+      noise. Clears at the next T2 re-record.
 
 observable:
   aggregate_score: null
@@ -161,3 +116,6 @@ history:
     score: 94.4
     band: Operable
     note: "Run 8 — v7.7.0 primacy-zone architecture. BMBT 4/4. Runtime 8/9 (SDM 94.4 Operable). R3 canary 100% (was 60%), R6 post-write 100% (was 60%). Dispatch ordering enforced by plugin. qoo-qualified stamped."
+  - date: "2026-11-18"
+    type: operable
+    note: "F3: runtime now a pointer to compliance-profile.yaml (runtime-compliance.sh, deterministic). T3 pass; T2 fails per_rule_comprehension (R4 77%). SDM runtime retired."

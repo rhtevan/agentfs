@@ -10,7 +10,7 @@ guardrail_ref: "#8 Memory Scope, #9 Memory Signal Routing"
 target: MEMORY.md entries
 assertion: "Content in MEMORY.md is experiential, not prescriptive or preferential"
 method: llm-classifier
-vote_count: 3
+vote_count: 1   # 2026-11-18 (F17): votes from one session context are correlated; repeats added no independence
 
 prompt_template: |
   You are a content classifier. Read the following entry from a
