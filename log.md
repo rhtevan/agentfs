@@ -47,8 +47,16 @@
 - update-compliance --check: semantic change control, no hash staleness (scripts/update-compliance.sh)
 
 ## 2026-11-18 14:00
+- goose-corp-provider v1.1.2: full-attribute keyring lookup in check-key/test; rotate-key restart step; Trigger row fixed
+- SKILL.md: add restart step to rotate-key; Trigger row matches registered signals; Version 1.1.2 (skills/goose-corp-provider/SKILL.md)
+- test.sh: look up goose's rust-keyring item by full attributes (skills/goose-corp-provider/scripts/test.sh)
+- check-key.sh: look up goose's rust-keyring item by full attributes (service-only match is ambiguous across 3 items) (skills/goose-corp-provider/scripts/check-key.sh)
 
 ## 2026-11-18 13:34
+- goose-corp-provider v1.1.1: accept 2xx in store-key/test; store-key targets goose rust-keyring item
+- Sync Version row to 1.1.1 (skills/goose-corp-provider/SKILL.md)
+- test.sh: accept any 2xx (gateway returns 202); report actual HTTP code (skills/goose-corp-provider/scripts/test.sh)
+- store-key.sh: accept any 2xx on validation; read/write goose's rust-keyring item (full attributes) instead of service-only match (skills/goose-corp-provider/scripts/store-key.sh)
 
 ## 2026-11-18 09:02
 - README: signal-dispatch row describes one-time block (fail-open) and F7 mismatch notice (README.md)

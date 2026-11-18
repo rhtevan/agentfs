@@ -97,7 +97,7 @@ except Exception:
     2>/dev/null || echo "000")
 
   case "$HTTP_CODE" in
-    200)
+    2??)
       echo "✅ Key validated successfully."
       ;;
     401)
@@ -123,9 +123,10 @@ except Exception:
 fi
 
 # Read current keyring, merge, write back
-CURRENT=$(secret-tool lookup service goose 2>/dev/null || echo '{}')
+CURRENT=$(secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null || echo '{}')
 MERGED=$(echo "$CURRENT" | jq --arg k "$KEY" ". + {\"$ENV_VAR\": \$k}")
 echo -n "$MERGED" | secret-tool store \
-  --label "secrets@goose:default (keyring v3.6.3)" service goose
+  --label "secrets@goose:default (keyring v3.6.3)" \
+  application rust-keyring service goose target default username secrets
 
 echo "✅ $ENV_VAR stored in GNOME Keyring."

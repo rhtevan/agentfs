@@ -20,7 +20,7 @@ done
 # Read API key from GNOME Keyring
 trace_step "key-read" "Reading API key from keyring" 2>/dev/null || true
 
-KEYRING_DATA=$(secret-tool lookup service goose 2>/dev/null || echo '{}')
+KEYRING_DATA=$(secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null || echo '{}')
 API_KEY=$(echo "$KEYRING_DATA" | jq -r '.CUSTOM_CORP_API_KEY // empty' 2>/dev/null)
 
 if [[ -z "$API_KEY" ]]; then
@@ -72,24 +72,24 @@ HTTP_CODE=$(echo "$RESPONSE" | tail -1)
 BODY=$(echo "$RESPONSE" | sed '$d')
 
 case "$HTTP_CODE" in
-  200)
+  2??)
     CONTENT=$(echo "$BODY" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
     REASONING=$(echo "$BODY" | jq -r '.choices[0].message.reasoning // empty' 2>/dev/null)
     if [[ -n "$CONTENT" && "$CONTENT" != "null" ]]; then
       SHORT=$(echo "$CONTENT" | head -c 80)
-      echo "✅ Chat completion succeeded (HTTP 200)"
+      echo "✅ Chat completion succeeded (HTTP $HTTP_CODE)"
       echo "   Model: $MODEL"
       echo "   Response: \"$SHORT\""
       if [[ -n "$REASONING" && "$REASONING" != "null" ]]; then
         echo "   Thinking: enabled ($(echo "$REASONING" | wc -c) chars)"
       fi
     elif [[ -n "$REASONING" && "$REASONING" != "null" ]]; then
-      echo "✅ Chat completion succeeded (HTTP 200, thinking mode)"
+      echo "✅ Chat completion succeeded (HTTP $HTTP_CODE, thinking mode)"
       echo "   Model: $MODEL"
       echo "   Reasoning: $(echo "$REASONING" | head -c 80)"
       echo "   ⚠️  Content was empty — model may need higher max_tokens"
     else
-      echo "⚠️  HTTP 200 but empty content and reasoning."
+      echo "⚠️  HTTP $HTTP_CODE but empty content and reasoning."
       echo "   Model may be loading or unavailable."
     fi
     ;;

@@ -6,7 +6,7 @@ description: >
 argument-hint: "setup | rotate-key | status | list-models"
 metadata:
   author: agentfs
-  version: "1.1.0"
+  version: "1.1.2"
   model-tier: T2
   tags: [goose, corp, custom-provider, redhat, model-service]
   related_skills: [goose-maas-provider, goose-litellm-provider, goose-skupper-provider]
@@ -31,8 +31,8 @@ goose session or touches a file under version control.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.1.0 |
-| **Trigger** | `hey setup corp provider`, `hey rotate corp key`, `hey corp status` |
+| **Version** | 1.1.2 |
+| **Trigger** | `hey configure goose corp`, `hey rotate corp key`, `hey corp status` |
 | **Dependencies** | `goose`, `curl`, `jq`, `secret-tool` (GNOME Keyring) |
 
 ## Specification
@@ -166,6 +166,11 @@ bash ~/.agents/skills/goose-corp-provider/scripts/test.sh
 ```
 
 Both must exit 0.
+
+### Step 3 — Restart Goose
+
+Instruct the user to restart Goose. It reads the key from the keyring
+at startup, so a running session keeps using the old key.
 
 ---
 

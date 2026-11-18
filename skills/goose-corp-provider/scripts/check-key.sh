@@ -18,7 +18,7 @@ if ! command -v secret-tool &>/dev/null; then
   exit 1
 fi
 
-KEYRING_DATA=$(secret-tool lookup service goose 2>/dev/null || echo '{}')
+KEYRING_DATA=$(secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null || echo '{}')
 
 KEY=$(echo "$KEYRING_DATA" | jq -r ".${ENV_VAR} // empty" 2>/dev/null)
 
