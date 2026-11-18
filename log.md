@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-18 16:13
+- README: AGENTS.md tree says 7 rules; frontmatter docs include required user-invocable (skill-check S01) (README.md)
+
 ## 2026-11-18 16:03
 - verify-config.sh: counters use PASS=$((PASS+1)); ((PASS++)) returned 1 at zero and set -e aborted after the first check (skills/goose-maas-provider/scripts/verify-config.sh)
 - goose-maas-provider v1.5.1: keyring checks by full attributes, names only (no secret output)

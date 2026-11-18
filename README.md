@@ -191,7 +191,7 @@ knowledge — only identity and memories.
 
 ```
 <target-project>/
-├── AGENTS.md              # Lite template (~850 tokens, 6 rules)
+├── AGENTS.md              # Lite template (~850 tokens, 7 rules)
 └── .agents/
     ├── SOUL.md            # Default agent identity
     ├── memories/          # Default agent's learned context (USER.md, MEMORY.md)
@@ -250,6 +250,7 @@ description: >
 metadata:
   version: "1.0.0"
   tags: [domain, function]
+user-invocable: true
 ---
 ```
 
@@ -259,6 +260,7 @@ metadata:
 | `description` | Yes | Signal phrases (2-4 word trigger phrases) for intent matching |
 | `metadata.version` | Yes | Quoted 3-part semver (e.g., `"1.0.0"`) |
 | `metadata.tags` | Yes | Tag-based discovery |
+| `user-invocable` | Yes | Must be `true` (skill-check S01) |
 
 See [`skill-gen/references/skill-schema.md`](skills/skill-gen/references/skill-schema.md)
 for the full canonical schema.
