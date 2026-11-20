@@ -500,9 +500,14 @@ personal intellectual property — never committed to any project repository.
   `okf-bundle-index` skills
 - **Optional accelerator:** When the `goose-kgm` skill is set up,
   a KG Memory (KGM) MCP extension provides `search_nodes` for fast
-  substring lookup over bundle/concept metadata. KGM is enabled and
-  disabled **per session** via the extension manager (the global
-  config retains `enabled: false`). When active, KGM is the
+  substring lookup over bundle/concept metadata. `setup-kgm.sh`
+  registers it with `enabled: false`; enable it **per session** with
+  the desktop session toggle or the agent's extension manager, or
+  turn it on in Settings to give every new session its own KGM server
+  (one process pair per session — see goose-kgm Known Issues). The
+  index path is passed through an `env MEMORY_FILE_PATH=…` wrapper in
+  the command, because goose drops inline `envs` on the desktop
+  path. When active, KGM is the
   **preferred** knowledge discovery path (Tier 2b) — it collapses
   the multi-hop OKF index walk into a single tool call. The
   knowledge index scan (Tier 2c) serves as fallback when KGM is

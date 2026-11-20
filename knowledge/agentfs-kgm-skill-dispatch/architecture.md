@@ -1,7 +1,7 @@
 ---
 type: Reference
 title: "Architecture"
-description: "Separate JSONL indexes, AgentSkill entity format, symlink workaround, reindex pipeline"
+description: "Separate JSONL indexes, AgentSkill entity format, index path delivery (env wrapper), reindex pipeline"
 timestamp: 2026-09-25T02:00:00-04:00
 ---
 
@@ -34,20 +34,42 @@ and returns the entity with the exact `load_skill` call.
 | `~/.agents/skills/.kgm-skills.jsonl` | AgentSkill | `reindex-skills-kgm.sh` |
 | `~/.agents/knowledge/.kgm-index.jsonl` | Combined | Concatenation at end of `reindex-kgm.sh` |
 
-### Symlink Workaround
+### Index Path Delivery (env wrapper)
 
-Goose does not reliably pass the `MEMORY_FILE_PATH` env var from
-config.yaml to the MCP server-memory process (the session extension
-data has `envs: {}`). The MCP server falls back to its default
-`dist/memory.jsonl` inside the npm package cache.
+The server reads its index from `MEMORY_FILE_PATH`; without it, it
+falls back to `dist/memory.jsonl` in the npx cache, which does not
+exist, so `search_nodes` returns an empty graph.
 
-Fix: `setup-kgm.sh` creates a symlink:
+Root cause (goose 1.60.1 source, verified live 2026-11-19): goose
+never sends inline stdio `envs` over ACP. `config_to_goose_extension`
+drops them and `goose_extension_to_config_without_secrets` forces
+them empty (`crates/goose/src/acp/server/extensions.rs`). Desktop new
+sessions and desktop toggles both go through ACP, so an `envs`-only
+`MEMORY_FILE_PATH` never reached those servers. Only the agent's
+`manage_extensions` path (reads `config.yaml` directly) kept it.
 
+Fix (goose-kgm 1.8.3): put the path in `cmd`/`args`, which survive
+every path:
+
+```yaml
+cmd: env
+args: [MEMORY_FILE_PATH=/home/<user>/.agents/knowledge/.kgm-index.jsonl, npx, -y, '@modelcontextprotocol/server-memory']
 ```
-<npm-cache>/server-memory/dist/memory.jsonl → ~/.agents/knowledge/.kgm-index.jsonl
-```
 
-This breaks on npm package upgrades — `setup-kgm.sh` re-creates it.
+The path must be absolute — no shell runs, so `~` and `$HOME` are
+not expanded (`setup-kgm.sh` writes the resolved path).
+`/usr/bin/env` execs in place (no extra process). Verified for new
+desktop sessions, desktop toggles (after a Goose Desktop restart),
+agent `manage_extensions`, and `goose run`. `status-kgm.sh` checks
+`MEMORY_FILE_PATH` in `/proc/<pid>/environ` of every running server.
+
+Superseded: the earlier symlink workaround (npx-cache
+`dist/memory.jsonl` → the index) was removed in 1.8.3. It could not
+create a missing file, broke when the npx cache hash changed, and
+let the server's write tools modify the derived index.
+
+The combined index is replaced atomically (temp file + rename,
+goose-kgm 1.8.5) because every server re-reads it on each call.
 
 ## Dispatch Flow
 

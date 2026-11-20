@@ -28,9 +28,13 @@ was changed to fail (exit 1) instead of warn when `--version` is missing.
 ## Ad-Hoc Fix → Durable Fix
 
 Every ad-hoc fix must trace to root cause and produce a persistent
-fix (script, guardrail, or config change). The KGM symlink started
-as a hack (copy data to the npm cache file) and was formalized into
-`setup-kgm.sh` creating the symlink automatically.
+fix (script, guardrail, or config change). Counter-example: the KGM
+symlink started as a hack (copy data to the npm cache file) and was
+formalized into `setup-kgm.sh` — formalizing a symptom patch. The
+root cause (goose drops inline `envs` over ACP, so `MEMORY_FILE_PATH`
+never reached desktop sessions) was found only in goose-kgm 1.8.3,
+which replaced the symlink with an `env` wrapper in `cmd`/`args`.
+Durable means root-caused, not just scripted.
 
 ## Ledger Integrity
 

@@ -13,7 +13,7 @@ set -euo pipefail
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
-trace_init "goose-kgm" "1.8.3" 2>/dev/null || true
+trace_init "goose-kgm" "1.8.5" 2>/dev/null || true
 
 KNOWLEDGE_DIR="$HOME/.agents/knowledge"
 INDEX="$KNOWLEDGE_DIR/index.md"
@@ -163,10 +163,19 @@ bash "$SCRIPT_DIR/reindex-skills-kgm.sh"
 
 # ── Merge knowledge + skills → combined index ─────────────────────
 SKILLS_JSONL="$HOME/.agents/skills/.kgm-skills.jsonl"
-cat "$JSONL_KNOWLEDGE" > "$JSONL_COMBINED"
+# Build in a temp file in the same directory, then rename: every running
+# server re-reads the combined index on each search_nodes call, so an
+# in-place rewrite could serve a truncated or empty file mid-reindex.
+# rename(2) within one filesystem is atomic — readers see old or new.
+TMP_COMBINED="$(mktemp "$KNOWLEDGE_DIR/.kgm-index.jsonl.XXXXXX")"
+trap 'rm -f "$TMP_COMBINED"' EXIT
+cat "$JSONL_KNOWLEDGE" > "$TMP_COMBINED"
 if [[ -f "$SKILLS_JSONL" ]]; then
-  cat "$SKILLS_JSONL" >> "$JSONL_COMBINED"
+  cat "$SKILLS_JSONL" >> "$TMP_COMBINED"
 fi
+chmod 644 "$TMP_COMBINED"   # mktemp creates 0600; keep the index's usual mode
+mv -f "$TMP_COMBINED" "$JSONL_COMBINED"
+trap - EXIT
 TOTAL=$(wc -l < "$JSONL_COMBINED")
 echo "✅ Combined index: $JSONL_COMBINED ($TOTAL lines)"
 # Servers read this file via MEMORY_FILE_PATH (env wrapper in config.yaml)

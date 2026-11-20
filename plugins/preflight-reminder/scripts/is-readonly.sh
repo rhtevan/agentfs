@@ -11,10 +11,14 @@ stripped="$(printf '%s' "$cmd_q" | sed -E 's/[0-9]?>&[0-9]//g; s#[0-9]?>>? */dev
 printf '%s' "$stripped" | grep -qE '(^|[^<])>' && exit 1
 # Exempt AgentFS bookkeeping (Rule 6 post-write, Rule 5 checkpoint).
 printf '%s' "$cmd" | grep -qE '(post-write|checkpoint)\.sh' && exit 0
-RO=" cat head tail less more ls ll tree find fd rg grep egrep fgrep ag wc stat file du df pwd echo printf which type command whoami id date env printenv hostname uname jq yq sort uniq cut tr awk column diff cmp sha256sum md5sum basename dirname realpath readlink test true false cd read sleep ps pgrep ss lsof nproc free uptime journalctl systemctl-status "
+# 1.4.0: [[ / [ (conditionals) and seq added — read-only checks such as
+# `[[ -f x ]] && echo` were held. python3, bash <script> and other
+# general-purpose interpreters stay mutating on purpose (can do anything).
+RO=" cat head tail less more ls ll tree find fd rg grep egrep fgrep ag wc stat file du df pwd echo printf which type command whoami id date env printenv hostname uname jq yq sort uniq cut tr awk column diff cmp sha256sum md5sum basename dirname realpath readlink test [ [[ seq true false cd read sleep ps pgrep ss lsof nproc free uptime journalctl systemctl-status "
 # Split on ; && || | and newlines into segments; check each command word.
 while IFS= read -r seg; do
-  seg="$(printf '%s' "$seg" | sed -E 's/^[[:space:]]*(\(|\{)?[[:space:]]*//; s/^([A-Za-z_][A-Za-z0-9_]*=[^ ]* +)*//')"
+  # 1.4.0: VAR=$(cmd ...) — check the substituted command, not "-f" etc.
+  seg="$(printf '%s' "$seg" | sed -E 's/^[[:space:]]*(\(|\{)?[[:space:]]*//; s/^[A-Za-z_][A-Za-z0-9_]*=\$\(//; s/^([A-Za-z_][A-Za-z0-9_]*=[^ ]* +)*//')"
   # 1.2.0: shell keywords carry no command of their own; check what follows.
   seg="$(printf '%s' "$seg" | sed -E 's/^((do|then|else|elif|if|while|until|!)([[:space:]]+|$))+//')"
   [[ -z "$seg" ]] && continue

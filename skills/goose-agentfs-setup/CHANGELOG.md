@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-20 00:29 | v1.10.3 — Troubleshooting: replace stale KGM symlink row with env-wrapper root cause (goose-kgm 1.8.3); Troubleshooting: preflight-reminder 1.4.0 read-only classification and 'Do not retry' clarification |
 | 2026-11-19 21:34 | v1.10.2 — Add fresh setup roadmap: interaction contract, skill sequence, phases 0-7, verification gate, ideal turn budget; Link fresh setup roadmap from Usage; add troubleshooting table (missing MOIM key, grep false positive, CWD, KGM symlink, preflight holds) |
 | 2026-11-19 21:19 | v1.10.1 — system-md-gen.sh: back up config.yaml (.bak.pre-tom) before the yaml.dump rewrite that enables tom |
 | 2026-11-19 21:01 | v1.10.0 — system-md-gen.sh: --generate registers GOOSE_MOIM_MESSAGE_FILE (top-level config.yaml key, backup .bak.pre-moim) so tom injects instructions.md; --check reports it; SKILL.md: tom reads only GOOSE_MOIM_MESSAGE_FILE (registered by system-md-gen.sh); replaces retired goose-setup; personal guardrails go in their own instructions.md section |

@@ -2,6 +2,26 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-20 00:29
+- Troubleshooting: preflight-reminder 1.4.0 read-only classification and 'Do not retry' clarification (skills/goose-agentfs-setup/SKILL.md)
+- preflight-reminder 1.3.2 -> 1.4.0 (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.4.0: hold reason says read-only calls are never held and that goose's appended 'Do not retry' does not apply to Pre-Flight holds (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+
+## 2026-11-20 00:28
+- preflight-reminder 1.4.0: is-readonly treats [[ / [ / seq as read-only and checks the command inside VAR=$(...) (plugins/preflight-reminder/scripts/is-readonly.sh)
+- README: KGM activation (desktop toggle, extension manager, global Settings) and env-wrapper index path (README.md)
+
+## 2026-11-20 00:27
+- Ad-Hoc Fix -> Durable Fix: KGM symlink recast as counter-example; root cause and env-wrapper fix (goose-kgm 1.8.3) (knowledge/agentfs-kgm-skill-dispatch/design-principles.md)
+- Frontmatter description: symlink workaround -> index path delivery (knowledge/agentfs-kgm-skill-dispatch/architecture.md)
+- Frontmatter description: symlink workaround -> index path delivery (knowledge/agentfs-kgm-skill-dispatch/architecture.md)
+- Index Path Delivery: path must be absolute (env does not expand ~) (knowledge/agentfs-kgm-skill-dispatch/architecture.md)
+- Replace Symlink Workaround with Index Path Delivery (env wrapper, ACP root cause, atomic reindex) (knowledge/agentfs-kgm-skill-dispatch/architecture.md)
+- Troubleshooting: replace stale KGM symlink row with env-wrapper root cause (goose-kgm 1.8.3) (skills/goose-agentfs-setup/SKILL.md)
+
+## 2026-11-20 00:26
+- reindex-kgm.sh: atomic combined-index swap (temp file + rename) so running servers never read a partial index (skills/goose-kgm/scripts/reindex-kgm.sh)
+
 ## 2026-11-20 00:18
 - goose-kgm 1.8.4: manage_extensions and goose CLI paths live-tested; Known Issues section (one server per session, server lifetime follows session) (skills/goose-kgm/SKILL.md)
 

@@ -1,5 +1,5 @@
 {
   "name": "preflight-reminder",
-  "version": "1.3.2",
-  "description": "JIT reminder for AGENTS.md Rule 2 (Pre-Flight). Each user turn arms a flag; the first MUTATING tool call of the turn (write, edit, or a shell command that is not read-only) is blocked once with a Pre-Flight reminder, then everything is allowed. Read-only calls pass and keep the flag armed. A user reply that follows a hold, or a short approval reply (yes/go/ok/proceed...), option pick, or 2-3 word reply ending in one (fix + go; not no go), counts as approval (goose tells the model not to retry denials). Rule text is unchanged."
+  "version": "1.4.0",
+  "description": "JIT reminder for AGENTS.md Rule 2 (Pre-Flight). Each user turn arms a flag; the first MUTATING tool call of the turn (write, edit, or a shell command that is not read-only) is blocked once with a Pre-Flight reminder, then everything is allowed. Read-only calls pass and keep the flag armed. A user reply that follows a hold, or a short approval reply (yes/go/ok/proceed...), option pick, or 2-3 word reply ending in one (fix + go; not no go), counts as approval (goose tells the model not to retry denials). Rule text is unchanged. 1.4.0: [[ / [ / seq and VAR=$(read-only cmd) classify as read-only; hold text states that goose's appended 'Do not retry' does not apply to a Pre-Flight hold."
 }
