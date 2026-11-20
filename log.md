@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-20 00:18
+- goose-kgm 1.8.4: manage_extensions and goose CLI paths live-tested; Known Issues section (one server per session, server lifetime follows session) (skills/goose-kgm/SKILL.md)
+
 ## 2026-11-19 23:51
 - status-kgm.sh: runtime check counts only node processes (pgrep -f self-match guard) (skills/goose-kgm/scripts/status-kgm.sh)
 

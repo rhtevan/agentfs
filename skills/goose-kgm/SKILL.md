@@ -3,7 +3,7 @@ name: goose-kgm
 description: >
   setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm
 metadata:
-  version: "1.8.3"
+  version: "1.8.4"
   model-tier: T3
   tags: [goose, kgm, knowledge-graph, mcp, knowledge]
 ---
@@ -78,14 +78,21 @@ every path, hence `env MEMORY_FILE_PATH=… npx …`.
 | New desktop session | ✅ |
 | Desktop toggle in an open session | ✅ only after the desktop has reloaded its extension list (restart Goose Desktop first) |
 | Resume of a session saved before the fix | ❌ until KGM is toggled once (after restart) |
-| Agent `manage_extensions` enable | ✅ by source (reads `config.yaml` directly; not live-tested) |
-| `goose` CLI | ✅ by source (`cmd`/`args` passed as-is; not live-tested) |
+| Agent `manage_extensions` enable | ✅ live-tested 2026-11-20 (disable released the old server; enable spawned a new one with the path set; `search_nodes` hit) |
+| `goose` CLI (`goose run`) | ✅ live-tested 2026-11-20 (server child of `goose run` had the path set; `search_nodes` hit; server exited with the run) |
 
 Each session launches its own server from its **saved** extension copy
 (`sessions.db`), so verify the running processes, not just `config.yaml`:
 `status-kgm.sh` reports `MEMORY_FILE_PATH` from `/proc/<pid>/environ`
 for every running server. No symlink into the npx cache is needed or
 created (removed in 1.8.3).
+
+## Known Issues
+
+| Issue | Impact | Status |
+|-------|--------|--------|
+| One KGM server per session | Every session with KGM enabled spawns its own `npm exec` + `node` pair (~165 MB). With `enabled: true` globally, each new desktop session adds one. Cost scales with open sessions, not with the single shared index. | Documented, no action. Candidate fix: one shared long-running server — not researched. |
+| Server lifetime follows the session | Verified 2026-11-20: deleting a session, `manage_extensions` disable, and the end of a `goose run` each stopped that session's server — no orphans observed. A server stays alive as long as its session exists in Goose Desktop. | Expected behavior. If `status-kgm.sh` ever lists a server whose session is gone, kill it and report it here. |
 
 ## Workflow
 
