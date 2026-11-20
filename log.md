@@ -2,6 +2,27 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 22:05
+- seed-agents-md.sh: log entry via merge-log-entry.sh instead of inline sed (sed '3a' nested the new section inside the first one when line 3 was a heading), a refused append warns instead of corrupting the log; AGENTS.md template text unchanged, bump per Rule 5; scaffold-dotagents.sh: log.md seeded with the Append-only comment-line anchor post-edit.sh requires (every fresh scaffold failed post-write) and no blank line after the first heading; test-soul-authoring.sh: T3/T4 seed with explicit --scope project (ROOT != CWD auto-detected LITE), T3 asserts the 7.7.0+ SOUL adoption instruction before Rules and SOUL.md anti-sycophancy text, or-true guards so one failure no longer aborts the suite (T3.2+ and T4 had never run), 22/22; test-agents-md-fidelity.sh: R1 fallback checks Index Browse / Open Discretion (renamed from Tier 2/3 in 7.14.0), 70/70 (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-19 22:04
+- test-agents-md-fidelity.sh: R1 fallback checks look for Index Browse / Open Discretion (renamed from Tier 2/Tier 3 in 7.14.0); every 7.14.0 AGENTS.md failed 2 checks (skills/agentfs-setup/scripts/test-agents-md-fidelity.sh)
+
+## 2026-11-19 22:03
+- test-soul-authoring.sh T4.7: idempotency re-run guarded the same way (missing SOUL or failed re-run reports as a failure, not an abort) (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+- test-soul-authoring.sh T4: seed with explicit --scope project (create-profile.sh refuses LITE; T4 never ran because the suite aborted at T3.2); create-profile failure reports as T4.x failures instead of aborting (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+
+## 2026-11-19 22:02
+- test-soul-authoring.sh: post-write re-run (hook did not register the batched T3.3 run) (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+- test-soul-authoring.sh T3.3: match single-line SOUL.md fragments (the social-pressure sentence is hard-wrapped; line-oriented grep missed it) (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+
+## 2026-11-19 22:01
+- scripts only, AGENTS.md template text unchanged; seed-agents-md.sh appends its log entry via merge-log-entry.sh instead of inline sed (sed '3a' nested the new section inside the first one when line 3 was a heading); a refused append now warns instead of corrupting the log; version bump per Rule 5 pending user decision (skills/agentfs-setup/scripts/seed-agents-md.sh)
+- scripts only, version not bumped; test-soul-authoring.sh T3: seed with explicit --scope project (ROOT != CWD auto-detected LITE); assert 7.7.0+ SOUL adoption instruction instead of the removed @import, primacy position before Rules, anti-sycophancy/praise-ban text in seeded SOUL.md; || true on grep pipelines so a no-match no longer aborts the suite under pipefail (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+
+## 2026-11-19 21:57
+- scripts only, version not bumped; fix: scaffold-dotagents.sh seeds log.md with the `Append-only` comment-line anchor that post-edit.sh requires (every fresh PROJECT/LITE/USER scaffold failed post-write), and no blank line after the first heading (stray blank once seed-agents-md.sh appends) (skills/agentfs-setup/scripts/scaffold-dotagents.sh)
+
 ## 2026-11-19 21:51
 - Allowlist the bare SSH alias work when it matches the English word in prose (.pre-push-allowlist)
 

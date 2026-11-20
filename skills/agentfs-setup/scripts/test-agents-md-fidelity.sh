@@ -145,8 +145,10 @@ assert_contains "Signal: always" 'always'
 echo "=== Dispatch Hierarchy ==="
 assert_contains "Path A documented" 'Path A'
 assert_contains "Path B documented" 'Path B'
-assert_contains "Tier 2 documented" 'Tier 2'
-assert_contains "Tier 3 documented" 'Tier 3'
+# 7.14.0 renamed R1 fallbacks Tier 2/Tier 3 → Index Browse / Open Discretion
+# ('Tier' is reserved for model tiers T1-T4)
+assert_contains "Index Browse fallback documented" 'Index Browse'
+assert_contains "Open Discretion fallback documented" 'Open Discretion'
 assert_contains "search_nodes in Path B" 'search_nodes'
 assert_contains "load_skill in Path B" 'load_skill'
 

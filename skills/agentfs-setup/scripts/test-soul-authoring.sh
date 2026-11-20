@@ -189,36 +189,53 @@ TMPDIR_SEED=$(mktemp -d)
 git init -q "$TMPDIR_SEED"
 mkdir -p "$TMPDIR_SEED/.agents"
 NON_INTERACTIVE=true bash "$SCAFFOLD" --scope project "$TMPDIR_SEED" > /dev/null 2>&1
-bash "$SEED_AGENTS" "$TMPDIR_SEED" > /dev/null 2>&1
+# Explicit --scope: a ROOT that differs from CWD auto-detects LITE, so
+# without it this section silently tested a LITE AGENTS.md.
+bash "$SEED_AGENTS" --scope project "$TMPDIR_SEED" > /dev/null 2>&1
 
-# T3.1: AGENTS.md contains @.agents/SOUL.md import
-if assert_file_contains "$TMPDIR_SEED/AGENTS.md" '@\.agents/SOUL\.md'; then
-  run_test T3.1 "AGENTS.md contains @.agents/SOUL.md import" pass
+# T3.0: AGENTS.md is stamped PROJECT scope (guards the LITE auto-detect trap)
+if assert_file_contains "$TMPDIR_SEED/AGENTS.md" 'agentfs-scope: project'; then
+  run_test T3.0 "AGENTS.md is stamped agentfs-scope: project" pass
 else
-  run_test T3.1 "AGENTS.md contains @.agents/SOUL.md import" fail
+  run_test T3.0 "AGENTS.md is stamped agentfs-scope: project" fail
 fi
 
-# T3.2: @import appears after Quick Orientation table
-QO_LINE=$(grep -n 'Quick Orientation' "$TMPDIR_SEED/AGENTS.md" | head -1 | cut -d: -f1)
-SOUL_LINE=$(grep -n '@\.agents/SOUL\.md' "$TMPDIR_SEED/AGENTS.md" | head -1 | cut -d: -f1)
-if [[ -n "$QO_LINE" && -n "$SOUL_LINE" && "$SOUL_LINE" -gt "$QO_LINE" ]]; then
-  run_test T3.2 "@.agents/SOUL.md import appears after Quick Orientation table" pass
+# T3.1: AGENTS.md carries the SOUL adoption instruction (7.7.0+ replaced
+# the @.agents/SOUL.md import with an agent-agnostic imperative line)
+SOUL_RE='Read `\.agents/SOUL\.md`'
+if assert_file_contains "$TMPDIR_SEED/AGENTS.md" "$SOUL_RE"; then
+  run_test T3.1 "AGENTS.md contains SOUL.md adoption instruction" pass
 else
-  run_test T3.2 "@.agents/SOUL.md import appears after Quick Orientation table" fail "QO=$QO_LINE SOUL=$SOUL_LINE"
+  run_test T3.1 "AGENTS.md contains SOUL.md adoption instruction" fail
 fi
 
-# T3.3: AGENTS.md contains updated anti-sycophancy guardrail text
-if assert_file_contains "$TMPDIR_SEED/AGENTS.md" 'Social pressure alone'; then
-  run_test T3.3 "AGENTS.md contains updated anti-sycophancy guardrail" pass
+# T3.2: adoption instruction sits in the primacy zone, before ## Rules
+# (|| true: under set -e/pipefail a no-match grep would abort the suite)
+RULES_LINE=$(grep -n '^## Rules' "$TMPDIR_SEED/AGENTS.md" | head -1 | cut -d: -f1 || true)
+SOUL_LINE=$(grep -n "$SOUL_RE" "$TMPDIR_SEED/AGENTS.md" | head -1 | cut -d: -f1 || true)
+if [[ -n "$RULES_LINE" && -n "$SOUL_LINE" && "$SOUL_LINE" -lt "$RULES_LINE" ]]; then
+  run_test T3.2 "SOUL.md adoption instruction precedes ## Rules (primacy zone)" pass
 else
-  run_test T3.3 "AGENTS.md contains updated anti-sycophancy guardrail" fail
+  run_test T3.2 "SOUL.md adoption instruction precedes ## Rules (primacy zone)" fail "RULES=$RULES_LINE SOUL=$SOUL_LINE"
 fi
 
-# T3.4: AGENTS.md contains praise-opener ban
-if assert_file_contains "$TMPDIR_SEED/AGENTS.md" 'Lead with substance'; then
-  run_test T3.4 "AGENTS.md contains praise-opener ban" pass
+# T3.3: anti-sycophancy guardrail — reversal rule in AGENTS.md, social
+# pressure principle in the seeded SOUL.md (moved out of AGENTS.md in 7.x)
+# (SOUL.md hard-wraps "Social pressure / is not a reason" — grep is
+#  line-oriented, so match single-line fragments only)
+if assert_file_contains "$TMPDIR_SEED/AGENTS.md" 'When reversing a position' && \
+   assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Intellectual integrity' && \
+   assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Social pressure'; then
+  run_test T3.3 "Anti-sycophancy guardrail (AGENTS.md reversal rule + SOUL.md)" pass
 else
-  run_test T3.4 "AGENTS.md contains praise-opener ban" fail
+  run_test T3.3 "Anti-sycophancy guardrail (AGENTS.md reversal rule + SOUL.md)" fail
+fi
+
+# T3.4: praise-opener ban lives in the seeded SOUL.md
+if assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Lead with substance'; then
+  run_test T3.4 "SOUL.md contains praise-opener ban" pass
+else
+  run_test T3.4 "SOUL.md contains praise-opener ban" fail
 fi
 
 rm -rf "$TMPDIR_SEED"
@@ -233,8 +250,12 @@ else
   TMPDIR_PRF=$(mktemp -d)
   git init -q "$TMPDIR_PRF"
   NON_INTERACTIVE=true bash "$SCAFFOLD" --scope project "$TMPDIR_PRF" > /dev/null 2>&1
-  bash "$SEED_AGENTS" "$TMPDIR_PRF" > /dev/null 2>&1
-  NON_INTERACTIVE=true bash "$PROFILE_SCRIPT" verifier "$TMPDIR_PRF" > /dev/null 2>&1
+  # Explicit --scope project: create-profile.sh refuses LITE, and a ROOT
+  # that differs from CWD auto-detects LITE.
+  bash "$SEED_AGENTS" --scope project "$TMPDIR_PRF" > /dev/null 2>&1
+  # || true: a create-profile failure must surface as T4.x failures, not
+  # abort the whole suite under set -e.
+  NON_INTERACTIVE=true bash "$PROFILE_SCRIPT" verifier "$TMPDIR_PRF" > /dev/null 2>&1 || true
 
   # T4.1: profile SOUL.md created
   if assert_file_exists "$TMPDIR_PRF/.agents/profiles/verifier/SOUL.md"; then
@@ -281,8 +302,8 @@ else
   fi
 
   # T4.7: Idempotency — re-run does not overwrite
-  ORIGINAL_SOUL=$(cat "$TMPDIR_PRF/.agents/profiles/verifier/SOUL.md")
-  NON_INTERACTIVE=true bash "$PROFILE_SCRIPT" verifier "$TMPDIR_PRF" > /dev/null 2>&1
+  ORIGINAL_SOUL=$(cat "$TMPDIR_PRF/.agents/profiles/verifier/SOUL.md" 2>/dev/null || true)
+  NON_INTERACTIVE=true bash "$PROFILE_SCRIPT" verifier "$TMPDIR_PRF" > /dev/null 2>&1 || true
   if [[ "$(cat "$TMPDIR_PRF/.agents/profiles/verifier/SOUL.md")" == "$ORIGINAL_SOUL" ]]; then
     run_test T4.7 "Re-run create-profile does not overwrite SOUL.md" pass
   else

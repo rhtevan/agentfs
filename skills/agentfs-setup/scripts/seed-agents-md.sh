@@ -457,14 +457,14 @@ fi
 
 echo "[agentfs-setup] Created $TARGET (scope: $SCOPE)"
 
-# Append to .agents/log.md
+# Append to .agents/log.md via merge-log-entry.sh — the single log writer
+# (keeps the Append-only anchor, newest-first order, flock serialization).
+# The former inline sed inserted after line 3, which nested the new section
+# inside the first one whenever line 3 was a heading (anchor-less logs).
 LOG_FILE="$ROOT/.agents/log.md"
 if [[ -f "$LOG_FILE" ]]; then
-  TODAY=$(date '+%Y-%m-%d %H:%M')
-  ENTRY="- Created AGENTS.md at project root (scope: $SCOPE)."
-  if grep -q "^## $TODAY" "$LOG_FILE"; then
-    sed -i "/^## $TODAY$/a\\$ENTRY" "$LOG_FILE"
-  else
-    sed -i "3a\\\\n## $TODAY\\n\\n$ENTRY" "$LOG_FILE"
+  if ! bash "$SCRIPT_DIR/merge-log-entry.sh" "$LOG_FILE" \
+       "- Created AGENTS.md at project root, scope: $SCOPE (AGENTS.md)" > /dev/null; then
+    echo "[agentfs-setup] WARNING: log entry not written to $LOG_FILE (merge-log-entry.sh refused; see above)." >&2
   fi
 fi
