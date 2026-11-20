@@ -239,6 +239,9 @@ report_category "PII (email, phone)" "$PII"
 # to semantically compare the existing README against staged changes.
 # This fires regardless of whether README.md is itself staged.
 CHANGED_FILES=$($DIFF_CMD --name-only 2>/dev/null || true)
+# Deleted files have no CHANGELOG or per-file post-write trace to check
+# (the deletion itself is logged); coverage categories use this list.
+LIVE_FILES=$($DIFF_CMD --name-only --diff-filter=d 2>/dev/null || true)
 README_AUDIT_REQUIRED=""
 if echo "$CHANGED_FILES" | grep -qE '(skills/|knowledge/|AGENTS\.md)'; then
   README_AUDIT_REQUIRED="yes"
@@ -285,7 +288,7 @@ fi
 # ── Category 9: CHANGELOG Coverage ────────────────────────────────
 # Check that staged SKILL.md files have a same-day CHANGELOG.md entry
 CHANGELOG_GAPS=""
-STAGED_SKILL_MDS=$(echo "$CHANGED_FILES" | grep 'SKILL\.md$' || true)
+STAGED_SKILL_MDS=$(echo "$LIVE_FILES" | grep 'SKILL\.md$' || true)
 if [[ -n "$STAGED_SKILL_MDS" ]]; then
   while IFS= read -r skill_md; do
     SKILL_DIR=$(dirname "$skill_md")
@@ -318,7 +321,7 @@ PW_SKIP_PATTERN='(log\.md|CHANGELOG\.md|index\.md|\.kgm-|\.session-marker|\.chec
 PW_SKIP_PATHS='(^plugins/)'
 
 # Collect staged .agents/ files (for both USER and PROJECT scope)
-PW_CANDIDATES=$(echo "$CHANGED_FILES" | grep -E '(^\.agents/|^skills/|^knowledge/|^plugins/|^scripts/|^profiles/|^memories/|^README\.md$|^AGENTS\.md$)' || true)
+PW_CANDIDATES=$(echo "$LIVE_FILES" | grep -E '(^\.agents/|^skills/|^knowledge/|^plugins/|^scripts/|^profiles/|^memories/|^README\.md$|^AGENTS\.md$)' || true)
 
 if [[ -n "$PW_CANDIDATES" ]]; then
   # Resolve log.md path

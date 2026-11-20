@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-19 21:19 | v7.14.0 — pre-push-scan.sh: CHANGELOG and post-write coverage skip deleted files (--diff-filter=d); tests 50/50 + deletion regression check |
 | 2026-11-18 14:45 | v7.14.0 — Rules 1-2 terms: 'Tier' reserved for model T1-T4. R1 fallback: Index Browse / Open Discretion; R2: Standard Mode / Spec-Driven Mode (wording only); Pre-Flight description: modes, not tiers |
 | 2026-11-18 14:42 | v7.13.2 — Semantic change control: sync-agents-md drops rules-hash STALE warning (version notice + classify prompt); update-compliance --check/--dry-run no longer compare hashes or harness SHAs; profile header: hashes are provenance only |
 | 2026-11-17 23:10 | v7.13.1 — F6: compliance staleness check runs on every exit path (was only after a real sync, so it warned once); suggests run-parallel.sh real instead of sequential --runs 5; Re-recorded by regrade of 20261117_210655 with F5 canary check (verdicts unchanged); Fidelity test updated to 7.13 rule layout (9 stale checks; 70/70); Re-recorded by regrade of 20261117_210655 after plugin.json description change (verdicts identical); F7 re-record 20261117_225629: T4 100 / T3 100 / T2 96 |

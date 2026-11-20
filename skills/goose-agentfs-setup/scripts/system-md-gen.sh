@@ -259,6 +259,9 @@ with open('$GOOSE_CONFIG') as f:
 exts = cfg.get('extensions', {})
 tom = exts.get('tom', {})
 if not tom.get('enabled', False):
+    # yaml.dump rewrites the whole file (drops comments/formatting): back up first
+    import shutil
+    shutil.copy2('$GOOSE_CONFIG', '$GOOSE_CONFIG.bak.pre-tom')
     tom['enabled'] = True
     exts['tom'] = tom
     cfg['extensions'] = exts

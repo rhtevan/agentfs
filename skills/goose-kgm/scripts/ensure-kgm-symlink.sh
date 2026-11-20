@@ -2,10 +2,12 @@
 # ensure-kgm-symlink.sh — Ensure the MCP server's default memory.jsonl
 # is a symlink to our managed .kgm-index.jsonl.
 #
-# WHY: Goose does not pass MEMORY_FILE_PATH from config.yaml envs to
-#      the MCP stdio process. The server falls back to its built-in
-#      default path (dist/memory.jsonl in its package dir). Without a
-#      symlink, reindex-kgm.sh writes to a file the server never reads.
+# WHY: Older Goose releases did not pass MEMORY_FILE_PATH from config.yaml
+#      envs to the MCP stdio process, so the server fell back to its
+#      built-in default (dist/memory.jsonl in its package dir).
+#      Goose 1.60.1 passes it (verified in /proc/<pid>/environ): the server
+#      reads .kgm-index.jsonl directly, no memory.jsonl exists, and no
+#      symlink is needed. The symlink logic stays as a fallback.
 #
 # FRAGILITY: `npx -y` can reinstall the package and replace the symlink
 #            with a regular file. This script is idempotent — call it
@@ -80,7 +82,11 @@ for NPX_DIR in "${NPX_DIRS[@]}"; do
 done
 
 if [[ "$FOUND" -eq 0 ]]; then
-  [[ "$QUIET" == "--quiet" ]] || echo "⚠️  No server-memory package found in npx cache. Run the extension once to install, then re-run."
+  if grep -qE "MEMORY_FILE_PATH:.*\.kgm-index\.jsonl" "$HOME/.config/goose/config.yaml" 2>/dev/null; then
+    [[ "$QUIET" == "--quiet" ]] || echo "✅ No symlink needed: MEMORY_FILE_PATH is set in config.yaml (server reads .kgm-index.jsonl directly)"
+  else
+    [[ "$QUIET" == "--quiet" ]] || echo "⚠️  No server-memory memory.jsonl found and MEMORY_FILE_PATH not set in config.yaml. Run setup-kgm.sh."
+  fi
 fi
 
 if $DRY_RUN; then

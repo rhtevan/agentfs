@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-19 21:18 | v1.8.2 — ensure-kgm-symlink.sh: no false 'No server-memory package' warning when MEMORY_FILE_PATH is set (goose 1.60.1 passes it; symlink not needed); setup-kgm.sh: back up config.yaml (.bak.pre-kgm) before yaml.dump rewrite; symlink comment corrected for goose 1.60.1 |
 | 2026-11-17 22:55 | v1.8.1 — F7: KGM names from agentfs-contract.sh; status-kgm reports tool-name mismatch |
 | 2026-11-09 20:45 | v1.8.0 — Add --dry-run support with DRY_RUN_RESULT signals; Add --dry-run flag parsing; Wrap symlink mutations in dry-run guards; Add DRY_RUN_RESULT summary at end of script; Add --dry-run flag parsing; Add dry-run convergence check and DRY_RUN_RESULT signals |
 | 2026-11-08 22:57 | v1.7.0 — Add Rules + trace + bump to 1.7.0; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; Add trace-lib.sh; CNL restructure Operations to Step workflow format; Remove internal descriptions from operation steps |

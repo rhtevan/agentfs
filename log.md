@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:19
+- README: agent config example lists memory routing + SOUL identity (path hygiene / git push safety moved out with goose-setup) (README.md)
+- pre-push-scan.sh: CHANGELOG and post-write coverage skip deleted files (--diff-filter=d); tests 50/50 + deletion regression check (skills/agentfs-setup/scripts/pre-push-scan.sh)
+- system-md-gen.sh: back up config.yaml (.bak.pre-tom) before the yaml.dump rewrite that enables tom (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-19 21:18
+- setup-kgm.sh: back up config.yaml (.bak.pre-kgm) before yaml.dump rewrite; symlink comment corrected for goose 1.60.1 (skills/goose-kgm/scripts/setup-kgm.sh)
+- ensure-kgm-symlink.sh: no false 'No server-memory package' warning when MEMORY_FILE_PATH is set (goose 1.60.1 passes it; symlink not needed) (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+
+## 2026-11-19 21:12
+- preflight-reminder plugin.json: version 1.3.2, description covers option picks and 2-3 word replies ending in an approval word (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.3.2: 2-3 word reply ending in an approval word (fix + go, A + go) counts as approval; negations (no/not/don't/never/stop/wait) excluded; 42/42 tests (plugins/preflight-reminder/scripts/arm.sh)
+- README: preflight-reminder row mentions 2-3 word replies ending in go (1.3.2) (README.md)
+
 ## 2026-11-19 21:09
 - README: 61 skills (goose-setup retired); Goose extensions: tom Required (GOOSE_MOIM_MESSAGE_FILE), KGM + signal-dispatch Recommended (fail-open) (README.md)
 

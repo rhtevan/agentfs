@@ -23,8 +23,12 @@ norm="$(printf '%s' "$message" | tr '[:upper:]' '[:lower:]' \
 if [[ "$(cat "$flag" 2>/dev/null || true)" == blocked* ]]; then
   rm -f "$flag"
 elif [[ "$norm" =~ ^(yes|y|yep|go|go ahead|ok|okay|approve|approved|proceed|do it|apply|lgtm|sure)$ ]] \
-  || [[ "$norm" =~ ^(option )?([a-e]|[1-5])$ ]]; then
+  || [[ "$norm" =~ ^(option )?([a-e]|[1-5])$ ]] \
+  || { [[ "$norm" =~ ^([a-z0-9]+ ){1,2}(go|yes|ok|okay|proceed|approved|lgtm)$ ]] \
+       && ! [[ "$norm" =~ (^| )(no|not|don|dont|never|stop|wait)( |$) ]]; }; then
   # 1.3.1: an option pick ("A", "b.", "Option 2") answers a choice the model offered.
+  # 1.3.2: a 2-3 word reply ending in an approval word ("fix + go", "A + go",
+  # "let's go") approves too, unless it contains a negation ("no go", "don't go").
   rm -f "$flag"
 else
   echo armed > "$flag"

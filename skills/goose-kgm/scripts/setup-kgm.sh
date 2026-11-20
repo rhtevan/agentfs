@@ -49,7 +49,10 @@ if $DRY_RUN; then
 fi
 
 # ── Add extension entry ────────────────────────────────────────────
-# Insert after the 'extensions:' key using python for safe YAML manipulation
+# Insert after the 'extensions:' key using python for safe YAML manipulation.
+# yaml.dump rewrites the whole file (drops comments/formatting): back up first.
+cp "$CONFIG" "${CONFIG}.bak.pre-kgm"
+echo "   Backup: ${CONFIG}.bak.pre-kgm"
 python3 << 'PYEOF'
 import yaml, sys, os
 
@@ -86,9 +89,9 @@ PYEOF
 mkdir -p "$JSONL_DIR"
 
 # ── Symlink: server-memory default path → our managed index ───────
-# Goose does not pass MEMORY_FILE_PATH env to the MCP process.
-# Symlink the server's default memory.jsonl to our managed JSONL.
-# Search all known npx cache locations.
+# Goose 1.60.1 passes MEMORY_FILE_PATH to the MCP process, so this is a
+# no-op there. Older releases did not; then the server's default
+# memory.jsonl is symlinked to our managed JSONL (fallback).
 bash "$(cd "$(dirname "$0")" && pwd)/ensure-kgm-symlink.sh"
 
 # ── Ensure .kgm-index.jsonl is gitignored ──────────────────────────
