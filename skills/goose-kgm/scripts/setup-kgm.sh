@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
-# setup-kgm.sh — Add KG Memory MCP extension to Goose config (disabled by default)
+# setup-kgm.sh — Add (or migrate) the KG Memory MCP extension in Goose config
 # Usage: bash setup-kgm.sh [--dry-run]
+#
+# WHY the `env` wrapper: Goose 1.60.1 never sends inline `envs` over ACP
+# (config_to_goose_extension drops them; goose_extension_to_config_without_secrets
+# forces them empty). Desktop sessions are built from that ACP listing, so an
+# `envs`-only MEMORY_FILE_PATH never reaches the server, which then reads an
+# empty default file. `cmd`/`args` survive every path (new session, toggle,
+# extension manager, CLI), so the path is passed as `env MEMORY_FILE_PATH=… npx …`.
+#
+# States:
+#   missing  → add entry (wrapper form, enabled: false)
+#   legacy   → migrate cmd/args to the wrapper, drop MEMORY_FILE_PATH from envs
+#              (enabled and all other keys are preserved)
+#   current  → nothing to do (CONVERGED)
 set -euo pipefail
 
 DRY_RUN=false
@@ -16,12 +29,13 @@ done
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
-trace_init "goose-kgm" "1.8.0" 2>/dev/null || true
+trace_init "goose-kgm" "1.8.3" 2>/dev/null || true
 
 CONFIG="$HOME/.config/goose/config.yaml"
 JSONL_DIR="$HOME/.agents/knowledge"
 JSONL_PATH="$JSONL_DIR/.kgm-index.jsonl"
 GITIGNORE="$HOME/.agents/.gitignore"
+export CONFIG JSONL_PATH
 
 # ── Preflight ──────────────────────────────────────────────────────
 if [[ ! -f "$CONFIG" ]]; then
@@ -29,70 +43,106 @@ if [[ ! -f "$CONFIG" ]]; then
   exit 1
 fi
 
-# Check if already configured
-if grep -q "knowledge-graph-memory\|$KGM_EXT_KEY" "$CONFIG" 2>/dev/null; then
-  echo "✅ KGM extension already configured in $CONFIG"
-  echo "   Use enable-kgm.sh to enable it."
+# ── Classify current entry: missing | legacy | current ─────────────
+STATE=$(python3 << 'PYEOF'
+import os, yaml
+cfg = yaml.safe_load(open(os.environ['CONFIG'])) or {}
+e = (cfg.get('extensions') or {}).get(os.environ['KGM_EXT_KEY'])
+want_arg = f"MEMORY_FILE_PATH={os.environ['JSONL_PATH']}"
+if not e:
+    print("missing")
+elif e.get('cmd') == 'env' and want_arg in (e.get('args') or []) \
+        and 'MEMORY_FILE_PATH' not in (e.get('envs') or {}):
+    print("current")
+else:
+    print("legacy")
+PYEOF
+)
+
+GITIGNORE_PENDING=false
+if [[ ! -f "$GITIGNORE" ]] || ! grep -q '.kgm-index.jsonl' "$GITIGNORE" 2>/dev/null; then
+  GITIGNORE_PENDING=true
+fi
+
+if [[ "$STATE" == "current" && "$GITIGNORE_PENDING" == false ]]; then
+  echo "✅ KGM extension already configured in $CONFIG (env wrapper form)"
   if $DRY_RUN; then echo "DRY_RUN_RESULT=CONVERGED"; fi
   exit 0
 fi
 
 if $DRY_RUN; then
-  echo "[dry-run] WOULD: Add $KGM_EXT_KEY extension to $CONFIG"
-  CHANGES=$((CHANGES + 1))
-  echo "[dry-run] WOULD: Ensure symlinks for server-memory"
-  CHANGES=$((CHANGES + 1))
+  case "$STATE" in
+    missing) echo "[dry-run] WOULD: Add $KGM_EXT_KEY extension to $CONFIG (cmd: env MEMORY_FILE_PATH=$JSONL_PATH npx …, enabled: false)"; CHANGES=$((CHANGES + 1)) ;;
+    legacy)  echo "[dry-run] WOULD: Migrate $KGM_EXT_KEY to env wrapper form and drop MEMORY_FILE_PATH from envs (enabled preserved)"; CHANGES=$((CHANGES + 1)) ;;
+  esac
+  if $GITIGNORE_PENDING; then
+    echo "[dry-run] WOULD: Add .kgm-index.jsonl to $GITIGNORE"
+    CHANGES=$((CHANGES + 1))
+  fi
   echo ""
   echo "DRY_RUN_RESULT=PENDING"
   echo "Changes: ${CHANGES}"
   exit 0
 fi
 
-# ── Add extension entry ────────────────────────────────────────────
-# Insert after the 'extensions:' key using python for safe YAML manipulation.
+# ── Add or migrate extension entry ─────────────────────────────────
 # yaml.dump rewrites the whole file (drops comments/formatting): back up first.
-cp "$CONFIG" "${CONFIG}.bak.pre-kgm"
-echo "   Backup: ${CONFIG}.bak.pre-kgm"
-python3 << 'PYEOF'
-import yaml, sys, os
+if [[ "$STATE" != "current" ]]; then
+  BACKUP="${CONFIG}.bak.pre-kgm"
+  [[ -e "$BACKUP" ]] && BACKUP="${BACKUP}.$(date +%Y%m%d_%H%M%S)"   # never overwrite an earlier backup
+  cp -p "$CONFIG" "$BACKUP"
+  echo "   Backup: $BACKUP"
+  STATE="$STATE" python3 << 'PYEOF'
+import os, yaml
 
-config_path = os.path.expanduser("~/.config/goose/config.yaml")
-jsonl_path = os.path.expanduser("~/.agents/knowledge/.kgm-index.jsonl")
+config_path = os.environ['CONFIG']
+jsonl_path = os.environ['JSONL_PATH']
+key, state = os.environ['KGM_EXT_KEY'], os.environ['STATE']
 
-with open(config_path, 'r') as f:
-    config = yaml.safe_load(f)
+with open(config_path) as f:
+    config = yaml.safe_load(f) or {}
+exts = config.setdefault('extensions', {})
 
-if 'extensions' not in config:
-    config['extensions'] = {}
-
-config['extensions'][os.environ['KGM_EXT_KEY']] = {
-    'enabled': False,
-    'type': 'stdio',
-    'name': os.environ['KGM_EXT_NAME'],
-    'description': 'Deterministic search index over OKF knowledge bundles via MCP',
-    'cmd': 'npx',
-    'args': ['-y', '@modelcontextprotocol/server-memory'],
-    'envs': {'MEMORY_FILE_PATH': jsonl_path},
-    'env_keys': [],
-    'timeout': 300,
+wrapper = {
+    'cmd': 'env',
+    'args': [f'MEMORY_FILE_PATH={jsonl_path}', 'npx', '-y', '@modelcontextprotocol/server-memory'],
 }
+
+if state == 'missing':
+    exts[key] = {
+        'enabled': False,
+        'type': 'stdio',
+        'name': os.environ['KGM_EXT_NAME'],
+        'description': 'Deterministic search index over OKF knowledge bundles via MCP',
+        **wrapper,
+        'env_keys': [],
+        'timeout': 300,
+    }
+    action = 'Added'
+else:
+    entry = exts[key]
+    entry.update(wrapper)
+    envs = dict(entry.get('envs') or {})
+    envs.pop('MEMORY_FILE_PATH', None)
+    if envs:
+        entry['envs'] = envs
+    else:
+        entry.pop('envs', None)
+    action = 'Migrated'
 
 with open(config_path, 'w') as f:
     yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
-print(f"✅ Added {os.environ['KGM_EXT_KEY']} extension to {config_path}")
-print(f"   MEMORY_FILE_PATH: {jsonl_path}")
-print(f"   enabled: false (use enable-kgm.sh to activate)")
+e = exts[key]
+print(f"✅ {action} {key} extension in {config_path}")
+print(f"   cmd: {e['cmd']} {' '.join(e['args'])}")
+print(f"   enabled: {str(e.get('enabled')).lower()}")
+print("   Start a new session (or restart Goose Desktop, then toggle KGM) to pick it up.")
 PYEOF
+fi
 
 # ── Ensure JSONL directory exists ──────────────────────────────────
 mkdir -p "$JSONL_DIR"
-
-# ── Symlink: server-memory default path → our managed index ───────
-# Goose 1.60.1 passes MEMORY_FILE_PATH to the MCP process, so this is a
-# no-op there. Older releases did not; then the server's default
-# memory.jsonl is symlinked to our managed JSONL (fallback).
-bash "$(cd "$(dirname "$0")" && pwd)/ensure-kgm-symlink.sh"
 
 # ── Ensure .kgm-index.jsonl is gitignored ──────────────────────────
 if [[ -f "$GITIGNORE" ]]; then

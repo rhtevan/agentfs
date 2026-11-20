@@ -2,6 +2,23 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 23:51
+- status-kgm.sh: runtime check counts only node processes (pgrep -f self-match guard) (skills/goose-kgm/scripts/status-kgm.sh)
+
+## 2026-11-19 23:50
+- setup-kgm.sh: timestamped backup when .bak.pre-kgm already exists (no overwrite) (skills/goose-kgm/scripts/setup-kgm.sh)
+
+## 2026-11-19 23:49
+- SKILL.md: mark manage_extensions and CLI rows as source-verified, not live-tested (skills/goose-kgm/SKILL.md)
+- SKILL.md: Index Path Delivery (RCA + path matrix), env wrapper config, post-setup restart/toggle instruction, runtime status rule, enabled semantics corrected (skills/goose-kgm/SKILL.md)
+- ensure-kgm-symlink.sh removed: env wrapper delivers MEMORY_FILE_PATH on every path; symlink fallback could not create a missing file and gave false assurance (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+- ensure-kgm-symlink.sh removed: env wrapper delivers MEMORY_FILE_PATH on every path; symlink fallback could not create a missing file and gave false assurance (skills/goose-kgm/scripts/ensure-kgm-symlink.sh)
+- reindex-kgm.sh: drop ensure-kgm-symlink call and stale 'Goose does not pass MEMORY_FILE_PATH' comment (skills/goose-kgm/scripts/reindex-kgm.sh)
+
+## 2026-11-19 23:48
+- status-kgm.sh: config-form check + runtime MEMORY_FILE_PATH check per running server (replaces symlink health) (skills/goose-kgm/scripts/status-kgm.sh)
+- setup-kgm.sh: env wrapper form, migrate legacy envs-only entry, drop symlink call (skills/goose-kgm/scripts/setup-kgm.sh)
+
 ## 2026-11-19 22:05
 - seed-agents-md.sh: log entry via merge-log-entry.sh instead of inline sed (sed '3a' nested the new section inside the first one when line 3 was a heading), a refused append warns instead of corrupting the log; AGENTS.md template text unchanged, bump per Rule 5; scaffold-dotagents.sh: log.md seeded with the Append-only comment-line anchor post-edit.sh requires (every fresh scaffold failed post-write) and no blank line after the first heading; test-soul-authoring.sh: T3/T4 seed with explicit --scope project (ROOT != CWD auto-detected LITE), T3 asserts the 7.7.0+ SOUL adoption instruction before Rules and SOUL.md anti-sycophancy text, or-true guards so one failure no longer aborts the suite (T3.2+ and T4 had never run), 22/22; test-agents-md-fidelity.sh: R1 fallback checks Index Browse / Open Discretion (renamed from Tier 2/3 in 7.14.0), 70/70 (skills/agentfs-setup/SKILL.md)
 

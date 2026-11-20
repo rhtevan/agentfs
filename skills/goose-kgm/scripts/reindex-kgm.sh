@@ -13,7 +13,7 @@ set -euo pipefail
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
-trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+trace_init "goose-kgm" "1.8.3" 2>/dev/null || true
 
 KNOWLEDGE_DIR="$HOME/.agents/knowledge"
 INDEX="$KNOWLEDGE_DIR/index.md"
@@ -169,9 +169,5 @@ if [[ -f "$SKILLS_JSONL" ]]; then
 fi
 TOTAL=$(wc -l < "$JSONL_COMBINED")
 echo "✅ Combined index: $JSONL_COMBINED ($TOTAL lines)"
-
-# ── Ensure symlink is intact ──────────────────────────────────────
-# Goose does not pass MEMORY_FILE_PATH to MCP process. The server
-# reads its default dist/memory.jsonl. If the symlink to our JSONL
-# is broken (e.g. npx reinstall), the server reads stale data.
-bash "$SCRIPT_DIR/ensure-kgm-symlink.sh"
+# Servers read this file via MEMORY_FILE_PATH (env wrapper in config.yaml)
+# on every call — no restart needed. Verify delivery with status-kgm.sh.

@@ -5,13 +5,15 @@
 #   - Global config: whether extension entry exists in config.yaml
 #   - Session state: whether KGM tools are available (agent must check separately)
 #   - JSONL index: file existence, entity count, size, last reindex time
+#   - Index path delivery: config form (env wrapper) + MEMORY_FILE_PATH of
+#     every running server-memory process (/proc/<pid>/environ)
 set -euo pipefail
 
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 source "${HOME}/.agents/scripts/agentfs-contract.sh"   # KGM_EXT_KEY / KGM_EXT_NAME / KGM_TOOL_PREFIX
-trace_init "goose-kgm" "1.7.0" 2>/dev/null || true
+trace_init "goose-kgm" "1.8.3" 2>/dev/null || true
 
 CONFIG="$HOME/.config/goose/config.yaml"
 JSONL_PATH="$HOME/.agents/knowledge/.kgm-index.jsonl"
@@ -90,8 +92,56 @@ else
   echo "  Run: bash ~/.agents/skills/goose-kgm/scripts/reindex-kgm.sh"
 fi
 
-# ── Symlink Health ─────────────────────────────────────────────────
+# ── Index path delivery (config form) ──────────────────────────────
+# Goose 1.60.1 drops inline `envs` on the ACP path (new desktop sessions,
+# desktop toggles), so MEMORY_FILE_PATH must travel in cmd/args via `env`.
 echo
-echo "--- Symlink Health ---"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-bash "$SCRIPT_DIR/ensure-kgm-symlink.sh"
+echo "--- Index Path Delivery ---"
+form=$(CONFIG="$CONFIG" JSONL_PATH="$JSONL_PATH" python3 <<'PYEOF' 2>/dev/null
+import os, yaml
+e = ((yaml.safe_load(open(os.environ['CONFIG'])) or {}).get('extensions') or {}).get(os.environ['KGM_EXT_KEY'])
+want = f"MEMORY_FILE_PATH={os.environ['JSONL_PATH']}"
+if not e: print("missing")
+elif e.get('cmd') == 'env' and want in (e.get('args') or []): print("wrapper")
+elif 'MEMORY_FILE_PATH' in (e.get('envs') or {}): print("envs-only")
+else: print("none")
+PYEOF
+)
+case "$form" in
+  wrapper)   echo "Config form:  ✅ cmd: env MEMORY_FILE_PATH=$JSONL_PATH npx …" ;;
+  envs-only) echo "Config form:  ❌ MEMORY_FILE_PATH only in envs (dropped on the desktop ACP path)"
+             echo "  Fix: bash ~/.agents/skills/goose-kgm/scripts/setup-kgm.sh (migrates to the env wrapper)" ;;
+  missing)   echo "Config form:  ❌ no $KGM_EXT_KEY entry (run setup-kgm.sh)" ;;
+  *)         echo "Config form:  ❌ MEMORY_FILE_PATH not configured (run setup-kgm.sh)" ;;
+esac
+
+# ── Runtime: env of each running server-memory process ─────────────
+# The config check alone gave false ✅ before: each session launches its
+# server from its own saved copy, so check what the processes received.
+if [[ -d /proc ]]; then
+  PIDS=$(pgrep -f 'node .*[m]cp-server-memory' || true)
+  if [[ -z "$PIDS" ]]; then
+    echo "Runtime:      ⚠️  no server-memory process running (KGM not active in any session)"
+  else
+    BAD=0
+    for p in $PIDS; do
+      # only real servers: a shell whose command line merely contains the
+      # pattern (pgrep -f self-match) is not a server-memory process
+      [[ "$(cat "/proc/$p/comm" 2>/dev/null)" == "node" ]] || continue
+      cwd=$(readlink "/proc/$p/cwd" 2>/dev/null || echo "?")
+      got=$(tr '\0' '\n' < "/proc/$p/environ" 2>/dev/null | sed -n 's/^MEMORY_FILE_PATH=//p')
+      if [[ "$got" == "$JSONL_PATH" ]]; then
+        echo "Runtime:      ✅ pid $p ($cwd) reads $JSONL_PATH"
+      else
+        BAD=$((BAD + 1))
+        echo "Runtime:      ❌ pid $p ($cwd) MEMORY_FILE_PATH=${got:-UNSET} — search_nodes returns empty in that session"
+      fi
+    done
+    if [[ "$BAD" -gt 0 ]]; then
+      echo "  Fix: that session runs a stale saved config. Restart Goose Desktop, then toggle"
+      echo "  KGM off/on in the session (or start a new session)."
+    fi
+  fi
+else
+  echo "Runtime:      ⚠️  /proc unavailable — verify in-session with search_nodes"
+fi

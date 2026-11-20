@@ -3,7 +3,7 @@ name: goose-kgm
 description: >
   setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm
 metadata:
-  version: "1.8.2"
+  version: "1.8.3"
   model-tier: T3
   tags: [goose, kgm, knowledge-graph, mcp, knowledge]
 ---
@@ -21,10 +21,13 @@ replacement for OKF progressive discovery.
   → bundle `index.md` → concept docs) is the required discovery path.
   KGM collapses multi-hop lookups into a single `search_nodes` call
   when enabled, but OKF must work without KGM.
-- **Session-scoped activation.** KGM is enabled/disabled per session
-  using the extension manager, not by editing `config.yaml`. The
-  global config keeps `enabled: false` — KGM is opt-in each session.
-- **Disabled by default.** User must explicitly enable per session.
+- **Session-scoped activation.** `setup-kgm.sh` writes `enabled: false`,
+  so KGM is opt-in per session (desktop chat extension toggle, or the
+  extension manager tool). If the user turns it on globally in Goose
+  Settings → Extensions (`enabled: true`), every new session gets KGM.
+- **Disabled by default.** Fresh setup leaves it off; migration of an
+  existing entry preserves whatever `enabled` value is already there.
+- **Index path in `cmd`/`args`, never `envs`.** See Index Path Delivery.
 - **Knowledge concepts only.** KGM indexes bundle/concept metadata
   from OKF — not guardrails, not memories, not skill content.
 - **Derived artifact.** The JSONL file is regenerated from OKF indexes.
@@ -40,7 +43,12 @@ Do NOT edit the JSONL index file directly. All changes MUST go
 through the reindex script.
 
 Do NOT edit `config.yaml` to enable/disable KGM. MUST use the
-extension manager tool for session-scoped activation.
+extension manager tool (or the user's desktop toggle) for
+session-scoped activation.
+
+Do NOT put `MEMORY_FILE_PATH` in the extension's `envs`. Goose drops
+inline `envs` on the desktop ACP path; MUST use the `env` wrapper
+that `setup-kgm.sh` writes.
 
 ## Configuration
 
@@ -48,11 +56,36 @@ extension manager tool for session-scoped activation.
 |---------|-------|
 | Extension name | `knowledgegraphmemory` |
 | Type | `stdio` (MCP server) |
-| Command | `npx` |
-| Args | `["-y", "@modelcontextprotocol/server-memory"]` |
-| Env var | `MEMORY_FILE_PATH` |
+| Command | `env` |
+| Args | `["MEMORY_FILE_PATH=<abs path to .kgm-index.jsonl>", "npx", "-y", "@modelcontextprotocol/server-memory"]` |
+| `envs` | none (MEMORY_FILE_PATH there is dropped by Goose — see below) |
 | JSONL path | `~/.agents/knowledge/.kgm-index.jsonl` |
 | Config file | `~/.config/goose/config.yaml` |
+
+## Index Path Delivery
+
+Goose 1.60.1 never sends inline `envs` over ACP: `config_to_goose_extension`
+drops them and `goose_extension_to_config_without_secrets` forces them
+empty (`crates/goose/src/acp/server/extensions.rs`). Desktop sessions and
+desktop toggles are built from that ACP listing, so an `envs`-only
+`MEMORY_FILE_PATH` never reaches the server. The server then reads its
+empty default (`dist/memory.jsonl` in the npx cache) and `search_nodes`
+returns nothing while `config.yaml` looks correct. `cmd`/`args` survive
+every path, hence `env MEMORY_FILE_PATH=… npx …`.
+
+| Path | Index path delivered (env wrapper) |
+|------|------------------------------------|
+| New desktop session | ✅ |
+| Desktop toggle in an open session | ✅ only after the desktop has reloaded its extension list (restart Goose Desktop first) |
+| Resume of a session saved before the fix | ❌ until KGM is toggled once (after restart) |
+| Agent `manage_extensions` enable | ✅ by source (reads `config.yaml` directly; not live-tested) |
+| `goose` CLI | ✅ by source (`cmd`/`args` passed as-is; not live-tested) |
+
+Each session launches its own server from its **saved** extension copy
+(`sessions.db`), so verify the running processes, not just `config.yaml`:
+`status-kgm.sh` reports `MEMORY_FILE_PATH` from `/proc/<pid>/environ`
+for every running server. No symlink into the npx cache is needed or
+created (removed in 1.8.3).
 
 ## Workflow
 
@@ -69,6 +102,12 @@ The agent MUST run:
 ```bash
 bash ~/.agents/skills/goose-kgm/scripts/setup-kgm.sh
 ```
+
+The script adds the entry, or migrates a legacy `envs`-only entry to
+the `env` wrapper. After it changes `config.yaml`, the agent MUST tell
+the user: start a new session, or restart Goose Desktop and toggle KGM
+off/on in each open session. Then run Step 5 to confirm every running
+server reports ✅.
 
 ### Step 2 — Teardown
 
@@ -110,7 +149,10 @@ The agent MUST run:
 bash ~/.agents/skills/goose-kgm/scripts/status-kgm.sh
 ```
 
-The agent MUST report the script output verbatim.
+The agent MUST report the script output verbatim. A `Runtime: ❌` line
+means that session's server runs without the index path; report the
+fix the script prints. Do NOT report KGM healthy from the config
+check alone.
 
 ### Step 6 — Reindex
 
