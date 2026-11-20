@@ -15,3 +15,6 @@ skills/*/topology.env
 
 # flock mutex files (runtime, machine-local; merge-log-entry.sh)
 *.lock
+
+# Rule 5 checkpoint (transient; checkpoint.sh create/clear)
+.checkpoint

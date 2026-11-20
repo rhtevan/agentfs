@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-20 00:59
+- Cover KGM enabled globally in the signal-dispatch Dependencies row (skills/goose-agentfs-setup/SKILL.md)
+- Note signal-dispatch and per-session server effects of KGM enabled globally (skills/goose-agentfs-setup/references/fresh-setup-roadmap.md)
+- Drop the repeated clause and cover KGM enabled globally in the signal-dispatch row (README.md)
+- Ignore the Rule 5 checkpoint file in the USER repo (.gitignore)
+
 ## 2026-11-20 00:29
 - Troubleshooting: preflight-reminder 1.4.0 read-only classification and 'Do not retry' clarification (skills/goose-agentfs-setup/SKILL.md)
 - preflight-reminder 1.3.2 -> 1.4.0 (plugins/preflight-reminder/plugin.json)

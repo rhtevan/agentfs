@@ -341,7 +341,7 @@ live in every goose session). Rule text is unchanged; hooks only block and remin
 
 | Plugin | Rule | Behaviour |
 |--------|------|-----------|
-| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks the first other tool once with a reminder to run `search_nodes`; a wrongly named KGM tool gets a one-time notice with the fix. Fail-open: enforces only when the KGM extension is enabled in goose `config.yaml`, otherwise Rule 1 is left to the model. With goose-kgm's default (`enabled: false`, enabled per session), it stays inactive; Rule 1 is left to the model |
+| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks the first other tool once with a reminder to run `search_nodes`; a wrongly named KGM tool gets a one-time notice with the fix. Fail-open: enforces only when the KGM extension is enabled in goose `config.yaml`, otherwise Rule 1 is left to the model. With goose-kgm's default (`enabled: false`, enabled per session) it stays inactive; with KGM enabled globally (`enabled: true`) it enforces in every session |
 | `preflight-reminder` | 2 | Blocks the first mutating tool call of each turn once with a Pre-Flight reminder; the user's reply after a hold, or a short approval (`yes`/`go`/…), option pick (`A`, `option 2`) or 2–3 word reply ending in one (`fix + go`; not `no go`), counts as approval |
 | `post-write-enforce` | 6 | After a write under `.agents/`, blocks the next non-shell tool once with a reminder to run `post-write.sh` (fail-open: never locks the session) |
 

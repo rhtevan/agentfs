@@ -60,7 +60,7 @@ Output: gap table + phase plan → user `go`.
 | 2 | Context files | `setup.sh` → `setup.sh --remove AGENTS.md` | `setup.sh --check` | AGENTS.md is delivered via `system.md`; leaving it in `CONTEXT_FILE_NAMES` double-loads it |
 | 3 | Hints + memory routing | `setup.sh --hints-install` → `setup.sh --memory-install` | `--hints-check`, `--memory-check` | Writes `instructions.md`, shared with the SOUL section |
 | 4 | system.md + SOUL (from the project dir) | `system-md-gen.sh` | `--check`: "GOOSE_MOIM_MESSAGE_FILE: registered ✅" | tom has **no default file**; without the key nothing is injected while every other check is green |
-| 5 | KGM (optional) | `setup-kgm.sh --dry-run` → apply if PENDING → `reindex-kgm.sh` | `status-kgm.sh` all ✅ | Config keeps `enabled: false`; enable per session. signal-dispatch then stays inactive — expected |
+| 5 | KGM (optional) | `setup-kgm.sh --dry-run` → apply if PENDING → `reindex-kgm.sh` | `status-kgm.sh` all ✅ | Default `enabled: false`: enable per session, and signal-dispatch stays inactive — expected. If KGM is enabled globally (`enabled: true`, e.g. via the desktop toggle), signal-dispatch enforces in every session and each session starts its own KGM server (~165 MB) |
 
 Config backups written automatically: `config.yaml.bak.pre-kgm`,
 `.bak.pre-tom`, `.bak.pre-moim`.

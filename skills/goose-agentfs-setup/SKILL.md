@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.10.3"
+  version: "1.10.4"
   model-tier: T3
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
@@ -405,7 +405,7 @@ Per-turn user message (recency peak — every turn):
 |-----------|:----:|---------|
 | **tom** (Top Of Mind) | ✅ Required | Reads the file named by `GOOSE_MOIM_MESSAGE_FILE` (`instructions.md`, registered by `system-md-gen.sh`), injects SOUL into `<turn-context>` per turn |
 | **KGM** (Knowledge Graph Memory) | ➖ Recommended | Signal dispatch skill/knowledge lookup via `search_nodes`. Without it, `hey` dispatch is left to the model following Rule 1 |
-| **signal-dispatch** plugin | ➖ Recommended | `hey` prefix reminder via lifecycle hooks. Fail-open: enforces only when KGM is enabled in `config.yaml`, otherwise never blocks. With goose-kgm's default (`enabled: false`, enabled per session), it stays inactive; Rule 1 is left to the model |
+| **signal-dispatch** plugin | ➖ Recommended | `hey` prefix reminder via lifecycle hooks. Fail-open: enforces only when KGM is enabled in `config.yaml`, otherwise never blocks. With goose-kgm's default (`enabled: false`, enabled per session), it stays inactive and Rule 1 is left to the model; with KGM enabled globally (`enabled: true`), it enforces in every session |
 
 ### Sync Signal
 
