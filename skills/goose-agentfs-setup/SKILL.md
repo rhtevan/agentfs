@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.8.0"
+  version: "1.10.0"
   model-tier: T3
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
@@ -316,6 +316,13 @@ AgentFS v6.0.0 introduced the `signal-dispatch` plugin
 to deterministically enforce the `hey` signal dispatch prefix. This skill
 provides commands to verify and inspect plugin status.
 
+All AgentFS plugins are **fail-open** JIT reminders: each blocks at most
+once and never locks a session; rule compliance after the reminder is left
+to the model. `signal-dispatch` (Rule 1) enforces only when KGM is enabled,
+`preflight-reminder` (Rule 2) holds the first change of a turn (the user's
+reply or a short `yes`/`go` approves it), and `post-write-enforce` (Rule 6)
+reminds once per write under `.agents/` to run `post-write.sh`.
+
 ### Check Plugin Health
 
 ```bash
@@ -351,6 +358,14 @@ which reads `instructions.md` and injects its content into `<turn-context>`
 every turn (**recency peak**). The tom extension must be enabled — without it,
 SOUL content never reaches the model and weaker models will confabulate identity.
 
+tom has no default file: it injects only what `GOOSE_MOIM_MESSAGE_FILE` names
+(env var first, else a top-level `config.yaml` key; re-read every turn, works
+for CLI and Desktop). `system-md-gen.sh` registers
+`GOOSE_MOIM_MESSAGE_FILE: ~/.config/goose/instructions.md` (backup
+`config.yaml.bak.pre-moim`); `--check` reports it. This replaces the retired
+`goose-setup` skill. Personal guardrails can go in `instructions.md` as their
+own section outside the `AGENTFS-SOUL` and Memory Routing markers.
+
 ### Architecture
 
 ```
@@ -371,11 +386,11 @@ Per-turn user message (recency peak — every turn):
 
 ### Dependencies
 
-| Extension | Required | Purpose |
-|-----------|:--------:|---------|
-| **tom** (Top Of Mind) | ✅ | Reads `instructions.md`, injects SOUL into `<turn-context>` per turn |
-| **KGM** (Knowledge Graph Memory) | ✅ | Signal dispatch skill/knowledge lookup via `search_nodes` |
-| **signal-dispatch** plugin | ✅ | Deterministic `hey` prefix enforcement via lifecycle hooks |
+| Extension | Need | Purpose |
+|-----------|:----:|---------|
+| **tom** (Top Of Mind) | ✅ Required | Reads the file named by `GOOSE_MOIM_MESSAGE_FILE` (`instructions.md`, registered by `system-md-gen.sh`), injects SOUL into `<turn-context>` per turn |
+| **KGM** (Knowledge Graph Memory) | ➖ Recommended | Signal dispatch skill/knowledge lookup via `search_nodes`. Without it, `hey` dispatch is left to the model following Rule 1 |
+| **signal-dispatch** plugin | ➖ Recommended | `hey` prefix reminder via lifecycle hooks. Fail-open: enforces only when KGM is enabled in `config.yaml`, otherwise never blocks. With goose-kgm's default (`enabled: false`, enabled per session), it stays inactive; Rule 1 is left to the model |
 
 ### Sync Signal
 

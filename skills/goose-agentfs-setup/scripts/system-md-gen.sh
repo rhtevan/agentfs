@@ -9,6 +9,8 @@
 # SOUL.md identity is delivered separately by the tom (Top Of Mind) extension,
 # which reads instructions.md and injects its content into <turn-context>
 # per turn (recency peak). The tom extension MUST be enabled for this to work.
+# tom only reads the file named by GOOSE_MOIM_MESSAGE_FILE (env var, else a
+# top-level config.yaml key), so --generate registers that key as well.
 #
 # Usage:
 #   system-md-gen.sh [--check|--generate|--drift-check|--reset]
@@ -25,7 +27,7 @@ set -euo pipefail
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-agentfs-setup" "1.8.0" 2>/dev/null || true
+trace_init "goose-agentfs-setup" "1.10.0" 2>/dev/null || true
 
 # --- Paths ---
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -281,6 +283,9 @@ print('enabled' if cfg.get('extensions',{}).get('tom',{}).get('enabled') else 'd
         fi
     fi
 
+    # Point tom at instructions.md — without this key tom injects nothing.
+    ensure_moim_registered
+
     # Write SOUL.md to MOIM (with overwrite protection)
     if [ -n "$soul_md_path" ]; then
         # Check if a non-default profile is currently active
@@ -309,6 +314,35 @@ print('enabled' if cfg.get('extensions',{}).get('tom',{}).get('enabled') else 'd
     echo ""
     log_warn "⚡ system.md changes take effect in NEW sessions only."
     log_warn "   Restart Goose Desktop or start a new CLI session to apply."
+}
+
+# --- Register instructions.md with tom (GOOSE_MOIM_MESSAGE_FILE) ---
+#
+# tom calls Config::get_param("GOOSE_MOIM_MESSAGE_FILE"): env var first, then
+# the top-level config.yaml key; it re-reads both every turn. Match the key at
+# column 0 only — tom's own description line also contains the name.
+
+moim_registered_value() {
+    grep -m1 '^GOOSE_MOIM_MESSAGE_FILE:' "$GOOSE_CONFIG" 2>/dev/null \
+        | sed -E "s/^GOOSE_MOIM_MESSAGE_FILE:[[:space:]]*//; s/^[\"']//; s/[\"'][[:space:]]*\$//" || true
+}
+
+ensure_moim_registered() {
+    [ -f "$GOOSE_CONFIG" ] || { log_warn "config.yaml not found — cannot register GOOSE_MOIM_MESSAGE_FILE"; return 0; }
+    local current
+    current=$(moim_registered_value)
+    if [ -z "$current" ]; then
+        cp "$GOOSE_CONFIG" "${GOOSE_CONFIG}.bak.pre-moim"
+        printf '\nGOOSE_MOIM_MESSAGE_FILE: ~/.config/goose/instructions.md\n' >> "$GOOSE_CONFIG"
+        log_info "Registered GOOSE_MOIM_MESSAGE_FILE in config.yaml ✅ (backup: config.yaml.bak.pre-moim)"
+    elif [ "${current/#\~/$HOME}" = "$MOIM_FILE" ]; then
+        log_info "GOOSE_MOIM_MESSAGE_FILE: registered ✅"
+    else
+        log_warn "GOOSE_MOIM_MESSAGE_FILE points to '${current}', not ${MOIM_FILE} — left unchanged; SOUL will not render"
+    fi
+    if [ -n "${GOOSE_MOIM_MESSAGE_FILE:-}" ] && [ "${GOOSE_MOIM_MESSAGE_FILE/#\~/$HOME}" != "$MOIM_FILE" ]; then
+        log_warn "Env GOOSE_MOIM_MESSAGE_FILE='${GOOSE_MOIM_MESSAGE_FILE}' overrides config.yaml"
+    fi
 }
 
 # --- Write SOUL.md to MOIM persistent instructions ---
@@ -395,6 +429,21 @@ check_status() {
         log_info "MOIM SOUL section: present"
     else
         log_info "MOIM SOUL section: not installed"
+    fi
+
+    # GOOSE_MOIM_MESSAGE_FILE (tom reads only the file this names)
+    if [ -f "$GOOSE_CONFIG" ]; then
+        local moim_val
+        moim_val=$(moim_registered_value)
+        if [ -n "${GOOSE_MOIM_MESSAGE_FILE:-}" ]; then
+            log_info "GOOSE_MOIM_MESSAGE_FILE (env): ${GOOSE_MOIM_MESSAGE_FILE}"
+        elif [ -n "$moim_val" ] && [ "${moim_val/#\~/$HOME}" = "$MOIM_FILE" ]; then
+            log_info "GOOSE_MOIM_MESSAGE_FILE: registered ✅"
+        elif [ -n "$moim_val" ]; then
+            log_warn "GOOSE_MOIM_MESSAGE_FILE points to '${moim_val}', not ${MOIM_FILE} — SOUL will NOT render"
+        else
+            log_warn "GOOSE_MOIM_MESSAGE_FILE: NOT registered ⚠️  — tom injects nothing; run --generate"
+        fi
     fi
 
     # tom extension (required for MOIM rendering)

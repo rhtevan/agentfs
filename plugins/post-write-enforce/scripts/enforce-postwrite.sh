@@ -32,8 +32,15 @@ if [[ "$tool_name" == "search_nodes" || "$tool_name" == "$KGM_SEARCH_TOOL" ]] \
   exit 0
 fi
 
-# Block other tools — post-write is pending
+# Block other tools — post-write is pending.
+# 1.3.0 fail-open: block ONCE, then clear the flag so the session can never
+# get stuck (clear-flag.sh only runs after a *successful* shell command, so a
+# chained command that exits non-zero, a failing post-write.sh, or an edit
+# batched with its post-write.sh used to leave every non-shell tool blocked).
+# Rule 6 compliance after the reminder is left to the model. A new write
+# under .agents/ sets the flag again (one reminder per write).
 files="$(cat "$flag_file" | sort -u | head -3 | tr '\n' ', ')"
+rm -f "$flag_file"
 reason="Post-Write rule: you wrote to .agents/ (${files%,}) but have not run post-write.sh yet. Run: bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> \"<description>\" for each modified file before continuing."
 
 printf '{"decision":"block","reason":"%s"}' "$(echo "$reason" | tr '\n' ' ' | sed 's/"/\\"/g')"

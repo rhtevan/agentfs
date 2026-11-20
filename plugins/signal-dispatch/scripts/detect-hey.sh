@@ -31,8 +31,9 @@ if [[ -f "$PATTERNS_FILE" ]]; then
   while IFS='|' read -r prefix _action; do
     # Skip comments and empty lines
     [[ -z "$prefix" || "$prefix" =~ ^# ]] && continue
-    # Trim whitespace
-    prefix="$(echo "$prefix" | sed 's/[[:space:]]*$//' | tr '[:upper:]' '[:lower:]')"
+    # 2.3.0: no trimming. A trailing space is intentional ("note " must not
+    # match "notebook"); lowercase only.
+    prefix="$(printf '%s' "$prefix" | tr '[:upper:]' '[:lower:]')"
     # Match if keywords start with this prefix
     if [[ "$keywords_lower" == "$prefix"* ]]; then
       table_match=true
@@ -43,7 +44,22 @@ else
   echo "[signal-dispatch] WARNING: patterns.txt not found at $PATTERNS_FILE" >&2
 fi
 
-if [ "$table_match" = false ]; then
+# 2.4.0 fail-open: enforce only when the KGM extension is confirmed enabled.
+# Any doubt (no config, other layout, no contract) -> no block; Rule 1 is
+# left to the model.
+kgm_enabled() {
+  # shellcheck source=/dev/null
+  source "$HOME/.agents/scripts/agentfs-contract.sh" 2>/dev/null || return 1
+  [[ -n "${KGM_EXT_KEY:-}" ]] || return 1
+  awk -v key="  ${KGM_EXT_KEY}:" '
+    /^[^[:space:]#]/ { ext = ($0 ~ /^extensions:/); blk = 0; next }
+    ext && $0 == key { blk = 1; next }
+    blk && /^  [^ ]/ { blk = 0 }
+    blk && /^    enabled:[[:space:]]*true[[:space:]]*$/ { found = 1 }
+    END { exit !found }' "$HOME/.config/goose/config.yaml" 2>/dev/null
+}
+
+if [ "$table_match" = false ] && kgm_enabled; then
   # Unmatched signal — enforce search_nodes first via Signal Dispatch rule
   echo "pending" > "${dispatch_dir}/${session_id}"
   echo "$keywords" > "${dispatch_dir}/${session_id}.keywords"

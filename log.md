@@ -2,6 +2,61 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:09
+- README: 61 skills (goose-setup retired); Goose extensions: tom Required (GOOSE_MOIM_MESSAGE_FILE), KGM + signal-dispatch Recommended (fail-open) (README.md)
+
+## 2026-11-19 21:01
+- Retired goose-setup: GOOSE_MOIM_MESSAGE_FILE registration moved to goose-agentfs-setup system-md-gen.sh (v1.10.0); its guardrails were already covered (Path Hygiene removed in AGENTS.md v7.0.0, Git Push Safety -> agentfs-git-push) (skills/goose-setup)
+- SKILL.md: tom reads only GOOSE_MOIM_MESSAGE_FILE (registered by system-md-gen.sh); replaces retired goose-setup; personal guardrails go in their own instructions.md section (skills/goose-agentfs-setup/SKILL.md)
+- system-md-gen.sh: --generate registers GOOSE_MOIM_MESSAGE_FILE (top-level config.yaml key, backup .bak.pre-moim) so tom injects instructions.md; --check reports it (skills/goose-agentfs-setup/scripts/system-md-gen.sh)
+
+## 2026-11-19 20:48
+- Dependencies: signal-dispatch stays inactive under goose-kgm default (enabled: false, per-session enable); Rule 1 left to model (skills/goose-agentfs-setup/SKILL.md)
+- signal-dispatch row: inactive under goose-kgm default (enabled: false, per-session enable); Rule 1 left to model (README.md)
+
+## 2026-11-19 20:29
+- system.md base re-pinned to Goose v1.60.1 by system-md-gen.sh (template content unchanged, same sha256) (skills/goose-agentfs-setup/artifacts/system.md.base.meta)
+
+## 2026-11-19 20:26
+- README plugin table: preflight-reminder 1.3.1 option pick approval (README.md)
+- preflight-reminder 1.3.1: version bump (option pick approval) (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.3.1: an option pick (A-E, 1-5, 'option x') counts as approval (plugins/preflight-reminder/scripts/arm.sh)
+
+## 2026-11-19 20:14
+- Plugin Management: all AgentFS plugins are fail-open (block at most once, never lock a session) (skills/goose-agentfs-setup/SKILL.md)
+- Dependencies: KGM and signal-dispatch are Recommended, not Required (fail-open; without KGM, Rule 1 is left to the model) (skills/goose-agentfs-setup/SKILL.md)
+
+## 2026-11-19 20:11
+- README plugin table: preflight-reminder 1.3.0 (short approval) and post-write-enforce 1.3.0 (block once, fail-open) (README.md)
+- preflight-reminder 1.3.0: version + description (short approval reply) (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.3.0: a short approval reply (yes/go/ok/proceed/...) approves a plan proposed without a hold (plugins/preflight-reminder/scripts/arm.sh)
+- post-write-enforce 1.3.0: version + fail-open description (plugins/post-write-enforce/plugin.json)
+- post-write-enforce 1.3.0: fail-open, block once then clear the flag (no lock-out when the clear hook does not fire) (plugins/post-write-enforce/scripts/enforce-postwrite.sh)
+
+## 2026-11-19 20:04
+- post-write re-run for README signal-dispatch 2.4.0 row (first run was batched with the edit, so the flag was set again after it cleared) (README.md)
+
+## 2026-11-19 20:03
+- README plugin table: signal-dispatch 2.4.0 is fail-open (enforces only when KGM is enabled) (README.md)
+- signal-dispatch 2.4.0: version + fail-open description (plugins/signal-dispatch/plugin.json)
+- signal-dispatch 2.4.0: fail-open, set the dispatch flag only when the KGM extension is confirmed enabled in goose config.yaml; otherwise Rule 1 is left to the model (plugins/signal-dispatch/scripts/detect-hey.sh)
+- post-write re-run for signal-dispatch 2.3.0 plugin.json (first run succeeded but its chained command exited 1, so post-write-enforce never cleared its flag) (plugins/signal-dispatch/plugin.json)
+
+## 2026-11-19 19:56
+- signal-dispatch 2.3.0: version bump (plugins/signal-dispatch/plugin.json)
+- signal-dispatch 2.3.0: keep intentional trailing space in patterns.txt prefixes ('note ' no longer matches 'notebook') (plugins/signal-dispatch/scripts/detect-hey.sh)
+
+## 2026-11-19 19:55
+- signal-dispatch 2.3.0: block JSON built with jq (backslash/tab-safe); reminder says continue without dispatch when no search_nodes tool exists (plugins/signal-dispatch/scripts/enforce-hey.sh)
+
+## 2026-11-19 19:49
+- preflight-reminder 1.2.0: version + description (reply after a hold = approval) (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.2.0: skip shell keywords (for/do/done/if...), handle git -C `<path>`, add read; awk/sqlite3 checks use the original command (plugins/preflight-reminder/scripts/is-readonly.sh)
+
+## 2026-11-19 19:48
+- preflight-reminder 1.2.0: hide quoted text before checking operators and redirects (plugins/preflight-reminder/scripts/is-readonly.sh)
+- preflight-reminder 1.2.0: a reply after a Pre-Flight hold counts as approval (goose appends 'Do not retry' to denials; re-arming looped) (plugins/preflight-reminder/scripts/arm.sh)
+
 ## 2026-11-18 16:13
 - README: AGENTS.md tree says 7 rules; frontmatter docs include required user-invocable (skill-check S01) (README.md)
 

@@ -92,11 +92,12 @@ Load the `goose-agentfs-setup` skill to configure Goose for AgentFS:
 - **Profile activation:** `hey activate profile <name>` switches
   the active SOUL identity in-session via MOIM file rewrite
 
-**Required extensions:** The `tom` (Top Of Mind) and `knowledgegraphmemory`
-(KGM) extensions must be enabled in `~/.config/goose/config.yaml`.
-`tom` delivers SOUL.md identity per turn; KGM enables signal dispatch
-skill lookup. The `signal-dispatch` plugin must also be registered.
-`hey sync goose agentfs` auto-enables `tom` and verifies all three.
+**Required:** the `tom` (Top Of Mind) extension; it injects the file
+named by `GOOSE_MOIM_MESSAGE_FILE` (registered by `hey sync goose agentfs`).
+**Recommended:** the `knowledgegraphmemory` (KGM) extension and the
+`signal-dispatch` plugin. Both are fail-open; without them, `hey`
+dispatch is left to the model (Rule 1). `hey sync goose agentfs`
+auto-enables `tom` and registers `GOOSE_MOIM_MESSAGE_FILE`.
 
 Run `hey sync goose agentfs` to perform a full sync (updates project
 AGENTS.md from template, then generates custom system.md and MOIM).
@@ -235,7 +236,7 @@ Skills cover topics like:
 | **Evaluation** | AgentFS workspace eval (`agentfs-eval`), individual skill eval (`skill-eval`), QOO schemas (`schemas/quality.yaml`, `observable.yaml`, `operable.yaml`, adapted variants for AGENTS.md) |
 | **Data Services** | Apache Fuseki triplestore lifecycle (`agentflow-fuseki`) |
 
-The library currently contains **62 skills** across these categories.
+The library currently contains **61 skills** across these categories.
 See [`skills/index.md`](skills/index.md) for the full catalog.
 
 #### SKILL.md Frontmatter
@@ -340,9 +341,9 @@ live in every goose session). Rule text is unchanged; hooks only block and remin
 
 | Plugin | Rule | Behaviour |
 |--------|------|-----------|
-| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks the first other tool once with a reminder to run `search_nodes` (fail-open); a wrongly named KGM tool gets a one-time notice with the fix |
-| `preflight-reminder` | 2 | Blocks the first mutating tool call of each turn once with a Pre-Flight reminder |
-| `post-write-enforce` | 6 | After a write under `.agents/`, blocks other tools until `post-write.sh` runs |
+| `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks the first other tool once with a reminder to run `search_nodes`; a wrongly named KGM tool gets a one-time notice with the fix. Fail-open: enforces only when the KGM extension is enabled in goose `config.yaml`, otherwise Rule 1 is left to the model. With goose-kgm's default (`enabled: false`, enabled per session), it stays inactive; Rule 1 is left to the model |
+| `preflight-reminder` | 2 | Blocks the first mutating tool call of each turn once with a Pre-Flight reminder; the user's reply after a hold, or a short approval (`yes`/`go`/…) or option pick (`A`, `option 2`), counts as approval |
+| `post-write-enforce` | 6 | After a write under `.agents/`, blocks the next non-shell tool once with a reminder to run `post-write.sh` (fail-open: never locks the session) |
 
 Per-session state lives in `/tmp/goose-{dispatch,preflight,postwrite}/<session-id>`.
 goose reuses session IDs, so each plugin clears its state on `SessionStart` (new sessions only).

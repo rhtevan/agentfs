@@ -23,6 +23,12 @@ clear_dispatch() {
   rm -f "$flag" "/tmp/goose-dispatch/${session_id}.keywords" 2>/dev/null || true
 }
 
+# 2.3.0: build the decision with jq so backslashes, tabs and quotes in the
+# user's keywords cannot produce invalid JSON (goose would read "no decision").
+block() {
+  jq -cn --arg r "$(printf '%s' "$1" | tr '\n' ' ')" '{decision:"block",reason:$r}'
+}
+
 # Allow search_nodes through — mandatory first tool per Signal Dispatch rule
 if [[ "$tool_name" == "search_nodes" || "$tool_name" == "$KGM_SEARCH_TOOL" ]] \
    || { $allow_any_prefix && [[ "$tool_name" == *__search_nodes ]]; }; then
@@ -34,8 +40,7 @@ fi
 # extension's display name changed. Block once with the cause and the fix.
 if [[ "$tool_name" == *__search_nodes && -f "$flag" ]]; then
   clear_dispatch
-  reason="KGM tool name mismatch: '${tool_name}' is not the AgentFS knowledge index tool '${KGM_SEARCH_TOOL}'. goose derives the tool prefix from the KGM extension's name field. Tell the user: set name: \"${KGM_EXT_NAME}\" under extensions.${KGM_EXT_KEY} in ~/.config/goose/config.yaml and restart goose (check: bash ~/.agents/skills/goose-kgm/scripts/status-kgm.sh). Then continue the task without dispatch."
-  printf '{"decision":"block","reason":"%s"}' "$(echo "$reason" | tr '\n' ' ' | sed 's/"/\\"/g')"
+  block "KGM tool name mismatch: '${tool_name}' is not the AgentFS knowledge index tool '${KGM_SEARCH_TOOL}'. goose derives the tool prefix from the KGM extension's name field. Tell the user: set name: \"${KGM_EXT_NAME}\" under extensions.${KGM_EXT_KEY} in ~/.config/goose/config.yaml and restart goose (check: bash ~/.agents/skills/goose-kgm/scripts/status-kgm.sh). Then continue the task without dispatch."
   exit 0
 fi
 
@@ -46,8 +51,7 @@ if [ -f "$flag" ]; then
   keywords="$(cat "/tmp/goose-dispatch/${session_id}.keywords" 2>/dev/null || echo '<keywords>')"
   rm -f "/tmp/goose-dispatch/${session_id}.keywords" 2>/dev/null
 
-  reason="This tool is not needed yet. The user said: hey ${keywords}. Follow the Signal Dispatch rule in AGENTS.md: first tool call MUST be search_nodes with the keywords. You CAN and SHOULD call search_nodes right now."
-
-  printf '{"decision":"block","reason":"%s"}' "$(echo "$reason" | tr '\n' ' ' | sed 's/"/\\"/g')"
+  # 2.3.0: KGM may not be installed yet (fresh setup); give the model a way out.
+  block "This tool is not needed yet. The user said: hey ${keywords}. Follow the Signal Dispatch rule in AGENTS.md: first tool call MUST be search_nodes with the keywords. You CAN and SHOULD call search_nodes right now. If no search_nodes tool is available (Knowledge Graph Memory extension not enabled), tell the user and continue the task without dispatch."
   exit 0
 fi

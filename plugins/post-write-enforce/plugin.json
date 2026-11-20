@@ -1,5 +1,5 @@
 {
   "name": "post-write-enforce",
-  "version": "1.2.0",
-  "description": "Enforces AGENTS.md Rule 6 (Scope & Post-Write). After a write or edit touches a path containing .agents/, sets a flag. Blocks subsequent tool calls until post-write.sh runs via shell. Exempt: log.md, CHANGELOG.md, index.md files."
+  "version": "1.3.0",
+  "description": "Reminds AGENTS.md Rule 6 (Scope & Post-Write). After a write or edit touches a path containing .agents/, sets a flag. Fail-open: the next non-shell tool call is blocked ONCE with a reminder to run post-write.sh, then the flag is cleared; a successful shell command running post-write.sh also clears it. Exempt: log.md, CHANGELOG.md, index.md files."
 }
