@@ -1,3 +1,10 @@
+---
+type: Principle
+title: "ES-First Principle"
+description: "Core principle: write test, verify fail, implement, verify pass"
+timestamp: 2026-10-31T15:47:47-04:00
+---
+
 # ES-First Principle
 
 ## Statement

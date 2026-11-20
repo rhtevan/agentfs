@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: Implementation Plan
 parent: agentfs-engineering-evolution
 created: 2026-10-22

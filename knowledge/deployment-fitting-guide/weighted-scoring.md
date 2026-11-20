@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: Weighted Scoring System
 parent: deployment-fitting-guide
 created: 2026-10-14

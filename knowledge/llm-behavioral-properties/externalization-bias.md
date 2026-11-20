@@ -1,3 +1,10 @@
+---
+type: Behavioral Property
+title: "Externalization Bias"
+description: "Model proposes tooling solutions for behavioral failures instead of acknowledging the fix is following the existing rule"
+timestamp: 2026-10-02T22:33:22-04:00
+---
+
 # Externalization Bias
 
 ## Observable Behavior

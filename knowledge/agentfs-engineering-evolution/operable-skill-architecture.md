@@ -1,4 +1,5 @@
 ---
+type: Pattern
 title: Operable Skill Architecture
 parent: agentfs-engineering-evolution
 created: 2026-10-19

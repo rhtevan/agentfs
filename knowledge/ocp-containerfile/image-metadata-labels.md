@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Image Metadata and Labels"
+description: "Required certification labels, OpenShift-specific labels, and OCI label conventions."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # Image Metadata and Labels
 
 **Applies to:** Both legacy and user namespace modes

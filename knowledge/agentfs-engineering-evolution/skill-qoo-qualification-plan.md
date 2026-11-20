@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: "Skill QOO Qualification Plan — Full Portfolio"
 parent: agentfs-engineering-evolution
 created: 2026-11-04

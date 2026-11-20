@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:33
+- Add missing YAML frontmatter to rule trigger classification (OKF conformance) (knowledge/context-engineering/rule-trigger-classification.md)
+- Add fail-open hook design to bundle index; update MOIM entry (knowledge/context-engineering/index.md)
+
+## 2026-11-19 21:32
+- Document GOOSE_MOIM_MESSAGE_FILE lookup (env then config.yaml key), no default file, silent failure and grep gotchas (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- Fix JIT-reminder pattern: trigger is deterministic, compliance is not; MOIM placed at recency; link fail-open design (knowledge/context-engineering/jit-reminder-recency-pattern.md)
+- Add fail-open hook design pattern: block once, confirmed dependencies, reply-as-approval, Goose denial wrapper facts (knowledge/context-engineering/fail-open-hook-design.md)
+
 ## 2026-11-10 12:10
 - Add SOUL-AGENTS amplification principle: design guidance for when SOUL overlaps vs amplifies AGENTS.md rules, attention-bridge exception (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
 

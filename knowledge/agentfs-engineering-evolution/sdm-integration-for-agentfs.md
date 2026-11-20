@@ -1,3 +1,10 @@
+---
+type: Pattern
+title: "SDM Integration for AgentFS"
+description: "Semantic Decision Model as skill runtime (Pattern 1) and evaluation engine (Pattern 2)"
+timestamp: 2026-10-16T20:16:23-04:00
+---
+
 # SDM Integration for AgentFS
 
 - **Type:** Pattern

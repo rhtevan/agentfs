@@ -1,4 +1,5 @@
 ---
+type: Pattern
 title: Artifact QOO Separation
 parent: agentfs-engineering-evolution
 created: 2026-10-27

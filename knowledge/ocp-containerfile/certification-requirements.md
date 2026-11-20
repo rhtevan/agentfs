@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Red Hat Certification Requirements"
+description: "Certification test checklist: RunAsNonRoot, BasedOnUBI, HasLicense, HasRequiredLabel, LayerCountAcceptable, and more."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # Red Hat Certification Requirements
 
 **Applies to:** Both legacy and user namespace modes

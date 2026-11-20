@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.10.1"
+  version: "1.10.2"
   model-tier: T3
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
@@ -75,6 +75,11 @@ Execute each step in order and verify before proceeding.
 - Config file at `~/.config/goose/config.yaml`
 
 ## Usage
+
+> **Fresh install or new project?** Follow
+> [`references/fresh-setup-roadmap.md`](references/fresh-setup-roadmap.md):
+> skill sequence, survey-first phases, and the end-to-end check (SOUL
+> visible in `<turn-context>`).
 
 ### Check Current Configuration
 
@@ -242,6 +247,16 @@ Cleanly removes the override block, preserving all other persistent
 instructions content.
 
 ## Important Notes
+
+### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| No SOUL / Memory Routing in `<turn-context>` although `--check` shows tom enabled and SOUL present | `GOOSE_MOIM_MESSAGE_FILE` not set — tom has no default file | `system-md-gen.sh --generate` (registers the top-level `config.yaml` key); takes effect next turn |
+| A check says `GOOSE_MOIM_MESSAGE_FILE` is registered but SOUL is missing | Unanchored `grep` matched tom's `description:` line | Check with `grep '^GOOSE_MOIM_MESSAGE_FILE:' ~/.config/goose/config.yaml` |
+| `system-md-gen.sh`: "No AGENTS.md found in CWD" | Goose session started outside the project | Start the session in the project directory |
+| KGM status: symlink warning | Old premise (Goose did not pass `MEMORY_FILE_PATH`) | goose-kgm ≥ 1.8.2 reports "No symlink needed" on Goose 1.60.1 |
+| Every first change of a turn is held | `preflight-reminder` by design (Rule 2) | Reply `go` (or `A`, `fix + go`); see [Fail-Open Hook Design](../../knowledge/context-engineering/fail-open-hook-design.md) |
 
 ### Session Restart Required
 

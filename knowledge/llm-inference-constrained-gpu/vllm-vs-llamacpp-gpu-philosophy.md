@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: "vLLM vs llama.cpp: GPU-First vs CPU-First Inference"
 created: 2026-08-04
 tags: [vllm, llama-cpp, gpu, cpu-offload, architecture]

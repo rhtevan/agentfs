@@ -1,4 +1,5 @@
 ---
+type: Pattern
 title: "Decision API Request Patterns: NextToken vs D3 System One"
 created: 2026-10-22
 tags: [decision-api, nexttokenstrategy, d3, systemone, vllm, api-patterns]

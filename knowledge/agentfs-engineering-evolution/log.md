@@ -2,6 +2,25 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:43
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/tokenomics-alignment.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/operational-pattern-classification.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/operable-runtime-cecx.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
+
+## 2026-11-19 21:42
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/mcacs-measurement-framework.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+
 ## 2026-11-18 15:52
 - F17-F19 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

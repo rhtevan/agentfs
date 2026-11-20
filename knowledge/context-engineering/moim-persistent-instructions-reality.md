@@ -2,8 +2,8 @@
 type: Lesson
 title: MOIM / Persistent Instructions — Architecture Reality
 description: Goose MOIM (tom extension) injects instructions.md content into per-turn <turn-context> at recency peak, NOT into system prompt
-tags: [context-engineering, goose, moim, persistent-instructions, attention, tom-extension]
-timestamp: 2026-11-04T10:55:00-05:00
+tags: [context-engineering, goose, moim, persistent-instructions, attention, tom-extension, config]
+timestamp: 2026-11-19T21:34:00-05:00
 ---
 
 # MOIM / Persistent Instructions — Architecture Reality
@@ -41,8 +41,41 @@ block — a **user-role message** injected **every turn** at the
 | Reader | tom extension `get_moim()` |
 | Delivery | Per-turn `<turn-context>` user message |
 | Position | **Recency peak** (last content before model generates) |
-| Requires | `tom` extension `enabled: true` in config.yaml |
+| Requires | `tom` extension `enabled: true` in config.yaml **and** `GOOSE_MOIM_MESSAGE_FILE` set |
 | Without tom | Content never reaches the model — zero delivery |
+| Without `GOOSE_MOIM_MESSAGE_FILE` | Same — tom has **no default file** and injects nothing, even with tom enabled |
+
+## Where tom Reads the File Path (Goose 1.60.1)
+
+`tom.rs` calls `Config::global().get_param("GOOSE_MOIM_MESSAGE_FILE")`.
+`get_param` (`config/base.rs`) checks the **environment variable first**,
+then a **top-level key in `config.yaml`**. The official docs only show the
+environment variable; the config key works too and is the better choice
+— it applies to both CLI and Desktop without editing `.desktop` files or
+`environment.d`.
+
+```yaml
+# ~/.config/goose/config.yaml (top level, column 0)
+GOOSE_MOIM_MESSAGE_FILE: ~/.config/goose/instructions.md
+```
+
+| Property | Value |
+|----------|-------|
+| Re-read | Every turn — file content and the key itself; no restart needed |
+| `~` expansion | Yes (`shellexpand::tilde`) |
+| Size cap | 64 KB, UTF-8 safe truncation |
+| Both `_TEXT` and `_FILE` set | Concatenated |
+
+### Gotchas
+
+- **Silent failure.** Every setup check can pass (tom enabled, SOUL
+  section present in `instructions.md`) while nothing is delivered.
+  The only end-to-end test: does `<turn-context>` contain the SOUL?
+- **Unanchored grep false positive.** `grep GOOSE_MOIM_MESSAGE_FILE
+  config.yaml` matches tom's own `description:` line, which names the
+  variable. Match the key at column 0: `grep '^GOOSE_MOIM_MESSAGE_FILE:'`.
+- `system-md-gen.sh --generate` registers the key (goose-agentfs-setup
+  ≥ 1.10.0); `--check` reports it.
 
 ## What {% raw %}{{ moim_system_prompt_block }}{% endraw %} Actually Is
 
@@ -81,3 +114,4 @@ into `<turn-context>` per-turn user messages (recency peak).
 | Project | Source | Entry |
 |---------|--------|-------|
 | context-eng | Session: AgentFS Evolution | Source code review of Goose v1.57.0 tom.rs, moim.rs, prompt_manager.rs |
+| context-eng | Session: first fresh Goose AgentFS setup (2026-11-19) | SOUL not delivered on a fresh setup; v1.60.1 `tom.rs` + `config/base.rs` review; fix verified live in `<turn-context>` |

@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "S2I Compatibility"
+description: "Source-to-Image labels and scripts for building S2I builder images."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # S2I Compatibility
 
 **Applies to:** Only when building Source-to-Image (S2I) builder images

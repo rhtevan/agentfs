@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: The 4×4 SUV Model
 parent: deployment-fitting-guide
 created: 2026-10-14

@@ -1,10 +1,3 @@
----
-title: LLM Inference on Constrained GPUs
-bundle-version: "1.0"
-created: 2026-08-04
-tags: [llm, inference, gpu, vllm, llama-cpp, podman, nvidia, quantization, agentfs]
----
-
 # LLM Inference on Constrained GPUs
 
 Knowledge bundle capturing patterns, gotchas, and architectural decisions

@@ -1,3 +1,10 @@
+---
+type: Behavioral Property
+title: "No Forward Chaining"
+description: "LLMs cannot re-evaluate rule conditions after state changes; effect-based rules have 0% fire rate on all model sizes"
+timestamp: 2026-10-29T15:25:41-04:00
+---
+
 # No Forward Chaining
 
 LLMs cannot perform forward chaining — the automatic re-evaluation

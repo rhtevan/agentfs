@@ -18,6 +18,15 @@ instead of direct edits for managed files.
 
 All scripts live in `~/.agents/skills/agentfs-setup/scripts/`.
 
+### `--version` gotchas
+
+| Situation | Do |
+|-----------|----|
+| Edited `SKILL.md` or `scripts/*` of any skill | `--version` is required (post-write exits 1 without it); it is the **skill** version and may not go below the newest CHANGELOG entry |
+| Script-only fix in `agentfs-setup` | Pass the **current** version (same release, amends the CHANGELOG entry). `agentfs-setup`'s version is also the AGENTS.md template version — bumping it marks every project's AGENTS.md as outdated |
+| Template change (`seed-agents-md.sh`) | Bump the version (Rule 5), then `sync-agents-md.sh` |
+| Chaining `post-write.sh && <cmd>` | Don't — run it standalone. If the chain exits non-zero, post-write-enforce's success-only clear event never fires |
+
 ## Log Entry Format
 
 ```

@@ -44,3 +44,9 @@
   and log.md entries, deployment/fitting docs). They are ~/.ssh/config
   aliases required by the profile format, not resolvable hostnames, IPs,
   or usernames. Accepted by the user 2026-11-16.
+- The bare SSH host alias `work` (same host as `rhtevan-work`) matching
+  the ordinary English word "work" in prose of any skill, knowledge, or
+  log file. The scanner greps each alias as a whole word, so plain-text
+  uses such as "after the work" trip it. Only the English word is
+  allowed — a line that names the host as a connection target (ssh,
+  scp, HOST field) is still a finding. Accepted by the user 2026-11-19.

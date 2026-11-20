@@ -1,3 +1,10 @@
+---
+type: Framework
+title: "MCACS Principles for AgentFS"
+description: "Five interdependent engineering principles mapped to AgentFS gaps and fix directions"
+timestamp: 2026-10-16T20:16:23-04:00
+---
+
 # MCACS Principles for AgentFS
 
 - **Type:** Framework

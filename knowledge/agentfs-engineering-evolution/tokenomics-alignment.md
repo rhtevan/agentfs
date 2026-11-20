@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: Tokenomics Alignment — QOO and AI Model Tiering Economics
 parent: agentfs-engineering-evolution
 created: 2026-10-26

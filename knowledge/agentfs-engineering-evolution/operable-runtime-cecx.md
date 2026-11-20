@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: Operable Runtime — CECX Scoring
 parent: agentfs-engineering-evolution
 created: 2026-10-19

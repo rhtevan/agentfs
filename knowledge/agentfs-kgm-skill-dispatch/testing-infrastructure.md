@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Testing Infrastructure"
+description: "template-check.sh, template-behavioral.sh, template-eval.sh, merge-score-entry.sh, score tracking"
+timestamp: 2026-09-25T02:00:00-04:00
+---
+
 # Testing Infrastructure
 
 ## Scripts (all under `~/.agents/skills/agentfs-eval/scripts/`)

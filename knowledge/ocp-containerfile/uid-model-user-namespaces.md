@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "UID Model — User Namespaces (restricted-v3)"
+description: "How Linux user namespaces with hostUsers: false change UID handling, and what restricted-v3 enforces."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # UID Model — User Namespaces (restricted-v3)
 
 **Applies to:** OCP 4.20+ | SCC: `restricted-v3` | `hostUsers: false` (mandatory)

@@ -1,3 +1,11 @@
+---
+type: Pattern
+title: Rule Trigger Classification
+description: Guard / inline constraint / effect taxonomy — effect rules are 0% enforceable, litmus test and conversion pattern
+tags: [context-engineering, rules, enforceability, agents-md]
+timestamp: 2026-10-29T15:25:41-04:00
+---
+
 # Rule Trigger Classification
 
 A framework for classifying agent rules by when their trigger

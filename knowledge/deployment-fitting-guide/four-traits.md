@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: The Four Deployment Traits
 parent: deployment-fitting-guide
 created: 2026-10-14

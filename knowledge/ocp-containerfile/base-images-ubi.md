@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Base Images — UBI Selection"
+description: "UBI variants (standard, minimal, micro, init), registries, and selection criteria."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # Base Images — UBI Selection
 
 **Applies to:** Both legacy and user namespace modes

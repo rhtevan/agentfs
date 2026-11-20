@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: Context Window Requirements for AgentFS
 created: 2026-08-04
 tags: [agentfs, context-window, llm, agent, requirements]

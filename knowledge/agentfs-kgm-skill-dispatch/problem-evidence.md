@@ -1,3 +1,10 @@
+---
+type: Evidence
+title: "Problem & Evidence"
+description: "Granite 8B fails to scan `# Skills` prose; behavioral score progression 0/3 → 1/3 → KGM solution"
+timestamp: 2026-09-25T02:00:00-04:00
+---
+
 # Problem & Evidence
 
 ## Problem

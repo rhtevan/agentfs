@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: Sizing Guidance — Context and Parameters
 parent: deployment-fitting-guide
 created: 2026-10-15

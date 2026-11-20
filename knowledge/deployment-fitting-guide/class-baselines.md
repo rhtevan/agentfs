@@ -1,4 +1,5 @@
 ---
+type: Reference
 title: Class-Specific Baselines
 parent: deployment-fitting-guide
 created: 2026-10-14

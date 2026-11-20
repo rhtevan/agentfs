@@ -1,4 +1,5 @@
 ---
+type: Troubleshooting
 title: Fedora NVIDIA + Container Gotchas
 created: 2026-08-04
 tags: [fedora, nvidia, podman, container, rpmfusion, selinux]

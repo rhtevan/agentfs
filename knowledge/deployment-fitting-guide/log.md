@@ -2,6 +2,16 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:45
+- Remove YAML frontmatter from reserved index.md for OKF v0.1 conformance (index.md)
+
+## 2026-11-19 21:43
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/weighted-scoring.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/suv-model.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/sizing-guidance.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/four-traits.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/class-baselines.md)
+
 ## 2026-10-15 10:27
 - New concept: sizing rules of thumb for context and parameters (knowledge/deployment-fitting-guide/sizing-guidance.md)
 

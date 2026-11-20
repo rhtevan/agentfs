@@ -1,10 +1,3 @@
----
-title: Deployment Fitting Guide
-bundle-version: "1.0"
-created: 2026-10-14
-tags: [deployment, evaluation, scoring, model-selection, fitting, gpu, inference]
----
-
 # Deployment Fitting Guide
 
 A framework for evaluating AI model deployments using four measurable

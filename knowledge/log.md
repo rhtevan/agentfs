@@ -2,6 +2,73 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:45
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/uid-model-user-namespaces.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/uid-model-restricted-v2.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/scc-and-security-context.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/s2i-compatibility.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/runtime-constraints.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/layer-optimization.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/image-metadata-labels.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/file-permissions-gid0.md)
+
+## 2026-11-19 21:44
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/certification-requirements.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/ocp-containerfile/base-images-ubi.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/vllm-vs-llamacpp-gpu-philosophy.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/vllm-quantization-pitfalls.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/speculative-decoding-tradeoffs.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/sdm-small-gpu-agentfs-validation.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/gpu-layer-tuning-methodology.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/fedora-nvidia-container-gotchas.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/decision-api-request-patterns.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/d3-decision-model-deployment.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/context-window-agentfs-requirements.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-inference-constrained-gpu/containerized-inference-pattern.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/over-tooling.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/no-forward-chaining.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/externalization-bias.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/executable-specification-first/es-implementation-patterns.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/executable-specification-first/es-first-principle.md)
+
+## 2026-11-19 21:43
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/weighted-scoring.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/suv-model.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/sizing-guidance.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/four-traits.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/deployment-fitting-guide/class-baselines.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-kgm-skill-dispatch/testing-infrastructure.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-kgm-skill-dispatch/problem-evidence.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-kgm-skill-dispatch/design-principles.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-kgm-skill-dispatch/architecture.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-kgm-skill-dispatch/agents-md-evolution.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/tokenomics-alignment.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/quality-schema-v2-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/operational-pattern-classification.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/operable-skill-architecture.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/operable-runtime-cecx.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/observable-skill-design.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/mcacs-principles-for-agentfs.md)
+
+## 2026-11-19 21:42
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/mcacs-measurement-framework.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/implementation-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+
+## 2026-11-19 21:33
+- Add missing YAML frontmatter to rule trigger classification (OKF conformance) (knowledge/context-engineering/rule-trigger-classification.md)
+
+## 2026-11-19 21:32
+- Document GOOSE_MOIM_MESSAGE_FILE lookup (env then config.yaml key), no default file, silent failure and grep gotchas (knowledge/context-engineering/moim-persistent-instructions-reality.md)
+- Fix JIT-reminder pattern: trigger is deterministic, compliance is not; MOIM placed at recency; link fail-open design (knowledge/context-engineering/jit-reminder-recency-pattern.md)
+- Add fail-open hook design pattern: block once, confirmed dependencies, reply-as-approval, Goose denial wrapper facts (knowledge/context-engineering/fail-open-hook-design.md)
+
 ## 2026-11-18 15:52
 - F17-F19 closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

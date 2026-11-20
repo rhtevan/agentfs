@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: GPU Layer Tuning Methodology for llama.cpp
 created: 2026-08-04
 tags: [llama-cpp, gpu, vram, tuning, optimization]

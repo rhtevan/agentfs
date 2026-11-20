@@ -1,3 +1,10 @@
+---
+type: Lesson
+title: "AGENTS.md Evolution"
+description: "Template token reduction 2100 → 1362, section reordering, Discovery Tiers elimination, Rule 8 rewrites"
+timestamp: 2026-09-25T02:00:00-04:00
+---
+
 # AGENTS.md Evolution
 
 ## Token Reduction

@@ -1,3 +1,10 @@
+---
+type: Convention
+title: "MCACS Measurement Framework"
+description: "Per-principle quantitative metrics at 3 levels (component, integration, system)"
+timestamp: 2026-10-16T20:16:23-04:00
+---
+
 # MCACS Measurement Framework
 
 - **Type:** Convention

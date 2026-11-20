@@ -1,3 +1,10 @@
+---
+type: Pattern
+title: "ES Implementation Patterns"
+description: "Three patterns for executable specifications: deterministic, SDM-hybrid, benchmark"
+timestamp: 2026-10-31T15:47:47-04:00
+---
+
 # ES Implementation Patterns
 
 Three patterns for implementing Executable Specifications in AgentFS,

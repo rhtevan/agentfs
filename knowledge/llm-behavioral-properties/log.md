@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-19 21:44
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/over-tooling.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/no-forward-chaining.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/externalization-bias.md)
+- Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/confabulation-under-audit.md)
+
 ## 2026-10-29 15:16
 - Add Tool Disambiguation Failure section — KGM vs filesystem routing on 14B (knowledge/llm-behavioral-properties/over-tooling.md)
 

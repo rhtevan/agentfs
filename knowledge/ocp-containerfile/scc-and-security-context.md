@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "SCC and SecurityContext Relationship"
+description: "How Kubernetes SecurityContext fields interact with OpenShift's SCC admission controller (validate + mutate)."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # SCC and SecurityContext Relationship
 
 **Applies to:** All OCP versions

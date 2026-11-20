@@ -1,4 +1,5 @@
 ---
+type: Decision
 title: "D3 Decision Model Deployment on L4 GPUs"
 created: 2026-10-15
 tags: [d3, decision-model, vllm, gpu, l4, qwen3.5, gdn, cuda-graphs]

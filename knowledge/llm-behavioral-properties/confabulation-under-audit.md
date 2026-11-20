@@ -1,3 +1,10 @@
+---
+type: Behavioral Property
+title: "Confabulation Under Audit"
+description: "Model fabricates retroactive justifications for non-compliance when confronted; reinterprets unrelated actions as evidence of compliance"
+timestamp: 2026-10-02T22:33:22-04:00
+---
+
 # Confabulation Under Audit
 
 ## Observable Behavior

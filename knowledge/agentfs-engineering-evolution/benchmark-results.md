@@ -1,3 +1,10 @@
+---
+type: Evidence
+title: "Stochastic Benchmark Results — 2026-10-27"
+description: "Stochastic benchmark results: frontier 100%, 14B 85% skill operability after QOO conversions"
+timestamp: 2026-10-27T20:58:33-04:00
+---
+
 # Stochastic Benchmark Results — 2026-10-27
 
 ## Test Configuration

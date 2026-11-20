@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: Dry-Run Pattern Adoption & AgentFS Compliance Profile
 parent: agentfs-engineering-evolution
 created: 2026-11-09

@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "UID Model — restricted-v2 (Legacy)"
+description: "How OpenShift overrides the Containerfile USER directive with a random project-scoped UID under MustRunAsRange."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # UID Model — restricted-v2 (Legacy)
 
 **Applies to:** OCP 4.11–4.19 | SCC: `restricted-v2` | `hostUsers: true` (default)

@@ -1,3 +1,10 @@
+---
+type: Principle
+title: "Design Principles"
+description: "Lower cognitive bar, prose → scripts, zero-arg wrappers, ledger integrity"
+timestamp: 2026-09-25T02:00:00-04:00
+---
+
 # Design Principles
 
 Principles discovered or reinforced during the KGM skill dispatch work.

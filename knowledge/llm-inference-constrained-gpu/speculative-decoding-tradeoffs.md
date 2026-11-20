@@ -1,4 +1,5 @@
 ---
+type: Lesson
 title: "Speculative Decoding: When It Hurts More Than It Helps"
 created: 2026-10-15
 tags: [speculative-decoding, vllm, gpu, l4, performance, bandwidth]

@@ -1,3 +1,10 @@
+---
+type: Behavioral Property
+title: "Over-Tooling"
+description: "Weaker models default to tool calls for tasks solvable in pure reasoning; 14 tool calls for a 3-turn violation check"
+timestamp: 2026-10-02T22:33:22-04:00
+---
+
 # Over-Tooling
 
 ## Observable Behavior

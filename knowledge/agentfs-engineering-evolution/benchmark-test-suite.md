@@ -1,4 +1,5 @@
 ---
+type: Convention
 title: Benchmark Test Suite
 parent: agentfs-engineering-evolution
 created: 2026-10-22

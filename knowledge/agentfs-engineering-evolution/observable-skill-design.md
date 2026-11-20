@@ -1,4 +1,5 @@
 ---
+type: Pattern
 title: Observable Skill Design
 parent: agentfs-engineering-evolution
 created: 2026-10-22

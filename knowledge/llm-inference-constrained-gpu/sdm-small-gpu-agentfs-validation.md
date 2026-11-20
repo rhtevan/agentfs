@@ -1,4 +1,5 @@
 ---
+type: Evidence
 title: "Hosting an SDM on a 4 GB GPU — AgentFS Usability Validation"
 created: 2026-11-16
 tags: [sdm, systemone, decision-model, d3-mini, qwen3, llama-cpp, vllm, rtx-a500, agentfs, validation]

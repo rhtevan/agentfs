@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Architecture"
+description: "Separate JSONL indexes, AgentSkill entity format, symlink workaround, reindex pipeline"
+timestamp: 2026-09-25T02:00:00-04:00
+---
+
 # Architecture
 
 ## KGM Skill Index

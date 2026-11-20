@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Operational Pattern Classification"
+description: "Five skill patterns (A–E), 61 skills classified, cognitive demand and failure mode analysis"
+timestamp: 2026-10-16T20:16:23-04:00
+---
+
 # Operational Pattern Classification
 
 - **Type:** Reference

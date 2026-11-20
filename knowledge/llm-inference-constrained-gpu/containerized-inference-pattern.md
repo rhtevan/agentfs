@@ -1,4 +1,5 @@
 ---
+type: Pattern
 title: Containerized GPU Inference Server Pattern
 created: 2026-08-04
 tags: [podman, docker, nvidia, cuda, cdi, container, inference]

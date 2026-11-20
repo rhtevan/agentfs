@@ -1,3 +1,10 @@
+---
+type: Reference
+title: "Runtime Constraints"
+description: "Non-privileged ports, read-only root filesystem, entrypoint patterns, /etc/passwd injection."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # Runtime Constraints
 
 **Applies to:** Both legacy and user namespace modes (noted where different)

@@ -1,3 +1,10 @@
+---
+type: Pattern
+title: "File Permissions — GID 0 Pattern"
+description: "The root group ownership pattern required under restricted-v2, and how idmap mounts change the picture under restricted-v3."
+timestamp: 2026-09-16T11:58:32-04:00
+---
+
 # File Permissions — GID 0 Pattern
 
 **Applies to:** Legacy (`restricted-v2`) — mandatory. User namespaces (`restricted-v3`) — not required but harmless for backward compat.

@@ -1,13 +1,14 @@
 # Context Engineering
 
-11 concepts covering principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks. Derived from empirical analysis of Goose + AgentFS across strong and weak models.
+12 concepts covering principles and patterns for engineering the instruction context that reaches LLMs in agent frameworks. Derived from empirical analysis of Goose + AgentFS across strong and weak models.
 
 | Concept | Type | Description |
 |---------|------|-------------|
 | [LLM Context Layer Model](llm-context-layer-model.md) | Pattern | Layered model of how instructions reach a stateless LLM per turn |
 | [Instruction Override Semantics](instruction-override-semantics.md) | Lesson | How LLMs resolve conflicting instructions — specialization wins, contradiction is nondeterministic |
-| [MOIM / Persistent Instructions Reality](moim-persistent-instructions-reality.md) | Lesson | Goose MOIM (tom extension) injects instructions.md into per-turn `<turn-context>` at recency peak. tom extension required for SOUL delivery. |
+| [MOIM / Persistent Instructions Reality](moim-persistent-instructions-reality.md) | Lesson | Goose MOIM (tom extension) injects instructions.md into per-turn `<turn-context>` at recency peak. Requires tom enabled and `GOOSE_MOIM_MESSAGE_FILE` (env or config.yaml key) — tom has no default file. |
 | [JIT-Reminder via Hooks](jit-reminder-recency-pattern.md) | Pattern | Using hook-based tool blocking to inject targeted reminders at the recency zone |
+| [Fail-Open Hook Design](fail-open-hook-design.md) | Pattern | Hooks remind, never lock: block at most once, enforce only on confirmed dependencies, treat the reply after a hold as approval; Goose's fixed "Do not retry" denial wrapper |
 | [Rule Ordering by Frequency](rule-ordering-by-frequency.md) | Lesson | Ordering rules by operational frequency improves adherence over lifecycle-based ordering |
 | [Goose Message Role Mapping](goose-message-role-mapping.md) | Reference | How Goose maps its internal concepts to OpenAI Chat Completions API message roles |
 | [Generation Prior Conflict](generation-prior-conflict.md) | Pattern | How pretraining priors override system prompt rules at generation time |
