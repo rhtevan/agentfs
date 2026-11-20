@@ -25,6 +25,14 @@ while IFS= read -r seg; do
   case "${seg%% *}" in for|case|done|fi|esac|'}'|')') continue ;; esac
   w1="${seg%% *}"; rest="${seg#"$w1"}"; rest="${rest# }"
   w2="${rest%% *}"
+  # 1.5.0: named AgentFS scripts verified read-only (no writes outside
+  # /tmp and trace files). Named, not globbed: a future status-*.sh that
+  # writes must not pass silently. Redirects and other segments are
+  # still checked. A quoted path is hidden (Q) and stays mutating.
+  script="${w1##*/}"; [[ "$script" == bash || "$script" == sh ]] && script="${w2##*/}"
+  case "$script" in
+    resolve-target.sh|pre-push-scan.sh|verify-bundle.sh|evaluate-alignment.sh|status-kgm.sh|status-fuseki.sh) continue ;;
+  esac
   case "$w1" in
     sed) printf '%s' "$rest" | grep -qE '(^| )-[a-zA-Z]*i' && exit 1; continue ;;
     # awk/sqlite3 programs sit inside quotes (hidden above): check the original.

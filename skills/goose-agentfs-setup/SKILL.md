@@ -6,7 +6,7 @@ argument-hint: "Optionally specify which context files to add (e.g., CLAUDE.md, 
 compatibility: "Requires Goose with config.yaml support (v1.30+)"
 metadata:
   author: agentfs
-  version: "1.10.4"
+  version: "1.10.5"
   model-tier: T3
   tags: [goose, agentfs, configuration, compatibility, system-prompt]
 user-invocable: true
@@ -256,7 +256,7 @@ instructions content.
 | A check says `GOOSE_MOIM_MESSAGE_FILE` is registered but SOUL is missing | Unanchored `grep` matched tom's `description:` line | Check with `grep '^GOOSE_MOIM_MESSAGE_FILE:' ~/.config/goose/config.yaml` |
 | `system-md-gen.sh`: "No AGENTS.md found in CWD" | Goose session started outside the project | Start the session in the project directory |
 | KGM `search_nodes` returns empty although `config.yaml` sets `MEMORY_FILE_PATH` | Goose 1.60.1 drops inline `envs` on the desktop ACP path, so the server falls back to an empty default file | goose-kgm ≥ 1.8.3: `setup-kgm.sh` migrates the entry to the `env MEMORY_FILE_PATH=… npx …` wrapper (no symlink); `status-kgm.sh` checks each running server's environment |
-| Every first change of a turn is held | `preflight-reminder` by design (Rule 2). Read-only shell calls pass (≥ 1.4.0 also `[[ … ]]`, `VAR=$(…)`); `python3`, `bash <script>` count as changes | The model states the plan and retries in the same turn — goose's appended "Do not retry" does not apply to this hold (the hold text says so). Otherwise reply `go` (or `A`, `fix + go`); see [Fail-Open Hook Design](../../knowledge/context-engineering/fail-open-hook-design.md) |
+| Every first change of a turn is held | `preflight-reminder` by design (Rule 2). Read-only shell calls pass (≥ 1.4.0 also `[[ … ]]`, `VAR=$(…)`; ≥ 1.5.0 also the named read-only scripts `resolve-target.sh`, `pre-push-scan.sh`, `verify-bundle.sh`, `evaluate-alignment.sh`, `status-kgm.sh`, `status-fuseki.sh`); `python3` and any other `bash <script>` count as changes | The model states the plan and retries in the same turn — goose's appended "Do not retry" does not apply to this hold (the hold text says so). Otherwise reply `go` (or `A`, `fix + go`); see [Fail-Open Hook Design](../../knowledge/context-engineering/fail-open-hook-design.md) |
 
 ### Session Restart Required
 

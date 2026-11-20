@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-20 01:17
+- Classify six named read-only AgentFS scripts as read-only (plugins/preflight-reminder/scripts/is-readonly.sh)
+- Name the read-only script exemption in the hold text (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+- Bump preflight-reminder to 1.5.0 (plugins/preflight-reminder/plugin.json)
+- List the preflight 1.5.0 read-only script exemption in Troubleshooting (skills/goose-agentfs-setup/SKILL.md)
+
 ## 2026-11-20 00:59
 - Cover KGM enabled globally in the signal-dispatch Dependencies row (skills/goose-agentfs-setup/SKILL.md)
 - Note signal-dispatch and per-session server effects of KGM enabled globally (skills/goose-agentfs-setup/references/fresh-setup-roadmap.md)
