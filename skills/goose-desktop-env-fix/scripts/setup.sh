@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# setup.sh — Install goose-shell wrapper + environment.d config + desktop entry fix
+# setup.sh — Install goose-shell wrapper + rm guard + environment.d config + desktop entry fix
 # Usage: setup.sh [--dry-run] [--skip-desktop] [--skip-bashrc-check]
-# Version: 1.0.0
+# Version: 1.8.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-desktop-env-fix" "1.0.0" 2>/dev/null || true
+trace_init "goose-desktop-env-fix" "1.8.0" 2>/dev/null || true
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 DRY_RUN=false
 SKIP_DESKTOP=false
@@ -21,6 +23,10 @@ for arg in "$@"; do
 done
 
 WRAPPER="${HOME}/.local/bin/goose-shell"
+GUARD_SRC="${SCRIPT_DIR}/rm-guard.sh"
+GUARD_BIN="${HOME}/.local/share/goose-guard/bin/rm"
+BASHRC="${HOME}/.bashrc"
+TS="$(date +%Y%m%d_%H%M%S)"
 ENV_CONF="${HOME}/.config/environment.d/60-goose-shell.conf"
 DESKTOP_FILE="${HOME}/.local/share/applications/Goose.desktop"
 SYSTEM_DESKTOP="/usr/share/applications/Goose.desktop"
@@ -52,6 +58,36 @@ fi
 # ── Step 2: Create/verify goose-shell wrapper ────────────────────────────
 trace_step 2 "goose_shell_wrapper" 0 "path=${WRAPPER}" 2>/dev/null || true
 
+write_wrapper() {
+  local tmp
+  mkdir -p "$(dirname "$WRAPPER")"
+  tmp="$(mktemp "$(dirname "$WRAPPER")/.goose-shell.XXXXXX")"
+  cat > "$tmp" << 'WRAPPER_EOF'
+#!/bin/bash
+# Goose Desktop shell wrapper — sources ~/.bashrc for full environment
+# before executing the command passed via -c.
+# goose-desktop-env-fix >= 1.8.0: also puts the rm guard first in PATH
+# (goose shell commands only; terminals are not affected).
+if [ -z "$__GOOSE_SHELL_SOURCED" ]; then
+    export __GOOSE_SHELL_SOURCED=1
+    unset __ETC_PROFILE_NIX_SOURCED
+    unset BASHRCSOURCED
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+fi
+# rm guard: keep its directory first in PATH (move it to the front if present)
+__gg="$HOME/.local/share/goose-guard/bin"
+__p=":$PATH:"; __p="${__p//:$__gg:/:}"; __p="${__p#:}"; __p="${__p%:}"
+export PATH="$__gg${__p:+:$__p}"
+unset __gg __p
+exec /bin/bash "$@"
+WRAPPER_EOF
+  bash -n "$tmp"
+  chmod 755 "$tmp"
+  mv -f "$tmp" "$WRAPPER"
+}
+
 if [[ -f "$WRAPPER" ]]; then
   echo "✓ goose-shell wrapper exists: $WRAPPER"
   if grep -q '__GOOSE_SHELL_SOURCED' "$WRAPPER"; then
@@ -66,29 +102,43 @@ if [[ -f "$WRAPPER" ]]; then
     echo "  ✗ Not executable"
     ERRORS=$((ERRORS + 1))
   fi
+  if grep -q 'goose-guard/bin' "$WRAPPER"; then
+    echo "  ✓ Puts the rm guard first in PATH"
+  elif $DRY_RUN; then
+    echo "  Would upgrade wrapper to put the rm guard first in PATH (backup: ${WRAPPER}.bak.<timestamp>)"
+    CHANGES=$((CHANGES + 1))
+  else
+    cp -p "$WRAPPER" "${WRAPPER}.bak.${TS}"
+    write_wrapper
+    echo "  ✓ Upgraded wrapper: rm guard first in PATH (backup: ${WRAPPER}.bak.${TS})"
+  fi
 else
   echo "⚠ goose-shell wrapper not found: $WRAPPER"
   if $DRY_RUN; then
     echo "  Would create wrapper"
-    ERRORS=$((ERRORS + 1))
+    CHANGES=$((CHANGES + 1))
   else
-    mkdir -p "$(dirname "$WRAPPER")"
-    cat > "$WRAPPER" << 'WRAPPER_EOF'
-#!/bin/bash
-# Goose Desktop shell wrapper — sources ~/.bashrc for full environment
-if [ -z "$__GOOSE_SHELL_SOURCED" ]; then
-    export __GOOSE_SHELL_SOURCED=1
-    unset __ETC_PROFILE_NIX_SOURCED
-    unset BASHRCSOURCED
-    if [ -f "$HOME/.bashrc" ]; then
-        . "$HOME/.bashrc"
-    fi
-fi
-exec /bin/bash "$@"
-WRAPPER_EOF
-    chmod +x "$WRAPPER"
+    write_wrapper
     echo "✓ Created goose-shell wrapper: $WRAPPER"
   fi
+fi
+
+# ── Step 2b: Install/verify the rm guard ─────────────────────────────────
+trace_step 2 "rm_guard" 0 "path=${GUARD_BIN}" 2>/dev/null || true
+
+if [[ ! -f "$GUARD_SRC" ]]; then
+  echo "✗ rm guard source missing: $GUARD_SRC"
+  ERRORS=$((ERRORS + 1))
+elif [[ -x "$GUARD_BIN" ]] && cmp -s "$GUARD_SRC" "$GUARD_BIN"; then
+  echo "✓ rm guard installed and current: $GUARD_BIN"
+elif $DRY_RUN; then
+  echo "  Would install rm guard: $GUARD_BIN"
+  CHANGES=$((CHANGES + 1))
+else
+  bash -n "$GUARD_SRC"
+  mkdir -p "$(dirname "$GUARD_BIN")"
+  install -m 755 "$GUARD_SRC" "$GUARD_BIN"
+  echo "✓ Installed rm guard: $GUARD_BIN"
 fi
 
 # ── Step 3: Create/verify environment.d config ──────────────────────────
@@ -179,6 +229,40 @@ else
       echo "ℹ No devbox shellenv in ~/.bashrc (OK if devbox not used)"
     fi
   fi
+fi
+
+# ── Step 5b: Export GOOSE_SHELL from ~/.bashrc ───────────────────────────
+# environment.d only reaches processes of the desktop login session. This line
+# also covers goose started from SSH logins and any other bash shell. Placed
+# above the interactive guard so non-interactive shells get it too.
+trace_step 5 "bashrc_goose_shell" 0 "" 2>/dev/null || true
+
+if [[ ! -f "$BASHRC" ]]; then
+  echo "ℹ No ~/.bashrc — skipping GOOSE_SHELL export"
+elif grep -qE '^[[:space:]]*export GOOSE_SHELL=' "$BASHRC"; then
+  echo "✓ ~/.bashrc exports GOOSE_SHELL"
+elif $DRY_RUN; then
+  echo "  Would add 'export GOOSE_SHELL=...' to ~/.bashrc (backup: ~/.bashrc.bak.goose-env-fix.<timestamp>)"
+  CHANGES=$((CHANGES + 1))
+else
+  tmp_rc="$(mktemp)"
+  # Insert above the interactive guard AND the comment block directly above it.
+  awk -v block='# Goose: use the goose-shell wrapper (full env + rm guard) for goose started from any shell\nexport GOOSE_SHELL="$HOME/.local/bin/goose-shell"\n' '
+    NR == FNR { ln[NR] = $0; if (!g && $0 ~ /^\[\[ \$- != \*i\* \]\] && return/) g = NR; next }
+    FNR == 1  { s = g; while (s > 1 && ln[s-1] ~ /^#/) s-- }
+    !done && g && FNR == s { printf "%s\n", block; done = 1 }
+    { print }
+    END { if (!done) printf "\n%s", block }
+  ' "$BASHRC" "$BASHRC" > "$tmp_rc"
+  if bash -n "$tmp_rc" && grep -qE '^export GOOSE_SHELL=' "$tmp_rc"; then
+    cp -p "$BASHRC" "${BASHRC}.bak.goose-env-fix.${TS}"
+    cat "$tmp_rc" > "$BASHRC"     # keep inode, mode and any symlink
+    echo "✓ Added GOOSE_SHELL export to ~/.bashrc (backup: ${BASHRC}.bak.goose-env-fix.${TS})"
+  else
+    echo "✗ Generated ~/.bashrc failed syntax check — left unchanged"
+    ERRORS=$((ERRORS + 1))
+  fi
+  rm -f "$tmp_rc"
 fi
 
 # ── Step 6: Verify GOOSE_SHELL is set ───────────────────────────────────

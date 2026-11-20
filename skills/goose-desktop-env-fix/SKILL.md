@@ -1,11 +1,11 @@
 ---
 name: goose-desktop-env-fix
 description: >
-  fix goose desktop, goose shell environment, goose env fix
+  fix goose desktop, goose shell environment, goose env fix, goose rm guard
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   model-tier: T4
-  tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb]
+  tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety]
 ---
 
 # Goose Desktop Environment Fix
@@ -172,6 +172,11 @@ if [ -z "$__GOOSE_SHELL_SOURCED" ]; then
         . "$HOME/.bashrc"
     fi
 fi
+# rm guard: keep its directory first in PATH (move it to the front if present)
+__gg="$HOME/.local/share/goose-guard/bin"
+__p=":$PATH:"; __p="${__p//:$__gg:/:}"; __p="${__p#:}"; __p="${__p%:}"
+export PATH="$__gg${__p:+:$__p}"
+unset __gg __p
 exec /bin/bash "$@"
 ```
 
@@ -181,6 +186,8 @@ exec /bin/bash "$@"
   nix paths (they were lost when the `.desktop` file overrode `PATH`)
 - `unset BASHRCSOURCED` lets `/etc/bashrc` re-run to source
   `/etc/profile.d/*.sh` scripts
+- The `__gg` block puts the rm guard directory first in `PATH` on every
+  call (see [rm Guard](#rm-guard-catastrophic-delete-protection))
 - `exec /bin/bash "$@"` replaces the wrapper with real bash to run the
   actual command
 
@@ -299,6 +306,66 @@ parsing error. Replace it with a direct `export PATH=` statement:
 # Instead of: eval "$(crc oc-env 2>/dev/null)"
 export PATH="$HOME/.crc/bin/oc:$PATH"
 ```
+
+## rm Guard (catastrophic delete protection)
+
+Added in v1.8.0 after the 2026-11-18 home-wipe incident: a test fixture
+ran `rm -rf $BUILD_DIR/*` with `BUILD_DIR` empty, which bash expanded to
+`rm -rf /afs /bin /boot … /home …`. The agent's tool call only showed
+`bash deploy.sh --verbose`, so no command-text check could have seen it.
+
+**How it works:** `scripts/rm-guard.sh` is installed as
+`~/.local/share/goose-guard/bin/rm`. goose-shell puts that directory first
+in `PATH`, so every goose shell command — and everything it starts
+(scripts, `python3`, nested `goose run`) — reaches the guard instead of
+`/usr/bin/rm`. The guard checks the **real arguments after the shell
+expanded variables and globs**, resolving symlinks in each parent, and
+refuses the whole command if any target is protected. Nothing is deleted
+on a block. Otherwise it `exec`s `/usr/bin/rm` with the original arguments.
+
+**Scope:** goose only. Terminals, SSH sessions and your own scripts keep
+`/usr/bin/rm` — the guard directory is not in `~/.local/bin` and `.bashrc`
+does not touch `PATH`.
+
+**Protected** (`PROTECT_CHILDREN_OF` at the top of `rm-guard.sh`): each
+listed folder **and anything directly inside it**:
+
+| Folder | Why |
+|--------|-----|
+| `/` | System; incident target (`/*`) |
+| `$HOME` | Everything the incident wiped |
+| `~/app`, `~/app/playground` | Each child is a separate project |
+| `~/.config`, `~/.local`, `~/.local/share` | `rm -rf ~/.config/*` etc. is the same catastrophe one level down |
+
+Everything deeper is allowed: `/tmp/<x>`, `/var/tmp/<x>`, `~/.cache/<x>`,
+`./build`, `~/.agents/skills/<old>`, a workdir under `/tmp` itself.
+
+**Known false positives (by design):** deleting a whole project folder in
+`~/app/playground`, or a scratch folder created directly in `~` (delete a
+deeper path, or the user runs it in a terminal).
+
+**Not covered (keep it simple):** `/usr/bin/rm` by full path,
+`python3 shutil.rmtree`, `find -delete`, scripts that reset `PATH`,
+deliberate bypasses, a project's own contents (`rm -rf *` inside a
+workdir), Hermes / Claude Code (they do not use goose-shell). Recovery for
+these is git remotes and backup (Deja Dup).
+
+**Block message** (stderr, exit 1) tells the agent nothing was deleted and
+not to bypass the guard. Each block is logged to
+`~/.local/state/goose-guard/blocked.log` (time, cwd, target, command) —
+use it to tune the list from evidence, never by adding command patterns.
+
+**Coverage depends on `GOOSE_SHELL`:** environment.d covers the desktop
+session (Desktop, gnome-terminal, herdr); setup step 5b adds
+`export GOOSE_SHELL=…` to `~/.bashrc` (above the interactive guard) for SSH
+and other shells. cron / clean-environment launchers must set it
+explicitly: `GOOSE_SHELL=~/.local/bin/goose-shell goose run …`. Without it
+goose uses plain `bash`, and the guard is silently absent.
+
+**Rollback:** restore `~/.local/bin/goose-shell.bak.<timestamp>` (takes
+effect on the next goose command, no restart), or delete
+`~/.local/share/goose-guard/bin/rm` (the PATH entry then falls through to
+`/usr/bin/rm`).
 
 ## Guard Variables — Summary
 
@@ -445,10 +512,12 @@ update-desktop-database ~/.local/share/applications/ 2>/dev/null
 
 | File | Purpose |
 |------|--------|
-| `~/.local/bin/goose-shell` | Wrapper: sources ~/.bashrc for non-interactive shells |
+| `~/.local/bin/goose-shell` | Wrapper: sources ~/.bashrc for non-interactive shells; puts the rm guard first in PATH |
+| `~/.local/share/goose-guard/bin/rm` | rm guard (copy of `scripts/rm-guard.sh`) |
+| `~/.local/state/goose-guard/blocked.log` | One line per blocked rm |
 | `~/.local/share/applications/Goose.desktop` | Desktop entry: passes GOOSE_SHELL to Goose process |
 | `~/.config/environment.d/60-goose-shell.conf` | Systemd user env: sets GOOSE_SHELL as fallback |
-| `~/.bashrc` | Restructured: env setup for all shells, interactive guard, shell-local devbox guard |
+| `~/.bashrc` | Restructured: env setup for all shells, interactive guard, shell-local devbox guard; `export GOOSE_SHELL=…` (v1.8.0) |
 
 ## Platform Notes
 

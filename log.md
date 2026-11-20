@@ -2,6 +2,29 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-20 18:47
+- SKILL.md: reword block-message note (bypass) (skills/goose-desktop-env-fix/SKILL.md)
+
+## 2026-11-20 18:46
+- SKILL.md: reword block-message note (bypass) (skills/goose-desktop-env-fix/SKILL.md)
+- rm-guard: reword block message (bypass) (skills/goose-desktop-env-fix/scripts/rm-guard.sh)
+
+## 2026-11-20 18:41
+- goose-desktop-env-fix SKILL.md: rm Guard section, affected files (skills/goose-desktop-env-fix/SKILL.md)
+
+## 2026-11-20 18:40
+- goose-desktop-env-fix SKILL.md: rm-guard trigger/tags, wrapper code with guard PATH line (skills/goose-desktop-env-fix/SKILL.md)
+- goose-desktop-env-fix setup.sh: insert GOOSE_SHELL export above the interactive-guard comment block (skills/goose-desktop-env-fix/scripts/setup.sh)
+- goose-desktop-env-fix setup.sh: insert GOOSE_SHELL export above the interactive-guard comment block (skills/goose-desktop-env-fix/scripts/setup.sh)
+
+## 2026-11-20 18:39
+- goose-desktop-env-fix setup.sh: step 5b exports GOOSE_SHELL from ~/.bashrc (backup + bash -n check) (skills/goose-desktop-env-fix/scripts/setup.sh)
+- goose-desktop-env-fix setup.sh: upgrade wrapper with rm-guard PATH line, install rm guard (step 2b) (skills/goose-desktop-env-fix/scripts/setup.sh)
+
+## 2026-11-20 18:38
+- goose-desktop-env-fix setup.sh: header/version 1.8.0, guard and bashrc paths (skills/goose-desktop-env-fix/scripts/setup.sh)
+- v1.8.0 — rm guard for goose shell commands: blocks rm on /, $HOME, ~/app, ~/app/playground, ~/.config, ~/.local, ~/.local/share and their direct children; goose-shell puts it first in PATH; GOOSE_SHELL exported from ~/.bashrc (skills/goose-desktop-env-fix/scripts/rm-guard.sh)
+
 ## 2026-11-20 01:17
 - Classify six named read-only AgentFS scripts as read-only (plugins/preflight-reminder/scripts/is-readonly.sh)
 - Name the read-only script exemption in the hold text (plugins/preflight-reminder/scripts/enforce-preflight.sh)

@@ -4,6 +4,7 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety | fix goose desktop, goose shell environment, goose env fix, goose rm guard | 2026-11-20 18:47 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-20 01:17 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-20 00:26 |
 | [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-19 22:05 |
@@ -36,7 +37,6 @@
 | [gcp-vertex-models](./gcp-vertex-models/SKILL.md) | gcp, vertex-ai, claude, models, discovery, credentials, service-account | refresh vertex models, vertex model list, vertex default model, select vertex credential, vertex credential list | 2026-11-19 16:53 |
 | [goose-cli-fix](./goose-cli-fix/SKILL.md) | goose, cli, fix, json | fix goose cli, goose projects.json, goose parse error | 2026-11-19 16:53 |
 | [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-19 16:53 |
-| [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb | fix goose desktop, goose shell environment, goose env fix | 2026-11-19 16:53 |
 | [goose-gcp-provider](./goose-gcp-provider/SKILL.md) | goose, gcp, vertex-ai, provider, configuration | configure goose gcp, goose gcp provider | 2026-11-19 16:53 |
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | goose, headroom, custom-provider, context-optimization, compression, configuration | configure goose headroom, goose headroom provider | 2026-11-19 16:53 |
 | [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | configure goose litellm, goose litellm provider | 2026-11-19 16:53 |
