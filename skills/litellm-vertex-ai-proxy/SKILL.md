@@ -5,7 +5,7 @@ description: >
   refresh litellm models
 platforms: ['linux']
 metadata:
-  version: "4.0.0"
+  version: "4.1.0"
   model-tier: T2
   tags: [litellm, vertex-ai, gcp, proxy, systemd]
   related_skills: [gcp-vertex-models, litellm-proxy-status, goose-litellm-provider, hermes-litellm-provider]
@@ -118,8 +118,12 @@ report a false failure when that region is at capacity (`429`).
 ### Step 3 — Install LiteLLM
 
 ```bash
-uv tool install 'litellm[proxy]'
+uv tool install 'litellm[proxy,google]'
 ```
+
+The `google` extra is required: `[proxy]` alone no longer ships the Google
+SDK, and every Vertex call fails (see Gotcha #12). Fixing an existing install:
+`uv tool install --force 'litellm[proxy,google]'`, then restart the service.
 
 ### Step 4 — Setup Proxy (Config + systemd + Start)
 
@@ -224,7 +228,9 @@ journalctl --user -u litellm-proxy -f     # follow logs
 | 5 | **Context windows differ across model families** | Opus/Sonnet 4.6 and newer have 1M token context; Haiku 4.5, Sonnet 4.5 and Opus 4.5 have 200k tokens. Downstream consumers (Goose, Hermes) must set `context_limit` correctly per model. |
 | 6 | **Service account key, not user ADC** | systemd services cannot re-authenticate interactively. User ADC refresh tokens expire and the proxy silently fails. Always use a service account key file via `GOOGLE_APPLICATION_CREDENTIALS`. |
 | 7 | **`setup.sh` discovers all available models** | The probe may find models you've intentionally excluded. Review the generated config (use `--dry-run`) and remove unwanted models before restarting. |
-| 8 | **`--host 127.0.0.1` blocks container access** | Default binds to loopback only. Containers (Podman, Docker, OpenShell sandboxes) reach the host via bridge IPs like `host.containers.internal`, which is not `127.0.0.1`. Use `--host 0.0.0.0` when the proxy must be reachable from containers. **The proxy has no `master_key`, so anyone who can reach the port can spend your GCP quota** — restrict via firewall, or set `general_settings.master_key` and give clients the key. |
+| 8 | **`--host 127.0.0.1` blocks container access** | Default binds to loopback only. Containers (Podman, Docker, OpenShell sandboxes) reach the host via bridge IPs like `host.containers.internal`, which is not `127.0.0.1`. Use `--host 0.0.0.0` when the proxy must be reachable from containers. Since 4.1.0 `setup.sh` refuses a non-loopback host without `--master-key-file` (see #11); clients must then send the key. |
+| 11 | **LiteLLM ≥ 1.110 refuses to start without a master key** | Journal: `UnsafeMasterKeyError: LiteLLM proxy refused to start: no master key is set`, then a systemd restart loop (`status=3/NOTIMPLEMENTED`); `verify.sh` fails S1b/S4/S5. Since 4.1.0: loopback `--host` (`127.0.0.1`, `localhost`, `::1`) writes `general_settings.dangerously_permit_weak_or_unset_master_key: true` (only this host can reach it; clients stay `requires_auth: false`). Any other host needs `--master-key-file PATH` containing `LITELLM_MASTER_KEY=sk-…`; the unit loads it via `EnvironmentFile=`, so the key is not in the unit or `config.yaml`. `refresh-models.sh` carries it through. |
+| 12 | **`litellm[proxy]` lacks the Google SDK** | The proxy starts, `/v1/models` lists the models, but every call (and `/health`) fails: `Vertex_aiException InternalServerError - Google Cloud SDK not found. Install it with: pip install 'litellm[google]'`; `verify.sh` fails S4a/S4b (`11 unhealthy`). Install `litellm[proxy,google]` (seen with litellm v1.110.2). |
 | 9 | **Wildcard `vertex_ai/*` is misleading** | It exposes LiteLLM's built-in catalog (incl. models your project cannot call → Vertex 404/403 at request time) and varies with the LiteLLM version. Prefer the explicit list that `setup.sh` generates. |
 | 10 | **`gcloud auth print-access-token` may fail** | It needs a usable user login for the active gcloud context. All scripts here use the SA key via `google-auth` instead. |
 

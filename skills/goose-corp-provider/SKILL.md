@@ -6,7 +6,7 @@ description: >
 argument-hint: "setup | rotate-key | status | list-models"
 metadata:
   author: agentfs
-  version: "1.1.2"
+  version: "1.2.0"
   model-tier: T2
   tags: [goose, corp, custom-provider, redhat, model-service]
   related_skills: [goose-maas-provider, goose-litellm-provider, goose-skupper-provider]
@@ -31,7 +31,7 @@ goose session or touches a file under version control.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.1.2 |
+| **Version** | 1.2.0 |
 | **Trigger** | `hey configure goose corp`, `hey rotate corp key`, `hey corp status` |
 | **Dependencies** | `goose`, `curl`, `jq`, `secret-tool` (GNOME Keyring) |
 
@@ -94,12 +94,27 @@ which model to set as default. Recommend a chat-capable model
 
 ### Step 3 — Create Provider Configuration
 
+Dry run first (Rule 7), then apply only if `DRY_RUN_RESULT=PENDING`:
+
 ```bash
+bash ~/.agents/skills/goose-corp-provider/scripts/setup.sh --model MODEL_ID --dry-run
 bash ~/.agents/skills/goose-corp-provider/scripts/setup.sh --model MODEL_ID
 ```
 
 Replace `MODEL_ID` with the user's chosen default model.
-The script writes `custom_corp.json` and patches `config.yaml`.
+`CONVERGED` → already configured, skip apply.
+
+Apply behaviour (≥ 1.2.0):
+- `custom_corp.json` is written atomically; an existing differing file is
+  saved as `.bak.<STAMP>` first (`--force` skips the backup).
+- `config.yaml`: timestamped backup, then a line-level insert of the 4-line
+  `providers.custom_corp` entry at the end of the `providers:` block (or a
+  new block). No YAML re-dump — comments and wrapping are preserved. A
+  parsed-YAML post-check restores the backup on any other change.
+- An existing `providers.custom_corp` entry is never modified (the script
+  prints an info line if its model differs) — change models via
+  `goose configure` or Goose Desktop.
+- `GOOSE_CONFIG_DIR` overrides `~/.config/goose` (used for temp-dir tests).
 
 ### Step 4 — Store API Key (🔒 Out-of-Band Gate)
 
@@ -241,7 +256,7 @@ All scripts output structured diagnostics:
 | Script | Idempotent | On Failure |
 |--------|:----------:|------------|
 | `probe-models.sh` | ✅ (read-only) | Network error — check VPN. |
-| `setup.sh` | ✅ | Backs up existing files. Safe to retry. |
+| `setup.sh` | ✅ | `--dry-run` writes nothing. Apply backs up `config.yaml` (and a differing JSON); post-check restores on unexpected change. Exit 1 if the model is not in the catalog. Safe to retry. |
 | `check-key.sh` | ✅ (read-only) | Key missing — run `goose configure`. |
 | `test.sh` | ✅ (read-only) | Auth failure — rotate key. Network failure — check VPN. |
 | `store-key.sh` | ✅ | User-run only. Validates before storing. |
@@ -257,6 +272,7 @@ All scripts output structured diagnostics:
 | Corp not in `goose configure` menu | `custom_corp.json` missing | Re-run `setup.sh` |
 | "missing required key CUSTOM_CORP_API_KEY" | Keyring locked | Unlock GNOME Keyring, re-run `goose configure` |
 | Model returns empty response | Model not available/loaded | Try a different model from `probe-models.sh` |
+| Model ids flip between dotted and dashed forms (`granite-4.1-8b` / `granite-4-1-8b`) across calls | Endpoint returns ~7 models under a random alias per call (even per backend) | Expected. `setup.sh` ≥ 1.2.0 compares with `.` == `-`; the stored JSON keeps whichever alias one call returned — either form works |
 
 ## Changelog
 

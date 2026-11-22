@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-22 10:32 | v1.12.0 — restore.sh creates a missing providers.custom_redhat entry (fresh setup), line-level insert with post-check; Document fresh-setup entry creation in restore.sh apply behaviour |
 | 2026-11-16 19:41 | v1.11.0 — CHANGELOG typo fixed: 'vv' version prefix → 'v' (documentation only) |
 | 2026-11-13 21:13 | v1.11.0 — restore.sh: default = strongest served model (litellm default model), ranked models (5-5 before 5), dry-run CONVERGED/PENDING with change list, sets providers.custom_redhat.model via line-level edit + post-check + backup, chat test before switching default, --no-default, GOOSE_CONFIG_DIR override; restore.sh: proxy-down run leaves the default model alone; strongest-model lookup only accepted on success and when served; SKILL.md: default = strongest served model (claude-opus-5-5); restore.sh dry-run → apply with flags table and apply behaviour; gotcha #1 now notes restore.sh resets a Desktop-overwritten model; S5/T7/T8 |
 | 2026-11-13 20:20 | v1.10.2 — doc: Gotchas section — Desktop 1.59.0 provider switch picks claude-sonnet-4-6 (saved_model bug); troubleshooting row |

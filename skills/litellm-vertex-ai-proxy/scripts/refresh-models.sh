@@ -34,6 +34,13 @@ EXEC=$(grep '^ExecStart=' "$SVC")
 HOST=$(sed -n 's/.*--host \([^ ]*\).*/\1/p' <<<"$EXEC"); HOST=${HOST:-127.0.0.1}
 PORT=$(sed -n 's/.*--port \([^ ]*\).*/\1/p' <<<"$EXEC"); PORT=${PORT:-4000}
 [[ -z "$SA_KEY" ]] && SA_KEY=$(sed -n 's/^Environment=GOOGLE_APPLICATION_CREDENTIALS=//p' "$SVC")
+# 4.1.0: carry a master key file through (required by setup.sh for a non-loopback host)
+MKF=$(sed -n 's/^EnvironmentFile=//p' "$SVC" | head -1)
+MKF_ARGS=(); AUTH=()
+if [[ -n "$MKF" ]]; then
+  MKF_ARGS=(--master-key-file "$MKF")
+  AUTH=(-H "Authorization: Bearer $(sed -n 's/^LITELLM_MASTER_KEY=//p' "$MKF" | head -1)")
+fi
 if [[ -z "$PROJECT" ]]; then
   PROJECT=$(awk '/vertex_project:/{print $2; exit}' "$HOME/.config/litellm/config.yaml" 2>/dev/null || true)
 fi
@@ -45,7 +52,7 @@ echo "Live settings: project=$PROJECT host=$HOST port=$PORT key=$SA_KEY"
 trace_step 1 "detect" 0 "host=$HOST port=$PORT" 2>/dev/null || true
 
 # Step: dry run (also refreshes the gcp-vertex-models cache)
-DRY=$(bash "$DIR/setup.sh" --project "$PROJECT" --sa-key "$SA_KEY" --host "$HOST" --port "$PORT" \
+DRY=$(bash "$DIR/setup.sh" --project "$PROJECT" --sa-key "$SA_KEY" --host "$HOST" --port "$PORT" "${MKF_ARGS[@]}" \
         --regions "$REGIONS" --dry-run 2>&1) || { echo "$DRY"; echo "❌ Dry run failed"; exit 1; }
 echo "$DRY" | grep -E '✅ claude|^Model/region changes|^  [-+]|service unit differs|DRY_RUN_RESULT' || true
 RESULT=$(grep -o 'DRY_RUN_RESULT=[A-Z]*' <<<"$DRY" | tail -1)
@@ -61,17 +68,17 @@ if ! $APPLY; then
 fi
 
 # Step: apply
-bash "$DIR/setup.sh" --project "$PROJECT" --sa-key "$SA_KEY" --host "$HOST" --port "$PORT" \
+bash "$DIR/setup.sh" --project "$PROJECT" --sa-key "$SA_KEY" --host "$HOST" --port "$PORT" "${MKF_ARGS[@]}" \
   --regions "$REGIONS" --force | tail -8 || { echo "❌ setup.sh --force failed"; exit 1; }
 trace_step 3 "apply" 0 "" 2>/dev/null || true
 
 # Step: wait for readiness, then chat-test every served model
 for _ in $(seq 1 40); do curl -sf "http://127.0.0.1:$PORT/health/liveliness" >/dev/null && break; sleep 2; done
-MODELS=$(curl -sf "http://127.0.0.1:$PORT/v1/models" | python3 -c 'import sys,json;print(" ".join(m["id"] for m in json.load(sys.stdin)["data"]))') \
+MODELS=$(curl -sf "${AUTH[@]}" "http://127.0.0.1:$PORT/v1/models" | python3 -c 'import sys,json;print(" ".join(m["id"] for m in json.load(sys.stdin)["data"]))') \
   || { echo "❌ Proxy not answering /v1/models after restart"; exit 1; }
 FAILED=0
 for m in $MODELS; do
-  R=$(curl -s -m 90 "http://127.0.0.1:$PORT/v1/chat/completions" -H 'content-type: application/json' \
+  R=$(curl -s -m 90 "http://127.0.0.1:$PORT/v1/chat/completions" "${AUTH[@]}" -H 'content-type: application/json' \
       -d "{\"model\":\"$m\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: OK\"}],\"max_tokens\":10}" \
       | python3 -c 'import sys,json;d=json.load(sys.stdin);print("ok" if "choices" in d else "fail")' 2>/dev/null || echo fail)
   if [[ "$R" == ok ]]; then echo "  ✅ $m"; else echo "  ❌ $m"; FAILED=$((FAILED + 1)); fi

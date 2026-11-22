@@ -2,6 +2,31 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-22 10:37
+- Document setup.sh --dry-run, backup + line-level insert, never-modify existing entry, dotted/dashed alias gotcha (skills/goose-corp-provider/SKILL.md)
+- Compare model names with . == - (endpoint returns dotted/dashed aliases at random) (skills/goose-corp-provider/scripts/setup.sh)
+
+## 2026-11-22 10:33
+- setup.sh: --dry-run (DRY_RUN_RESULT), GOOSE_CONFIG_DIR, line-level config.yaml insert with backup and post-check (no yaml.dump re-wrap); JSON backed up only when it changes (skills/goose-corp-provider/scripts/setup.sh)
+
+## 2026-11-22 10:32
+- Document fresh-setup entry creation in restore.sh apply behaviour (skills/goose-litellm-provider/SKILL.md)
+- restore.sh creates a missing providers.custom_redhat entry (fresh setup), line-level insert with post-check (skills/goose-litellm-provider/scripts/restore.sh)
+
+## 2026-11-22 10:19
+- Install hint uses litellm[proxy,google] (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+- Gotcha #12: litellm[proxy] lacks the Google SDK (skills/litellm-vertex-ai-proxy/SKILL.md)
+- Step 3 installs litellm[proxy,google] (proxy extra lacks the Google SDK) (skills/litellm-vertex-ai-proxy/SKILL.md)
+
+## 2026-11-22 10:17
+- Dry-run compares config settings blocks too (false CONVERGED when general_settings missing) (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+- Gotcha #11: LiteLLM >= 1.110 master-key boot check; #8 updated for --master-key-file (skills/litellm-vertex-ai-proxy/SKILL.md)
+- refresh-models carries EnvironmentFile master key through to setup.sh and chat tests (skills/litellm-vertex-ai-proxy/scripts/refresh-models.sh)
+
+## 2026-11-22 10:16
+- Loopback host permits unset master key (general_settings); non-loopback requires --master-key-file via EnvironmentFile (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+- Add --master-key-file option and usage text (litellm 1.110 master-key boot check) (skills/litellm-vertex-ai-proxy/scripts/setup.sh)
+
 ## 2026-11-20 18:47
 - SKILL.md: reword block-message note (bypass) (skills/goose-desktop-env-fix/SKILL.md)
 

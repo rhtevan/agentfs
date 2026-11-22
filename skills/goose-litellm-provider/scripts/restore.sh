@@ -13,7 +13,7 @@ set -euo pipefail
 
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "goose-litellm-provider" "1.11.0" 2>/dev/null || true
+trace_init "goose-litellm-provider" "1.12.0" 2>/dev/null || true
 
 DRY_RUN=false
 FAST_MODEL="claude-haiku-4-5"
@@ -144,7 +144,11 @@ echo "Current: providers.custom_redhat.model=${CUR_MODEL:-<unset>}  active_provi
 CHANGES=()
 $JSON_SAME || CHANGES+=("$( [[ -f "$PROVIDER_FILE" ]] && echo update || echo create ) $PROVIDER_FILE ($(echo "$NAMES" | wc -l) models, fast_model $FAST_MODEL)")
 DEFAULT_PENDING=false
-if $SET_DEFAULT && $HAS_ENTRY && [[ "$CUR_MODEL" != "$DEFAULT_MODEL" ]]; then
+if $SET_DEFAULT && ! $HAS_ENTRY; then
+  # 1.12.0: fresh setup — create the entry instead of pointing at SKILL.md
+  CHANGES+=("add providers.custom_redhat (enabled, model $DEFAULT_MODEL)")
+  DEFAULT_PENDING=true
+elif $SET_DEFAULT && [[ "$CUR_MODEL" != "$DEFAULT_MODEL" ]]; then
   CHANGES+=("providers.custom_redhat.model: ${CUR_MODEL:-<unset>} → $DEFAULT_MODEL")
   DEFAULT_PENDING=true
 fi
@@ -186,7 +190,8 @@ if ! $JSON_SAME; then
 fi
 
 if $DEFAULT_PENDING; then
-  # Line-level edit of providers.custom_redhat.model only; config re-read right before
+  # Line-level edit of providers.custom_redhat.model only (or insert the whole
+  # entry when missing, 1.12.0); config re-read right before
   # writing (Goose Desktop may rewrite config.yaml), backup + post-check.
   cp -p "$CONFIG_YAML" "$CONFIG_YAML.bak.$STAMP"
   echo "📋 Backup: $CONFIG_YAML.bak.$STAMP"
@@ -194,23 +199,36 @@ if $DEFAULT_PENDING; then
 import os, re, shutil, sys, yaml
 path, dm = os.environ["CFG"], os.environ["DM"]
 text = open(path).read()
-before = yaml.safe_load(text)
+before = yaml.safe_load(text) or {}
 lines = text.splitlines(keepends=True)
-pi = next(i for i, l in enumerate(lines) if l.rstrip("\n") == "providers:")
-ci = next(i for i in range(pi + 1, len(lines)) if re.match(r"^  custom_redhat:\s*$", lines[i]))
-done = False
-for j in range(ci + 1, len(lines)):
-    l = lines[j]
-    if l.strip() and len(l) - len(l.lstrip(" ")) <= 2:
-        break
-    m = re.match(r"^(    model:)\s*\S.*$", l.rstrip("\n"))
-    if m:
-        lines[j] = "%s %s\n" % (m.group(1), dm); done = True; break
-if not done:
-    lines.insert(ci + 1, "    model: %s\n" % dm)
+if lines and not lines[-1].endswith("\n"):
+    lines[-1] += "\n"
+ENTRY = ["  custom_redhat:\n", "    enabled: true\n", "    model: %s\n" % dm, "    configured: true\n"]
+pi = next((i for i, l in enumerate(lines) if l.rstrip("\n") == "providers:"), None)
+ci = None if pi is None else next((i for i in range(pi + 1, len(lines)) if re.match(r"^  custom_redhat:\s*$", lines[i])), None)
+if pi is None:
+    lines += ["providers:\n"] + ENTRY                      # no providers block yet
+elif ci is None:
+    end = next((i for i in range(pi + 1, len(lines)) if lines[i].strip() and not lines[i].startswith(" ")), len(lines))
+    lines[end:end] = ENTRY                                 # append at the end of the providers block
+else:
+    done = False
+    for j in range(ci + 1, len(lines)):
+        l = lines[j]
+        if l.strip() and len(l) - len(l.lstrip(" ")) <= 2:
+            break
+        m = re.match(r"^(    model:)\s*\S.*$", l.rstrip("\n"))
+        if m:
+            lines[j] = "%s %s\n" % (m.group(1), dm); done = True; break
+    if not done:
+        lines.insert(ci + 1, "    model: %s\n" % dm)
 new_text = "".join(lines)
 after = yaml.safe_load(new_text)
-exp = before; exp["providers"]["custom_redhat"]["model"] = dm
+exp = before
+if ci is None:
+    exp.setdefault("providers", {})["custom_redhat"] = {"enabled": True, "model": dm, "configured": True}
+else:
+    exp["providers"]["custom_redhat"]["model"] = dm
 if after != exp:
     print("❌ post-check: unexpected change", file=sys.stderr); sys.exit(1)
 tmp = path + ".tmp"; open(tmp, "w").write(new_text); shutil.copymode(path, tmp); os.replace(tmp, path)

@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # setup.sh — Set up LiteLLM proxy for Vertex AI with systemd
-# Usage: bash setup.sh --project PROJECT --sa-key PATH [--regions R1,R2] [--prefer global|regional] [--port PORT] [--dry-run]
+# Usage: bash setup.sh --project PROJECT --sa-key PATH [--regions R1,R2] [--prefer global|regional] [--host HOST] [--master-key-file PATH] [--port PORT] [--dry-run]
 # Exit codes: 0 = success, 1 = failure, 2 = usage error
 set -euo pipefail
 
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "litellm-vertex-ai-proxy" "3.4.0" 2>/dev/null || true
+trace_init "litellm-vertex-ai-proxy" "4.1.0" 2>/dev/null || true
 
 PROJECT=""
 SA_KEY=""
 REGIONS="global,us-east5"
 PREFER="global"
 HOST="127.0.0.1"
+MASTER_KEY_FILE=""
 PORT="4000"
 DRY_RUN=false
 FORCE=false
@@ -30,6 +31,7 @@ while [[ $# -gt 0 ]]; do
     --regions|--region) REGIONS="$2"; shift 2 ;;
     --prefer)   PREFER="$2"; shift 2 ;;
     --host)     HOST="$2"; shift 2 ;;
+    --master-key-file) MASTER_KEY_FILE="$2"; shift 2 ;;
     --port)     PORT="$2"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
     --force)    FORCE=true; shift ;;
@@ -44,6 +46,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --regions R1,R2    Regions to probe (default: global,us-east5)"
       echo "  --prefer  MODE     global|regional: region used per model when both work (default: global)"
       echo "  --host    HOST     Bind address (default: 127.0.0.1, use 0.0.0.0 for container access)"
+      echo "  --master-key-file PATH  File with LITELLM_MASTER_KEY=sk-... (required for a non-loopback --host)"
       echo "  --port    PORT     Proxy port (default: 4000)"
       echo "  --dry-run          Write to /tmp/litellm-setup-preview/ instead of live paths"
       echo "  --force            Overwrite even if proxy is currently healthy"
@@ -61,6 +64,26 @@ if [[ -z "$PROJECT" ]]; then
     exit 2
   fi
   echo "Auto-detected project: $PROJECT"
+fi
+
+# LiteLLM >= 1.110 refuses to start without a master key. Loopback: the
+# proxy is reachable only from this host, so permit it unauthenticated
+# (clients stay requires_auth: false). Any other bind address: require a
+# key file, loaded via EnvironmentFile= so the key stays out of the unit.
+case "$HOST" in
+  127.0.0.1|localhost|::1) LOOPBACK=true ;;
+  *) LOOPBACK=false ;;
+esac
+if [[ -n "$MASTER_KEY_FILE" ]]; then
+  if [[ ! -f "$MASTER_KEY_FILE" ]] || ! grep -q '^LITELLM_MASTER_KEY=sk-' "$MASTER_KEY_FILE"; then
+    echo "❌ --master-key-file must contain a line LITELLM_MASTER_KEY=sk-..."
+    exit 2
+  fi
+elif [[ "$LOOPBACK" != true ]]; then
+  echo "❌ --host $HOST is not loopback: the proxy would accept unauthenticated requests from the network."
+  echo "   Create a key file:  umask 077; echo \"LITELLM_MASTER_KEY=sk-\$(openssl rand -hex 32)\" > ~/.config/litellm/master.env"
+  echo "   Then re-run with:   --master-key-file ~/.config/litellm/master.env  (clients must send the key)"
+  exit 2
 fi
 
 if [[ -z "$SA_KEY" ]]; then
@@ -105,7 +128,7 @@ SA_KEY=$(realpath "$SA_KEY")
 # Find litellm binary
 LITELLM_BIN=$(which litellm 2>/dev/null || echo "")
 if [[ -z "$LITELLM_BIN" ]]; then
-  echo "❌ litellm not found. Install with: uv tool install 'litellm[proxy]'"
+  echo "❌ litellm not found. Install with: uv tool install 'litellm[proxy,google]'"
   exit 1
 fi
 
@@ -183,6 +206,9 @@ fi
       "$model" "$model" "$PROJECT" "$region"
   done
   printf 'litellm_settings:\n  drop_params: true\n  request_timeout: 120\n'
+  if [[ -z "$MASTER_KEY_FILE" ]]; then
+    printf '\n# Loopback bind (--host %s): unauthenticated access is limited to this host.\ngeneral_settings:\n  dangerously_permit_weak_or_unset_master_key: true\n' "$HOST"
+  fi
 } > "$CONFIG_FILE"
 
 echo "✅ Config written: $CONFIG_FILE"
@@ -205,7 +231,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-Environment=GOOGLE_APPLICATION_CREDENTIALS=$SA_KEY
+Environment=GOOGLE_APPLICATION_CREDENTIALS=$SA_KEY${MASTER_KEY_FILE:+
+EnvironmentFile=$(realpath "$MASTER_KEY_FILE")}
 ExecStart=$LITELLM_BIN --config $HOME/.config/litellm/config.yaml --host $HOST --port $PORT
 Restart=on-failure
 RestartSec=5
@@ -228,11 +255,16 @@ if [[ "$DRY_RUN" == true ]]; then
   # Convergence = same model/region set and same service unit (header comments ignored)
   LIVE_CFG="$HOME/.config/litellm/config.yaml"; LIVE_SVC="$HOME/.config/systemd/user/litellm-proxy.service"
   pairs() { [[ -f "$1" ]] && awk '/model: vertex_ai\//{sub("vertex_ai/","",$2); m=$2} /vertex_location:/{print m, $2}' "$1" | sort; }
-  if [[ "$(pairs "$CONFIG_FILE")" == "$(pairs "$LIVE_CFG")" ]] && diff -q "$SERVICE_FILE" "$LIVE_SVC" >/dev/null 2>&1; then
+  # 4.1.0: settings (litellm_settings/general_settings) count too: a model-only
+  # comparison reported CONVERGED while the live config lacked general_settings.
+  settings() { [[ -f "$1" ]] && sed -n '/^litellm_settings:/,$p' "$1" | grep -v '^\s*#' | grep -v '^\s*$'; }
+  if [[ "$(pairs "$CONFIG_FILE")" == "$(pairs "$LIVE_CFG")" ]] && [[ "$(settings "$CONFIG_FILE")" == "$(settings "$LIVE_CFG")" ]] \
+     && diff -q "$SERVICE_FILE" "$LIVE_SVC" >/dev/null 2>&1; then
     echo ""; echo "DRY_RUN_RESULT=CONVERGED"
   else
     echo ""; echo "Model/region changes (- live, + generated):"
     diff <(pairs "$LIVE_CFG") <(pairs "$CONFIG_FILE") | grep '^[<>]' | sed 's/^</  -/; s/^>/  +/' || true
+    [[ "$(settings "$CONFIG_FILE")" == "$(settings "$LIVE_CFG")" ]] || echo "  config settings differ (litellm_settings/general_settings)"
     diff -q "$SERVICE_FILE" "$LIVE_SVC" >/dev/null 2>&1 || echo "  service unit differs"
     echo "DRY_RUN_RESULT=PENDING"
   fi

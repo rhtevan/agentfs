@@ -4,6 +4,9 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-22 10:37 |
+| [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | configure goose litellm, goose litellm provider | 2026-11-22 10:32 |
+| [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex, refresh litellm models | 2026-11-22 10:19 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety | fix goose desktop, goose shell environment, goose env fix, goose rm guard | 2026-11-20 18:47 |
 | [goose-agentfs-setup](./goose-agentfs-setup/SKILL.md) | goose, agentfs, configuration, compatibility, system-prompt | configure goose agentfs, goose context files, goose agentfs, sync goose agentfs, activate profile | 2026-11-20 01:17 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-20 00:26 |
@@ -36,10 +39,8 @@
 | [fedora-window-list](./fedora-window-list/SKILL.md) | fedora, gnome, desktop, taskbar | toggle window list, taskbar toggle, gnome taskbar | 2026-11-19 16:53 |
 | [gcp-vertex-models](./gcp-vertex-models/SKILL.md) | gcp, vertex-ai, claude, models, discovery, credentials, service-account | refresh vertex models, vertex model list, vertex default model, select vertex credential, vertex credential list | 2026-11-19 16:53 |
 | [goose-cli-fix](./goose-cli-fix/SKILL.md) | goose, cli, fix, json | fix goose cli, goose projects.json, goose parse error | 2026-11-19 16:53 |
-| [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-19 16:53 |
 | [goose-gcp-provider](./goose-gcp-provider/SKILL.md) | goose, gcp, vertex-ai, provider, configuration | configure goose gcp, goose gcp provider | 2026-11-19 16:53 |
 | [goose-headroom-provider](./goose-headroom-provider/SKILL.md) | goose, headroom, custom-provider, context-optimization, compression, configuration | configure goose headroom, goose headroom provider | 2026-11-19 16:53 |
-| [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | configure goose litellm, goose litellm provider | 2026-11-19 16:53 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | goose, maas, litellm, custom-provider, reasoning, configuration | configure goose maas, goose maas provider, goose remote provider | 2026-11-19 16:53 |
 | [goose-nextai-drawio](./goose-nextai-drawio/SKILL.md) | goose, mcp, drawio, diagram, extension | setup nextai drawio, teardown nextai drawio, upgrade nextai drawio, update nextai drawio, nextai drawio status | 2026-11-19 16:53 |
 | [goose-recipe-session-cleanup](./goose-recipe-session-cleanup/SKILL.md) | goose, recipe, session, cleanup, orphan, desktop, terminal | clean goose sessions, cleanup recipe sessions, remove orphaned sessions, clean desktop sessions, clean terminal sessions | 2026-11-19 16:53 |
@@ -52,7 +53,6 @@
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | configure hermes litellm, hermes litellm provider | 2026-11-19 16:53 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-19 16:53 |
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health, litellm model list, litellm default model | 2026-11-19 16:53 |
-| [litellm-vertex-ai-proxy](./litellm-vertex-ai-proxy/SKILL.md) | litellm, vertex-ai, gcp, proxy, systemd | setup litellm vertex, vertex ai proxy, litellm vertex, refresh litellm models | 2026-11-19 16:53 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-11-19 16:53 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-11-19 16:53 |
 | [okf-bundle-harvest](./okf-bundle-harvest/SKILL.md) | agentfs, okf, knowledge, memory, distillation, graduation | harvest knowledge, harvest concepts, graduate knowledge | 2026-11-19 16:53 |

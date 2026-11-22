@@ -4,7 +4,7 @@ description: >
   configure goose litellm, goose litellm provider
 platforms: ['linux']
 metadata:
-  version: "1.11.0"
+  version: "1.12.0"
   model-tier: T3
   tags: [goose, litellm, custom-provider, redhat, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, hermes-litellm-provider, goose-maas-provider]
@@ -193,6 +193,7 @@ Apply behaviour:
 - A new default is chat-tested through the proxy before it is written.
 - `custom_redhat.json` and `config.yaml` get timestamped `.bak.<YYYYmmdd_HHMMSS>` backups.
 - Only the `model:` line under `providers.custom_redhat` changes (line-level edit; a YAML post-check restores the backup if anything else differs). `active_provider` is never touched.
+- Fresh setup (≥ 1.12.0): if `providers.custom_redhat` is missing, the dry run lists `add providers.custom_redhat (enabled, model …)` and apply inserts the 4-line entry at the end of the `providers:` block, or creates the block. The rest of the file is untouched (same post-check). With `--no-default` or the proxy unreachable, no entry is created.
 - Proxy unreachable: models come from the existing JSON and the default model is left alone.
 
 **Option B — Interactive wizard:**
