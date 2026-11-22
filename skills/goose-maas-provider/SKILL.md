@@ -4,7 +4,7 @@ description: >
   configure goose maas, goose maas provider, goose remote provider
 platforms: ['linux']
 metadata:
-  version: "1.5.1"
+  version: "1.6.1"
   model-tier: T4
   tags: [goose, maas, litellm, custom-provider, reasoning, configuration]
   related_skills: [goose-litellm-provider, litellm-proxy-status]
@@ -117,388 +117,247 @@ providers:
     configured: true
 ```
 
-### Required Global Settings in config.yaml
+### Global Settings — none required
 
-These settings **must** be present at the top level of `config.yaml`
-for MaaS to work properly:
+**Do NOT set `GOOSE_TOOLSHIM`.** The scripts never write it and
+`verify-config.sh` warns if it is set globally.
 
-```yaml
-GOOSE_TOOLSHIM: true
-```
+Per the official goose docs, `GOOSE_TOOLSHIM` is an *experimental*,
+global-only setting for models that emit tool calls as plain text: an
+extra **interpreter model** (default: Ollama `mistral-nemo`, or
+`GOOSE_TOOLSHIM_BACKEND=local` + `GOOSE_TOOLSHIM_MODEL`) converts that
+text into real tool calls. It does **not** rename or strip tool
+namespaces (an earlier version of this skill said so — that was wrong).
+Enabling it globally would affect every provider and fails without an
+interpreter backend.
 
-**`GOOSE_TOOLSHIM`** — Enables the tool shim layer. Smaller models
-(like `llama-scout-17b`) cannot handle goose's namespaced tool names
-(e.g., `computercontroller__web_scrape`). They call tools by short
-names (e.g., `web_scrape`) which goose rejects as "Tool not found".
-The tool shim strips namespace prefixes before presenting tools to the
-model and re-maps them when the model makes a call.
+If a MaaS model turns out to emit text tool calls, either skip that
+model or (separate user decision) install Ollama and use it per run:
+`GOOSE_TOOLSHIM=true goose run --provider custom_maas ...`.
 
-Without this setting, tool calls fail with:
-```
-Tool 'web_scrape' not found. Available tools: [computercontroller__web_scrape, ...]
-```
+### Goose Desktop compatibility — retest on 1.60.x
 
-### ⚠️ Goose Desktop Is NOT Compatible with MaaS
+> Findings below were observed on **Goose Desktop v1.41.0** and have
+> **not been retested** on the installed v1.60.2. Treat them as history
+> until retested.
 
-**Goose Desktop v1.41.0 cannot use the MaaS provider for tool-calling
-tasks.** Use `goose run --provider custom_maas` (CLI) instead.
-
-Desktop failures across all configurations tested:
-
-| Desktop config | Result |
+| Desktop v1.41.0 config | Result |
 |---|---|
-| `streaming: true` | Response received (tokens counted) but **never saved** or displayed |
-| `streaming: false`, no toolshim | Model calls tools by wrong name (strips namespace prefix) |
-| `streaming: false`, toolshim on | Model outputs raw Llama native format as text, tools never execute |
+| `supports_streaming: true` | Response received (tokens counted) but never saved or displayed |
+| `supports_streaming: false` | Responses saved; tool calls failed in some sessions |
 
-All three configurations **work correctly via CLI**. This is a Goose
-Desktop v1.41.0 bug specific to custom OpenAI-engine providers.
-
-The provider JSON has `"supports_streaming": false` as a partial
-mitigation (at least responses are saved), but tool-calling tasks will
-still fail in Desktop.
+The provider JSON keeps `"supports_streaming": true` (CLI works with
+it). If Desktop on 1.60.x fails to display responses, try `false` and
+record the result here.
 
 ### Available Models on MaaS
 
-Query the remote endpoint to discover available models:
+The live list comes from `GET <base_url>/v1/models`; per-model details
+(context window, flags) from LiteLLM `GET <base_url>/v1/model/info`.
+Do not curl them with the key on the command line — `restore-provider.sh`
+and `check-endpoint.sh` use a 0600 header file. Non-chat models (embed,
+rerank, guardian, whisper, tts, diffusion) are filtered out.
 
-```bash
-curl -s "https://maas-rhdp.apps.maas.redhatworkshops.io/v1/models" \
-  -H "Authorization: Bearer <your-sk-key>" | python3 -m json.tool
-```
+**The list changes server-side** (e.g. `deepseek-r1-distill-qwen-14b`
+and its `openai/` alias disappeared on 2026-11-22). Re-run
+`restore-provider.sh` to converge.
 
-Known models (as of 2026-08-10):
-
-| Model ID | Type | Notes |
-|---|---|---|
-| `gpt-oss-120b` | Reasoning (OSS) | Default model; reasoning output in `reasoning_content` |
-| `qwen3-14b` | Standard | Smaller model |
-| `llama-scout-17b` | Standard | Meta Llama Scout |
-| `deepseek-r1-distill-qwen-14b` | Reasoning | DeepSeek R1 distilled |
-| `qwen36-35b-a3b` | Standard (MoE) | Qwen 3.6 35B-A3B MoE |
+**LiteLLM capability flags are unreliable** — `/v1/model/info` and
+`/model_group/info` disagree, and were wrong for deepseek (claimed tool
+support, has none) and qwen36 (claimed none, works). Only the real
+tool-chain test is trusted.
 
 ---
 
-## Critical: Reasoning Models Are INCOMPATIBLE with Goose
+## Model Compatibility (goose 1.60.2, tested 2026-11-22)
 
-### ⚠️ DO NOT use `gpt-oss-120b` or `deepseek-r1-*` as the default model
+### Criterion: real tool calls, not `reasoning_content`
 
-Models that produce `reasoning_content` in their streaming responses
-(such as `gpt-oss-120b`, `qwen3-14b`, `deepseek-r1-distill-qwen-14b`)
-are **fundamentally broken with Goose** as of v1.41.0. The issue is a
-**goose bug** in its OpenAI streaming parser — it cannot handle
-`reasoning_content` chunks followed by `tool_calls` chunks.
+The v1.41 finding "goose drops `tool_calls` after `reasoning_content`"
+**no longer reproduces on goose 1.60.2**: `gpt-oss-120b` and
+`qwen36-35b-a3b` stream reasoning and still drive multi-step tool chains.
+What matters is whether the model emits real `tool_calls`.
 
-**Use `llama-scout-17b` instead** — it produces clean responses with no
-`reasoning_content` field and works perfectly with Goose.
+### Compatibility matrix
 
-### What happens with reasoning models
+| Model | Context (`/v1/model/info`) | `reasoning_content` | Tool-chain test (API, streaming) | In goose CLI (full AgentFS context) |
+|---|---|---|---|---|
+| `llama-scout-17b` | 400,000 | no | ✅ PASS 4/4 | ✅ works — default |
+| `qwen36-35b-a3b` | 16,384 | yes | ✅ PASS 4/4 | ✅ works (small context — compacts often) |
+| `qwen3-14b` | 40,960 | thinks inline in `content` | ✅ PASS 4/4 | ✅ works (thinking text visible in replies) |
+| `gpt-oss-120b` | 131,072 | yes | ✅ PASS 4/4 | ⚠️ flaky: ~2/7 runs wrote the next tool call inside its reasoning text → turn ends with thinking only. Type "continue". |
+| `deepseek-r1-distill-qwen-14b` | 16,384 | yes | ❌ NO_TOOLS | ❌ invented tool output without calling tools (removed from server 2026-11-22) |
 
-When goose receives a streaming response from a reasoning model:
-
-1. The model sends `reasoning_content` chunks first (thinking)
-2. Then sends `tool_calls` chunks (the actual actions)
-3. Goose captures the reasoning as a `thinking` block
-4. **Goose drops the `tool_calls`** — the session ends with only
-   thinking content, 0 output tokens, no tool calls, no response
-
-This happens **regardless** of the `reasoning` and `preserves_thinking`
-config settings. Even with both set to `false`, goose still parses
-the `reasoning_content` field from the streaming chunks and creates a
-thinking block, then fails to process the subsequent tool_calls.
-
-### Evidence
-
-| Setting combo | Result | Session evidence |
-|---|---|---|
-| `reasoning: true`, `preserves_thinking: true` | Empty response + 400 errors on resume | Sessions 20260706_13, _14, _15, _33 |
-| `reasoning: false`, `preserves_thinking: false` | Empty response (thinking only, 0 output tokens) | Session 20260706_35 (after config fix AND goose restart) |
-| Non-reasoning model (`llama-scout-17b`) | **Works correctly** | Verified via direct API test |
+`gpt-oss-120b` flakiness is a server-side harmony parsing issue (tool
+call left in the analysis channel); it is more frequent with the long
+AgentFS system prompt (`~/.config/goose/prompts/system.md`) and after a
+failed tool call. Not fixable client-side.
 
 ### Provider config requirements
 
 | Setting | Must be | Why |
 |---|---|---|
-| `"reasoning"` (model) | `false` | Must be false for all models on MaaS |
-| `"preserves_thinking"` (provider) | `false` | Must be false; `true` causes 400 errors when resuming sessions |
-| Default model | `llama-scout-17b` | Only non-reasoning model on MaaS that works with Goose |
-
-### Model compatibility matrix
-
-| Model | Has `reasoning_content` | Works with Goose | Notes |
-|---|---|---|---|
-| `llama-scout-17b` | ❌ No | ✅ **Yes** | Recommended default |
-| `gpt-oss-120b` | ✅ Yes (always) | ❌ **No** | Goose drops tool_calls after reasoning |
-| `qwen3-14b` | ✅ Yes (always) | ❌ **No** | Same streaming parser issue |
-| `deepseek-r1-distill-qwen-14b` | ✅ Yes (always) | ❌ **No** | Same streaming parser issue |
-| `qwen36-35b-a3b` | ❓ Unknown | ❓ **Untested** | New model; test with diagnostic before use |
+| `"reasoning"` (model) | `false` | Keep false for all MaaS models |
+| `"preserves_thinking"` (provider) | `false` | `true` caused 400 errors when resuming sessions (v1.41) |
+| `"context_limit"` (model) | server value | Set by `restore-provider.sh` from `/v1/model/info`; too high → goose compacts too late and requests fail |
+| Default model | `PASS` in `test-model-compat.sh` | `llama-scout-17b` recommended |
 
 ### Diagnostic Test
 
-Test whether a model produces `reasoning_content`:
-
 ```bash
-curl -s "<base_url>/v1/chat/completions" \
-  -H "Authorization: Bearer <key>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "<model-name>",
-    "messages": [{"role":"user","content":"Say hello"}],
-    "max_tokens": 500,
-    "stream": false
-  }' | python3 -c "
-import json,sys
-d = json.loads(sys.stdin.read())
-c = d['choices'][0]['message']
-print(f'content: {c.get(\"content\")}')
-print(f'reasoning_content: {c.get(\"reasoning_content\")}')
-if c.get('reasoning_content'):
-    print('⚠️  This model produces reasoning_content — INCOMPATIBLE with Goose')
-else:
-    print('✅ No reasoning_content — compatible with Goose')
-"
+bash ~/.agents/skills/goose-maas-provider/scripts/test-model-compat.sh --all [--runs 3]
+bash ~/.agents/skills/goose-maas-provider/scripts/test-model-compat.sh --model <model-name>
 ```
+
+Runs a streaming 2-step tool chain (`shell` → `read_file` → answer)
+with simulated tool results — nothing executes locally. Prints
+`RESULT <model> PASS|NO_TOOLS|FLAKY|ERROR`. Exit (worst wins): `0` all
+PASS · `1` any NO_TOOLS · `5` any FLAKY · `2` error/no key · `3`
+keyring locked. Key from the keyring via header file.
+
+`restore-provider.sh` runs `--all` on the live list and **drops
+NO_TOOLS models** (FLAKY/ERROR are kept — fail open);
+`--skip-tool-check` disables this.
 
 ---
 
 ## API Key Storage
 
-The MaaS API key (starts with `sk-`) is stored in the **GNOME Keyring**
-via Goose's built-in secret store. It is **NOT** set as a shell
-environment variable.
+The MaaS key (`sk-…`) lives in the **GNOME Keyring** inside Goose's
+single secrets item (`service=goose username=secrets`), as
+`CUSTOM_MAAS_API_KEY` in one JSON map shared with every other goose
+key (e.g. `CUSTOM_CORP_API_KEY`). It is **not** an environment
+variable and never goes into `config.yaml` or chat.
 
-Goose reads it automatically at runtime from the keyring via the
-`CUSTOM_MAAS_API_KEY` env var name configured in the provider JSON.
+Goose reads the key only when a provider is built (session start or
+provider switch) and caches secrets per process — **restart Goose
+Desktop after storing or rotating the key.**
 
-### Storing the Key
-
-Use `goose configure` → Configure Providers → MaaS to store or update
-the key interactively.
-
-### Verifying the Key
+### Storing the Key (user runs it, own terminal)
 
 ```bash
-secret-tool lookup application rust-keyring service goose target default username secrets \
-  | jq -r 'keys[]'
+bash ~/.agents/skills/goose-maas-provider/scripts/store-key.sh --validate
 ```
 
-This lists key **names** only — `CUSTOM_MAAS_API_KEY` should appear.
-Never use `secret-tool search`: it prints secret values.
+- Checks the keyring lock state over D-Bus first (never triggers an
+  unlock prompt); refuses with exit `3` if locked, `4` if the goose
+  item exists but is unreadable — it never overwrites a map it could
+  not read.
+- Shows existing key **names**, prompts hidden, strips whitespace.
+- `--validate` (default): `GET /v1/models` via a 0600 header file;
+  401/403/unreachable → key **not** saved (exit 1).
+- Re-reads the map right before writing, merges, then verifies the new
+  key is present **and every previous key survived**.
 
-### Key Not Found on Session Restore
+Alternative: `goose configure` → Configure Providers → MaaS.
 
-If goose logs show:
+### Verifying the Key (names/length only)
+
+```bash
+bash ~/.agents/skills/goose-maas-provider/scripts/verify-config.sh
 ```
-Failed to restore provider for session ...: Could not create provider:
-missing required key CUSTOM_MAAS_API_KEY
-```
 
-This means the GNOME Keyring was locked or unavailable when Goose tried
-to restore a MaaS session. Re-run `goose configure` to re-store the key,
-or ensure the keyring is unlocked.
+Never use `secret-tool search` — it prints secret values.
+
+### Shared helpers — `scripts/lib-keyring.sh`
+
+`keyring_state` (unlocked/locked/unavailable, prompt-free),
+`keyring_read_map` / `keyring_get` (rc `0` ok · `1` not set · `3`
+locked/unavailable · `4` unreadable; a failed read is never treated as
+`{}`), `auth_header_file` (0600 `Authorization` header for `curl -H @file`).
 
 ---
 
 ## Workflow
 
-### Step 1 — Verify Endpoint Connectivity
+### Step 1 — Create / converge the provider (dry run first)
 
 ```bash
-curl -s -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 5 \
-  "https://maas-rhdp.apps.maas.redhatworkshops.io"
+S=~/.agents/skills/goose-maas-provider/scripts
+bash $S/restore-provider.sh --dry-run     # DRY_RUN_RESULT=CONVERGED|PENDING
+bash $S/restore-provider.sh               # apply only if PENDING
 ```
 
-Expected: `HTTP 200`
+- Writes `custom_maas.json` (atomic, `.bak.<stamp>` only when changed)
+  and adds `providers.custom_maas` (line-level insert, `config.yaml`
+  backup, YAML post-check with restore on mismatch).
+- Never modifies an existing `providers.custom_maas` entry; never
+  writes `GOOSE_TOOLSHIM`; `active_provider` changes only with
+  `--activate`.
+- Model list: live (key in keyring) → existing JSON → static fallback.
+- Options: `--url URL` (default: existing `base_url`, else
+  `https://maas-rhdp.apps.maas.redhatworkshops.io`), `--model M`
+  (default for a new entry `llama-scout-17b`; must be in the list),
+  `--force`, `--activate`. Env `GOOSE_CONFIG_DIR`.
 
-### Step 2 — Verify Authentication
+### Step 2 — Store the key (user)
+
+Run `store-key.sh --validate` (see above) in your own terminal, then
+restart Goose Desktop if it is open.
+
+### Step 3 — Check endpoint and auth
 
 ```bash
-curl -s "https://maas-rhdp.apps.maas.redhatworkshops.io/v1/models" \
-  -H "Authorization: Bearer <your-sk-key>" | python3 -m json.tool
+bash $S/check-endpoint.sh
 ```
 
-Should return a JSON list of available models. If you get a 401 error,
-the key is invalid or doesn't start with `sk-`.
+Reachability (`401` without key is fine) plus authenticated
+`/v1/models`. Exit `3` if keyring locked; key missing → auth skipped.
 
-### Step 3 — Create the Custom Provider JSON
+### Step 4 — Refresh the live model list
+
+Re-run Step 1 (dry run, then apply if PENDING) — with the key present
+the JSON gets the live chat-model list, per-model `context_limit` from
+`/v1/model/info`, and NO_TOOLS models are excluded (tool check takes
+~1 min).
+
+### Step 5 — Test model compatibility
 
 ```bash
-mkdir -p ~/.config/goose/custom_providers
+bash $S/test-model-compat.sh --all --runs 3
 ```
 
-Write the JSON file from the [Reference Configuration](#custom-provider-json)
-section to `~/.config/goose/custom_providers/custom_maas.json`.
+Pick a compatible default. To change the default of an existing entry,
+edit `providers.custom_maas.model` (the script does not modify existing
+entries).
 
-### Step 4 — Store the API Key
+### Step 6 — Verify
 
 ```bash
-goose configure
+bash $S/verify-config.sh
+goose run --provider custom_maas -t "Say hello in one sentence"
 ```
 
-1. Select **Configure Providers**
-2. Select **MaaS**
-3. Enter the API key when prompted (starts with `sk-`)
-
-### Step 5 — Add Provider to config.yaml
-
-Ensure `~/.config/goose/config.yaml` contains:
-
-```yaml
-providers:
-  custom_maas:
-    enabled: true
-    model: gpt-oss-120b
-    configured: true
-```
-
-### Step 6 — Activate the Provider
-
-```yaml
-active_provider: custom_maas
-```
-
-### Step 7 — Verify
-
-```bash
-grep -A3 'custom_maas' ~/.config/goose/config.yaml
-grep 'active_provider' ~/.config/goose/config.yaml
-```
-
-Then test:
-
-```bash
-goose run -t "Say hello in one sentence"
-```
+Optional: `restore-provider.sh --activate` to make MaaS the active
+provider.
 
 ---
 
 ## Recovery Procedure
 
-If the MaaS provider is lost or needs to be recreated:
-
-1. **Copy the JSON file** from this skill's reference into
-   `~/.config/goose/custom_providers/custom_maas.json`
-2. **Add the provider entry** to `~/.config/goose/config.yaml` under
-   `providers:`
-3. **Store the API key** via `goose configure` → Configure Providers →
-   MaaS (the key starts with `sk-` and is stored in GNOME Keyring)
-4. **Set `active_provider: custom_maas`** in config.yaml if desired
-5. **Restart Goose**
-
-### Quick Recovery Script
-
-```bash
-#!/usr/bin/env bash
-# Restore the MaaS custom provider for Goose
-set -euo pipefail
-
-PROVIDER_DIR="$HOME/.config/goose/custom_providers"
-PROVIDER_FILE="$PROVIDER_DIR/custom_maas.json"
-
-mkdir -p "$PROVIDER_DIR"
-
-cat > "$PROVIDER_FILE" << 'EOF'
-{
-  "name": "custom_maas",
-  "engine": "openai",
-  "display_name": "MaaS",
-  "description": "Custom MaaS provider",
-  "api_key_env": "CUSTOM_MAAS_API_KEY",
-  "base_url": "https://maas-rhdp.apps.maas.redhatworkshops.io",
-  "models": [
-    {
-      "name": "llama-scout-17b",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "gpt-oss-120b",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "qwen3-14b",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "qwen36-35b-a3b",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    },
-    {
-      "name": "deepseek-r1-distill-qwen-14b",
-      "context_limit": 128000,
-      "input_token_cost": null,
-      "output_token_cost": null,
-      "currency": null,
-      "supports_cache_control": null,
-      "reasoning": false
-    }
-  ],
-  "headers": null,
-  "timeout_seconds": 300,
-  "supports_streaming": true,
-  "requires_auth": true,
-  "catalog_provider_id": null,
-  "base_path": null,
-  "env_vars": null,
-  "dynamic_models": null,
-  "skip_canonical_filtering": false,
-  "model_doc_link": null,
-  "setup_steps": [],
-  "fast_model": null,
-  "preserves_thinking": false
-}
-EOF
-
-echo "✅ MaaS custom provider restored to: $PROVIDER_FILE"
-echo ""
-echo "Next steps:"
-echo "  1. Run 'goose configure' → Configure Providers → MaaS to store API key"
-echo "  2. Or manually add to ~/.config/goose/config.yaml:"
-echo ""
-echo "     providers:"
-echo "       custom_maas:"
-echo "         enabled: true"
-echo "         model: llama-scout-17b"
-echo "         configured: true"
-echo "     active_provider: custom_maas"
-```
+Lost config → run the [Workflow](#workflow) again. `restore-provider.sh`
+recreates the JSON and the config entry; the key survives in the
+keyring unless the keyring itself was lost (then Step 2).
 
 ---
 
 ## Verification Checklist
 
+`verify-config.sh` automates most of these:
+
 - [ ] `custom_maas.json` exists in `~/.config/goose/custom_providers/`
-- [ ] Default model is `llama-scout-17b` (NOT `gpt-oss-120b` or other reasoning models)
-- [ ] `"supports_streaming": false` in provider JSON (required for Desktop)
+- [ ] `api_key_env` is `CUSTOM_MAAS_API_KEY`
+- [ ] Configured default model is in the JSON model list and `PASS`es `test-model-compat.sh`
+- [ ] `context_limit` per model matches `/v1/model/info` (set by `restore-provider.sh`)
 - [ ] `"reasoning": false` in all model entries
 - [ ] `"preserves_thinking": false` in provider
-- [ ] `"timeout_seconds": 300` (not `null`)
-- [ ] `config.yaml` has `custom_maas` in `providers:` with `enabled: true` and `model: llama-scout-17b`
-- [ ] `config.yaml` has `GOOSE_TOOLSHIM: true` (required for tool calls)
-- [ ] API key stored in GNOME Keyring (`secret-tool lookup application rust-keyring service goose target default username secrets | jq -r 'keys[]'`)
-- [ ] Endpoint reachable: `curl -s -o /dev/null -w "%{http_code}" <base_url>` → 200
-- [ ] Auth works: `curl <base_url>/v1/models -H "Authorization: Bearer <key>"` → model list
-- [ ] Tool calls work: model calls tools by short names, goose maps them correctly
-- [ ] Goose Desktop was restarted after any config changes
+- [ ] `"timeout_seconds"` ≥ 60 (300 recommended, not `null`)
+- [ ] `config.yaml` has `providers.custom_maas` with `enabled: true`
+- [ ] `GOOSE_TOOLSHIM` **not** set globally
+- [ ] `CUSTOM_MAAS_API_KEY` present in the keyring (name/length only)
+- [ ] `check-endpoint.sh` → reachable + authenticated model list
+- [ ] Desktop streaming behaviour retested on 1.60.x (`supports_streaming: true`)
+- [ ] Goose Desktop restarted after config or key changes
 
 ---
 
@@ -506,19 +365,20 @@ echo "     active_provider: custom_maas"
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| "Tool 'web_scrape' not found" | `GOOSE_TOOLSHIM` not enabled | Add `GOOSE_TOOLSHIM: true` to `config.yaml` |
-| Desktop: tools don't work (any config) | Goose Desktop v1.41 bug with custom OpenAI providers | **Use CLI instead**: `goose run --provider custom_maas` |
-| Desktop: response generated but not shown/saved | `supports_streaming: true` in provider JSON | Set `"supports_streaming": false` (partial mitigation; tools still won't work) |
-| Empty/dead session, 0 output tokens, only thinking shown | Using a reasoning model (`gpt-oss-120b`, `qwen3-14b`) | **Switch to `llama-scout-17b`** |
-| Raw `<\|start_header_id\|>` or `<\|start\|>` text instead of tool call | Desktop + toolshim outputs native Llama format | Use CLI with `GOOSE_TOOLSHIM: true` instead |
+| Turn ends with only thinking shown (no tool run, no reply) | Model wrote its tool call inside reasoning (seen with `gpt-oss-120b`) | Type "continue", or switch to `llama-scout-17b` |
+| Model claims command output without a tool call | Model cannot call tools (NO_TOOLS) | `test-model-compat.sh --all`; re-run `restore-provider.sh` to drop it |
+| Context-length error from MaaS on long sessions | `context_limit` higher than the server window | Re-run `restore-provider.sh` (sets it from `/v1/model/info`) |
+| Tool calls appear as plain text (e.g. `<\|start_header_id\|>`) | Model emits text tool calls | Skip that model; toolshim + Ollama per run is a separate decision |
+| Desktop: response generated but not shown/saved | Observed on v1.41 with `supports_streaming: true` | Retest on 1.60.x; try `false` and record result |
 | 400: "thinking blocks cannot be modified" | `"preserves_thinking": true` | Set `"preserves_thinking": false` |
-| Config changes not taking effect | Goose Desktop not restarted | Close and reopen Goose Desktop; config is read at process start |
-| HTTP 401 from MaaS | API key missing or invalid | Store key via `goose configure`; key must start with `sk-` |
-| "missing required key CUSTOM_MAAS_API_KEY" | GNOME Keyring locked or key not stored | Re-run `goose configure` → MaaS to store the key |
-| MaaS not in provider list | Missing JSON file | Copy `custom_maas.json` to `~/.config/goose/custom_providers/` |
-| Timeout on requests | `timeout_seconds` too low or `null` | Set to `300` (5 minutes) |
-| Session restore fails | Keyring inaccessible when restoring evicted session | Unlock keyring; re-store key via `goose configure` |
-
+| Config or key changes not taking effect | Goose caches config/secrets per process | Restart Goose Desktop / start a new CLI session |
+| 🔒 exit 3 from any script | GNOME Keyring locked or D-Bus unavailable | Unlock (Passwords and Keys → Login → Unlock, or log in) and re-run |
+| exit 4 from store-key / check scripts | goose keyring item unreadable as JSON | Scripts refuse to touch it; inspect in Passwords and Keys |
+| HTTP 401 from MaaS | Key missing, invalid or expired | `store-key.sh --validate` |
+| "missing required key CUSTOM_MAAS_API_KEY" | Key not stored, or keyring locked at provider build | Store key / unlock keyring, then restart Goose |
+| MaaS not in provider list | Missing JSON file | `restore-provider.sh` |
+| `--model` rejected by restore-provider | Model not in the (live) list | Pick one from the printed list |
+| Timeout on requests | `timeout_seconds` too low or `null` | Set to `300` |
 
 ## Changelog
 

@@ -2,6 +2,45 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-22 13:21
+- SKILL.md: 1.60.2 compatibility matrix (tool-chain criterion, reasoning_content no longer disqualifying), gpt-oss flakiness note, context_limit from model info, NO_TOOLS exclusion, troubleshooting rows (skills/goose-maas-provider/SKILL.md)
+
+## 2026-11-22 13:20
+- restore-provider.sh: fix jq ctx quoting; empty-after-tool-check guard (skills/goose-maas-provider/scripts/restore-provider.sh)
+
+## 2026-11-22 13:19
+- restore-provider.sh: per-model context_limit from /v1/model/info, live list drops NO_TOOLS models via test-model-compat.sh --all (--skip-tool-check), static list without deepseek (skills/goose-maas-provider/scripts/restore-provider.sh)
+
+## 2026-11-22 13:17
+- test-model-compat.sh: real streaming 2-step tool-chain test (PASS/NO_TOOLS/FLAKY/ERROR), --all, --runs, RESULT lines; reasoning_content no longer treated as failure (skills/goose-maas-provider/scripts/test-model-compat.sh)
+
+## 2026-11-22 12:24
+- SKILL.md: document lock-aware keyring (check-key/test exit 3/4), store-key data-loss fix (refuse on locked/unreadable, re-read + verify other keys survive), header-file auth, troubleshooting rows (skills/goose-corp-provider/SKILL.md)
+- SKILL.md: drop GOOSE_TOOLSHIM requirement (docs-accurate note), Desktop 1.41 findings marked retest, script-based workflow (restore-provider dry-run/apply, store-key, check-endpoint, test-model-compat, verify-config), lock-aware keyring docs, checklist/troubleshooting refresh (skills/goose-maas-provider/SKILL.md)
+
+## 2026-11-22 12:20
+- store-key.sh: fix data-loss path (failed keyring read no longer written back as {}), refuse when locked, re-read before write, post-write verification, key via header file/env (skills/goose-corp-provider/scripts/store-key.sh)
+- test.sh: lock-aware key read (exit 3), key passed to curl via 0600 header file (skills/goose-corp-provider/scripts/test.sh)
+
+## 2026-11-22 12:19
+- check-key.sh: lock-aware (exit 3 when locked instead of false 'not found'), never prompts (skills/goose-corp-provider/scripts/check-key.sh)
+- lib-keyring.sh: lock-aware, prompt-free keyring helpers (same as goose-maas-provider) (skills/goose-corp-provider/scripts/lib-keyring.sh)
+- store-key.sh: report 'No key provided' on EOF at the hidden prompt (skills/goose-maas-provider/scripts/store-key.sh)
+
+## 2026-11-22 12:18
+- store-key.sh (new): user-run MaaS key store/rotate — refuses when keyring locked or map unreadable, validates via /v1/models, merges without erasing other keys, post-write verification (skills/goose-maas-provider/scripts/store-key.sh)
+- test-model-compat.sh: key from keyring via 0600 header file (--key discouraged), URL/model defaults from goose config, lock-aware (exit 3), safe JSON handling (skills/goose-maas-provider/scripts/test-model-compat.sh)
+
+## 2026-11-22 12:17
+- check-endpoint.sh: key from keyring via 0600 header file (--key discouraged), lock-aware (exit 3), URL from custom_maas.json (skills/goose-maas-provider/scripts/check-endpoint.sh)
+- verify-config.sh: drop GOOSE_TOOLSHIM requirement, check configured default model is in the list (not hardcoded llama-scout-17b), lock-aware keyring check, GOOSE_CONFIG_DIR (skills/goose-maas-provider/scripts/verify-config.sh)
+
+## 2026-11-22 12:16
+- restore-provider.sh: --dry-run, backups, line-level config insert with post-check, live model list from keyring key, never writes GOOSE_TOOLSHIM, GOOSE_CONFIG_DIR (skills/goose-maas-provider/scripts/restore-provider.sh)
+
+## 2026-11-22 12:15
+- lib-keyring.sh: lock-aware, prompt-free keyring helpers (state, read map, get, auth header file) (skills/goose-maas-provider/scripts/lib-keyring.sh)
+
 ## 2026-11-22 10:37
 - Document setup.sh --dry-run, backup + line-level insert, never-modify existing entry, dotted/dashed alias gotcha (skills/goose-corp-provider/SKILL.md)
 - Compare model names with . == - (endpoint returns dotted/dashed aliases at random) (skills/goose-corp-provider/scripts/setup.sh)

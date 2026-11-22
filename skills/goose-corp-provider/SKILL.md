@@ -6,7 +6,7 @@ description: >
 argument-hint: "setup | rotate-key | status | list-models"
 metadata:
   author: agentfs
-  version: "1.2.0"
+  version: "1.2.1"
   model-tier: T2
   tags: [goose, corp, custom-provider, redhat, model-service]
   related_skills: [goose-maas-provider, goose-litellm-provider, goose-skupper-provider]
@@ -31,9 +31,9 @@ goose session or touches a file under version control.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 1.2.0 |
+| **Version** | 1.2.1 |
 | **Trigger** | `hey configure goose corp`, `hey rotate corp key`, `hey corp status` |
-| **Dependencies** | `goose`, `curl`, `jq`, `secret-tool` (GNOME Keyring) |
+| **Dependencies** | `goose`, `curl`, `jq`, `secret-tool`, `gdbus` (GNOME Keyring) |
 
 ## Specification
 
@@ -257,9 +257,9 @@ All scripts output structured diagnostics:
 |--------|:----------:|------------|
 | `probe-models.sh` | ✅ (read-only) | Network error — check VPN. |
 | `setup.sh` | ✅ | `--dry-run` writes nothing. Apply backs up `config.yaml` (and a differing JSON); post-check restores on unexpected change. Exit 1 if the model is not in the catalog. Safe to retry. |
-| `check-key.sh` | ✅ (read-only) | Key missing — run `goose configure`. |
-| `test.sh` | ✅ (read-only) | Auth failure — rotate key. Network failure — check VPN. |
-| `store-key.sh` | ✅ | User-run only. Validates before storing. |
+| `check-key.sh` | ✅ (read-only) | Exit 1 key missing — run `store-key.sh` / `goose configure`. Exit 3 keyring locked/unavailable (checked over D-Bus, never prompts). Exit 4 goose item unreadable. |
+| `test.sh` | ✅ (read-only) | Auth failure — rotate key. Network failure — check VPN. Exit 3 keyring locked. Key passed to curl via a 0600 header file, never argv. |
+| `store-key.sh` | ✅ | User-run only. Refuses when the keyring is locked (exit 3) or the goose item is unreadable (exit 4) — never overwrites a map it could not read. Validates via header file before storing; re-reads the map before writing; verifies the new key is present and all other goose keys (e.g. `CUSTOM_MAAS_API_KEY`) survived. Restart Goose Desktop afterwards. |
 
 ## Troubleshooting
 
@@ -270,7 +270,9 @@ All scripts output structured diagnostics:
 | `test.sh` exit 1 "HTTP 401" | Key expired or invalid | Run `store-key.sh` to rotate |
 | `test.sh` exit 1 "HTTP 403" | Key lacks permissions | Get a new key from the Corp portal |
 | Corp not in `goose configure` menu | `custom_corp.json` missing | Re-run `setup.sh` |
-| "missing required key CUSTOM_CORP_API_KEY" | Keyring locked | Unlock GNOME Keyring, re-run `goose configure` |
+| "missing required key CUSTOM_CORP_API_KEY" | Key not stored, or keyring locked when the provider was built | Unlock GNOME Keyring / store key, then restart Goose |
+| 🔒 exit 3 from `check-key.sh` / `test.sh` / `store-key.sh` | GNOME Keyring locked or D-Bus unavailable | Unlock (Passwords and Keys → Login → Unlock, or log in) and re-run |
+| Exit 4 "could not be read as JSON" | goose keyring item corrupt/unreadable | Scripts refuse to touch it; inspect in Passwords and Keys |
 | Model returns empty response | Model not available/loaded | Try a different model from `probe-models.sh` |
 | Model ids flip between dotted and dashed forms (`granite-4.1-8b` / `granite-4-1-8b`) across calls | Endpoint returns ~7 models under a random alias per call (even per backend) | Expected. `setup.sh` ≥ 1.2.0 compares with `.` == `-`; the stored JSON keeps whichever alias one call returned — either form works |
 

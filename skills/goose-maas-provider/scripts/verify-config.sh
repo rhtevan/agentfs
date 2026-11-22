@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
 # verify-config.sh — Verify MaaS provider configuration completeness
 #
-# Checks all configuration requirements from the verification checklist.
-#
 # Usage: verify-config.sh
+# Env:   GOOSE_CONFIG_DIR (default ~/.config/goose)
+#
+# Read-only. Never prints the API key. GOOSE_TOOLSHIM is NOT required (1.6.0):
+# it is a global, experimental setting that needs a separate interpreter model.
 #
 # Exit codes:
-#   0 — All checks pass
+#   0 — All checks pass (warnings allowed)
 #   1 — One or more checks failed
 
 set -euo pipefail
 
-PROVIDER_DIR="$HOME/.config/goose/custom_providers"
-PROVIDER_FILE="$PROVIDER_DIR/custom_maas.json"
-CONFIG_FILE="$HOME/.config/goose/config.yaml"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-keyring.sh"
+
+GOOSE_CONFIG_DIR="${GOOSE_CONFIG_DIR:-$HOME/.config/goose}"
+PROVIDER_FILE="$GOOSE_CONFIG_DIR/custom_providers/custom_maas.json"
+CONFIG_FILE="$GOOSE_CONFIG_DIR/config.yaml"
 
 PASS=0
 FAIL=0
@@ -27,133 +32,94 @@ echo "MaaS Provider Configuration Verification"
 echo "═════════════════════════════════════════"
 echo ""
 
-# 1. Provider JSON exists
-if [[ -f "$PROVIDER_FILE" ]]; then
-  check_pass "custom_maas.json exists"
-else
-  check_fail "custom_maas.json NOT FOUND at $PROVIDER_FILE"
-fi
-
-# 2. Provider JSON content checks (if file exists)
-if [[ -f "$PROVIDER_FILE" ]]; then
-  # Default model check
-  if python3 -c "
-import json
-with open('$PROVIDER_FILE') as f:
-    d = json.load(f)
-models = [m['name'] for m in d.get('models',[])]
-if 'llama-scout-17b' in models:
-    exit(0)
-exit(1)
-" 2>/dev/null; then
-    check_pass "llama-scout-17b in model list"
-  else
-    check_fail "llama-scout-17b NOT in model list"
-  fi
-
-  # reasoning: false on all models
-  reasoning_true=$(python3 -c "
-import json
-with open('$PROVIDER_FILE') as f:
-    d = json.load(f)
-count = sum(1 for m in d.get('models',[]) if m.get('reasoning') == True)
-print(count)
-" 2>/dev/null || echo "?")
-  if [[ "$reasoning_true" == "0" ]]; then
-    check_pass "reasoning: false on all models"
-  else
-    check_fail "$reasoning_true model(s) have reasoning: true"
-  fi
-
-  # preserves_thinking: false
-  pt=$(python3 -c "
-import json
-with open('$PROVIDER_FILE') as f:
-    d = json.load(f)
-print(d.get('preserves_thinking', 'missing'))
-" 2>/dev/null || echo "?")
-  if [[ "$pt" == "False" ]]; then
-    check_pass "preserves_thinking: false"
-  else
-    check_fail "preserves_thinking is $pt (expected false)"
-  fi
-
-  # timeout_seconds
-  timeout=$(python3 -c "
-import json
-with open('$PROVIDER_FILE') as f:
-    d = json.load(f)
-print(d.get('timeout_seconds', 'null'))
-" 2>/dev/null || echo "?")
-  if [[ "$timeout" =~ ^[0-9]+$ && "$timeout" -ge 60 ]]; then
-    check_pass "timeout_seconds: $timeout"
-  else
-    check_warn "timeout_seconds: $timeout (recommend ≥60)"
-  fi
-fi
-
-# 3. config.yaml checks
+# 1. config.yaml entry (read first: the default model is checked against the JSON)
+CFG_MODEL=""
+CFG_ENABLED=""
+ACTIVE=""
 if [[ -f "$CONFIG_FILE" ]]; then
   check_pass "config.yaml exists"
-
-  # custom_maas in providers
-  if grep -q 'custom_maas:' "$CONFIG_FILE" 2>/dev/null; then
-    check_pass "custom_maas in providers section"
-  else
-    check_fail "custom_maas NOT in providers section"
+  read -r CFG_ENABLED CFG_MODEL ACTIVE < <(CFG="$CONFIG_FILE" python3 -c '
+import os, yaml
+c = yaml.safe_load(open(os.environ["CFG"])) or {}
+p = (c.get("providers") or {}).get("custom_maas")
+if p is None:
+    print("__NONE__ - %s" % (c.get("active_provider") or "-"))
+else:
+    print(str(p.get("enabled")).lower(), p.get("model") or "-", c.get("active_provider") or "-")
+' 2>/dev/null || echo "__ERR__ - -")
+  case "$CFG_ENABLED" in
+    __ERR__)  check_fail "config.yaml could not be parsed" ;;
+    __NONE__) check_fail "providers.custom_maas NOT in config.yaml — run restore-provider.sh" ;;
+    true)     check_pass "providers.custom_maas enabled: true" ;;
+    *)        check_warn "providers.custom_maas enabled: $CFG_ENABLED" ;;
+  esac
+  [[ "$CFG_MODEL" == "-" ]] && CFG_MODEL=""
+  if [[ "$CFG_ENABLED" != __NONE__ && "$CFG_ENABLED" != __ERR__ ]]; then
+    if [[ -n "$CFG_MODEL" ]]; then check_pass "Default model: $CFG_MODEL"; else check_fail "No model configured for custom_maas"; fi
   fi
-
-  # enabled: true
-  if grep -A3 'custom_maas:' "$CONFIG_FILE" 2>/dev/null | grep -q 'enabled: true'; then
-    check_pass "custom_maas enabled: true"
-  else
-    check_warn "custom_maas may not be enabled"
-  fi
-
-  # model setting
-  model=$(grep -A3 'custom_maas:' "$CONFIG_FILE" 2>/dev/null | grep 'model:' | head -1 | awk '{print $2}')
-  if [[ -n "$model" ]]; then
-    if [[ "$model" == "llama-scout-17b" ]]; then
-      check_pass "Default model: $model (recommended)"
-    else
-      check_warn "Default model: $model (llama-scout-17b recommended for Goose compatibility)"
-    fi
-  else
-    check_fail "No model configured for custom_maas"
-  fi
-
-  # GOOSE_TOOLSHIM
-  if grep -q 'GOOSE_TOOLSHIM: true' "$CONFIG_FILE" 2>/dev/null; then
-    check_pass "GOOSE_TOOLSHIM: true"
-  else
-    check_fail "GOOSE_TOOLSHIM not set (required for tool calls with MaaS models)"
-  fi
-
-  # active_provider check
-  active=$(grep '^active_provider:' "$CONFIG_FILE" 2>/dev/null | awk '{print $2}')
-  if [[ "$active" == "custom_maas" ]]; then
+  if [[ "$ACTIVE" == "custom_maas" ]]; then
     check_pass "Active provider: custom_maas"
   else
-    check_warn "Active provider: ${active:-not set} (custom_maas not active)"
+    check_warn "Active provider: ${ACTIVE/#-/not set} (custom_maas not active — fine if you switch per session)"
   fi
 else
   check_fail "config.yaml NOT FOUND at $CONFIG_FILE"
 fi
 
-# 4. API key in keyring
-if command -v secret-tool &>/dev/null; then
-  if secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null \
-      | jq -e '.CUSTOM_MAAS_API_KEY // empty' >/dev/null 2>&1; then
-    check_pass "API key found in GNOME Keyring"
+# 2. Provider JSON
+if [[ -f "$PROVIDER_FILE" ]]; then
+  check_pass "custom_maas.json exists"
+  if ! jq empty "$PROVIDER_FILE" 2>/dev/null; then
+    check_fail "custom_maas.json is not valid JSON"
   else
-    check_warn "API key not found in GNOME Keyring — run 'goose configure' to store"
+    n=$(jq '.models | length' "$PROVIDER_FILE")
+    if [[ "$n" -gt 0 ]]; then check_pass "$n model(s) listed"; else check_fail "no models listed"; fi
+    if [[ -n "$CFG_MODEL" ]]; then
+      if jq -e --arg m "$CFG_MODEL" '[.models[].name] | index($m) != null' "$PROVIDER_FILE" >/dev/null; then
+        check_pass "Default model $CFG_MODEL is in the model list"
+      else
+        check_fail "Default model $CFG_MODEL is NOT in the model list"
+      fi
+    fi
+    rt=$(jq '[.models[] | select(.reasoning == true)] | length' "$PROVIDER_FILE")
+    if [[ "$rt" == "0" ]]; then check_pass "reasoning: false on all models"; else check_fail "$rt model(s) have reasoning: true"; fi
+    pt=$(jq -r '.preserves_thinking' "$PROVIDER_FILE")
+    if [[ "$pt" == "false" ]]; then check_pass "preserves_thinking: false"; else check_fail "preserves_thinking is $pt (expected false)"; fi
+    to=$(jq -r '.timeout_seconds // "null"' "$PROVIDER_FILE")
+    if [[ "$to" =~ ^[0-9]+$ && "$to" -ge 60 ]]; then check_pass "timeout_seconds: $to"; else check_warn "timeout_seconds: $to (recommend ≥60)"; fi
+    ak=$(jq -r '.api_key_env' "$PROVIDER_FILE")
+    if [[ "$ak" == "CUSTOM_MAAS_API_KEY" ]]; then check_pass "api_key_env: CUSTOM_MAAS_API_KEY"; else check_fail "api_key_env is $ak (expected CUSTOM_MAAS_API_KEY)"; fi
   fi
 else
-  check_warn "secret-tool not available — cannot verify keyring"
+  check_fail "custom_maas.json NOT FOUND at $PROVIDER_FILE"
+fi
+
+# 3. Informational: GOOSE_TOOLSHIM (global; not required)
+if [[ -f "$CONFIG_FILE" ]] && grep -q '^GOOSE_TOOLSHIM:' "$CONFIG_FILE"; then
+  check_warn "GOOSE_TOOLSHIM is set globally — it affects every provider and needs an interpreter model (Ollama). Not required for MaaS."
+fi
+
+# 4. API key in keyring (lock-aware, value never printed)
+if command -v secret-tool &>/dev/null && command -v gdbus &>/dev/null; then
+  rc=0; KEY=$(keyring_get CUSTOM_MAAS_API_KEY) || rc=$?
+  if [[ $rc -eq 0 ]]; then
+    check_pass "CUSTOM_MAAS_API_KEY in GNOME Keyring (${#KEY} chars)"
+  elif [[ $rc -eq 1 ]]; then
+    check_warn "CUSTOM_MAAS_API_KEY not in GNOME Keyring — run store-key.sh (your own terminal) or goose configure → MaaS"
+  else
+    check_warn "$(keyring_explain "$rc" CUSTOM_MAAS_API_KEY)"
+  fi
+  unset KEY
+else
+  check_warn "secret-tool/gdbus not available — cannot verify keyring"
 fi
 
 echo ""
 echo "═════════════════════════════════════════"
 echo "Results: $PASS passed, $FAIL failed, $WARN warnings"
-[[ "$FAIL" -eq 0 ]] && echo "✅ Configuration complete" || echo "❌ Configuration incomplete — fix failed checks"
-[[ "$FAIL" -eq 0 ]] && exit 0 || exit 1
+if [[ "$FAIL" -eq 0 ]]; then
+  echo "✅ Configuration complete"
+  exit 0
+fi
+echo "❌ Configuration incomplete — fix failed checks"
+exit 1

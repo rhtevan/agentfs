@@ -11,7 +11,16 @@
 #                  custom_corp model, else the first chat model served.
 #
 # Without --key, prompts interactively for the key (no echo).
+#
+# Safety (1.2.1): refuses to run if the keyring is locked/unavailable; never
+# treats a failed read as {} (that erased every other goose key); re-reads the
+# map right before writing and verifies afterwards that every previous key
+# survived. The key goes to curl via a 0600 header file and to jq via env.
+# Exit codes: 0 stored · 1 validation/store failed · 2 usage · 3 keyring locked · 4 item unreadable
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-keyring.sh"
 
 HOST="https://models.corp.redhat.com"
 ENV_VAR="CUSTOM_CORP_API_KEY"
@@ -39,11 +48,31 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
+if ! command -v gdbus &>/dev/null; then
+  echo "❌ gdbus not found. Install: sudo dnf install -y glib2"
+  exit 1
+fi
+
+# Check the keyring BEFORE asking for the key
+if [[ "$(keyring_state)" != unlocked ]]; then
+  keyring_explain 3 "$ENV_VAR"
+  echo "   Key NOT saved."
+  exit 3
+fi
+rc=0; BEFORE=$(keyring_read_map) || rc=$?
+if [[ $rc -ne 0 ]]; then
+  keyring_explain "$rc" "$ENV_VAR"
+  echo "   Key NOT saved."
+  exit "$rc"
+fi
+echo "Keyring: unlocked · goose item holds $(jq 'length' <<<"$BEFORE") key(s): $(jq -r 'keys | join(", ")' <<<"$BEFORE" | sed 's/^$/(none)/')"
+
 # Prompt for key if not provided via --key
 if [[ -z "$KEY" ]]; then
-  read -rsp "Enter Corp API key: " KEY
+  read -rsp "Enter Corp API key: " KEY || true
   echo
 fi
+KEY="${KEY//[[:space:]]/}"
 
 if [[ -z "$KEY" ]]; then
   echo "❌ No key provided."
@@ -76,7 +105,7 @@ except Exception:
 
   if [[ -z "$MODEL" ]]; then
     MODEL=$(curl -s --connect-timeout 10 --max-time 25 "${HOST}/oai/v1/models" \
-      -H "Authorization: Bearer ${KEY}" 2>/dev/null \
+      2>/dev/null \
       | jq -r '.data[]?.id | select(test("embed|rerank|guardian|parse|diffusion|whisper"; "i") | not)' \
       | head -1 || echo "")
   fi
@@ -89,9 +118,10 @@ except Exception:
 
   echo "Validating key against Corp endpoint (model: ${MODEL})..."
 
+  HDR=$(auth_header_file "$KEY"); trap 'rm -f "$HDR"' EXIT
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 --max-time 30 \
     "${HOST}/oai/v1/chat/completions" \
-    -H "Authorization: Bearer ${KEY}" \
+    -H @"$HDR" \
     -H "Content-Type: application/json" \
     -d "{\"model\":\"${MODEL}\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":5}" \
     2>/dev/null || echo "000")
@@ -122,11 +152,22 @@ except Exception:
   esac
 fi
 
-# Read current keyring, merge, write back
-CURRENT=$(secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null || echo '{}')
-MERGED=$(echo "$CURRENT" | jq --arg k "$KEY" ". + {\"$ENV_VAR\": \$k}")
-echo -n "$MERGED" | secret-tool store \
-  --label "secrets@goose:default (keyring v3.6.3)" \
-  application rust-keyring service goose target default username secrets
+# Re-read right before writing (never treat a failed read as {}), merge, write back
+rc=0; CURRENT=$(keyring_read_map) || rc=$?
+if [[ $rc -ne 0 ]]; then
+  keyring_explain "$rc" "$ENV_VAR"; echo "   Key NOT saved."; exit "$rc"
+fi
+MERGED=$(KEYVAL="$KEY" jq -c --arg n "$ENV_VAR" '. + {($n): env.KEYVAL}' <<<"$CURRENT")
+printf '%s' "$MERGED" | secret-tool store --label "$GOOSE_KR_LABEL" "${GOOSE_KR_ATTRS[@]}"
 
-echo "✅ $ENV_VAR stored in GNOME Keyring."
+# Verify: new key present and every previous key survived
+rc=0; AFTER=$(keyring_read_map) || rc=$?
+if [[ $rc -ne 0 ]] \
+   || ! KEYVAL="$KEY" jq -e --arg n "$ENV_VAR" '.[$n] == env.KEYVAL' <<<"$AFTER" >/dev/null \
+   || ! jq -e --argjson before "$(jq -c 'keys' <<<"$CURRENT")" '(keys) as $k | all($before[]; . as $x | $k | index($x) != null)' <<<"$AFTER" >/dev/null; then
+  echo "❌ Post-write check failed — inspect the 'secrets@goose:default' item in Passwords and Keys."
+  exit 1
+fi
+unset KEY MERGED
+echo "✅ $ENV_VAR stored in GNOME Keyring. Goose item now holds $(jq 'length' <<<"$AFTER") key(s): $(jq -r 'keys | join(", ")' <<<"$AFTER")"
+echo "   Restart Goose Desktop if it is open (goose caches secrets per process)."

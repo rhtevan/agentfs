@@ -3,6 +3,8 @@
 # Usage: bash test.sh [--model MODEL_ID]
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib-keyring.sh"
 source ~/.agents/scripts/trace-lib.sh 2>/dev/null || true
 trace_init "goose-corp-provider" "test" 2>/dev/null || true
 
@@ -20,15 +22,16 @@ done
 # Read API key from GNOME Keyring
 trace_step "key-read" "Reading API key from keyring" 2>/dev/null || true
 
-KEYRING_DATA=$(secret-tool lookup application rust-keyring service goose target default username secrets 2>/dev/null || echo '{}')
-API_KEY=$(echo "$KEYRING_DATA" | jq -r '.CUSTOM_CORP_API_KEY // empty' 2>/dev/null)
-
-if [[ -z "$API_KEY" ]]; then
-  echo "❌ CUSTOM_CORP_API_KEY not found in GNOME Keyring."
-  echo "   Run: goose configure → Configure Providers → Corp"
-  trace_end 1 2>/dev/null || true
-  exit 1
+# 1.2.1: lock-aware read (exit 3 when locked); key passed to curl via a 0600 header file
+rc=0; API_KEY=$(keyring_get CUSTOM_CORP_API_KEY) || rc=$?
+if [[ $rc -ne 0 ]]; then
+  keyring_explain "$rc" CUSTOM_CORP_API_KEY
+  [[ $rc -eq 1 ]] && echo "   Run: goose configure → Configure Providers → Corp"
+  trace_end "$rc" 2>/dev/null || true
+  exit "$rc"
 fi
+HDR=$(auth_header_file "$API_KEY"); trap 'rm -f "$HDR"' EXIT
+unset API_KEY
 
 # If no model specified, read default from config
 if [[ -z "$MODEL" ]]; then
@@ -63,7 +66,7 @@ trace_step "chat-test" "Sending chat completion request" 2>/dev/null || true
 
 RESPONSE=$(curl -s --connect-timeout 15 --max-time 60 \
   "${BASE_URL}/chat/completions" \
-  -H "Authorization: Bearer ${API_KEY}" \
+  -H @"$HDR" \
   -H "Content-Type: application/json" \
   -d "{\"model\": \"${MODEL}\", \"messages\": [{\"role\": \"user\", \"content\": \"Say hello in one word.\"}], \"max_tokens\": 500}" \
   -w "\n%{http_code}" 2>/dev/null)
