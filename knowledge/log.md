@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 09:54
+- **Creation**: Added session sub-bundle `agentic-ikea-sdrd/` with 3 concept(s).
+- **Update**: Updated root index.md.
+- Fix store count (four, not five) (knowledge/agentic-ikea-sdrd/ikea-model.md)
+- Create concept sdrd-tooling-strategy.md in agentic-ikea-sdrd bundle (knowledge/agentic-ikea-sdrd/sdrd-tooling-strategy.md)
+- Create concept ikea-agentfs-mapping.md in agentic-ikea-sdrd bundle (knowledge/agentic-ikea-sdrd/ikea-agentfs-mapping.md)
+- Create concept ikea-model.md in agentic-ikea-sdrd bundle (knowledge/agentic-ikea-sdrd/ikea-model.md)
+
 ## 2026-11-20 00:27
 - Ad-Hoc Fix -> Durable Fix: KGM symlink recast as counter-example; root cause and env-wrapper fix (goose-kgm 1.8.3) (knowledge/agentfs-kgm-skill-dispatch/design-principles.md)
 - Frontmatter description: symlink workaround -> index path delivery (knowledge/agentfs-kgm-skill-dispatch/architecture.md)

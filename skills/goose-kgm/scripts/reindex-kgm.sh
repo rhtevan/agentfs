@@ -101,21 +101,49 @@ for bundle_name, bundle_dir, description in bundle_entries:
 
     bundle_text = bundle_index.read_text()
     # Look for markdown links to .md files (concepts)
-    # Table format: | [Name](./file.md) | description |
-    concept_pattern_table = re.compile(r'\|\s*\[([^\]]+)\]\(\.\/([^)]+\.md)\)\s*\|([^|]*)\|')
+    # Table format: | [Name](file.md) | ... |  — link with or without leading ./
+    #   Summary column is chosen by header name (Description/Summary/Topic);
+    #   falls back to the column right after the link when no header matches.
     # List format: * [Name](file.md) - description
     concept_pattern_list = re.compile(r'^\s*\*\s*\[([^\]]+)\]\(([^)]+\.md)\)\s*-?\s*(.*)', re.MULTILINE)
+    link_re = re.compile(r'^\[([^\]]+)\]\(([^)]+\.md)\)$')
+    SUMMARY_HEADERS = ("description", "summary", "topic")
 
-    table_concepts = list(concept_pattern_table.finditer(bundle_text))
-    list_concepts = list(concept_pattern_list.finditer(bundle_text))
+    def split_row(line):
+        return [c.strip() for c in line.strip().strip('|').split('|')]
+
+    table_concepts = []  # (name, file, desc)
+    header = None
+    for line in bundle_text.splitlines():
+        if not line.lstrip().startswith('|'):
+            header = None
+            continue
+        cells = split_row(line)
+        if all(re.fullmatch(r':?-{3,}:?', c) for c in cells if c):
+            continue  # separator row
+        link_idx = next((i for i, c in enumerate(cells) if link_re.match(c)), None)
+        if link_idx is None:
+            header = [c.lower() for c in cells]
+            continue
+        lm = link_re.match(cells[link_idx])
+        desc_idx = None
+        if header:
+            desc_idx = next((i for i, h in enumerate(header) if h in SUMMARY_HEADERS), None)
+        if desc_idx is None or desc_idx >= len(cells) or desc_idx == link_idx:
+            desc_idx = link_idx + 1 if link_idx + 1 < len(cells) else None
+        desc = cells[desc_idx] if desc_idx is not None else ""
+        table_concepts.append((lm.group(1), lm.group(2), desc))
+
+    list_concepts = [(m.group(1), m.group(2), m.group(3)) for m in concept_pattern_list.finditer(bundle_text)]
     concept_matches = table_concepts if table_concepts else list_concepts
 
-    for cmatch in concept_matches:
-        concept_name = cmatch.group(1).strip()
-        concept_file = cmatch.group(2).strip()
-        # Remove leading ./ if present
-        concept_file = concept_file.lstrip('./')
-        concept_desc = cmatch.group(3).strip()
+    for c_name, c_file, c_desc in concept_matches:
+        concept_name = c_name.strip()
+        concept_file = c_file.strip()
+        # Remove leading ./ if present (exact prefix, not a character set)
+        if concept_file.startswith('./'):
+            concept_file = concept_file[2:]
+        concept_desc = c_desc.strip()
         concept_path = bundle_path / concept_file
 
         if not concept_path.is_file():
