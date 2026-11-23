@@ -3,7 +3,7 @@ name: crc-cmd
 description: >
   install crcstart, install crcstop, crc wrapper
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   model-tier: T3
   tags: [openshift, crc, wrapper, shell]
 ---
@@ -30,7 +30,8 @@ The agent MUST run:
 bash ~/.agents/skills/crc-cmd/scripts/install.sh
 ```
 
-Use `--check` to verify without installing.
+Use `--dry-run` to verify without installing. Wrappers whose content differs from
+this SKILL.md (older versions) are reported as `PENDING` and replaced on apply.
 
 ## Output Contract
 
@@ -55,6 +56,19 @@ This means `crc stop` **always force-kills the VM** on Linux with libvirt.
 ### Why `crcstart` exists
 
 Created for consistency alongside `crcstop`. It wraps `crc start` with pre-flight checks (is the VM already running?) and post-start status display.
+
+### Lessons from 2026-11-23 (CRC 2.65.0 / OCP 5.0)
+
+- **MachineConfig reboots.** Applying a MachineConfig makes the machine-config-daemon reboot the
+  node by itself. A `crcstop` issued during that reboot failed over SSH, its single ACPI request was
+  lost in the reboot, and the new boot ran into the 420 s timeout → `virsh destroy`. `crcstop` now
+  repeats the request every 60 s until an SSH poweroff succeeds. Better still: wait for
+  `oc get mcp master` UPDATED=True first.
+- **Stale `docker.sock` after every stop.** `crc start` failed with
+  `listen unix ~/.crc/machines/crc/docker.sock: bind: address already in use` even after a
+  `crc-daemon` restart. No process held it. The file stays after a graceful `crcstop` too.
+  `crcstart` now removes it when the VM is off.
+- **Measured round trip** (40 vCPU / 48 GiB, OCP 5.0): `crcstop` graceful in 150 s, `crcstart` 3 min 13 s.
 
 ## Prerequisites
 
@@ -92,7 +106,9 @@ How it works:
 1. Checks if the CRC VM is running via `virsh domstate`
 2. SSHs into the VM and runs `sudo systemctl poweroff` (faster than ACPI)
 3. Falls back to ACPI shutdown (`virsh shutdown`) if SSH is unavailable
-4. Polls VM state every 5 seconds with a spinner, up to the timeout
+4. Polls VM state every 5 seconds with a spinner, up to the timeout; while no SSH
+   poweroff has gone through, repeats the shutdown request every 60 s (a request sent
+   during a guest reboot is lost)
 5. After shutdown completes, restarts `crc-daemon.service` so `crc status` reports correctly
 6. Only force-kills (`virsh destroy`) as a last resort after timeout expires
 
@@ -105,8 +121,9 @@ crcstart --help                 # Show help
 
 How it works:
 1. Checks if the VM is already running — if so, shows status and exits
-2. Runs `crc start` with any extra arguments passed through
-3. Shows `crc status` after successful start
+2. Removes a stale `~/.crc/machines/crc/docker.sock` (VM off, no listener) left by the previous stop
+3. Runs `crc start` with any extra arguments passed through
+4. Shows `crc status` after successful start
 
 ## Verification
 
@@ -171,14 +188,23 @@ fi
 
 log "CRC VM is running. Initiating graceful shutdown..."
 
-# Try to SSH in and trigger poweroff from inside the guest
-if ssh $SSH_OPTS -i "$SSH_KEY" -p 2222 core@127.0.0.1 "sudo systemctl poweroff" 2>/dev/null; then
-    log "Shutdown command sent via SSH."
-else
-    warn "SSH failed (VM may not be fully booted). Falling back to ACPI power button..."
-    virsh --connect "$LIBVIRT_URI" shutdown crc >/dev/null 2>&1
-    log "ACPI shutdown signal sent."
-fi
+# Ask the guest to power off: SSH poweroff first, ACPI power button as fallback.
+# A single request is lost when the guest is rebooting (e.g. the machine-config-daemon
+# applying a MachineConfig), so the wait loop repeats it every RESEND seconds until an
+# SSH poweroff has gone through (after that the guest is shutting down; resending is noise).
+RESEND=60
+SSH_SENT=false
+request_shutdown() {
+    if ssh $SSH_OPTS -i "$SSH_KEY" -p 2222 core@127.0.0.1 "sudo systemctl poweroff" 2>/dev/null; then
+        SSH_SENT=true
+        log "Shutdown command sent via SSH."
+    else
+        warn "SSH failed (VM booting, rebooting or already going down). Sending ACPI power button..."
+        virsh --connect "$LIBVIRT_URI" shutdown crc >/dev/null 2>&1
+        log "ACPI shutdown signal sent."
+    fi
+}
+request_shutdown
 
 # Wait for VM to reach 'shut off' state
 log "Waiting for VM to shut down (timeout: ${TIMEOUT}s)..."
@@ -198,6 +224,11 @@ while [[ $elapsed -lt $TIMEOUT ]]; do
             log "CRC daemon restarted. 'crc status' is ready."
         fi
         exit 0
+    fi
+    if [[ $SSH_SENT == false && $elapsed -gt 0 && $((elapsed % RESEND)) -eq 0 && "$state" == "running" ]]; then
+        echo ""
+        warn "Still running after ${elapsed}s — repeating the shutdown request."
+        request_shutdown
     fi
     printf "\r  ${spinner[$spin_idx]} Shutting down... [%3ds / %ds]  " "$elapsed" "$TIMEOUT"
     spin_idx=$(( (spin_idx + 1) % ${#spinner[@]} ))
@@ -283,6 +314,14 @@ if [[ "$vm_state" == "running" ]]; then
     info "Checking cluster status..."
     crc status 2>/dev/null && exit 0
     warn "VM is running but cluster may not be ready. Running 'crc start' to reconcile..."
+fi
+
+# Stopping the VM outside 'crc stop' (crcstop, virsh destroy) leaves the daemon's docker.sock
+# behind; the next 'crc start' then fails with "bind: address already in use". Remove it only
+# when the VM is not running and no process listens on it.
+SOCK="$HOME/.crc/machines/crc/docker.sock"
+if [[ "$vm_state" != "running" && -S "$SOCK" ]] && ! ss -xlH 2>/dev/null | grep -qF "$SOCK"; then
+    rm -f "$SOCK" && warn "Removed stale $SOCK (left by the previous stop)."
 fi
 
 log "Starting CRC..."

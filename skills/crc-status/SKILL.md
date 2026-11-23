@@ -4,7 +4,7 @@ description: >
   crc status, check crc, crc health
 metadata:
   author: agentfs
-  version: "2.3.0"
+  version: "2.3.1"
   model-tier: T1
   tags: [openshift, crc, status, console]
 user-invocable: true
@@ -67,8 +67,9 @@ unless the user asks.
 disk and cache usage, credentials, and whether a console notification
 banner is present.
 
-**When a console banner is present:** Ask the user whether to remove
-it. Do NOT remove it without confirmation.
+**When a console banner is present:** Report it and point to
+`crc-post-setup-config` (Part 4 removes it: `setup.sh --part 4`).
+Do NOT remove it from this skill — status is read-only.
 
 ## Output Contract
 

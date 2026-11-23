@@ -2,6 +2,82 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 16:38
+- pre-push allowlist: crc-vm SSH alias (crc-install VM access example) is a known FP (.pre-push-allowlist)
+
+## 2026-11-23 16:36
+- README: 63 skills; OpenShift/CRC row adds crc-install and post-setup config (README.md)
+
+## 2026-11-23 16:30
+- v9.3.1 — Operator policy (RHSI redhat-operators on OCP only; community images on podman); Network Observer section (enable, URL, OpenShift OAuth login, sees all sites) (skills/skupper-model-provider/SKILL.md)
+
+## 2026-11-23 16:29
+- v9.3.1 — Network Observer: wait up to 60 s for the Route (was a single check → false 'not found'); print the login method (OpenShift OAuth) (skills/skupper-model-provider/scripts/setup.sh)
+
+## 2026-11-23 16:18
+- **Update**: `knowledge/agentic-ikea-sdrd/sdrd-tooling-strategy.md` — Devbox/SSSD NSS bridge root cause and fix.
+- SDRD concept: add Devbox on SSSD hosts (NSS bridge) root cause and fix (knowledge/agentic-ikea-sdrd/sdrd-tooling-strategy.md)
+
+## 2026-11-23 16:12
+- v9.3.1 — Prerequisites: OpenShift 5.0 verified; Gotchas: router tag pinning, system reload vs start, router-before-controller restart, CRC_LINK_TARGET/CRC_ROUTING_KEY (skills/skupper-model-provider/SKILL.md)
+- v9.3.1 — Phase 5 restarts the router before the controller (controller restarted under a restarting router stopped publishing flow records; CRC listener 'No matching connectors') (skills/skupper-model-provider/scripts/setup.sh)
+- v9.3.1 — Phase 5 rebuilt: system install (recreates controller) + system reload (router, keeps CA) instead of podman rm + 'system start' (refuses an existing namespace → VAN left down); errors no longer hidden; re-applies auto-restart patches; router restarted before controller; waits for containers before verify (skills/skupper-model-provider/scripts/upgrade.sh)
+
+## 2026-11-23 16:10
+- crc-install v1.0.2: add CRC VM Access (SSH) section; extend triggers with 'log into crc vm' (skills/crc-install/SKILL.md)
+
+## 2026-11-23 16:03
+- v9.3.1 — inject_inter_router_listener writes port as int and normalizes an existing string port (skupper 2.2.4 system reload rejected the string: 'Invalid listener element') (skills/skupper-model-provider/scripts/common.sh)
+
+## 2026-11-23 16:00
+- v9.3.1 — router image tag resolved from the target release's images.go (skupper 2.2.x pins skupper-router 3.5.3); was skupper-router:`<skupper version>`, a non-existent tag → pull failure and false 'needs upgrade'. Override SKUPPER_ROUTER_TAG (skills/skupper-model-provider/scripts/upgrade.sh)
+
+## 2026-11-23 15:57
+- v9.3.1 — CRC stale-secret refresh uses the local link profile of CRC_LINK_TARGET (skills/skupper-model-provider/scripts/up.sh)
+- v9.3.1 — Phase 6 TLS secret uses the local link profile of CRC_LINK_TARGET (was rhel-ai only; failed with rhel-ai disabled) (skills/skupper-model-provider/scripts/setup.sh)
+- v9.3.1 — CRC link name follows CRC_LINK_TARGET (was hardcoded link-`<crc>`-rhel-ai) (skills/skupper-model-provider/scripts/common.sh)
+
+## 2026-11-23 15:45
+- crc-install: hand-off checks oc PATH (user adds the line; skill never writes ~/.bashrc); gotcha — oc/crc completion comes from bash-completion's _oc/_crc fallback loaders; T9 (skills/crc-install/SKILL.md)
+- crc-install: status.sh reports whether new shells get ~/.crc/bin/oc on PATH (prints the ~/.bashrc line when missing) (skills/crc-install/scripts/status.sh)
+
+## 2026-11-23 15:17
+- crc-cmd: crcstop re-sends only until an SSH poweroff succeeds; stale docker.sock happens after every stop (not only force-stop); measured round trip 150s stop / 3m13s start (skills/crc-cmd/SKILL.md)
+
+## 2026-11-23 15:05
+- crc-cmd: install.sh updates installed wrappers that differ from SKILL.md (dry-run PENDING when outdated) (skills/crc-cmd/scripts/install.sh)
+- crc-cmd: crcstop repeats the shutdown request every 60s (a request during a guest/MCD reboot is lost); crcstart removes a stale docker.sock left by a force-stop; lessons from CRC 2.65/OCP 5.0 (skills/crc-cmd/SKILL.md)
+
+## 2026-11-23 14:52
+- crc-post-setup-config: Part 2 doc — automatic MCD reboot, no manual restart, never crcstop during it; verification via MCP + allocatable (skills/crc-post-setup-config/SKILL.md)
+- crc-post-setup-config: apply-system-reserved.sh says the MCD reboots the node itself; do not crcstop until MCP updated (skills/crc-post-setup-config/apply-system-reserved.sh)
+- crc-post-setup-config: Part 2 waits for MachineConfigPool rollout (MCD reboots the node itself on OCP 5.0); no manual restart (skills/crc-post-setup-config/scripts/setup.sh)
+
+## 2026-11-23 14:37
+- crc-status: banner present → point to crc-post-setup-config Part 4 (status stays read-only) (skills/crc-status/SKILL.md)
+- crc-post-setup-config: Part 4 console banner removal; Quick Run section (setup.sh --check gate); banner verification item (skills/crc-post-setup-config/SKILL.md)
+- crc-post-setup-config: apply-system-reserved.sh restart hint uses crcstop && crcstart (skills/crc-post-setup-config/apply-system-reserved.sh)
+- crc-post-setup-config: setup.sh rewritten to orchestrate the documented helpers (was: KubeletConfig 512Mi + wrong silences, no retention); Part 4 removes the security-notice console banner; --check prints DRY_RUN_RESULT (skills/crc-post-setup-config/scripts/setup.sh)
+
+## 2026-11-23 13:54
+- skill-gen: QOO scores (SDM unavailable; structural facts recorded) (skills/crc-install/scores.yaml)
+- crc-post-setup-config: restart hint uses crcstop && crcstart (wrapper rule) (skills/crc-post-setup-config/SKILL.md)
+
+## 2026-11-23 13:53
+- crc-post-setup-config: restart hint uses crcstop && crcstart (wrapper rule) (skills/crc-post-setup-config/SKILL.md)
+- crc-install: troubleshooting row uses verified commands only (skills/crc-install/SKILL.md)
+- crc-install: new skill SKILL.md v1.0.0 (guided install/upgrade/repair/uninstall, Gate A/B, wrapper-only start/stop, prune after verify) (skills/crc-install/SKILL.md)
+
+## 2026-11-23 13:52
+- crc-install: prune.sh — removes old bundles, crc-`<old>` binaries, downloads; refuses until the verify marker exists (skills/crc-install/scripts/prune.sh)
+
+## 2026-11-23 13:51
+- crc-install: install.sh — dry-run plan, Gate A (exit 4), upgrade notes, crcstop teardown + crc delete -f, sha256 mirror download, Gate B crc setup (exit 3), crcstart, verify marker, --uninstall (skills/crc-install/scripts/install.sh)
+
+## 2026-11-23 13:49
+- crc-install: read-only status.sh (target release, binary, VM/pool, bundles, config, wrappers → MODE) (skills/crc-install/scripts/status.sh)
+- crc-install: lib.sh (mirror release lookup, version/VM/pool/bundle detection, MODE detection) (skills/crc-install/scripts/lib.sh)
+
 ## 2026-11-23 10:04
 - goose-kgm 1.8.6 version bump (skills/goose-kgm/SKILL.md)
 - reindex-kgm.sh: table concept links with or without ./, summary column by header (skills/goose-kgm/scripts/reindex-kgm.sh)

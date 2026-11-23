@@ -556,8 +556,10 @@ for host in "${HUB_SITES[@]}" localhost; do
   enable_linger "$host"
   install_router_auto_restart "$host"
   install_controller_auto_restart "$host"
-  run_on_host "$host" "systemctl --user restart skupper-controller.service 2>/dev/null" || true
+  # Router first, controller after it is up (see upgrade.sh Phase 5)
   run_on_host "$host" "systemctl --user restart skupper-${NAMESPACE}.service 2>/dev/null" || true
+  sleep 5
+  run_on_host "$host" "systemctl --user restart skupper-controller.service 2>/dev/null" || true
   echo "  ✅ $host patched"
 done
 
@@ -627,7 +629,7 @@ SUBEOF
 
   # 6c. Create TLS Secret for hub link (client certs from local link profile)
   crc_hub_link="${LINK_NAMES[crc-rhel-ai]}"
-  local_link_ra="${LINK_NAMES[local-rhel-ai]}"
+  local_link_ra="${LINK_NAMES[local-${CRC_LINK_TARGET}]}"   # client cert of the local link to the same hub
   if oc_crc get secret "${crc_hub_link}" -n "${CRC_NAMESPACE}" &>/dev/null; then
     echo "  ✅ Secret ${crc_hub_link} exists"
   else
@@ -933,12 +935,18 @@ NOCREOF
       fi
     fi
 
-    # Get or display Route
-    obs_route=$(crc_observer_route_url)
+    # Get or display Route (the operator creates it after the pods; allow up to 60 s)
+    obs_route=""
+    for _ in $(seq 1 12); do
+      obs_route=$(crc_observer_route_url)
+      [[ "$obs_route" != "not found" && -n "$obs_route" ]] && break
+      sleep 5
+    done
     if [[ "$obs_route" != "not found" && -n "$obs_route" ]]; then
       echo "  ✅ Network Observer dashboard: https://${obs_route}"
+      echo "     Login: OpenShift OAuth (oauth-proxy) — use your cluster user, e.g. kubeadmin"
     else
-      echo "  ⚠️  Network Observer Route not found yet (may need time)"
+      echo "  ⚠️  Network Observer Route not found after 60 s (oc get route -n ${CRC_NAMESPACE})"
     fi
   else
     echo "  ℹ️  Network Observer — skipped (CRC_OBSERVER_ENABLED=false)"

@@ -77,9 +77,21 @@ else
 fi
 
 # Derive image tags from target version
-# Router image: the CLI bundles its own image reference; the tag may differ from CLI version.
-# Controller image: quay.io/skupper/system-controller (not skupper-controller).
-TARGET_ROUTER_IMAGE="quay.io/skupper/skupper-router:${TARGET_VERSION}"
+# Router image: versioned separately (skupper 2.2.3 and 2.2.4 both pin skupper-router:3.5.3).
+#   Resolve the tag the target release pins in internal/images/images.go; override: SKUPPER_ROUTER_TAG.
+# Controller image: quay.io/skupper/system-controller (not skupper-controller), same tag as the CLI.
+TARGET_ROUTER_TAG="${SKUPPER_ROUTER_TAG:-}"
+if [[ -z "$TARGET_ROUTER_TAG" ]]; then
+  TARGET_ROUTER_TAG=$(curl -sfL --max-time 15 \
+    "https://raw.githubusercontent.com/skupperproject/skupper/${TARGET_VERSION}/internal/images/images.go" \
+    | grep -oP 'RouterImageName\s+string\s*=\s*"skupper-router:\K[^"]+' | head -1 || true)
+fi
+if [[ -z "$TARGET_ROUTER_TAG" ]]; then
+  echo "  ❌ Cannot resolve the router tag pinned by skupper ${TARGET_VERSION} (offline?)."
+  echo "     Re-run with SKUPPER_ROUTER_TAG=<tag> (see quay.io/skupper/skupper-router tags)."
+  exit 1
+fi
+TARGET_ROUTER_IMAGE="quay.io/skupper/skupper-router:${TARGET_ROUTER_TAG}"
 TARGET_CONTROLLER_IMAGE="quay.io/skupper/system-controller:${TARGET_VERSION}"
 TARGET_CLI_VERSION="${TARGET_VERSION}"
 echo "  Target CLI:        ${TARGET_CLI_VERSION}"
@@ -139,7 +151,7 @@ for host in "${ALL_HOSTS[@]}"; do
     echo "    → CLI needs upgrade"
     host_upgrade=true
   fi
-  if [[ "$host_router" != *"${TARGET_VERSION}"* ]]; then
+  if [[ "$host_router" != *":${TARGET_ROUTER_TAG}" ]]; then
     echo "    → Router image needs upgrade"
     host_upgrade=true
   fi
@@ -265,6 +277,7 @@ echo
 
 # ── Phase 5: Stop + recreate containers ───────────────────────
 echo "Phase 5: Stop + recreate containers"
+UPGRADE_FAILED_HOSTS=()
 echo "  ⚠️  Models are NOT stopped — only Skupper infrastructure."
 echo
 
@@ -297,14 +310,32 @@ for host in "${ALL_HOSTS[@]}"; do
   controller_name=$(get_controller_name "$host")
   run_on_host "$host" "podman rm -f ${controller_name} 2>/dev/null" || true
 
-  # Restart via skupper system start (will use new images from PATH)
-  # The controller image is determined by the skupper CLI version
-  if [[ "$host" == "localhost" ]]; then
-    skupper --platform podman system start -n "${NAMESPACE}" 2>/dev/null || true
-  else
-    run_on_host "$host" "skupper --platform podman system start -n ${NAMESPACE} 2>/dev/null" || true
+  # Controller: 'system install' recreates the container with the new CLI's
+  # system-controller image (systemd only starts an existing container).
+  out=$(run_on_host "$host" "skupper --platform podman system install --reload-type auto 2>&1"); rc=$?
+  echo "$out" | tail -1 | sed 's/^/     /'
+  if [[ $rc -ne 0 ]]; then
+    echo "  ❌ $host: skupper system install failed (rc=$rc) — router/controller are down"
+    UPGRADE_FAILED_HOSTS+=("$host"); continue
   fi
-  sleep 5
+
+  # Router: 'system reload' rebuilds it from input/resources and keeps
+  # runtime/issuers (CA unchanged → existing links + the CRC secret stay valid).
+  # 'system start' refuses an existing namespace ("namespace already exists").
+  # A string port in an injected listener breaks the reload → normalize first.
+  if [[ "$host" == "localhost" && "$CRC_ENABLED" == "true" && -n "${LOCAL_INTER_ROUTER_PORT:-}" ]]; then
+    inject_inter_router_listener >/dev/null || true
+  fi
+  out=$(run_on_host "$host" "skupper --platform podman system reload -n ${NAMESPACE} 2>&1"); rc=$?
+  echo "$out" | grep -vE 'WARN certificate will not be overwritten' | tail -2 | sed 's/^/     /'
+  if [[ $rc -ne 0 ]]; then
+    echo "  ❌ $host: skupper system reload failed (rc=$rc) — namespace restored by skupper; router is down"
+    UPGRADE_FAILED_HOSTS+=("$host"); continue
+  fi
+  # reload re-renders skrouterd.json → re-add the Phase 3b fallback listener (int port)
+  if [[ "$host" == "localhost" && "$CRC_ENABLED" == "true" && -n "${LOCAL_INTER_ROUTER_PORT:-}" ]]; then
+    inject_inter_router_listener >/dev/null || true
+  fi
 
   # Recreate router with tmpfs workaround if needed
   if needs_tmpfs_workaround "$host"; then
@@ -313,15 +344,26 @@ for host in "${ALL_HOSTS[@]}"; do
     sleep 3
   fi
 
-  # Restart via systemd (applies auto-restart patches)
-  if [[ "$host" == "localhost" ]]; then
-    systemctl --user restart skupper-controller.service 2>/dev/null || true
-    systemctl --user restart "skupper-${NAMESPACE}.service" 2>/dev/null || true
-  else
-    run_on_host "$host" "systemctl --user restart skupper-controller.service 2>/dev/null; systemctl --user restart skupper-${NAMESPACE}.service 2>/dev/null" || true
-  fi
+  # 'system install' rewrote the units → re-apply the setup.sh Phase 5 patches.
+  install_router_auto_restart "$host"
+  install_controller_auto_restart "$host"
+  # Router first, controller after it is up: a controller whose router restarts
+  # under it can stop publishing flow records (CRC then drops the site and its
+  # listener shows "No matching connectors").
+  run_on_host "$host" "systemctl --user restart skupper-${NAMESPACE}.service 2>/dev/null" || true
+  sleep 5
+  run_on_host "$host" "systemctl --user restart skupper-controller.service 2>/dev/null" || true
 
   echo "  ✅ $host: upgraded"
+done
+# Wait for containers before verifying (up to 60 s per host)
+for host in "${ALL_HOSTS[@]}"; do
+  [[ "${HOST_NEEDS_UPGRADE[$host]:-skip}" == "yes" ]] || continue
+  controller_name=$(get_controller_name "$host")
+  for _ in $(seq 1 12); do
+    run_on_host "$host" "podman container exists ${ROUTER_CONTAINER} && podman container exists ${controller_name}" && break
+    sleep 5
+  done
 done
 echo
 
@@ -329,6 +371,7 @@ echo
 echo "Phase 6: Verify"
 
 UPGRADE_OK=true
+[[ ${#UPGRADE_FAILED_HOSTS[@]} -gt 0 ]] && { echo "  ❌ Phase 5 failed on: ${UPGRADE_FAILED_HOSTS[*]}"; UPGRADE_OK=false; }
 for host in "${ALL_HOSTS[@]}"; do
   if [[ "${HOST_NEEDS_UPGRADE[$host]:-skip}" == "skip" ]]; then
     echo "  ⏭️  $host: skipped"
@@ -354,7 +397,7 @@ for host in "${ALL_HOSTS[@]}"; do
     echo "    ❌ CLI version mismatch"
     UPGRADE_OK=false
   fi
-  if [[ "$new_router" != *"${TARGET_VERSION}"* ]]; then
+  if [[ "$new_router" != *":${TARGET_ROUTER_TAG}" ]]; then
     echo "    ❌ Router image mismatch"
     UPGRADE_OK=false
   fi

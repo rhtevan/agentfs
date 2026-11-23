@@ -10,7 +10,7 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | upgrad
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts, CRC/OpenShift"
 metadata:
   author: agentfs
-  version: "9.3.0"
+  version: "9.3.1"
   model-tier: T3
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
@@ -178,6 +178,10 @@ For detailed troubleshooting procedures, see
 - **Never include `normal` role** in RouterAccess input — controller rejects it. Only `inter-router` and `edge` are valid.
 - **Models are NOT stopped** during Skupper upgrade — they run independently as podman containers.
 - **CRC operator upgrades** happen through OLM, not through `upgrade.sh`. The upgrade script only aligns podman sites.
+- **Router image is versioned separately** — skupper 2.2.3 and 2.2.4 both pin `skupper-router:3.5.3`. `upgrade.sh` reads the pinned tag from the release's `internal/images/images.go` (offline: `SKUPPER_ROUTER_TAG=<tag>`).
+- **Rebuild an existing podman namespace with `system reload`, not `system start`** — `start` refuses ("namespace already exists"). `system install --reload-type auto` recreates a removed controller container. Reload keeps `runtime/issuers` (CA), so links and the CRC secret stay valid.
+- **Restart the router before the controller.** A controller whose router restarts under it can stop publishing flow records: the CRC site drops that hub and its listener shows `No matching connectors`. Fix: `systemctl --user restart skupper-controller.service` on the hub. `oc rollout restart` of the CRC controller is reverted by OLM.
+- **`CRC_LINK_TARGET` drives the CRC link name and cert** (`link-<crc-site>-<target>`, client cert from the local link to the same hub). With rhel-ai disabled also set `CRC_ROUTING_KEY` to the target hub's key.
 
 For the full known issues table, see
 [references/known-issues.md](references/known-issues.md).
@@ -203,7 +207,17 @@ Execute each step in order and verify before proceeding.
 - Model containers deployed via `hosted-model-ctl`
 - Port 55671 reachable on rhtevan-work (LAN)
 - Port 8000 reachable on rhel-ai (AWS security group)
-- **CRC (if enabled):** CRC running with OpenShift 4.x, `oc` CLI configured with context `CRC_OC_CONTEXT`
+- **CRC (if enabled):** CRC running with OpenShift 4.x or 5.0 (verified on 5.0.0, operator 2.2.4-rh-2), `oc` CLI configured with context `CRC_OC_CONTEXT`
+- **Operator policy:** OCP sites use the **Red Hat Service Interconnect (RHSI)** operators from the `redhat-operators` catalog only: `skupper-operator` (site/router) and `skupper-netobs-operator` (Network Observer), channel `stable-2.2`. Do NOT use the community `skupper-operator` package of the same name. Podman sites use the upstream community images (`quay.io/skupper/*`) and the GitHub CLI by design; versions are aligned to the RHSI operator by `upgrade.sh`.
+
+## Network Observer (CRC)
+
+Web console for the whole VAN (sites, links, services, traffic flows) from the RHSI Network Observer operator.
+
+- Enable: `topology.env` → `CRC_OBSERVER_ENABLED="true"`, then `setup.sh` (Phase 6 subscribes `skupper-netobs-operator` and creates `NetworkObserver skupper-network-observer` in `CRC_NAMESPACE`).
+- URL: `https://skupper-network-observer-<CRC_NAMESPACE>.apps-crc.testing` (Route, reencrypt). `status.sh` prints it.
+- Login: OpenShift OAuth (oauth-proxy sidecar) — any cluster user, e.g. `kubeadmin`. An unauthenticated request returns HTTP 403 with the "Log in with OpenShift" page; that is expected.
+- It collects flow records through the CRC router, so it shows the podman sites too (verified: local-ezhang, rhtevan-work, crc-ezhang).
 
 ## Relationship to Other Skills
 

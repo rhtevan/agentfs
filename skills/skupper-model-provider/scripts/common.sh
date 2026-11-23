@@ -100,7 +100,8 @@ declare -A LINK_NAMES=(
   [local-rhtevan-work]="link-${LOCAL_SITE_NAME}-rhtevan-work"
 )
 if [[ "$CRC_ENABLED" == "true" ]]; then
-  LINK_NAMES[crc-rhel-ai]="link-${CRC_SITE_NAME}-rhel-ai"
+  # Key kept for callers; value follows CRC_LINK_TARGET (rhel-ai or rhtevan-work)
+  LINK_NAMES[crc-rhel-ai]="link-${CRC_SITE_NAME}-${CRC_LINK_TARGET}"
   LINK_NAMES[crc-local]="link-${CRC_SITE_NAME}-${LOCAL_SITE_NAME}"
 fi
 
@@ -757,6 +758,11 @@ with open('${config}') as f:
 for item in cfg:
     if isinstance(item, list) and len(item) == 2:
         if item[0] == 'listener' and item[1].get('role') == 'inter-router' and str(item[1].get('port')) == '${port}':
+            if isinstance(item[1].get('port'), str):
+                # skupper 2.2.4 bootstrap (system reload/start) rejects a string port
+                item[1]['port'] = int(item[1]['port'])
+                with open('${config}', 'w') as f:
+                    json.dump(cfg, f, indent=2)
             sys.exit(0)
 sys.exit(1)
 " 2>/dev/null; then
@@ -795,7 +801,7 @@ listener = ['listener', {
     'name': 'inter-router-local',
     'role': 'inter-router',
     'host': '0.0.0.0',
-    'port': '${port}',
+    'port': ${port},  # int — a string port breaks 'skupper system reload' (2.2.4)
     'sslProfile': '${ssl_profile}'
 }]
 cfg.append(listener)

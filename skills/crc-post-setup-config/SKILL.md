@@ -3,7 +3,7 @@ name: crc-post-setup-config
 description: >
   crc post setup, configure crc monitoring, crc tune
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   model-tier: T3
   tags: [openshift, crc, monitoring, configuration, alerts]
 ---
@@ -19,6 +19,19 @@ Apply post-setup configuration to an OpenShift Local (CRC) cluster. This skill c
 | **Cluster Monitoring** | Enables the monitoring stack with aggressive Prometheus retention (`24h` / `4GB`) | CRC disables monitoring by default; without retention limits Prometheus fills the VM disk |
 | **System Reserved Resources** | Overrides kubelet `--system-reserved` to `memory=1Gi, cpu=500m, ephemeral-storage=1Gi` via a MachineConfig | CRC's default reservation (350Mi memory) is too low and triggers the `SystemMemoryExceedsReservation` alert |
 | **Alert Silences** | Silences `AlertmanagerReceiversNotConfigured` for 1 year | Expected on a dev cluster with no external notification receivers configured |
+| **Console Banner** | Deletes the `security-notice` ConsoleNotification ("OpenShift Local cluster is for development and testing purposes…") | Every new CRC cluster ships it as a BannerTop; noise on a known dev cluster |
+
+## Quick Run
+
+`scripts/setup.sh` runs Parts 1–4 in order through the helper scripts below.
+Dry-run gate first:
+
+```bash
+bash ~/.agents/skills/crc-post-setup-config/scripts/setup.sh --check   # per-part state + DRY_RUN_RESULT=CONVERGED|PENDING
+bash ~/.agents/skills/crc-post-setup-config/scripts/setup.sh           # apply all parts (or --part N)
+```
+
+Exit 0 = all parts OK, 1 = cluster unreachable or a part failed (re-run is safe), 2 = usage.
 
 ## Rules
 
@@ -95,7 +108,12 @@ Execute each step in order and verify before proceeding.
    - `SYSTEM_RESERVED_CPU=500m` (default: 200m)
    - `SYSTEM_RESERVED_ES=1Gi` (default: 350Mi)
 
-   After the next CRC restart (`crc stop && crc start`), the kubelet picks up the new values
+   The machine-config-daemon applies it by **rebooting the node by itself** about a minute later
+   (verified on OCP 5.0: `Performing post config change action: Reboot`). No manual restart.
+   Wait until `oc get mcp master` shows `UPDATED=True` on the new rendered config (`setup.sh` waits).
+   Do NOT run `crcstop` during that reboot: the guest ignores ACPI while rebooting, `crcstop` force-kills
+   it after 420 s, and the next start fails on a stale `~/.crc/machines/crc/docker.sock`.
+   Afterwards the kubelet runs with the new values (node allocatable = capacity − 1Gi memory, − 500m CPU)
    and the `SystemMemoryExceedsReservation` alert will not fire.
 
 ### Part 3 — Silence Dev-Irrelevant Alerts
@@ -109,6 +127,14 @@ Execute each step in order and verify before proceeding.
    - Skips alerts that are already silenced (safe to re-run)
    - To add more alerts to silence, edit the `SILENCES` array in the script
 
+### Part 4 — Remove the Console Banner
+
+9. **Delete the CRC security-notice banner**
+   ```bash
+   oc delete consolenotification security-notice   # or: setup.sh --part 4
+   ```
+   CRC creates it in every new cluster. Re-run after `crc delete` + start.
+
 ## Verification
 
 - [ ] `crc config view | grep enable-cluster-monitoring` shows `true`
@@ -116,7 +142,9 @@ Execute each step in order and verify before proceeding.
 - [ ] `oc get pods -n openshift-monitoring` shows all pods Running/Ready
 - [ ] `oc get prometheus k8s -n openshift-monitoring -o jsonpath='{.spec.retention}'` returns `24h`
 - [ ] `oc get prometheus k8s -n openshift-monitoring -o jsonpath='{.spec.retentionSize}'` returns `4GB`
-- [ ] `SystemMemoryExceedsReservation` alert is `inactive` (after a CRC restart to pick up the new MachineConfig)
+- [ ] `oc get mcp master` shows `UPDATED=True`; node allocatable memory/CPU is capacity − 1Gi / − 500m
+- [ ] `SystemMemoryExceedsReservation` alert is `inactive`
+- [ ] `oc get consolenotification security-notice` returns NotFound (no console banner)
 - [ ] `AlertmanagerReceiversNotConfigured` alert is silenced:
       Active silence visible via `oc exec -n openshift-monitoring alertmanager-main-0 -c alertmanager -- curl -s 'http://localhost:9093/api/v2/silences'`
 

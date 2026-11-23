@@ -1,9 +1,9 @@
 ---
 type: Decision
 title: SDRD Tooling Strategy
-description: SDKMAN, Devbox, RPM/Flatpak, Direct — the four-layer package strategy on Fedora workstations, layer-assignment rules, and Devbox global operation
-tags: [sdrd, tooling, installation, devbox, sdkman, rpm, flatpak, fedora, k9s, kubectl]
-timestamp: 2026-11-23T09:55:00-05:00
+description: SDKMAN, Devbox, RPM/Flatpak, Direct — the four-layer package strategy on Fedora workstations, layer-assignment rules, Devbox global operation, and the SSSD NSS bridge for Nix binaries
+tags: [sdrd, tooling, installation, devbox, sdkman, rpm, flatpak, fedora, k9s, kubectl, sssd, nss, nix, glibc]
+timestamp: 2026-11-23T16:20:00-05:00
 ---
 
 # SDRD Tooling Strategy
@@ -49,6 +49,8 @@ tool goes to Devbox (rule 2 precedes rule 3).
   k9s next to the other Kubernetes CLIs parked for Devbox (helm, tkn).
 - Install: `devbox global add k9s`. A per-tool skill is not justified
   (one idempotent command).
+- On SSSD hosts k9s needs the [NSS bridge](#devbox-on-sssd-hosts-nss-bridge);
+  without it k9s exits at startup. The layer choice stays Devbox.
 
 ### Classification audit: kubectl
 
@@ -77,6 +79,72 @@ manual install, so it belongs to **Direct**. Verify ownership with
 - `~/.bashrc` guards the `shellenv` eval with a shell-local
   `__devbox_shellenv_done` variable to prevent a fork bomb under Goose
   shells (see `goose-desktop-env-fix`).
+
+## Devbox on SSSD hosts (NSS bridge)
+
+On hosts where users come from SSSD (corporate LDAP/IdM/AD) rather than
+`/etc/passwd`, Devbox (Nix) binaries cannot resolve the current user.
+
+### Symptom
+
+- k9s: exits at startup, log shows
+  `Die getting user home directory error="user: unknown userid <uid>"`
+  (after `Kubernetes connectivity OK`).
+- `fd --owner <name>`: `'<name>' is not a recognized user name`.
+- Tools that never look up the user (hey, uv, yq) are unaffected; tools
+  that link `getpwuid_r` only on rare paths (gh, fd, herdr) fail only
+  there. Exposure depends on *when* a tool performs the lookup.
+
+### Root cause
+
+Nix glibc is isolated from host libraries by design:
+
+| Step | Nix glibc behavior |
+|---|---|
+| Reads `/etc/nsswitch.conf` | Yes — uses host config (`passwd: files sss systemd`) |
+| Loads `libnss_sss.so.2` | Searches only its own `ld.so.cache` and `lib/` in `/nix/store` → *no such file* |
+| Bundled NSS modules | `compat, db, dns, files, hesiod` — no `sss`, no `systemd` |
+| Fallback | `files` → `/etc/passwd`, which lacks SSSD users |
+
+Confirm with `LD_DEBUG=libs fd --owner <name> ...` and look for
+`find library=libnss_sss.so.2 ... (no such file)`. NixOS avoids this
+with an nscd/nsncd daemon; Fedora ships neither.
+
+### Fix (applied on fedora-csb 2026-11-23)
+
+```bash
+mkdir -p ~/.local/lib/nss-bridge
+ln -sfn /usr/lib64/libnss_sss.so.2 ~/.local/lib/nss-bridge/libnss_sss.so.2
+```
+
+Add to `~/.local/share/devbox/global/default/devbox.json`:
+
+```json
+"env": { "LD_LIBRARY_PATH": "$HOME/.local/lib/nss-bridge" }
+```
+
+`devbox global shellenv` exports it (with `$HOME` expanded) into every
+shell that sources Devbox global; run `refresh-global` in open shells.
+
+### Why it is safe
+
+- The bridge directory holds only `libnss_sss.so.2`, which glibc loads
+  only for NSS lookups. Host binaries load the same file anyway.
+- `libnss_sss.so.2` depends only on `libc.so.6` and needs ≤ `GLIBC_2.34`;
+  Nix glibc (2.39–2.44 in the store) is newer, the direction glibc symbol
+  versioning supports.
+- Failure mode is benign: if a future `sssd-client` needs a newer glibc
+  than a Nix tool has, the module fails to load and the tool returns to
+  the pre-fix behavior. No crash.
+
+### Rejected alternatives
+
+| Option | Why not |
+|---|---|
+| Move affected tools to RPM | Per-tool symptom patch; leaves the rest of the Devbox layer broken |
+| Add user to `/etc/passwd` | Conflicts with centrally managed SSSD identity |
+| nscd / nsncd daemon | Not packaged in Fedora repos; nscd caching alongside SSSD is discouraged |
+| Global `LD_LIBRARY_PATH` via `environment.d` | Wider blast radius than needed; scope to the Devbox layer |
 
 ## Source of record
 

@@ -50,3 +50,8 @@
   uses such as "after the work" trip it. Only the English word is
   allowed — a line that names the host as a connection target (ssh,
   scp, HOST field) is still a finding. Accepted by the user 2026-11-19.
+- The SSH host alias `crc-vm` in crc-install (SKILL.md "CRC VM Access (SSH)"
+  section, CHANGELOG/log entries). It is a suggested ~/.ssh/config alias for
+  the local CRC VM via the user-networking loopback forward (HostName
+  127.0.0.1, Port 2222, User core) — not a real host, IP, or username.
+  Accepted by the user 2026-11-23.

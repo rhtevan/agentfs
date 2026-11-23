@@ -11,7 +11,8 @@
 # that overrides /etc/node-sizing-enabled.env with larger values.
 # Because "99-z-..." sorts after "99-node-sizing-for-crc", it wins during rendering.
 #
-# The change persists across CRC restarts (crc stop/start) and MCO reconciliation.
+# The MCD applies it with an automatic node reboot (no manual restart needed).
+# The change persists across CRC restarts (crcstop/crcstart) and MCO reconciliation.
 # It does NOT persist across crc delete — re-run this skill after cluster recreation.
 #
 # Safe to run repeatedly — oc apply is idempotent.
@@ -81,6 +82,6 @@ echo "  SYSTEM_RESERVED_MEMORY: ${DESIRED_MEMORY}  (CRC default: 350Mi)"
 echo "  SYSTEM_RESERVED_CPU:    ${DESIRED_CPU}   (CRC default: 200m)"
 echo "  SYSTEM_RESERVED_ES:     ${DESIRED_ES}  (CRC default: 350Mi)"
 echo ""
-echo "The MCO will render a new config. On CRC, a restart (crc stop && crc start)"
-echo "is needed for the node to pick up the new rendered MachineConfig."
-echo "After restart the SystemMemoryExceedsReservation alert will not fire."
+echo "The MCO renders a new config and the machine-config-daemon reboots the node by itself"
+echo "(~1 min later; verified on OCP 5.0). Do NOT run crcstop until 'oc get mcp master' shows"
+echo "UPDATED=True on the new rendered config — scripts/setup.sh waits for this."

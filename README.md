@@ -227,7 +227,7 @@ Skills cover topics like:
 |----------|----------|
 | **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, Hermes install (`hermes-install`), agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`), session cleanup (`goose-recipe-session-cleanup`), Goose system prompt optimization (`goose-agentfs-setup`: primacy-zone AGENTS.md, MOIM SOUL delivery, profile activation, drift detection) |
 | **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes/DSH provider config, Headroom proxy, MaaS providers, Skupper provider (`goose-skupper-provider`) |
-| **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB, NAD dynamic plugin), cluster lifecycle (start/stop/cleanup), cluster config, AAP demo |
+| **OpenShift/CRC** | CRC install/upgrade/uninstall (guided, sha-verified, `crc-install`), operator installs (COO, NOO, NMState, MetalLB, NAD dynamic plugin), cluster lifecycle (start/stop/cleanup), post-setup config (monitoring, system-reserved, banner), AAP demo |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation, KGM lifecycle (`goose-kgm`) |
 | **Model Serving** | Hosted model lifecycle (deploy, start, stop, test on NVIDIA GPUs via Podman), platform report (specs, accelerator, model recommendations by VRAM tier), Skupper model provider (remote GPU exposure via VAN) |
 | **Diagramming** | Architecture/workflow/sequence/data-flow diagrams (`agentfs-archify`), draw.io integration (`goose-nextai-drawio`) |
@@ -237,7 +237,7 @@ Skills cover topics like:
 | **Evaluation** | AgentFS workspace eval (`agentfs-eval`), individual skill eval (`skill-eval`), QOO schemas (`schemas/quality.yaml`, `observable.yaml`, `operable.yaml`, adapted variants for AGENTS.md) |
 | **Data Services** | Apache Fuseki triplestore lifecycle (`agentflow-fuseki`) |
 
-The library currently contains **62 skills** across these categories.
+The library currently contains **63 skills** across these categories.
 See [`skills/index.md`](skills/index.md) for the full catalog.
 
 #### SKILL.md Frontmatter

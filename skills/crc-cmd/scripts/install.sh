@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # install.sh — Install crcstart and crcstop wrapper commands
 # Usage: install.sh [--dry-run]
-# Version: 1.0.0
+# Version: 1.3.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "crc-cmd" "1.0.0" 2>/dev/null || true
+trace_init "crc-cmd" "1.3.0" 2>/dev/null || true
 
 DRY_RUN=false
+STALE=false
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
 if [[ "${1:-}" == "--check" ]]; then echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true; fi
 
@@ -48,7 +49,16 @@ fi
 trace_step 2 "install_crcstop" 0 "target=${BIN_DIR}/crcstop" 2>/dev/null || true
 
 CRCSTOP="${BIN_DIR}/crcstop"
-if [[ -f "$CRCSTOP" ]]; then
+WANT_STOP="$(sed -n '/^## crcstop script/,/^## crcstart script/{/^```bash$/,/^```$/{/^```/d;p}}' "$SKILL_DIR/SKILL.md")"
+if [[ -f "$CRCSTOP" ]] && [[ "$(cat "$CRCSTOP")" != "$WANT_STOP" ]]; then
+  if $DRY_RUN; then
+    echo "⚠ crcstop is outdated (differs from SKILL.md) — would update"
+    STALE=true
+  else
+    printf '%s\n' "$WANT_STOP" > "$CRCSTOP" && chmod +x "$CRCSTOP"
+    echo "✓ Updated crcstop ($(wc -l < "$CRCSTOP") lines)"
+  fi
+elif [[ -f "$CRCSTOP" ]]; then
   echo "✓ crcstop exists ($(wc -l < "$CRCSTOP") lines)"
   if [[ -x "$CRCSTOP" ]]; then
     echo "  ✓ Is executable"
@@ -73,7 +83,16 @@ fi
 trace_step 3 "install_crcstart" 0 "target=${BIN_DIR}/crcstart" 2>/dev/null || true
 
 CRCSTART="${BIN_DIR}/crcstart"
-if [[ -f "$CRCSTART" ]]; then
+WANT_START="$(sed -n '/^## crcstart script/,/^## Changelog/{/^```bash$/,/^```$/{/^```/d;p}}' "$SKILL_DIR/SKILL.md")"
+if [[ -f "$CRCSTART" ]] && [[ "$(cat "$CRCSTART")" != "$WANT_START" ]]; then
+  if $DRY_RUN; then
+    echo "⚠ crcstart is outdated (differs from SKILL.md) — would update"
+    STALE=true
+  else
+    printf '%s\n' "$WANT_START" > "$CRCSTART" && chmod +x "$CRCSTART"
+    echo "✓ Updated crcstart ($(wc -l < "$CRCSTART") lines)"
+  fi
+elif [[ -f "$CRCSTART" ]]; then
   echo "✓ crcstart exists ($(wc -l < "$CRCSTART") lines)"
   if [[ -x "$CRCSTART" ]]; then
     echo "  ✓ Is executable"
@@ -98,7 +117,7 @@ trace_step 4 "verify" 0 "" 2>/dev/null || true
 
 echo ""
 if $DRY_RUN; then
-  if [[ -x "$CRCSTOP" && -x "$CRCSTART" ]]; then
+  if [[ -x "$CRCSTOP" && -x "$CRCSTART" && "$STALE" == false ]]; then
     echo "DRY_RUN_RESULT=CONVERGED"
     echo "✅ Both crcstart and crcstop are installed. No changes needed."
   else

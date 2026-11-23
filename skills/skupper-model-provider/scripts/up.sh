@@ -358,7 +358,7 @@ if [[ "$CRC_TARGET" == "true" ]]; then
       echo "  ✅ Link ${crc_link_name}: Connected"
     elif [[ "$link_status" == "Pending" ]]; then
       # Staleness detection: compare CA fingerprints
-      local_link_ra="${LINK_NAMES[local-rhel-ai]}"
+      local_link_ra="${LINK_NAMES[local-${CRC_LINK_TARGET}]}"
       cert_dir="${HOME}/.local/share/skupper/namespaces/${NAMESPACE}/runtime/certs/${local_link_ra}-profile"
       staleness=$(check_crc_link_staleness "${crc_link_name}" "${cert_dir}")
       if [[ "$staleness" == stale:* ]]; then

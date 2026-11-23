@@ -1,0 +1,35 @@
+# scores.yaml — crc-install
+skill: crc-install
+version: 1.0.0
+model_tier: T2
+qualification_rule: build+observable
+qoo-qualified: false
+
+quality:
+  schema: quality.yaml
+  aggregate_score: -1
+  band: SDM_UNAVAILABLE
+  evaluated: "2026-11-23T13:58:00-05:00"
+
+observable:
+  schema: observable.yaml
+  aggregate_score: -1
+  band: SDM_UNAVAILABLE
+  evaluated: "2026-11-23T13:58:00-05:00"
+
+# Structural facts (deterministic, no SDM)
+structural:
+  scripts: 4   # lib.sh (sourced), status.sh, install.sh, prune.sh
+  script_coverage: "4 of 5 workflow steps (80%) — Step 5 hand-off is agent interaction"
+  trace_instrumentation: true
+  anti_fabrication_rules: true
+  tests_passed: "T1–T7 (T4–T7 sandboxed); T8 pending real install"
+
+history:
+  - date: "2026-11-23T13:58:00-05:00"
+    type: quality+observable
+    quality_score: -1
+    quality_band: SDM_UNAVAILABLE
+    observable_score: -1
+    observable_band: SDM_UNAVAILABLE
+    note: "Initial QOO scoring by skill-gen — SDM (localhost:9000) unavailable; re-run 'hey score skill crc-install' when SDM is back"

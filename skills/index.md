@@ -1,16 +1,20 @@
 # Skills Index
 
-> 62 skills | Sorted by reverse chronological order (newest first).
+> 63 skills | Sorted by reverse chronological order (newest first).
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-11-23 16:30 |
+| [crc-install](./crc-install/SKILL.md) | crc, openshift-local, install, upgrade, libvirt, ssh, vm-access | install crc, upgrade crc, uninstall crc, crc install status, log into crc vm | 2026-11-23 16:10 |
+| [crc-cmd](./crc-cmd/SKILL.md) | openshift, crc, wrapper, shell | install crcstart, install crcstop, crc wrapper | 2026-11-23 15:17 |
+| [crc-post-setup-config](./crc-post-setup-config/SKILL.md) | openshift, crc, monitoring, configuration, alerts | crc post setup, configure crc monitoring, crc tune | 2026-11-23 14:52 |
+| [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-11-23 14:37 |
 | [goose-kgm](./goose-kgm/SKILL.md) | goose, kgm, knowledge-graph, mcp, knowledge | setup goose kgm, teardown goose kgm, enable kgm, disable kgm, kgm status, reindex kgm, sync kgm | 2026-11-23 10:04 |
 | [hermes-install](./hermes-install/SKILL.md) | hermes, install, bootstrap, agent | install hermes, hermes install status | 2026-11-22 21:53 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety | fix goose desktop, goose shell environment, goose env fix, goose rm guard | 2026-11-22 21:47 |
 | [hermes-litellm-provider](./hermes-litellm-provider/SKILL.md) | hermes, litellm, custom-provider, configuration | configure hermes litellm, hermes litellm provider | 2026-11-22 21:28 |
 | [hermes-agentfs-setup](./hermes-agentfs-setup/SKILL.md) | hermes, agentfs, configuration, skills, compatibility | configure hermes agentfs, hermes skills dirs, hermes agentfs | 2026-11-22 21:27 |
 | [hermes-desktop-fixes](./hermes-desktop-fixes/SKILL.md) | hermes, desktop, electron, fix, wayland | fix hermes desktop, hermes desktop health | 2026-11-22 21:26 |
-| [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-11-22 19:59 |
 | [goose-maas-provider](./goose-maas-provider/SKILL.md) | goose, maas, litellm, custom-provider, reasoning, configuration | configure goose maas, goose maas provider, goose remote provider | 2026-11-22 13:21 |
 | [goose-corp-provider](./goose-corp-provider/SKILL.md) | goose, corp, custom-provider, redhat, model-service | configure goose corp, goose corp provider, corp model provider, rotate corp key, corp status | 2026-11-22 12:24 |
 | [goose-litellm-provider](./goose-litellm-provider/SKILL.md) | goose, litellm, custom-provider, redhat, configuration | configure goose litellm, goose litellm provider | 2026-11-22 10:32 |
@@ -26,7 +30,6 @@
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-11-19 16:53 |
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | generate bash completion, bash completion, tab completion | 2026-11-19 16:53 |
 | [crc-aap-demo-config](./crc-aap-demo-config/SKILL.md) | openshift, crc, aap-demo, configuration, safety, preflight | configure aap demo, setup aap demo, aap demo | 2026-11-19 16:53 |
-| [crc-cmd](./crc-cmd/SKILL.md) | openshift, crc, wrapper, shell | install crcstart, install crcstop, crc wrapper | 2026-11-19 16:53 |
 | [crc-coo-config](./crc-coo-config/SKILL.md) | openshift, crc, observability, operator, perses | install coo, configure coo, cluster observability | 2026-11-19 16:53 |
 | [crc-ctl](./crc-ctl/SKILL.md) | crc, openshift, openshift-local, cluster, operations, cleanup | start crc, stop crc, crc start, crc stop, clean crc, crc cleanup, crc disk cleanup | 2026-11-19 16:53 |
 | [crc-nad-dynamic-plugin-config](./crc-nad-dynamic-plugin-config/SKILL.md) | openshift, crc, networking, console-plugin, helm | install nad plugin, nad console plugin, network attachment | 2026-11-19 16:53 |
@@ -34,8 +37,6 @@
 | [crc-noo-config](./crc-noo-config/SKILL.md) | openshift, crc, networking, observability, operator, ebpf | install noo, configure noo, network observability | 2026-11-19 16:53 |
 | [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider, rotate ols key, ols credential status | 2026-11-19 16:53 |
 | [crc-ovn-frr-metallb-config](./crc-ovn-frr-metallb-config/SKILL.md) | openshift, crc, networking, ovn, bgp, metallb | setup ovn frr, setup metallb, bgp metallb | 2026-11-19 16:53 |
-| [crc-post-setup-config](./crc-post-setup-config/SKILL.md) | openshift, crc, monitoring, configuration, alerts | crc post setup, configure crc monitoring, crc tune | 2026-11-19 16:53 |
-| [crc-status](./crc-status/SKILL.md) | openshift, crc, status, console | crc status, check crc, crc health | 2026-11-19 16:53 |
 | [dsh-litellm-provider](./dsh-litellm-provider/SKILL.md) | dsh, deepseek-harness, litellm, custom-provider, configuration | configure dsh litellm, dsh litellm provider, dsh custom provider | 2026-11-19 16:53 |
 | [dsh-setup](./dsh-setup/SKILL.md) | dsh, deepseek-harness, agent-harness, setup, launcher | setup dsh, install dsh, update dsh, teardown dsh, dsh status | 2026-11-19 16:53 |
 | [fedora-desktop-wmclass-fix](./fedora-desktop-wmclass-fix/SKILL.md) | fedora, gnome, wayland, electron, desktop, wmclass | fix desktop wmclass, audit wmclass, electron duplicate icon, fix taskbar duplicate, desktop startup wmclass | 2026-11-19 16:53 |

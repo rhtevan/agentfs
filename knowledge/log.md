@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 16:18
+- SDRD concept: add Devbox on SSSD hosts (NSS bridge) root cause and fix (knowledge/agentic-ikea-sdrd/sdrd-tooling-strategy.md)
+
 ## 2026-11-23 09:54
 - **Creation**: Added session sub-bundle `agentic-ikea-sdrd/` with 3 concept(s).
 - **Update**: Updated root index.md.
