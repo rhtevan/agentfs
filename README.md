@@ -104,7 +104,8 @@ AGENTS.md from template, then generates custom system.md and MOIM).
 
 #### With Hermes Agent
 
-Load the `hermes-agentfs-setup` skill to register `~/.agents/skills`
+Install Hermes with the `hermes-install` skill (`hey install hermes`), then
+load the `hermes-agentfs-setup` skill to register `~/.agents/skills`
 in Hermes's `skills.external_dirs`.
 
 ### Step 3: Set Up PROJECT Scope (per repo)
@@ -224,7 +225,7 @@ Skills cover topics like:
 
 | Category | Examples |
 |----------|----------|
-| **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`), session cleanup (`goose-recipe-session-cleanup`), Goose system prompt optimization (`goose-agentfs-setup`: primacy-zone AGENTS.md, MOIM SOUL delivery, profile activation, drift detection) |
+| **Agent Setup** | AgentFS scaffolding, Goose/Hermes/DSH configuration, Hermes install (`hermes-install`), agent profiles, interactive SOUL authoring (`author-soul.sh`), on-demand profile recipe generation (`gen-profile-recipe.sh`), session cleanup (`goose-recipe-session-cleanup`), Goose system prompt optimization (`goose-agentfs-setup`: primacy-zone AGENTS.md, MOIM SOUL delivery, profile activation, drift detection) |
 | **LLM Providers** | LiteLLM Vertex AI proxy (setup, verify, model discovery), Goose/Hermes/DSH provider config, Headroom proxy, MaaS providers, Skupper provider (`goose-skupper-provider`) |
 | **OpenShift/CRC** | Operator installs (COO, NOO, NMState, MetalLB, NAD dynamic plugin), cluster lifecycle (start/stop/cleanup), cluster config, AAP demo |
 | **Knowledge Mgmt** | OKF bundle creation, indexing, harvesting, generation, KGM lifecycle (`goose-kgm`) |
@@ -236,7 +237,7 @@ Skills cover topics like:
 | **Evaluation** | AgentFS workspace eval (`agentfs-eval`), individual skill eval (`skill-eval`), QOO schemas (`schemas/quality.yaml`, `observable.yaml`, `operable.yaml`, adapted variants for AGENTS.md) |
 | **Data Services** | Apache Fuseki triplestore lifecycle (`agentflow-fuseki`) |
 
-The library currently contains **61 skills** across these categories.
+The library currently contains **62 skills** across these categories.
 See [`skills/index.md`](skills/index.md) for the full catalog.
 
 #### SKILL.md Frontmatter

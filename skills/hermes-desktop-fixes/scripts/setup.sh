@@ -1,196 +1,125 @@
 #!/usr/bin/env bash
-# setup.sh — Apply Hermes Desktop fixes (env, desktop entry, patch system)
-# Usage: setup.sh [--dry-run] [--skip-patches]
-# Version: 1.0.0
-set -euo pipefail
+# setup.sh — Check Hermes Desktop health on Linux; apply a fix only when a
+# known problem is detected.
+# Usage: setup.sh [--dry-run]
+# Exit: 0 ok (dry-run always 0 + DRY_RUN_RESULT) · 1 failure · 2 usage
+set -uo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "hermes-desktop-fixes" "1.0.0" 2>/dev/null || true
+trace_init "hermes-desktop-fixes" "4.0.0" 2>/dev/null || true
 
 DRY_RUN=false
-SKIP_PATCHES=false
-
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
-    --check) echo "WARN: --check is deprecated, use --dry-run" >&2; DRY_RUN=true ;;
-    --skip-patches) SKIP_PATCHES=true ;;
+    -h|--help) sed -n '4p' "$0" | sed 's/^# //'; exit 0 ;;
+    *) echo "❌ Unknown option: $arg"; exit 2 ;;
   esac
 done
 
-HERMES_DIR="${HOME}/.hermes"
-HERMES_AGENT="${HERMES_DIR}/hermes-agent"
-DESKTOP_FILE="${HOME}/.local/share/applications/com.nousresearch.hermes.desktop"
-ERRORS=0
-CHANGES=0
+HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+REPO="${HERMES_HOME}/hermes-agent"
+APPS="${HOME}/.local/share/applications"
+ENTRY="${APPS}/com.nousresearch.hermes.desktop"
+LEGACY="${APPS}/hermes.desktop"
+LAUNCHER="${HOME}/.local/bin/hermes"
+REAL_BIN="${REPO}/.hermes/bin/hermes"
+CHROMIUM_LOG="${HERMES_HOME}/logs/desktop-chromium.log"
+PENDING=0
+FAILED=0
 
-echo "=== Hermes Desktop Fixes ==="
-echo ""
+do_or_plan() {  # $1 = description, rest = command
+  local desc="$1"; shift
+  PENDING=$((PENDING + 1))
+  if $DRY_RUN; then
+    echo "    → would: $desc"
+  elif "$@"; then
+    echo "    ✅ $desc"
+  else
+    echo "    ❌ failed: $desc"; FAILED=$((FAILED + 1))
+  fi
+}
 
-# ── Step 1: Check Hermes installation ───────────────────────────────────
-trace_step 1 "check_hermes" 0 "" 2>/dev/null || true
+echo "=== Hermes Desktop Fixes$($DRY_RUN && echo ' (dry-run)') ==="
 
-if [[ -d "$HERMES_AGENT" ]]; then
-  echo "✓ Hermes agent dir exists: $HERMES_AGENT"
-else
-  echo "✗ Hermes agent not found at $HERMES_AGENT"
+# ── Step 1: Hermes installed ──────────────────────────────────
+if [[ ! -x "$REAL_BIN" ]]; then
+  echo "❌ Hermes not installed ($REAL_BIN missing) — run the hermes-install skill first"
+  trace_step 1 "installed" 1 "" 2>/dev/null || true; trace_end 2>/dev/null || true
   exit 1
 fi
+echo "✅ Hermes installed: $REPO"
+trace_step 1 "installed" 0 "" 2>/dev/null || true
 
-# ── Step 2: Check/create hermes-env.sh ───────────────────────────────────
-trace_step 2 "hermes_env" 0 "path=${HERMES_DIR}/hermes-env.sh" 2>/dev/null || true
-
-if [[ -f "${HERMES_DIR}/hermes-env.sh" ]]; then
-  echo "✓ hermes-env.sh exists"
-  issues=0
-  grep -q 'ELECTRON_DISABLE_SANDBOX' "${HERMES_DIR}/hermes-env.sh" || { echo "  ⚠ Missing ELECTRON_DISABLE_SANDBOX"; issues=$((issues+1)); }
-  grep -q 'LC_CTYPE' "${HERMES_DIR}/hermes-env.sh" || { echo "  ⚠ Missing LC_CTYPE fix"; issues=$((issues+1)); }
-  grep -q 'Goose.*resources.*bin' "${HERMES_DIR}/hermes-env.sh" || { echo "  ⚠ Missing Goose node wrapper PATH strip"; issues=$((issues+1)); }
-  [[ $issues -eq 0 ]] && echo "  ✓ Contains all expected fixes"
-  ERRORS=$((ERRORS + issues))
-else
-  echo "⚠ hermes-env.sh not found"
-  if ! $DRY_RUN; then
-    cat > "${HERMES_DIR}/hermes-env.sh" << 'ENVEOF'
-#!/usr/bin/env bash
-# hermes-env.sh — Environment fixes for Hermes Desktop
-
-# Fix LC_CTYPE locale warning (Bug #0)
-if [[ "${LC_CTYPE:-}" == "UTF-8" || -z "${LC_CTYPE:-}" ]]; then
-  export LC_CTYPE="en_US.UTF-8"
-fi
-
-# Disable Electron sandbox (Bug #3 replacement)
-export ELECTRON_DISABLE_SANDBOX=1
-
-# Strip Goose node wrapper from PATH (Bug #2)
-if [[ "$PATH" == *"/usr/lib/Goose/resources/bin"* ]]; then
-  PATH=$(echo "$PATH" | tr ':' '\n' | grep -v 'Goose/resources/bin' | tr '\n' ':')
-  PATH="${PATH%:}"
-  export PATH
-fi
-ENVEOF
-    echo "✓ Created hermes-env.sh"
+# ── Step 2: Desktop entry (written by upstream) ───────────────
+if [[ -f "$ENTRY" ]]; then
+  if grep -q '^StartupWMClass=com.nousresearch.hermes$' "$ENTRY" && grep -q '^Exec=.*hermes desktop' "$ENTRY"; then
+    echo "✅ Desktop entry: $ENTRY (app-id + Exec OK)"
   else
-    ERRORS=$((ERRORS + 1))
-  fi
-fi
-
-# ── Step 3: Check/create .env file ───────────────────────────────────────
-trace_step 3 "dot_env" 0 "path=${HERMES_DIR}/.env" 2>/dev/null || true
-
-if [[ -f "${HERMES_DIR}/.env" ]]; then
-  echo "✓ .env exists"
-  grep -q 'ELECTRON_DISABLE_SANDBOX' "${HERMES_DIR}/.env" && echo "  ✓ ELECTRON_DISABLE_SANDBOX set" || echo "  ⚠ Missing ELECTRON_DISABLE_SANDBOX"
-  grep -q 'LC_CTYPE' "${HERMES_DIR}/.env" && echo "  ✓ LC_CTYPE set" || echo "  ⚠ Missing LC_CTYPE"
-else
-  echo "⚠ .env not found"
-  if ! $DRY_RUN; then
-    cat > "${HERMES_DIR}/.env" << 'DOTENVEOF'
-ELECTRON_DISABLE_SANDBOX=1
-LC_CTYPE=en_US.UTF-8
-DOTENVEOF
-    echo "✓ Created .env"
-  else
-    ERRORS=$((ERRORS + 1))
-  fi
-fi
-
-# ── Step 4: Check desktop entry ──────────────────────────────────────────
-trace_step 4 "desktop_entry" 0 "path=${DESKTOP_FILE}" 2>/dev/null || true
-
-if [[ -f "$DESKTOP_FILE" ]]; then
-  echo "✓ Desktop entry exists: $DESKTOP_FILE"
-  grep -q 'StartupWMClass=com.nousresearch.hermes' "$DESKTOP_FILE" && echo "  ✓ Correct WMClass" || { echo "  ⚠ Wrong WMClass"; ERRORS=$((ERRORS+1)); }
-  grep -q 'Icon=hermes' "$DESKTOP_FILE" && echo "  ✓ Themed icon" || echo "  ℹ Custom icon path"
-else
-  echo "⚠ Desktop entry not found (will be created on next 'hermes desktop' launch)"
-fi
-
-# Check for duplicate hermes.desktop
-if [[ -f "${HOME}/.local/share/applications/hermes.desktop" ]]; then
-  echo "⚠ Duplicate hermes.desktop found (upstream-generated, causes duplicate icon)"
-  if ! $DRY_RUN; then
-    rm -f "${HOME}/.local/share/applications/hermes.desktop"
-    echo "  ✓ Removed duplicate"
-  else
-    ERRORS=$((ERRORS + 1))
-  fi
-fi
-
-# ── Step 5: Check launcher wrapper ───────────────────────────────────────
-trace_step 5 "launcher_wrapper" 0 "path=${HOME}/.local/bin/hermes" 2>/dev/null || true
-
-if [[ -x "${HOME}/.local/bin/hermes" ]]; then
-  echo "✓ Launcher wrapper exists and is executable"
-  if grep -q 'hermes-env.sh' "${HOME}/.local/bin/hermes"; then
-    echo "  ✓ Sources hermes-env.sh"
-  else
-    echo "  ⚠ Does not source hermes-env.sh"
-    ERRORS=$((ERRORS + 1))
+    echo "⚠️  Desktop entry has unexpected StartupWMClass/Exec — upstream rewrites it on next 'hermes desktop' launch"
   fi
 else
-  echo "⚠ Launcher wrapper not found at ~/.local/bin/hermes"
-  ERRORS=$((ERRORS + 1))
+  echo "ℹ️  Desktop entry not created yet — upstream writes it on the first 'hermes desktop' launch"
 fi
+if [[ -f "$LEGACY" ]] && ! grep -q '^NoDisplay=true' "$LEGACY"; then
+  echo "⚠️  Visible legacy hermes.desktop (duplicate icon)"
+  do_or_plan "remove visible legacy $LEGACY" rm -f "$LEGACY"
+fi
+trace_step 2 "desktop_entry" 0 "" 2>/dev/null || true
 
-# ── Step 6: Check patch system ───────────────────────────────────────────
-trace_step 6 "patch_system" 0 "" 2>/dev/null || true
+# ── Step 3: Leftovers from hermes-desktop-fixes v3.x ──────────
+# v3 replaced the upstream launcher with a wrapper (hermes-env.sh, venv path)
+# and patched server.py under skip-worktree. Both break current upstream.
+if [[ -f "$LAUNCHER" ]] && grep -q -E 'hermes-env\.sh|venv/bin/hermes' "$LAUNCHER"; then
+  echo "⚠️  ~/.local/bin/hermes is the old v3 wrapper"
+  do_or_plan "restore upstream launcher shim → $REAL_BIN" \
+    sh -c "printf '#!/bin/sh\nexec %s \"\$@\"\n' '$REAL_BIN' > '$LAUNCHER' && chmod +x '$LAUNCHER'"
+fi
+SKIPPED=$(git -C "$REPO" ls-files -v 2>/dev/null | awk '/^S /{print $2}')
+if [[ -n "$SKIPPED" ]]; then
+  echo "⚠️  skip-worktree files in checkout (old patches): $(echo $SKIPPED)"
+  # shellcheck disable=SC2086
+  do_or_plan "clear skip-worktree + restore upstream copies" \
+    sh -c "cd '$REPO' && git update-index --no-skip-worktree $(echo $SKIPPED) && git checkout -- $(echo $SKIPPED)"
+fi
+if [[ -f "$REPO/.git/hooks/post-merge" ]] && grep -q 'hermes-apply-patches' "$REPO/.git/hooks/post-merge"; then
+  do_or_plan "remove old post-merge hook" rm -f "$REPO/.git/hooks/post-merge"
+fi
+for f in hermes-env.sh hermes-apply-patches.sh hermes-revert-patches.sh hermes-check-patches.sh; do
+  [[ -f "$HERMES_HOME/$f" ]] && do_or_plan "remove old $HERMES_HOME/$f" rm -f "$HERMES_HOME/$f"
+done
+trace_step 3 "v3_leftovers" 0 "" 2>/dev/null || true
 
-if $SKIP_PATCHES; then
-  echo "⏭ Skipping patch system check (--skip-patches)"
-else
-  if [[ -f "${HERMES_DIR}/hermes-check-patches.sh" ]]; then
-    echo "✓ Patch health check script exists"
-    if bash "${HERMES_DIR}/hermes-check-patches.sh" 2>/dev/null; then
-      echo "  ✓ Patches healthy"
-    else
-      echo "  ⚠ Patch health check reported issues"
-      ERRORS=$((ERRORS + 1))
-    fi
+# ── Step 4: GPU crash (Intel Arc + Wayland) ───────────────────
+if [[ -f "$CHROMIUM_LOG" ]] && grep -q 'FATAL.*GPU process' "$CHROMIUM_LOG"; then
+  if grep -A3 '^desktop:' "$HERMES_HOME/config.yaml" 2>/dev/null | grep -q -E 'disable_gpu: *(true|"?1"?)'; then
+    echo "✅ GPU crash seen before; desktop.disable_gpu already true"
   else
-    echo "ℹ No patch system installed (OK if no source patches needed)"
+    echo "⚠️  GPU process FATAL in $CHROMIUM_LOG"
+    do_or_plan "hermes config set desktop.disable_gpu true" "$REAL_BIN" config set desktop.disable_gpu true
   fi
-
-  # Check git hooks
-  if [[ -f "${HERMES_AGENT}/.git/hooks/post-merge" ]]; then
-    echo "✓ post-merge hook installed"
-  else
-    echo "ℹ No post-merge hook (patches won't auto-apply after git pull)"
-  fi
-fi
-
-# ── Step 7: Check locale config ──────────────────────────────────────────
-trace_step 7 "locale_config" 0 "" 2>/dev/null || true
-
-LOCALE_CONF="${HOME}/.config/environment.d/50-locale-fix.conf"
-if [[ -f "$LOCALE_CONF" ]]; then
-  echo "✓ Locale fix in environment.d: $LOCALE_CONF"
 else
-  echo "ℹ No environment.d locale fix (optional, hermes-env.sh handles it)"
+  echo "✅ No GPU crash in desktop-chromium.log"
 fi
+trace_step 4 "gpu" 0 "pending=${PENDING}" 2>/dev/null || true
 
-# ── Summary ──────────────────────────────────────────────────────────────
-echo ""
+# ── Summary ───────────────────────────────────────────────────
+echo
 if $DRY_RUN; then
-  if [[ $CHANGES -eq 0 && $ERRORS -eq 0 ]]; then
+  if [[ $PENDING -eq 0 ]]; then
     echo "DRY_RUN_RESULT=CONVERGED"
-    echo "✅ All Hermes Desktop fixes are in place. No changes needed."
+    echo "✅ Hermes Desktop healthy — no fixes needed"
   else
     echo "DRY_RUN_RESULT=PENDING"
-    [[ $CHANGES -gt 0 ]] && echo "$CHANGES change(s) would be applied."
-    [[ $ERRORS -gt 0 ]] && echo "$ERRORS precondition issue(s) found."
+    echo "$PENDING fix(es) would be applied"
   fi
+  trace_end 2>/dev/null || true
   exit 0
-else
-  if [[ $ERRORS -eq 0 ]]; then
-    echo "APPLY_RESULT=OK"
-    echo "✅ All Hermes Desktop fixes are in place."
-  else
-    echo "APPLY_RESULT=PARTIAL"
-    echo "⚠ Completed with ${ERRORS} warning(s). Review above."
-  fi
 fi
-
 trace_end 2>/dev/null || true
-exit $ERRORS
+if [[ $FAILED -gt 0 ]]; then
+  echo "APPLY_RESULT=FAILED ($FAILED of $PENDING)"
+  exit 1
+fi
+echo "APPLY_RESULT=OK ($PENDING fix(es) applied)"
+exit 0

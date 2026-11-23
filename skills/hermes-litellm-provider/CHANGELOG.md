@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-22 21:28 | v2.5.1 — v2.5.1: Step 4 CLI test uses 'hermes -z' (v0.23 removed 'chat --oneshot') |
 | 2026-11-13 21:07 | v2.5.0 — restore.sh: default = strongest served model (litellm default model), models ranked, dry-run CONVERGED/PENDING, line-level block edit with post-check (no whole-file yaml re-dump), unserved --default-model is an error; doc: default = strongest served model; dry-run → apply workflow; line-level edit described; restore.sh: backup goes to ~/.hermes/backups/config/config.yaml.agentfs.<stamp> (Hermes sweeps config.yaml.bak.<digits> siblings into that dir); doc: backup location in Hermes backups/config dir |
 | 2026-11-13 20:55 | v2.4.2 — fix: S4 follows Hermes discovery semantics — models: mapping + discover_models true is metadata (info only); fail only when pinned (discover_models false or list/string models:); doc: models field is per-model metadata, not an allowlist, when discover_models is true; doc: Spec S4 wording matches new check |
 | 2026-11-13 20:42 | v2.4.1 — default model claude-opus-4-6 → claude-opus-5 (proxy models still discovered from /v1/models); doc: reference config examples updated to current proxy models (claude-opus-5 default) |

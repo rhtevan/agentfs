@@ -27,7 +27,7 @@ ERRORS=0
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "hermes-agentfs-setup" "1.3.0" 2>/dev/null || true
+trace_init "hermes-agentfs-setup" "1.3.1" 2>/dev/null || true
 
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
 CONFIG="$HERMES_HOME/config.yaml"
@@ -58,15 +58,18 @@ has_skills_section() {
   grep -q '^skills:' "$CONFIG" 2>/dev/null
 }
 
+# Uncommented keys only — upstream config templates ship a commented
+# '# external_dirs:' example that must not count as configured.
 has_external_dirs() {
-  grep -q 'external_dirs:' "$CONFIG" 2>/dev/null
+  grep -qE '^[[:space:]]*external_dirs:' "$CONFIG" 2>/dev/null
 }
 
 # Check if a specific path is already in external_dirs
 path_in_external_dirs() {
   local check_path="$1"
-  grep -A 50 'external_dirs:' "$CONFIG" 2>/dev/null \
+  grep -A 50 -E '^[[:space:]]*external_dirs:' "$CONFIG" 2>/dev/null \
     | sed '/^[^ ]/q' \
+    | grep -v '^[[:space:]]*#' \
     | grep -qF "$check_path"
 }
 
@@ -88,7 +91,7 @@ count_skills() {
 # List all PROJECT paths currently in external_dirs (non-system entries)
 list_project_entries() {
   if ! has_external_dirs; then return; fi
-  grep -A 50 'external_dirs:' "$CONFIG" 2>/dev/null \
+  grep -A 50 -E '^[[:space:]]*external_dirs:' "$CONFIG" 2>/dev/null \
     | grep '^\s*-' \
     | sed 's/^\s*-\s*//' \
     | while IFS= read -r entry; do
@@ -147,7 +150,7 @@ for i, line in enumerate(lines):
         in_skills = False
         break
 
-    if in_skills and 'external_dirs:' in stripped:
+    if in_skills and stripped.lstrip().startswith('external_dirs:'):
         has_external_dirs = True
         # Find the last list item after external_dirs
         j = i + 1

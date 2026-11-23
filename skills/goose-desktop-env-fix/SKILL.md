@@ -3,7 +3,7 @@ name: goose-desktop-env-fix
 description: >
   fix goose desktop, goose shell environment, goose env fix, goose rm guard
 metadata:
-  version: "1.8.0"
+  version: "1.8.1"
   model-tier: T4
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety]
 ---
@@ -289,9 +289,10 @@ export SDKMAN_DIR="$HOME/.sdkman"
 # Goose terminal integration
 eval "$(goose term init bash)"
 
-# Completions (devbox, hermes, gcloud, etc.)
+# Completions (devbox, gcloud, etc.)
 . <(devbox completion bash 2>/dev/null)
-eval "$(hermes completion bash 2>/dev/null)"
+# hermes: no eval here (~0.6s per shell) — the hermes-install skill writes a
+# lazy loader to ~/.local/share/bash-completion/completions/hermes
 ```
 
 **Key principle:** Everything above `[[ $- != *i* ]] && return` runs

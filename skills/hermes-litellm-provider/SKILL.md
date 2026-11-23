@@ -4,7 +4,7 @@ description: >
   configure hermes litellm, hermes litellm provider
 platforms: ['linux']
 metadata:
-  version: "2.5.0"
+  version: "2.5.1"
   model-tier: T2
   tags: [hermes, litellm, custom-provider, configuration]
   related_skills: [litellm-vertex-ai-proxy, litellm-proxy-status, goose-litellm-provider, hermes-headroom-provider]
@@ -173,7 +173,7 @@ The agent MUST report the script output verbatim. All 11 checks should pass.
 The agent MUST run a test query:
 
 ```bash
-hermes chat --oneshot "Say hello in one sentence"
+hermes -z "Say hello in one sentence"   # v0.23+: `chat --oneshot` was removed
 ```
 
 ### Step 5 — Test from Desktop (Optional)

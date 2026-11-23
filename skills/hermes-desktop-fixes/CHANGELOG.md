@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-22 21:26 | v4.0.0 — v4.0.0: check-first setup.sh — upstream absorbed v3 fixes; apply only GPU disable / legacy-entry / v3-leftover cleanup when detected; v4.0.0: SKILL.md rewritten — check-first workflow, v3 machinery retired (upstream v0.23.3 absorbed fixes); v4.0.0: references/history.md — v1–v3 bug history, upstream absorption, Bug #7 translucency technique; v4.0.0: deleted v3 recover.sh (broken venv/bin/hermes launcher); scores.yaml reset — SDM unavailable |
 | 2026-11-09 18:51 | v3.5.0 — Add CHANGES counter for --dry-run migration (summary block pending); Complete --dry-run migration: DRY_RUN_RESULT signals, exit 0 on dry-run, APPLY_RESULT signals |
 | 2026-11-09 11:13 | v3.4.0 — New script: check/apply env fixes, desktop entry, launcher wrapper, patch system health with --check mode and trace; Added Workflow section with 3 CNL Steps (check/apply/verify) and Output Contract for Q improvement |
 | 2026-11-08 22:51 | v3.3.0 — Add Rules + trace |

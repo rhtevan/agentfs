@@ -1,235 +1,123 @@
 ---
 name: hermes-desktop-fixes
 description: >
-  fix hermes desktop, hermes electron fix, hermes identity fix
+  fix hermes desktop, hermes desktop health
+argument-hint: "fix hermes desktop | hermes desktop health"
 metadata:
-  version: "3.5.0"
+  author: agentfs
+  version: "4.0.0"
   model-tier: T3
-  tags: [hermes, desktop, electron, fix, provider]
+  tags: [hermes, desktop, electron, fix, wayland]
+user-invocable: true
+disable-model-invocation: false
 ---
 
 # Hermes Desktop Fixes
 
+Check Hermes Desktop health on Fedora/GNOME Wayland and apply a fix only
+when a known problem is detected. Since Hermes v0.23.x, upstream ships the
+fixes this skill used to patch in (Wayland app-id desktop entry, provider
+identity, userns sandbox, `update --check`). Version 4.0.0 therefore retires
+the v3 launcher wrapper, source patches, and desktop-entry watcher. It keeps
+a check-first script that detects the remaining failure modes (Intel Arc GPU
+crash, visible duplicate entry) and cleans up v3 leftovers, which break the
+current upstream launcher. Use it after `hermes-install` or when Desktop
+misbehaves.
+
+## Overview
+
+| Property | Value |
+|----------|-------|
+| **Version** | 4.0.0 |
+| **Trigger** | `fix hermes desktop`, `hermes desktop health` |
+| **Dependencies** | Hermes installed (`hermes-install`), `git` |
+| **Tested** | Hermes v0.23.3, Fedora, Intel Arc (Meteor Lake-P), GNOME Wayland |
+
+## Specification
+
+| ID | Capability | Verifiable By |
+|:--:|-----------|---------------|
+| S1 | Report Desktop health without changes | `setup.sh --dry-run` → `DRY_RUN_RESULT=CONVERGED\|PENDING`, exit 0 |
+| S2 | Disable GPU only after a GPU-process FATAL | FATAL in `desktop-chromium.log` → `desktop.disable_gpu true` |
+| S3 | Remove a visible legacy `hermes.desktop` | Entry without `NoDisplay=true` removed |
+| S4 | Clean up v3 leftovers | wrapper → upstream shim; skip-worktree cleared; old hook/scripts removed |
+| S5 | Refuse when Hermes is not installed | exit 1 with `run the hermes-install skill first` |
 
 ## Rules
 
 Do NOT fabricate or invent command output, status, or results.
-Every report MUST come from actual script or command execution.
-If a command fails, report the actual error — do not guess.
+Every report MUST come from actual script output.
 
-Do NOT skip steps or combine multiple operations into one step.
-Execute each step in order and verify before proceeding.
+Do NOT write a launcher wrapper, source patch, or desktop entry by hand.
+Upstream owns all three.
+
+NEVER call `gdbus call org.gnome.Shell.Eval` to inspect windows on
+Wayland. It can crash the GNOME session (full logout).
 
 ## Workflow
 
-### Step 1 — Check current state
-
-The agent MUST run:
+### Step 1 — Dry-run
 
 ```bash
-bash ~/.agents/skills/hermes-desktop-fixes/scripts/setup.sh --check
+bash ~/.agents/skills/hermes-desktop-fixes/scripts/setup.sh --dry-run
 ```
 
-### Step 2 — Apply fixes
+- `DRY_RUN_RESULT=CONVERGED` → report "healthy". Stop.
+- `DRY_RUN_RESULT=PENDING` → show the `would:` lines to the user. Continue.
+- Exit 1 → Hermes is missing. Run the `hermes-install` skill.
 
-If Step 1 reports issues, the agent MUST run:
+### Step 2 — Apply
 
 ```bash
 bash ~/.agents/skills/hermes-desktop-fixes/scripts/setup.sh
 ```
 
-### Step 3 — Verify patch health
+Expect `APPLY_RESULT=OK`.
 
-If patches are installed, the agent MUST run:
+### Step 3 — Verify
 
-```bash
-bash ~/.hermes/hermes-check-patches.sh
-```
+Re-run Step 1. Expect `DRY_RUN_RESULT=CONVERGED`. Ask the user to launch
+`hermes desktop` from a terminal. Ask the user to report any sudo prompt,
+a window that disappears, or a generic icon.
 
 ## Output Contract
 
-- Exit 0 from setup.sh → all fixes are in place
-- Exit N (N>0) → N issues found, review output
+Dry-run ends with exactly one `DRY_RUN_RESULT=CONVERGED|PENDING` line.
+Apply ends with `APPLY_RESULT=OK (N fix(es) applied)` (exit 0) or
+`APPLY_RESULT=FAILED (F of N)` (exit 1).
 
----
+## Tests
 
-## Bugs Fixed
+| Test | Spec | Command | Expected |
+|:----:|:----:|---------|----------|
+| T1 | S1 | `setup.sh --dry-run` on a healthy v0.23.3 host | `CONVERGED`, nothing written |
+| T2 | S2–S4 | Sandbox `HOME` with v3 wrapper, skip-worktree file, hook, scripts, visible legacy entry, GPU FATAL log → `--dry-run` | `PENDING`, 7 fixes |
+| T3 | S2–S4 | Same sandbox → apply | `APPLY_RESULT=OK (7 …)`; shim execs `.hermes/bin/hermes`; file restored |
+| T4 | S5 | `HERMES_HOME=/nonexistent setup.sh --dry-run` | exit 1 |
+| T5 | — | `setup.sh --bogus` | exit 2 |
 
-### 0. LC_CTYPE Locale Warning (Cosmetic, Annoying)
-**Symptom:** `bash: warning: setlocale: LC_CTYPE: cannot change locale (UTF-8): No such file or directory` — appears 6× in the Desktop in-app terminal on every shell start.
-**Root cause:** Electron inherits macOS-style `LC_CTYPE=UTF-8` (bare, no language prefix like `en_US.`). Bash calls `setlocale()` during startup before any profile/rc file is sourced, so `.bashrc` fixes are too late.
-**Fix:** Three layers (belt-and-suspenders):
-1. `~/.hermes/.env` — `LC_CTYPE=en_US.UTF-8` (loaded by `load_hermes_dotenv()` before spawning terminals)
-2. `~/.hermes/hermes-env.sh` — conditional export when `LC_CTYPE` is "UTF-8" or empty
-3. `~/.config/environment.d/50-locale-fix.conf` — systemd user env (applies to new login sessions)
-**Note:** The `.bash_profile` early-export approach does NOT work — bash's `setlocale()` fires before any profile is sourced.
+## Error Handling
 
-### 1. Provider Identity Loss (Critical)
-**Symptom:** "No LLM provider configured" on new Desktop sessions; CLI works fine.
-**Root cause:** `_session_info()` in `tui_gateway/server.py` reports `agent.provider = "custom"` (resolved generic) instead of `"custom:litellm-vertex-ai"`. Desktop caches this bare `"custom"` in localStorage, sends it on next `session.create`. `_get_named_custom_provider("custom")` returns None → falls through → no provider.
-**Fix:** `_resolve_session_info_provider(agent)` helper maps bare `"custom"` back to `custom:<name>` via `find_custom_provider_identity(base_url)`.
+| Script | Idempotent | On Failure |
+|--------|:----------:|------------|
+| `setup.sh --dry-run` | ✅ (read-only) | Exit 1 → `hermes-install`. Exit 2 → fix arguments. |
+| `setup.sh` | ✅ | Exit 1 → show the `❌ failed:` lines to the user. Do not improvise. |
 
-### 2. Goose Node Wrapper Breaks Builds
-**Symptom:** npm/electron-builder fails with CWD errors.
-**Root cause:** `/usr/lib/Goose/resources/bin/node` wrapper does `cd ~/.config/goose/mcp-hermit` before running real node.
-**Fix:** `hermes-env.sh` strips it from PATH.
+## Troubleshooting
 
-### 3. Electron Sandbox Requires Sudo (RETIRED — v3.0)
-**Status:** Patch retired as of Sep 2026. Upstream refactored `_desktop_linux_sandbox_fixup()` — the function still exists but the code structure changed, so the sed pattern no longer matches. The `ELECTRON_DISABLE_SANDBOX=1` env var in `hermes-env.sh` and `.env` still prevents the sudo prompt; the source patch is no longer needed or applied.
-**Original symptom:** `hermes desktop` prompts for sudo password to set SUID on chrome-sandbox.
-**Original fix:** Early return when `ELECTRON_DISABLE_SANDBOX=1` is set, injected via sed into `main.py`.
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Window disappears ~40 s after launch | Intel Arc GPU process crash (Electron + Wayland) | `setup.sh` sets `desktop.disable_gpu true` when the FATAL is logged |
+| Two Hermes icons in the Apps grid | Visible pre-rename `hermes.desktop` | `setup.sh` removes it (upstream keeps a hidden alias) |
+| `hermes` fails: `venv/bin/hermes: No such file` | v3 wrapper still installed | `setup.sh` restores the upstream shim |
+| `hermes update`: `not uptodate. Cannot merge` | Old skip-worktree patch | `setup.sh` clears the flag and restores the file |
+| Window translucent on Linux | Renderer default in `localStorage` (no Linux toggle) | See Bug #7 in references |
+| `ERROR … ozone-platform=wayland is not compatible with Vulkan` in the terminal | Chromium noise | Ignore. Not a failure. |
 
-### 4. Generic Taskbar Icon on Fedora/GNOME Wayland (Rewritten — v3.0)
-**Symptom:** Hermes shows a generic application icon in the GNOME taskbar/dock instead of the Hermes logo. May also show duplicate icons (one pinned, one for the running window).
-**Root cause (v2.1, Jul 2026):** `StartupWMClass=hermes` (lowercase) vs Electron's `WM_CLASS=Hermes` (capital H). This was the X11-era fix.
-**Root cause (v3.0, Sep 2026):** On Wayland, GNOME matches windows to `.desktop` files using the **app-id**, not `StartupWMClass`. Electron derives the app-id from `package.json` `desktopName` field, which electron-builder sets via `extraMetadata: { desktopName: appId }` → resolves to `com.nousresearch.hermes`. GNOME looks for `com.nousresearch.hermes.desktop` — if that file doesn't exist, no icon match → generic icon.
-**Additional complication:** Upstream's `linux_desktop_entry.py` auto-generates `hermes.desktop` on every `hermes desktop` launch with a broken `Exec` path (points into a stale install environment venv). If both `hermes.desktop` and our entry coexist, GNOME shows two entries in Apps grid.
-**Fix (v3.0):**
-1. Desktop entry named `com.nousresearch.hermes.desktop` — matches Electron's Wayland app-id
-2. `Icon=hermes` (themed name) — resolves via upstream's hicolor icon installs at 24/32/48/256px
-3. `StartupWMClass=com.nousresearch.hermes` — matches Electron's Wayland app-id (NOT the X11 `productName` "Hermes")
-4. `Exec` uses our launcher wrapper with `ELECTRON_DISABLE_SANDBOX=1` and `--skip-build`
-5. Background watcher in launcher wrapper detects upstream's `hermes.desktop` regeneration AND upstream overwriting our entry (checks Exec line), deletes duplicates and restores correct content
-6. GNOME favorites pinned to `com.nousresearch.hermes.desktop`
+## References
 
-**Diagnostics:**
-```bash
-# Check Electron's Wayland app-id (from built package.json)
-npx asar extract ~/.hermes/hermes-agent/apps/desktop/release/linux-unpacked/resources/app.asar /tmp/asar-check
-python3 -c "import json; print(json.load(open('/tmp/asar-check/package.json'))['desktopName'])"
-
-# Check which .desktop file GNOME used to launch
-cat /proc/$(pgrep -f "linux-unpacked/Hermes" | head -1)/environ 2>/dev/null | tr '\0' '\n' | grep GIO_LAUNCHED_DESKTOP_FILE
-
-# Verify icon theme resolves
-python3 -c "import gi; gi.require_version('Gtk','3.0'); from gi.repository import Gtk; i=Gtk.IconTheme.get_default().lookup_icon('hermes',48,0); print(i.get_filename() if i else 'NOT FOUND')"
-
-# Check for duplicate entries
-ls ~/.local/share/applications/*hermes*.desktop
-```
-
-### 6. GPU Process Crash on Intel Arc + Wayland (v3.2)
-**Symptom:** Hermes Desktop starts, backend comes up healthy, but ~40s later Electron crashes with `FATAL: GPU process isn't usable. Goodbye.` in `desktop-chromium.log`. The Electron window disappears silently.
-**Root cause:** Intel Arc (Meteor Lake-P) iGPU + Electron 40 + `--no-sandbox` + Wayland. The GPU subprocess fails to launch (error_code=1002 = `kLaunchFailed`), the zygote communication breaks, Electron retries 6×, then exits with FATAL. Occurs after kernel/mesa updates (e.g., kernel 7.2.7, mesa 26.2.3 on Fedora 44). The i915 driver + Chromium GPU process isolation don't play well together when the sandbox is disabled.
-**Fix:** `desktop.disable_gpu: true` in `~/.hermes/config.yaml` → Python launcher sets `HERMES_DESKTOP_DISABLE_GPU=1` in env → Electron calls `app.disableHardwareAcceleration()` + appends `--disable-gpu-compositing` before `app.ready`. Software rendering is used instead. The GPU FATAL still appears in the chromium log but is non-fatal because the main process no longer depends on the GPU subprocess.
-**Config:**
-```bash
-hermes config set desktop.disable_gpu true
-```
-**Diagnostics:**
-```bash
-# Check for GPU crash in chromium log
-grep "FATAL.*GPU" ~/.hermes/logs/desktop-chromium.log
-
-# Verify disable_gpu is set
-grep disable_gpu ~/.hermes/config.yaml
-
-# Verify env var reaches Electron
-cat /proc/$(pgrep -f "linux-unpacked/Hermes --disable" | head -1)/environ 2>/dev/null | tr '\0' '\n' | grep HERMES_DESKTOP_DISABLE_GPU
-```
-
-### 7. Window Translucency Active on Linux Despite No Config (v3.2)
-**Symptom:** Hermes Desktop window appears partially transparent/translucent after an update, despite no translucency config ever being set. The Settings toggle for translucency is hidden on Linux (`TRANSLUCENCY_SUPPORTED` returns `false` for Linux in `src/store/translucency.ts`), so there's no UI to disable it.
-**Root cause:** A Hermes Desktop update shipped translucency as a new default. The renderer reads `localStorage` key `hermes.desktop.translucency.v2`; when absent, the default state includes non-zero intensity. On Linux, the settings row is gated behind `TRANSLUCENCY_SUPPORTED` (mac/win only), so the user has no toggle — but the effect still applies via CSS `data-hermes-clear` attribute and native `setOpacity`.
-**Fix:** Set the localStorage key to fully opaque:
-```js
-localStorage.setItem('hermes.desktop.translucency.v2', JSON.stringify({mode:'clear',base:{intensity:0,fade:0},light:{},dark:{}}));
-dispatchEvent(new StorageEvent('storage',{key:'hermes.desktop.translucency.v2'}));
-```
-**How to deliver the fix:** The localStorage is inside the Electron renderer — it cannot be accessed from `terminal` (LevelDB is locked by the running process), `browser_exec` (SecurityError: different origin sandbox), or `hermes config` (not exposed). Write an HTML file with a button that calls the JS above, then render it inline via `::preview{file="path.html"}` — the preview frame runs inside the Hermes Desktop renderer and has access to the app's `localStorage`. The fix persists across restarts (Electron localStorage is durable on disk).
-**Diagnostics:**
-```bash
-# Check if translucency key exists in storage
-strings ~/.config/Hermes/Local\ Storage/leveldb/*.ldb ~/.config/Hermes/Local\ Storage/leveldb/*.log 2>/dev/null | grep translucen
-
-# Check source for translucency support on current platform
-grep -A 3 "translucencySupportedOn" ~/.hermes/hermes-agent/apps/desktop/electron/translucency.test.ts
-```
-
-### 5. electron-builder Can't Find Electron (RETIRED — v3.0)
-**Status:** Patch retired as of Sep 2026. Upstream removed `patch-electron-builder-mac-binary.cjs` entirely — only `dmgbuild-diagnostics.cjs` remains in `apps/desktop/scripts/`. The electron workspace hoisting issue may have been fixed upstream or is no longer relevant with current electron-builder versions.
-**Original symptom:** Build fails looking for `../../node_modules/electron/dist`.
-**Original fix:** Inject symlink creation into the prebuilder script.
-
-## Architecture
-
-### Update-proof mechanism
-The key challenge: upstream's `linux_desktop_entry.py` regenerates `hermes.desktop` on every `hermes desktop` launch, and `git pull --ff-only` refuses to merge when skip-worktree files differ from the index.
-
-**Solution:** The launcher wrapper (`~/.local/bin/hermes`) handles two concerns:
-
-**Update interception:**
-1. **Pre-flight:** Read-only flags (`--check`, `--plan`, `--list-venv-holders`, `--install-id`) pass through without touching patches. Plain `hermes update` runs `--check` first; if already up to date, short-circuits (avoids upstream's unconditional TUI/web/desktop rebuild in the completion path).
-2. **Before update:** `hermes-revert-patches.sh` finds *all* skip-worktree files (`git ls-files -v | grep ^S`), clears flags, and checks out clean copies — this is generic, not hardcoded, so retired patches with orphaned flags are automatically cleaned up
-3. **During update:** `git pull --ff-only` / `git reset` succeeds (working tree is clean)
-4. **After update:** `hermes-apply-patches.sh` re-applies patches + sets skip-worktree
-5. **Belt-and-suspenders:** `post-merge` git hook also calls apply-patches
-
-**Desktop entry maintenance (background watcher):**
-On `hermes desktop`, a background subshell polls for upstream's `hermes.desktop` (up to 30s). When detected:
-1. Deletes upstream's `hermes.desktop` (broken `Exec`, causes duplicate in Apps grid)
-2. Writes/refreshes `com.nousresearch.hermes.desktop` with correct `Exec` and `Icon=hermes`
-3. Runs `update-desktop-database`
-
-### Files outside git (permanent, never overwritten by update)
-
-| File | Purpose |
-|------|---------|
-| `~/.hermes/hermes-env.sh` | PATH fix + `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE` fix |
-| `~/.hermes/hermes-apply-patches.sh` | Idempotent: applies source patches + sets skip-worktree |
-| `~/.hermes/hermes-revert-patches.sh` | Generically clears all skip-worktree flags + checks out clean upstream before update |
-| `~/.hermes/hermes-check-patches.sh` | Health check |
-| `~/.hermes/.env` | `ELECTRON_DISABLE_SANDBOX=1` + `LC_CTYPE=en_US.UTF-8` (loaded by `load_hermes_dotenv()`) |
-| `~/.local/share/applications/com.nousresearch.hermes.desktop` | GNOME desktop entry (matches Wayland app-id) |
-| `~/.local/bin/hermes` | Launcher: sources env, intercepts update, desktop entry watcher |
-| `~/.hermes/hermes-agent/.git/hooks/post-merge` | Calls hermes-apply-patches.sh |
-
-### Files patched (git-tracked, skip-worktree protected)
-
-1. `tui_gateway/server.py` — `_resolve_session_info_provider()` + usage in `_session_info()`
-
-*Retired patches (no longer applied):*
-- ~~`hermes_cli/main.py` — sandbox bypass~~ (upstream refactored, env var sufficient)
-- ~~`apps/desktop/scripts/patch-electron-builder-mac-binary.cjs` — electron symlink~~ (file removed upstream)
-
-## Recovery
-
-```bash
-# Health check
-bash ~/.hermes/hermes-check-patches.sh
-
-# Full recovery (idempotent)
-bash ~/.agents/skills/hermes-desktop-fixes/recover.sh
-
-# Clear stale Desktop cache (if provider issue recurs)
-rm -rf ~/.config/Hermes/Local\ Storage/leveldb/*
-```
-
-## Resolved Issues (v3.1)
-- **Orphaned skip-worktree on `hermes_cli/main.py`:** The v3.0 retirement of Bug #3 stopped *applying* the `main.py` patch but never cleared the `skip-worktree` flag left behind by older versions. When upstream changed `hermes_cli/main.py`, `git reset --hard` failed with `Entry 'hermes_cli/main.py' not uptodate. Cannot merge.` The revert script now generically discovers and clears all skip-worktree flags, and the health check detects orphaned flags.
-- **GPU process crash kills Electron on Intel Arc + Wayland:** Fixed via `desktop.disable_gpu: true` in config.yaml — uses Hermes's built-in `HERMES_DESKTOP_DISABLE_GPU` mechanism to call `app.disableHardwareAcceleration()` before `app.ready`.
-- **Desktop entry overwritten by upstream after update:** Upstream's `linux_desktop_entry.py` overwrites `com.nousresearch.hermes.desktop` with a broken `Exec` path (raw python invocation instead of our launcher wrapper). The background watcher only detects `hermes.desktop` creation, not modifications to our own entry. Manually restored correct entry.
-- **Unconditional TUI/web/desktop rebuild on every `hermes update`:** Upstream's completion path (`complete_source_checkout` → `build_update_products`) unconditionally rebuilds all frontends even when already up to date. This was masked before because the orphaned skip-worktree flag made updates fail before reaching the build step. Fixed by adding a `--check` pre-flight in the launcher: plain `hermes update` now fetches and checks first, short-circuiting in ~2s when current instead of ~2min of unnecessary rebuilds.
-
-## Techniques
-
-### Executing JS in the Hermes Desktop Renderer
-When you need to run JavaScript in the Hermes Desktop Electron renderer context (e.g., to access `localStorage`, `document`, or app-internal APIs), and neither `browser_exec` (origin sandbox) nor `terminal` (process lock) can reach it:
-1. Write an HTML file with the JS logic (e.g., a button that calls `localStorage.setItem(...)`).
-2. Render it inline via `::preview{file="/path/to/file.html"}` in the chat response.
-3. The preview frame executes inside the desktop renderer and shares its `localStorage`, `document`, and `window` scope.
-4. Use `data-hermes-send="prompt"` on clickable elements if the widget needs to report results back to the agent.
-
-## Safety Rules
-- **NEVER use `gdbus call org.gnome.Shell.Eval` to inspect windows on Wayland.** This can crash the entire GNOME session (compositor crash = full logout). There is no safe programmatic way to introspect live Wayland windows from a terminal. Verify `.desktop` entry correctness by reading the file and checking `package.json desktopName` — never by poking the compositor.
-
-## Known Limitations
-- If upstream renames `_session_info` or changes the provider plumbing, the sed pattern for Bug #1 will silently fail. The health check detects this.
-- If upstream changes `desktopName` from `com.nousresearch.hermes` to a different app-id, the desktop entry filename must be updated to match.
-- The background watcher polls for up to 30s. If upstream's deferred desktop entry write takes longer (unlikely), the duplicate may briefly appear.
-- The Desktop rebuild during `hermes update` calls `python -m hermes_cli.main desktop --build-only` directly (bypasses launcher), but `--build-only` returns before the sandbox check, so it's non-fatal.
-- The launcher wrapper uses `$HOME` in `HERMES_BIN` path, but upstream's `_wrapper_targets_checkout()` does literal string comparison against the resolved absolute path. The probe won't recognize our wrapper — harmless because `manage_launcher_entry: false` prevents the desktop entry rewrite.
-- Upstream's `linux_desktop_entry.py` now writes directly to `com.nousresearch.hermes.desktop` (not just `hermes.desktop`). The `manage_launcher_entry: false` config opt-out is the primary defense; the launcher's background watcher is belt-and-suspenders.
+- [references/history.md](./references/history.md) — v1–v3 bug history,
+  which upstream change absorbed each fix, and the Bug #7 renderer-JS technique
 
 ## Changelog
 

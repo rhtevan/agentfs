@@ -2,6 +2,56 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-22 21:56
+- README: 62 skills; hermes-install in Getting Started (Hermes) and Agent Setup row (README.md)
+
+## 2026-11-22 21:53
+- v1.2.0: S7/T7 + Gotcha — upstream completion has no options for top-level/non-leaf commands; loader adds --help fallback (skills/hermes-install/SKILL.md)
+
+## 2026-11-22 21:52
+- v1.2.0: option cache persists (no subshell) — repeat `<Tab>` is instant (skills/hermes-install/scripts/install.sh)
+- v1.2.0: completion loader falls back to --help options when upstream completion is empty (top-level, non-leaf and 3rd-level - / -- options); stale managed loader is rewritten (skills/hermes-install/scripts/install.sh)
+
+## 2026-11-22 21:47
+- v1.8.1: example ~/.bashrc drops 'eval $(hermes completion bash)' — hermes-install writes a lazy bash-completion loader (skills/goose-desktop-env-fix/SKILL.md)
+- v1.1.0: S7/T7 bash completion, status output + hand-off note (skills/hermes-install/SKILL.md)
+- v1.1.0: status reports bash completion loader (skills/hermes-install/scripts/status.sh)
+- v1.1.0: install bash completion lazy loader (~/.local/share/bash-completion/completions/hermes → hermes completion bash); dry-run PENDING when missing; foreign file left untouched (skills/hermes-install/scripts/install.sh)
+
+## 2026-11-22 21:28
+- v2.5.1: Step 4 CLI test uses 'hermes -z' (v0.23 removed 'chat --oneshot') (skills/hermes-litellm-provider/SKILL.md)
+
+## 2026-11-22 21:27
+- v1.3.1: ignore commented '# external_dirs:' example in upstream config template (false 'already configured' + invalid YAML insert) (skills/hermes-agentfs-setup/scripts/setup.sh)
+
+## 2026-11-22 21:26
+- v4.0.0: deleted v3 recover.sh (broken venv/bin/hermes launcher); scores.yaml reset — SDM unavailable (skills/hermes-desktop-fixes/scores.yaml)
+- v4.0.0: deleted v3 recover.sh — wrote launcher to non-existent venv/bin/hermes and StartupWMClass=Hermes; superseded by upstream v0.23.3 (skills/hermes-desktop-fixes/recover.sh)
+- v4.0.0: references/history.md — v1–v3 bug history, upstream absorption, Bug #7 translucency technique (skills/hermes-desktop-fixes/references/history.md)
+- v4.0.0: SKILL.md rewritten — check-first workflow, v3 machinery retired (upstream v0.23.3 absorbed fixes) (skills/hermes-desktop-fixes/SKILL.md)
+
+## 2026-11-22 21:22
+- v4.0.0: check-first setup.sh — upstream absorbed v3 fixes; apply only GPU disable / legacy-entry / v3-leftover cleanup when detected (skills/hermes-desktop-fixes/scripts/setup.sh)
+
+## 2026-11-22 21:07
+- hermes-install: gotchas from first real run (per-file rc PATH append, generic stable-channel notice) (skills/hermes-install/SKILL.md)
+
+## 2026-11-22 21:06
+- hermes-install: gotchas from first real run (per-file rc PATH append, generic stable-channel notice) (skills/hermes-install/SKILL.md)
+
+## 2026-11-22 20:08
+- skill-gen: QOO scores (SDM unavailable; structural facts recorded) (skills/hermes-install/scores.yaml)
+- hermes-install: T3 expectation matches gate output (skills/hermes-install/SKILL.md)
+- hermes-install: T3 expectation matches gate output (skills/hermes-install/SKILL.md)
+
+## 2026-11-22 20:07
+- hermes-install: new skill SKILL.md v1.0.0 (skills/hermes-install/SKILL.md)
+- hermes-install: install.sh (dry-run, prereq gate, sha256, data-survival check) (skills/hermes-install/scripts/install.sh)
+- hermes-install: install.sh (dry-run, prereq gate, sha256, data-survival check) (skills/hermes-install/scripts/install.sh)
+
+## 2026-11-22 20:06
+- hermes-install: read-only status.sh (skills/hermes-install/scripts/status.sh)
+
 ## 2026-11-22 19:54
 - status: healthy link (Reachable) no longer flagged STALE (skills/skupper-model-provider/scripts/status.sh)
 - status: healthy link (Reachable) no longer flagged STALE (skills/skupper-model-provider/scripts/status.sh)

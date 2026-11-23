@@ -1,0 +1,35 @@
+# scores.yaml — hermes-install
+skill: hermes-install
+version: 1.0.0
+model_tier: T2
+qualification_rule: build+observable
+qoo-qualified: false
+
+quality:
+  schema: quality.yaml
+  aggregate_score: -1
+  band: SDM_UNAVAILABLE
+  evaluated: "2026-11-22T20:08:28-05:00"
+
+observable:
+  schema: observable.yaml
+  aggregate_score: -1
+  band: SDM_UNAVAILABLE
+  evaluated: "2026-11-22T20:08:31-05:00"
+
+# Structural facts from gather-skill-state.sh (deterministic, no SDM)
+structural:
+  scripts: 2
+  script_coverage: "3 of 5 action steps (60%) — remaining 2 are the privilege gate and hand-off (agent interaction steps)"
+  trace_instrumentation: true
+  anti_fabrication_rules: true
+  cnl_compliance: 1.00
+
+history:
+  - date: "2026-11-22T20:08:31-05:00"
+    type: quality+observable
+    quality_score: -1
+    quality_band: SDM_UNAVAILABLE
+    observable_score: -1
+    observable_band: SDM_UNAVAILABLE
+    note: "Initial QOO scoring by skill-gen — SDM (localhost:9000) unavailable; re-run 'hey score skill hermes-install' when SDM is back"
