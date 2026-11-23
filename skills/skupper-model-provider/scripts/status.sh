@@ -82,7 +82,7 @@ stale_marker() {
   local last_known="$1"
   local live="$2"
   # Stale if last-known says Ready but live says otherwise
-  if [[ "$last_known" == "Ready" && "$live" != "Up" && "$live" != "running" && "$live" != "active" ]]; then
+  if [[ "$last_known" == "Ready" && "$live" != "Up" && "$live" != "Reachable" && "$live" != "running" && "$live" != "active" ]]; then
     echo " (STALE)"
   else
     echo ""
@@ -96,7 +96,7 @@ echo "Sites:"
 printf "  %-20s %-12s %-5s  %-12s %-5s  %s\n" "HOST" "LAST-KNOWN" "" "LIVE" "" "DETAIL"
 printf "  %-20s %-12s %-5s  %-12s %-5s  %s\n" "────────────────────" "────────────" "" "────────────" "" "──────────────────────────────────────"
 
-for host in localhost rhel-ai rhtevan-work; do
+for host in localhost "${HUB_SITES[@]}"; do
   # Determine site name
   if [[ "$host" == "localhost" ]]; then
     site_name="${LOCAL_SITE_NAME}"
@@ -164,7 +164,7 @@ echo "Links:"
 printf "  %-26s %-12s %-5s  %-14s %-5s  %s\n" "LINK" "LAST-KNOWN" "" "LIVE" "" "REMOTE ENDPOINT"
 printf "  %-26s %-12s %-5s  %-14s %-5s  %s\n" "──────────────────────────" "────────────" "" "──────────────" "" "─────────────────────────"
 
-for host in rhel-ai rhtevan-work; do
+for host in "${HUB_SITES[@]}"; do
   link_name="${LINK_NAMES[local-${host}]}"
 
   # Last-Known from YAML
@@ -198,7 +198,7 @@ echo "Listeners:"
 printf "  %-22s %-6s %-12s %-5s  %-14s %-5s  %s\n" "NAME" "PORT" "LAST-KNOWN" "" "LIVE" "" "ROUTING-KEY"
 printf "  %-22s %-6s %-12s %-5s  %-14s %-5s  %s\n" "──────────────────────" "──────" "────────────" "" "──────────────" "" "─────────────────────────"
 
-for host in rhel-ai rhtevan-work; do
+for host in "${HUB_SITES[@]}"; do
   IFS='|' read -r _ _ routing_key model_port _ <<< "${SITE_PROFILES[$host]}"
   listener_name="listener-${routing_key}"
 
@@ -248,7 +248,7 @@ echo
 # 4. CONNECTORS — Remote status
 # ══════════════════════════════════════════════════════════════
 echo "Connectors:"
-for host in rhel-ai rhtevan-work; do
+for host in "${HUB_SITES[@]}"; do
   if host_reachable "$host"; then
     echo "  $host:"
     run_on_host "$host" "skupper --platform podman connector status -n ${NAMESPACE} 2>&1" | grep -v '^$' | sed 's/^/    /' || true

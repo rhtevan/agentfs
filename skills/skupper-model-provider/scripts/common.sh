@@ -7,7 +7,7 @@ set -euo pipefail
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "skupper-model-provider" "9.2.0" 2>/dev/null || true
+trace_init "skupper-model-provider" "9.3.0" 2>/dev/null || true
 
 # ── Load topology ─────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,12 +23,41 @@ fi
 # shellcheck source=../topology.env
 source "$TOPOLOGY_FILE"
 
+# ── Enabled hub sites ─────────────────────────────────────────
+# RHEL_AI_ENABLED=false removes rhel-ai from every loop (setup, up,
+# down, status, teardown, upgrade, precheck, host validation). Default
+# true keeps the original 2-hub behaviour. rhtevan-work is always on.
+RHEL_AI_ENABLED="${RHEL_AI_ENABLED:-true}"
+HUB_SITES=()
+[[ "$RHEL_AI_ENABLED" == "true" ]] && HUB_SITES+=(rhel-ai)
+HUB_SITES+=(rhtevan-work)
+
+hub_enabled() {
+  local h
+  for h in "${HUB_SITES[@]}"; do [[ "$h" == "$1" ]] && return 0; done
+  return 1
+}
+
+# rhel-ai values may be absent from topology.env when it is disabled
+RHEL_AI_SSH_HOST="${RHEL_AI_SSH_HOST:-rhel-ai}"
+RHEL_AI_INTER_ROUTER_PORT="${RHEL_AI_INTER_ROUTER_PORT:-8000}"
+RHEL_AI_EDGE_PORT="${RHEL_AI_EDGE_PORT:-45671}"
+RHEL_AI_ROUTING_KEY="${RHEL_AI_ROUTING_KEY:-model-api-rhel-ai}"
+RHEL_AI_MODEL_PORT="${RHEL_AI_MODEL_PORT:-9000}"
+RHEL_AI_PUBLIC_HOST="${RHEL_AI_PUBLIC_HOST:-}"
+RHEL_AI_SANS="${RHEL_AI_SANS:-}"
+# Optional decision-model route on rhel-ai (empty = not configured)
+RHEL_AI_DECISION_ROUTING_KEY="${RHEL_AI_DECISION_ROUTING_KEY:-}"
+RHEL_AI_DECISION_PORT="${RHEL_AI_DECISION_PORT:-}"
+
 # ── Skupper Configuration ─────────────────────────────────────
 NAMESPACE="model-provider-podman"
 PLATFORM="podman"
 # Router image version: detect from CRC baseline or override via SKUPPER_ROUTER_VERSION.
 # Default fallback used when CRC is unavailable and no override is set.
 SKUPPER_ROUTER_VERSION="${SKUPPER_ROUTER_VERSION:-3.5.3}"
+# CLI version installed by setup.sh when `skupper` is missing (never upgrades).
+SKUPPER_CLI_VERSION="${SKUPPER_CLI_VERSION:-2.2.3}"
 ROUTER_IMAGE="quay.io/skupper/skupper-router:${SKUPPER_ROUTER_VERSION}"
 ROUTER_CONTAINER="${NAMESPACE}-skupper-router"
 CONTROLLER_SUFFIX="skupper-controller"
@@ -119,6 +148,11 @@ resolve_host() {
   fi
   # Profile name?
   if [[ -n "${PROFILE_TO_HOST[$target]:-}" ]]; then
+    if ! hub_enabled "${PROFILE_TO_HOST[$target]}"; then
+      echo "⚠️  Profile '$target' runs on ${PROFILE_TO_HOST[$target]}, which is disabled" >&2
+      echo "unknown"
+      return 1
+    fi
     echo "${PROFILE_TO_HOST[$target]}"
     return 0
   fi
@@ -327,6 +361,19 @@ precheck_topology() {
   local ra_sans_fmt="${ra_sans//,/, }"
   local rw_sans_fmt="${rw_sans//,/, }"
 
+  # rhel-ai branch of the topology tree (only when enabled)
+  local ra_section=""
+  if hub_enabled rhel-ai; then
+    ra_section="  ├── ${LINK_NAMES[local-rhel-ai]} → rhel-ai
+  │     host:  ${ra_host}
+  │     port:  ${ra_port} (AMQPS)
+  │     SANs:  ${ra_sans_fmt}
+  │     Listener :${ra_lport} ← ${ra_rkey}
+  │
+"
+  fi
+  local hub_count=${#HUB_SITES[@]}
+
   # Build CRC section if enabled
   local crc_section=""
   if [[ "$CRC_ENABLED" == "true" ]]; then
@@ -351,9 +398,9 @@ CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
   │     port:  ${crc_target_port_d} (AMQPS)
   │     Listener :${CRC_MODEL_PORT} ← ${CRC_ROUTING_KEY}
   │     Service: listener-${CRC_ROUTING_KEY}.${CRC_NAMESPACE}:${CRC_MODEL_PORT}${crc_local_link_section}"
-    local site_count="4-site"
+    local site_count="$((hub_count + 2))-site"
   else
-    local site_count="3-site"
+    local site_count="$((hub_count + 1))-site"
   fi
 
   cat << TOPO
@@ -361,13 +408,7 @@ CRC: ${CRC_SITE_NAME} (kubernetes, ${CRC_NAMESPACE})
 Skupper VAN — ${site_count} interior mesh
 
 LOCAL: ${LOCAL_SITE_NAME} (localhost, podman)
-  ├── ${LINK_NAMES[local-rhel-ai]} → rhel-ai
-  │     host:  ${ra_host}
-  │     port:  ${ra_port} (AMQPS)
-  │     SANs:  ${ra_sans_fmt}
-  │     Listener :${ra_lport} ← ${ra_rkey}
-  │
-  └── ${LINK_NAMES[local-rhtevan-work]} → rhtevan-work
+${ra_section}  └── ${LINK_NAMES[local-rhtevan-work]} → rhtevan-work
         host:  ${rw_host}
         port:  ${rw_port} (AMQPS)
         SANs:  ${rw_sans_fmt}
@@ -383,6 +424,7 @@ TOPO
   # ── Validation ────────────────────────────────────────────────
   echo "Validating topology..."
   echo
+  hub_enabled rhel-ai || echo "  ℹ️  rhel-ai: disabled (RHEL_AI_ENABLED=false) — skipped everywhere"
 
   # 1. Podman
   if podman info &>/dev/null; then
@@ -396,12 +438,12 @@ TOPO
   if command -v skupper &>/dev/null; then
     echo "  ✅ Skupper CLI: $(skupper version 2>/dev/null || echo 'available')"
   else
-    echo "  ❌ Skupper CLI: not found"
-    ((errors++))
+    echo "  ⚠️  Skupper CLI: not found — setup.sh installs v${SKUPPER_CLI_VERSION} into ~/.local/bin"
+    ((warnings++))
   fi
 
   # 3. SSH reachability
-  for site in rhel-ai rhtevan-work; do
+  for site in "${HUB_SITES[@]}"; do
     local ssh_target
     ssh_target=$(ssh_host_for "$site")
     if ssh -o ConnectTimeout=5 -o BatchMode=yes "$ssh_target" 'echo ok' &>/dev/null; then
@@ -413,7 +455,7 @@ TOPO
   done
 
   # 4. PUBLIC_HOST resolution
-  for site in rhel-ai rhtevan-work; do
+  for site in "${HUB_SITES[@]}"; do
     local pub_host
     [[ "$site" == "rhel-ai" ]] && pub_host="$RHEL_AI_PUBLIC_HOST" || pub_host="$RHTEVAN_WORK_PUBLIC_HOST"
     if getent hosts "$pub_host" &>/dev/null; then
@@ -430,7 +472,7 @@ TOPO
   done
 
   # 5. SANs include PUBLIC_HOST
-  for site in rhel-ai rhtevan-work; do
+  for site in "${HUB_SITES[@]}"; do
     local pub_host sans
     if [[ "$site" == "rhel-ai" ]]; then
       pub_host="$RHEL_AI_PUBLIC_HOST"
@@ -449,7 +491,7 @@ TOPO
   done
 
   # 6. Local ports available
-  for site in rhel-ai rhtevan-work; do
+  for site in "${HUB_SITES[@]}"; do
     local lport
     [[ "$site" == "rhel-ai" ]] && lport="$RHEL_AI_MODEL_PORT" || lport="$RHTEVAN_WORK_MODEL_PORT"
     if ss -tlnp 2>/dev/null | grep -q ":${lport} "; then
@@ -464,6 +506,13 @@ TOPO
   if [[ "$CRC_ENABLED" == "true" ]]; then
     echo
     echo "  CRC site (${CRC_SITE_NAME}):" 
+
+    # CRC hub link target must be an enabled hub
+    if ! hub_enabled "${CRC_LINK_TARGET}"; then
+      echo "  ❌ CRC_LINK_TARGET=${CRC_LINK_TARGET} is not an enabled hub (enabled: ${HUB_SITES[*]})"
+      echo "       Enable it, or point CRC_LINK_TARGET at an enabled hub."
+      ((errors++))
+    fi
 
     # CRC context authentication
     if oc --context="${CRC_OC_CONTEXT}" whoami &>/dev/null; then
@@ -590,7 +639,7 @@ set -euo pipefail
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "skupper-model-provider" "9.2.0" 2>/dev/null || true
+trace_init "skupper-model-provider" "9.3.0" 2>/dev/null || true
 
 ROUTER="model-provider-podman-skupper-router"
 
@@ -649,7 +698,7 @@ set -euo pipefail
 # Trace instrumentation
 # shellcheck source=~/.agents/scripts/trace-lib.sh
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
-trace_init "skupper-model-provider" "9.2.0" 2>/dev/null || true
+trace_init "skupper-model-provider" "9.3.0" 2>/dev/null || true
 CONTAINER=\"${controller}\"
 podman start \"\${CONTAINER}\"
 RC=\$(podman wait --condition=stopped \"\${CONTAINER}\")
@@ -900,13 +949,17 @@ check_crc_link_staleness() {
 
 # ── Name Validation ───────────────────────────────────────────
 # Strict exact-match validation. Agent does fuzzy matching before calling scripts.
-VALID_HOSTS=(rhel-ai rhtevan-work)
+VALID_HOSTS=("${HUB_SITES[@]}")
 
 validate_host() {
   local input="$1"
   for h in "${VALID_HOSTS[@]}"; do
     [[ "$input" == "$h" ]] && return 0
   done
+  if [[ "$input" == "rhel-ai" && "$RHEL_AI_ENABLED" != "true" ]]; then
+    echo "❌ Host 'rhel-ai' is disabled (RHEL_AI_ENABLED=false in topology.env). Enabled hosts: ${VALID_HOSTS[*]}" >&2
+    return 1
+  fi
   echo "❌ Unknown host '$input'. Valid hosts: ${VALID_HOSTS[*]}" >&2
   return 1
 }

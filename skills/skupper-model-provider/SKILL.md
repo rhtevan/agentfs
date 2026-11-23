@@ -10,7 +10,7 @@ argument-hint: "start skupper | stop skupper | start skupper on rhel-ai | upgrad
 compatibility: "skupper CLI 2.2+, podman, SSH access to remote GPU hosts, CRC/OpenShift"
 metadata:
   author: agentfs
-  version: "9.2.1"
+  version: "9.3.0"
   model-tier: T3
   tags: [skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work]
 user-invocable: true
@@ -32,6 +32,22 @@ For architecture details, topology, and routing tables, see
 For agent orchestration rules (signal routing, scoping, partial
 availability, startup/shutdown order), see
 [references/agent-orchestration.md](references/agent-orchestration.md).
+
+## Site Switch — `RHEL_AI_ENABLED`
+
+`topology.env` → `RHEL_AI_ENABLED="false"` takes rhel-ai out of every
+script: setup (Phase 1, its local listener and link), up, down, status,
+teardown, upgrade, precheck, and host/profile validation (`up.sh rhel-ai`
+→ "disabled"). The VAN becomes local ↔ rhtevan-work (2-site; 3-site with
+CRC). Default `true` (or absent) keeps the original behaviour.
+
+- Re-enable: set `"true"`, fill the `RHEL_AI_*` values, re-run
+  `setup.sh` — Phase 1 builds the hub, Phase 3 adds the missing local
+  listener (`system reload`), Phase 4 creates the link.
+- CRC with rhel-ai disabled: `CRC_LINK_TARGET` must name an enabled hub
+  (precheck errors otherwise).
+- `RHEL_AI_DECISION_ROUTING_KEY` / `RHEL_AI_DECISION_PORT` are optional;
+  the decision connector/listener is created only when both are set.
 
 ## Script Separation
 
@@ -133,6 +149,7 @@ For detailed troubleshooting procedures, see
 | S11a | Start localhost independently | `up.sh localhost` → local started, links reconverge |
 | S11b | Stop localhost independently | `down.sh localhost` → local stopped, remotes untouched |
 | S12 | Upgrade podman sites to CRC baseline | `upgrade.sh` → all versions aligned |
+| S13 | Disable rhel-ai site | `RHEL_AI_ENABLED=false` → precheck/up/down/status/teardown/upgrade skip rhel-ai; `up.sh rhel-ai` → disabled |
 
 ## Tests
 
@@ -153,6 +170,7 @@ For detailed troubleshooting procedures, see
 | T10a | S10a | CRC authenticated | `up.sh crc` | CRC links recreated |
 | T11b | S11a | Local down, providers up | `up.sh localhost` | Local started, links reconverge |
 | T12 | S12 | Version mismatch | `upgrade.sh` | All versions match CRC baseline |
+| T13 | S13 | `RHEL_AI_ENABLED=false` | `setup.sh --check`; `up.sh --list-sites`; `up.sh rhel-ai` | 2-site tree, no rhel-ai checks; `rhtevan-work`; "disabled" error |
 
 ## Gotchas
 
@@ -175,10 +193,13 @@ Execute each step in order and verify before proceeding.
 
 ## Prerequisites
 
-- `skupper` CLI (v2.2+) on localhost
-- SSH key-based access to rhtevan-work and rhel-ai
+- `skupper` CLI (v2.2+) on localhost — `setup.sh` Phase 0a installs
+  `SKUPPER_CLI_VERSION` (default 2.2.3) into `~/.local/bin` if missing
+  (never upgrades; use `upgrade.sh` to change versions)
+- SSH key-based access to rhtevan-work (and rhel-ai when `RHEL_AI_ENABLED=true`)
 - Podman on all 3 hosts (4.9+ on rhel-ai, 5.x on others)
-- `podman.socket` enabled (`skupper system install --reload-type auto`)
+- `podman.socket` enabled; the local system controller is installed by
+  `setup.sh` Phase 0a (`skupper system install --reload-type auto`) when absent
 - Model containers deployed via `hosted-model-ctl`
 - Port 55671 reachable on rhtevan-work (LAN)
 - Port 8000 reachable on rhel-ai (AWS security group)

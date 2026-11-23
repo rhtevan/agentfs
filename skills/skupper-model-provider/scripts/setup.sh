@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # setup.sh — One-time Skupper VAN infrastructure setup
 # Usage: bash setup.sh [--check]
-# Creates sites, RouterAccess, Connectors, Listeners, Links on all 3 hosts.
+# Creates sites, RouterAccess, Connectors, Listeners, Links on the enabled
+# hubs (HUB_SITES; RHEL_AI_ENABLED=false skips rhel-ai) and localhost.
 # Applies auto-restart patches and podman 4.x workarounds.
 # Idempotent: safe to re-run.
 #
@@ -17,7 +18,8 @@ fi
 
 echo "=== Skupper Model Provider — SETUP ==="
 echo "  Namespace:  $NAMESPACE"
-echo "  Sites:      ${SITE_NAMES[rhel-ai]}, ${SITE_NAMES[rhtevan-work]}, ${SITE_NAMES[local]}"
+echo "  Sites:      ${HUB_SITES[*]}, ${SITE_NAMES[local]}"
+hub_enabled rhel-ai || echo "  rhel-ai:    disabled (RHEL_AI_ENABLED=false)"
 echo
 
 # ── Phase 0: Precheck ─────────────────────────────────────────
@@ -29,10 +31,74 @@ if ! precheck_topology; then
 fi
 echo
 
+# ── Phase 0a: Install missing local prerequisites (never upgrades) ──
+echo "Phase 0a: Local Skupper CLI + system controller"
+if command -v skupper &>/dev/null; then
+  echo "  ✅ CLI present: $(skupper version 2>/dev/null | head -1) (not touched — use upgrade.sh to change)"
+else
+  case "$(uname -m)" in
+    x86_64) CLI_ARCH="amd64" ;; aarch64) CLI_ARCH="arm64" ;;
+    *) echo "  ❌ Unsupported arch $(uname -m) — install skupper CLI manually"; exit 1 ;;
+  esac
+  CLI_URL="https://github.com/skupperproject/skupper/releases/download/${SKUPPER_CLI_VERSION}/skupper-cli-${SKUPPER_CLI_VERSION}-linux-${CLI_ARCH}.tgz"
+  CLI_TMP=$(mktemp -d)
+  echo "  ⬇️  Installing skupper CLI ${SKUPPER_CLI_VERSION} → ~/.local/bin/skupper"
+  if curl -fsSL "$CLI_URL" -o "${CLI_TMP}/skupper.tgz" \
+     && tar xzf "${CLI_TMP}/skupper.tgz" -C "$CLI_TMP" \
+     && mkdir -p "$HOME/.local/bin" \
+     && install -m 0755 "${CLI_TMP}/skupper" "$HOME/.local/bin/skupper"; then
+    rm -rf "$CLI_TMP"
+    case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH"
+      echo "  ⚠️  ~/.local/bin was not on PATH — added for this run; add it to your shell profile" ;; esac
+    echo "  ✅ Installed: $(skupper version 2>/dev/null | head -1)"
+  else
+    rm -rf "$CLI_TMP"
+    echo "  ❌ Download/install failed: $CLI_URL"
+    exit 1
+  fi
+fi
+# Podman platform needs the user-level system controller (podman.socket +
+# skupper-controller.service). Install only when absent.
+#   Detect by container only: Phase 5 writes skupper-controller.service itself,
+#   so the unit file is not proof of install. The CLI defaults to the
+#   kubernetes platform (no-op + exit 0) — --platform podman is mandatory.
+LOCAL_CONTROLLER=$(get_controller_name localhost)
+if podman container exists "$LOCAL_CONTROLLER" 2>/dev/null; then
+  echo "  ✅ System controller installed (${LOCAL_CONTROLLER})"
+else
+  echo "  ⬇️  skupper --platform podman system install --reload-type auto"
+  systemctl --user stop skupper-controller.service 2>/dev/null || true
+  if skupper --platform podman system install --reload-type auto \
+     && podman container exists "$LOCAL_CONTROLLER"; then
+    echo "  ✅ System controller installed (${LOCAL_CONTROLLER})"
+  else
+    echo "  ❌ skupper system install failed — check: systemctl --user status podman.socket"
+    exit 1
+  fi
+fi
+echo
+
 FAILED=0
 
 # ── Phase 1: Build rhel-ai ─────────────────────────────────────
 echo "Phase 1: Build ${SITE_NAMES[rhel-ai]} site"
+if hub_enabled rhel-ai; then
+
+# Optional decision-model connector (only when configured)
+RA_DECISION_CONNECTOR=""
+if [[ -n "${RHEL_AI_DECISION_ROUTING_KEY}" && -n "${RHEL_AI_DECISION_PORT}" ]]; then
+  RA_DECISION_CONNECTOR="cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-connector-${RHEL_AI_DECISION_ROUTING_KEY}.yaml << EOF
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: connector-${RHEL_AI_DECISION_ROUTING_KEY}
+  namespace: ${NAMESPACE}
+spec:
+  routingKey: ${RHEL_AI_DECISION_ROUTING_KEY}
+  host: host.containers.internal
+  port: ${RHEL_AI_DECISION_PORT}
+EOF"
+fi
 
 RHELAI_NS=$(run_on_host rhel-ai "test -d ~/.local/share/skupper/namespaces/${NAMESPACE}/runtime/resources && echo yes || echo no")
 
@@ -87,17 +153,7 @@ spec:
   port: ${RHEL_AI_MODEL_PORT}
 EOF
 
-  cat > ~/.local/share/skupper/namespaces/${NAMESPACE}/input/resources/Connector-connector-${RHEL_AI_DECISION_ROUTING_KEY}.yaml << EOF
-apiVersion: skupper.io/v2alpha1
-kind: Connector
-metadata:
-  name: connector-${RHEL_AI_DECISION_ROUTING_KEY}
-  namespace: ${NAMESPACE}
-spec:
-  routingKey: ${RHEL_AI_DECISION_ROUTING_KEY}
-  host: host.containers.internal
-  port: ${RHEL_AI_DECISION_PORT}
-EOF
+${RA_DECISION_CONNECTOR}
 
   skupper --platform podman system start -n ${NAMESPACE}"
   sleep 8
@@ -133,6 +189,11 @@ else
   FAILED=1
 fi
 echo
+
+else
+  echo "  ⏭️  Skipped (RHEL_AI_ENABLED=false)"
+  echo
+fi
 
 # ── Phase 2: Build rhtevan-work ───────────────────────────────
 echo "Phase 2: Build ${SITE_NAMES[rhtevan-work]} site"
@@ -233,6 +294,7 @@ spec:
   defaultIssuer: self-signed
 EOF
 
+if hub_enabled rhel-ai; then
   cat > "${LOCAL_NS_DIR}/input/resources/Listener-listener-${RHEL_AI_ROUTING_KEY}.yaml" << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Listener
@@ -244,7 +306,9 @@ spec:
   host: ${LOCAL_LISTENER_HOST}
   port: ${RHEL_AI_MODEL_PORT}
 EOF
+fi
 
+if hub_enabled rhel-ai && [[ -n "${RHEL_AI_DECISION_ROUTING_KEY}" && -n "${RHEL_AI_DECISION_PORT}" ]]; then
   cat > "${LOCAL_NS_DIR}/input/resources/Listener-listener-${RHEL_AI_DECISION_ROUTING_KEY}.yaml" << EOF
 apiVersion: skupper.io/v2alpha1
 kind: Listener
@@ -256,6 +320,7 @@ spec:
   host: ${LOCAL_LISTENER_HOST}
   port: ${RHEL_AI_DECISION_PORT}
 EOF
+fi
 
   cat > "${LOCAL_NS_DIR}/input/resources/Listener-listener-${RHTEVAN_WORK_ROUTING_KEY}.yaml" << EOF
 apiVersion: skupper.io/v2alpha1
@@ -296,6 +361,39 @@ EOF
 
   skupper --platform podman system start -n "${NAMESPACE}"
   sleep 8
+fi
+
+# Add listeners missing from an existing site (e.g. rhel-ai enabled after
+# the first setup). No-op on a fresh site.
+ADDED_LISTENER=false
+ensure_local_listener() {
+  local key="$1" port="$2"
+  local f="${LOCAL_NS_DIR}/input/resources/Listener-listener-${key}.yaml"
+  [[ -f "$f" ]] && return 0
+  cat > "$f" << EOF
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: listener-${key}
+  namespace: ${NAMESPACE}
+spec:
+  routingKey: ${key}
+  host: ${LOCAL_LISTENER_HOST}
+  port: ${port}
+EOF
+  echo "  ✅ Added missing listener listener-${key} (:${port})"
+  ADDED_LISTENER=true
+}
+for host in "${HUB_SITES[@]}"; do
+  IFS='|' read -r _ _ hub_rkey hub_lport _ <<< "${SITE_PROFILES[$host]}"
+  ensure_local_listener "$hub_rkey" "$hub_lport"
+done
+if hub_enabled rhel-ai && [[ -n "${RHEL_AI_DECISION_ROUTING_KEY}" && -n "${RHEL_AI_DECISION_PORT}" ]]; then
+  ensure_local_listener "${RHEL_AI_DECISION_ROUTING_KEY}" "${RHEL_AI_DECISION_PORT}"
+fi
+if [[ "$ADDED_LISTENER" == "true" ]]; then
+  skupper --platform podman system reload -n "${NAMESPACE}" 2>/dev/null \
+    || echo "  ⚠️  Could not reload — run: skupper --platform podman system reload -n ${NAMESPACE}"
 fi
 
 LOCAL_ROUTER=$(check_router_status localhost)
@@ -353,6 +451,7 @@ echo
 # ── Phase 4: Links ────────────────────────────────────────────
 echo "Phase 4: Establish links"
 
+if hub_enabled rhel-ai; then
 # Link to rhel-ai (via port 8000, publicly accessible)
 LINK_RA_NAME="${LINK_NAMES[local-rhel-ai]}"
 if [[ -f "${LOCAL_NS_DIR}/input/resources/Link-${LINK_RA_NAME}.yaml" ]]; then
@@ -394,6 +493,10 @@ EOF
   skupper --platform podman system apply -n "${NAMESPACE}" -f "$LINK_TMPFILE"
   rm -f "$LINK_TMPFILE"
   echo "  ✅ ${LINK_RA_NAME} created"
+fi
+
+else
+  echo "  ⏭️  Link to rhel-ai skipped (RHEL_AI_ENABLED=false)"
 fi
 
 # Link to rhtevan-work (LAN, port 55671)
@@ -445,7 +548,7 @@ echo
 # ── Phase 5: Auto-restart patches ─────────────────────────────
 echo "Phase 5: Auto-restart patches + linger"
 
-for host in rhel-ai rhtevan-work localhost; do
+for host in "${HUB_SITES[@]}" localhost; do
   local_name="$host"
   [[ "$host" == "localhost" ]] && local_name="local"
 
@@ -861,7 +964,7 @@ if [[ "$CRC_ENABLED" == "true" && "$CRC_OBSERVER_ENABLED" == "true" ]]; then
 fi
 
 echo "  Sites:"
-for host in rhel-ai rhtevan-work; do
+for host in "${HUB_SITES[@]}"; do
   STATUS=$(run_on_host "$host" "skupper --platform podman site status -n ${NAMESPACE} 2>&1" | grep -oP 'Ready|Pending|Error' | head -1 || echo "unknown")
   echo "    ${SITE_NAMES[$host]}: $STATUS"
 done

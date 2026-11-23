@@ -103,7 +103,7 @@ else
 fi
 
 # Check each podman host
-ALL_HOSTS=(localhost rhel-ai rhtevan-work)
+ALL_HOSTS=(localhost "${HUB_SITES[@]}")
 declare -A HOST_CLI_VERSION
 declare -A HOST_ROUTER_VERSION
 declare -A HOST_CONTROLLER_VERSION
@@ -203,7 +203,7 @@ else
 fi
 
 # Install CLI on remote hosts
-for host in rhel-ai rhtevan-work; do
+for host in "${HUB_SITES[@]}"; do
   if [[ "${HOST_NEEDS_UPGRADE[$host]:-skip}" == "skip" ]]; then
     echo "  ⏭️  $host: skipped (unreachable)"
     continue

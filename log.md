@@ -2,6 +2,39 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-22 19:54
+- status: healthy link (Reachable) no longer flagged STALE (skills/skupper-model-provider/scripts/status.sh)
+- status: healthy link (Reachable) no longer flagged STALE (skills/skupper-model-provider/scripts/status.sh)
+
+## 2026-11-22 19:51
+- Phase 0a: system install needs --platform podman (CLI defaults to kubernetes, no-op exit 0); detect controller by container, not unit file (skills/skupper-model-provider/scripts/setup.sh)
+
+## 2026-11-22 19:47
+- Document optional SKUPPER_CLI_VERSION (skills/skupper-model-provider/topology.env.example)
+- Precheck: missing skupper CLI is a warning; add SKUPPER_CLI_VERSION default 2.2.3 (skills/skupper-model-provider/scripts/common.sh)
+- Prerequisites: setup.sh Phase 0a auto-installs CLI and system controller (skills/skupper-model-provider/SKILL.md)
+- Phase 0a: install missing skupper CLI + local system controller (never upgrades) (skills/skupper-model-provider/scripts/setup.sh)
+
+## 2026-11-22 19:35
+- SKILL.md: document RHEL_AI_ENABLED site switch (S13/T13), re-enable path, CRC target rule, optional decision route (skills/skupper-model-provider/SKILL.md)
+- topology.env recreated (gitignored): local-ezhang, rhtevan-work (LAN IP), RHEL_AI_ENABLED=false (skills/skupper-model-provider/topology.env)
+
+## 2026-11-22 19:34
+- topology.env.example: RHEL_AI_ENABLED switch + optional RHEL_AI_DECISION_* vars (skills/skupper-model-provider/topology.env.example)
+- setup.sh: Phase 1 / rhel-ai listener / rhel-ai link gated by hub_enabled; decision connector+listener only when configured (fixes set -u crash when unset); ensure_local_listener adds missing listeners on re-run + system reload (skills/skupper-model-provider/scripts/setup.sh)
+
+## 2026-11-22 19:33
+- common.sh: RHEL_AI_ENABLED switch, HUB_SITES/hub_enabled, safe rhel-ai defaults, precheck tree/site-count per enabled hubs, CRC target guard, disabled-host messages (skills/skupper-model-provider/scripts/common.sh)
+
+## 2026-11-22 19:32
+- upgrade.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/upgrade.sh)
+- teardown.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/teardown.sh)
+- status.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/status.sh)
+- down.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/down.sh)
+- up.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/up.sh)
+- setup.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/setup.sh)
+- common.sh: hardcoded rhel-ai/rhtevan-work host lists → HUB_SITES (RHEL_AI_ENABLED switch) (skills/skupper-model-provider/scripts/common.sh)
+
 ## 2026-11-22 13:21
 - SKILL.md: 1.60.2 compatibility matrix (tool-chain criterion, reasoning_content no longer disqualifying), gpt-oss flakiness note, context_limit from model info, NO_TOOLS exclusion, troubleshooting rows (skills/goose-maas-provider/SKILL.md)
 

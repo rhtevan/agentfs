@@ -33,7 +33,7 @@ fi
 if [[ -n "$EXPLICIT_PROFILE" ]]; then
   validate_profile "$EXPLICIT_PROFILE" || exit 1
 fi
-ALL_REMOTE_HOSTS=(rhel-ai rhtevan-work)
+ALL_REMOTE_HOSTS=("${HUB_SITES[@]}")
 CRC_TARGET=false
 LOCAL_ONLY=false
 
