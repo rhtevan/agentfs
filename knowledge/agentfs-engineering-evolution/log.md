@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 21:39
+- F23: capacity probe result (per-model throttling) + T4 sonnet-5.5 not entitled on corp key (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-23 21:30
+- F22 retire QOO for policy artifacts; F23 agentfs-eval template/workspace modes + campaign time budget (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-23 20:30
 - F20 (benchmark host safety: option a, rm guard + daily backup) and F21 (principle evaluation joins agentfs-eval) added (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

@@ -31,8 +31,12 @@ tier_definitions:
 # Default model per tier for update-compliance.sh --tier Tx.
 representatives:
   T4:
-    provider: custom_corp
-    model: claude-sonnet-5.5
+    provider: gcp_vertex_ai
+    model: claude-sonnet-5-5
+    note: >-
+      Same model as before, provider moved 2026-11-23: the post-wipe corp key
+      (subscription "personal") returns 403 model_not_entitled for
+      claude-sonnet-5.5. Previous: custom_corp claude-sonnet-5.5.
   T3:
     provider: custom_corp
     model: glm-5-3

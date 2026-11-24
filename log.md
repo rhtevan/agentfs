@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 21:51
+- T4 representative -> gcp_vertex_ai claude-sonnet-5-5 (corp key not entitled for sonnet-5.5) (skills/agentfs-setup/compliance-profile.yaml)
+
+## 2026-11-23 21:39
+- F23: capacity probe result (per-model throttling) + T4 sonnet-5.5 not entitled on corp key (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-23 21:30
+- F22 retire QOO for policy artifacts; F23 agentfs-eval template/workspace modes + campaign time budget (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-23 20:40
 - README: add agentic-ikea-sdrd to Current bundles list (16 -> 17) (README.md)
 - Overview table version synced to frontmatter (3.3.0 -> 3.5.0) (skills/agentfs-readme-audit/SKILL.md)
