@@ -10,7 +10,7 @@ tags: [evaluation, compliance, QOO, base-skill, methodology, canonical]
 # AgentFS Evaluation Methodology
 
 - **Type:** Convention (canonical — supersedes the strategy parts of older docs, see §12)
-- **Status:** Active. §3–§5 implemented for agentfs-eval/agentfs-setup (R-a, 2026-11-24). Next: §13.
+- **Status:** Active. §3–§5 implemented for agentfs-eval/agentfs-setup (R-a, 2026-11-24). Rules phase (R-a–R-g) complete 2026-11-24. Next: §13 row 5 (Principles).
 - **Decision trail:** F-tracker in [dry-run-and-compliance-plan.md](./dry-run-and-compliance-plan.md) (F3, F21–F27)
 
 ## 1. Goal
@@ -299,7 +299,7 @@ the F-entries; update this list when a step closes.
 | 1 | **R-a** Implement §3–§5: re-scope the agents-md schemas; thresholds read from the schema; SDM build scoring moves from agentfs-eval to agentfs-setup's upgrade flow; stateless runtime reference; static-sheet staleness check; legacy `template-scores.md` / `merge-score-entry.sh` cleanup | F22 | done 2026-11-24 |
 | 2 | **R-b** Harvested lint into S0 (`template-check.sh`) | §5, F22 | done 2026-11-24 (A11–A14) |
 | 3 | **R-c** agentfs-eval template/workspace modes + time budget | §6.5, §8, F23 | done 2026-11-24 (scheduler levers moved to the shared design row) |
-| 4 | **R-g** Fresh-session `hey eval agentfs` end-to-end (T4 fallback while SDM is down), then push | F22, F23 | next |
-| 5 | **Principles**: answer the 4 open decisions, build the runner, T2 baseline (s0-current vs s1-control), s2-cnl rewrite, confirm at T3/T4, record in the profile | F26, principles-test-catalogue.md | after 1–4 |
+| 4 | **R-g** Fresh-session `hey eval agentfs` end-to-end (T4 fallback while SDM is down), then push | F22, F23 | done 2026-11-24 (PASS, session 20261124_20; findings fixed: preflight-reminder 1.6.0 read-only eval scripts, parallel Steps 2–8 allowed, rubric guardrail_ref) — **Rules phase complete** |
+| 5 | **Principles**: answer the 4 open decisions, build the runner, T2 baseline (s0-current vs s1-control), s2-cnl rewrite, confirm at T3/T4, record in the profile | F26, principles-test-catalogue.md | next |
 | — | Shared design: profile schema v2 (per-item anatomy, failure labels); campaign scheduler (one queue per model across Rules + Principles, 429-adaptive concurrency, early stop, per-item re-run) | F22 option b, F23 | with 5 |
 | — | Parked: R5 test (F25), R3 repeat test (F27), rhel-ai SDM host re-enable | — | parked |

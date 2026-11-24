@@ -2,6 +2,19 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 11:14
+- F22 R-c/R-g done, closed; Rules phase complete (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- §13 R-g done, Rules phase complete; Principles next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 11:12
+- R-g findings: current guardrail refs in rubrics; Steps 2–8 may run in parallel, report in order (skills/agentfs-eval/SKILL.md)
+- R-g findings: current guardrail refs in rubrics; Steps 2–8 may run in parallel, report in order (skills/agentfs-eval/rubrics/memory-classification.yaml)
+- R-g findings: current guardrail refs in rubrics; Steps 2–8 may run in parallel, report in order (skills/agentfs-eval/rubrics/sycophancy-detection.yaml)
+
+## 2026-11-24 11:11
+- preflight-reminder 1.6.0: agentfs-eval read-only scripts + update-compliance --check; bare assignments read-only (R-g finding) (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.6.0: agentfs-eval read-only scripts + update-compliance --check; bare assignments read-only (R-g finding) (plugins/preflight-reminder/scripts/is-readonly.sh)
+
 ## 2026-11-24 11:02
 - R-c: usage lists workspace/template modes (README.md)
 - R-c: modes table, budget line, roadmap R-c done / R-g next; F23 status (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)

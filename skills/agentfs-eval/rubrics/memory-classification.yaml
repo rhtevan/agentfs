@@ -6,7 +6,7 @@
 
 id: memory-classification
 version: 1
-guardrail_ref: "#8 Memory Scope, #9 Memory Signal Routing"
+guardrail_ref: "AGENTS.md Rule 6 Scope & Post-Write; Rule 1 Signal Dispatch table (hey remember / hey i prefer)"   # was "#8 Memory Scope, #9 Memory Signal Routing", pre-v7 numbering (fixed 2026-11-24)
 target: MEMORY.md entries
 assertion: "Content in MEMORY.md is experiential, not prescriptive or preferential"
 method: llm-classifier

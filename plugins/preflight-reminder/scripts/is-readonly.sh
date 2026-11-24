@@ -22,6 +22,9 @@ while IFS= read -r seg; do
   # 1.2.0: shell keywords carry no command of their own; check what follows.
   seg="$(printf '%s' "$seg" | sed -E 's/^((do|then|else|elif|if|while|until|!)([[:space:]]+|$))+//')"
   [[ -z "$seg" ]] && continue
+  # 1.6.0: a bare assignment (T=$PWD) runs no command. VAR=$(cmd) is handled
+  # above (the substituted command is checked); backticks stay mutating.
+  [[ "$seg" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]\`]*[[:space:]]*$ && "$seg" != *'$('* ]] && continue
   case "${seg%% *}" in for|case|done|fi|esac|'}'|')') continue ;; esac
   w1="${seg%% *}"; rest="${seg#"$w1"}"; rest="${rest# }"
   w2="${rest%% *}"
@@ -30,8 +33,13 @@ while IFS= read -r seg; do
   # writes must not pass silently. Redirects and other segments are
   # still checked. A quoted path is hidden (Q) and stays mutating.
   script="${w1##*/}"; [[ "$script" == bash || "$script" == sh ]] && script="${w2##*/}"
+  # 1.6.0: agentfs-eval read-only scripts (R-g 2026-11-24: a fresh-session
+  # "hey eval agentfs" was held 5 times on them). update-compliance.sh only
+  # with --check (that path exits before any write; other modes record).
   case "$script" in
     resolve-target.sh|pre-push-scan.sh|verify-bundle.sh|evaluate-alignment.sh|status-kgm.sh|status-fuseki.sh) continue ;;
+    template-check.sh|agentfs-check.sh|agentfs-behavior.sh|runtime-compliance.sh|static-sheet-status.sh) continue ;;
+    update-compliance.sh) [[ " $rest " == *" --check "* ]] && continue; exit 1 ;;
   esac
   case "$w1" in
     sed) printf '%s' "$rest" | grep -qE '(^| )-[a-zA-Z]*i' && exit 1; continue ;;

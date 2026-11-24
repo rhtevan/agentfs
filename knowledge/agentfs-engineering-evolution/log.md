@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 11:14
+- F22 R-c/R-g done, closed; Rules phase complete (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- §13 R-g done, Rules phase complete; Principles next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
 ## 2026-11-24 11:02
 - R-c: modes table, budget line, roadmap R-c done / R-g next; F23 status (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - R-c: modes table, budget line, roadmap R-c done / R-g next; F23 status (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)

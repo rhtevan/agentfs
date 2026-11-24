@@ -5,7 +5,7 @@ description: >
   agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.12.0"
+  version: "2.12.1"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -75,6 +75,8 @@ Include actionable remediation for each violation.
 
 Execute ALL steps in order. Do NOT skip steps. Do NOT jump to a
 later step because it seems more relevant to the conversation.
+The scripts in Steps 2–8 are independent and read-only: you may run
+them in parallel. Report results in step order.
 
 ### Step 1 — Determine Target
 

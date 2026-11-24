@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-24 11:12 | v2.12.1 — R-g findings: current guardrail refs in rubrics; Steps 2–8 may run in parallel, report in order |
 | 2026-11-24 11:01 | v2.12.0 — R-c: workspace / template modes in Quick Dispatch + triggers; full eval unchanged (F23) |
 | 2026-11-24 10:53 | v2.11.0 — R-b: A11–A14 harvested rule lint (A11 FAIL; A12–A14 WARN, env-promotable); R-b: document A11–A14 and the v7.14.1 baseline |
 | 2026-11-24 10:43 | v2.10.0 — R-a: runtime-compliance.sh reads targets/threshold from operable-agents-md.yaml (fallback = previous constants); R-a: Step 8 SDM build scoring + Step 9 persist removed (moved to agentfs-setup); Step 8 = static record status; base-skill reference table; R-a: archive/template-scores.md (archive legacy score sheet; drop stale history echo); R-a: archive/merge-score-entry.sh (archive legacy score sheet; drop stale history echo); R-a: archive/README.md (archive legacy score sheet; drop stale history echo); R-a: scripts/template-check.sh (archive legacy score sheet; drop stale history echo) |
