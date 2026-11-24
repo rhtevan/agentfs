@@ -2,6 +2,50 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 13:12
+- F30 follow-ups: evidence kept, template_hash staleness; score-map fix queued (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Upgrade Steps 2/4: keep evidence/`<version>`.txt; record template_hash (skills/agentfs-setup/SKILL.md)
+- static-sheet-status.sh: template_hash decides staleness; missing evidence = INVALID (skills/agentfs-setup/scripts/static-sheet-status.sh)
+
+## 2026-11-24 13:11
+- calibration evidence (template v7.6.0, schema fc8f328) (skills/agentfs-setup/artifacts/agents-md/evidence/calibration-7.6.0.txt)
+- static-record evidence v7.14.1 (Stage 1a facts + 1b semantic) (skills/agentfs-setup/artifacts/agents-md/evidence/7.14.1.txt)
+- scores.yaml: template_hash (rules+soul) and evidence paths recorded (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- template-hash.sh: rules + SOUL content hashes rendered from the seed scripts (static-record staleness) (skills/agentfs-setup/scripts/template-hash.sh)
+
+## 2026-11-24 12:52
+- F30 closed (option C implemented, calibrated, persisted); F31 live-check findings closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- agentfs-eval 2.12.4: Step 8 reports the static record's scorer (SDM or calibrated T4) — F30 (skills/agentfs-eval/SKILL.md)
+- F30 option C: calibrated T4 scorer for the base-skill static record (README) (README.md)
+- F30 option C: calibrated T4 scorer for the base-skill static record (header) (skills/schemas/operable-agents-md.yaml)
+- F30 option C: calibrated T4 scorer for the base-skill static record (rule 6 exception) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+- F30 option C: calibrated T4 scorer for the base-skill static record (Step 8 wording) (skills/agentfs-eval/SKILL.md)
+- F30 option C: calibrated T4 scorer for the base-skill static record (upgrade Steps 3-4) (skills/agentfs-setup/SKILL.md)
+- F30 option C: calibrated T4 scorer for the base-skill static record (contract exception) (skills/schemas/sdm-endpoint.md)
+
+## 2026-11-24 12:51
+- static-sheet-status.sh: reports the scorer (SDM or calibrated T4-fallback); T4 without PASS calibration = INVALID — F30 (skills/agentfs-setup/scripts/static-sheet-status.sh)
+- scores.yaml: v7.14.1 static record, T4-fallback (gemini-3.1-pro-preview), calibrated; quality 76.7 Tunable, build 4/4; version-label anomaly recorded — F30 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-11-24 12:48
+- t4-score-call.sh: bounded retry (3 attempts) on transient model errors; failures logged to T4_SCORER_LOG (sdm-evaluate discards stderr) (scripts/t4-score-call.sh)
+
+## 2026-11-24 12:44
+- t4-static-score.sh: median-of-3 T4 scoring + calibration gate for the static record (read-only) — F30 (scripts/t4-static-score.sh)
+
+## 2026-11-24 12:43
+- sdm-evaluate.sh: SDM_CALL overridable (T4 drop-in), scorer field in output, null confidence for T4, T4 runs never persist observations — F30 (scripts/sdm-evaluate.sh)
+- t4-score-call.sh: T4 drop-in for sdm-call.sh (Gemini 3.1 Pro on Vertex, different family from the prose author) — F30 (scripts/t4-score-call.sh)
+
+## 2026-11-24 12:40
+- preflight-reminder 1.9.0 description (plugins/preflight-reminder/plugin.json)
+- version 3.2.2 (delete.sh schema fix) (skills/goose-recipe-session-cleanup/SKILL.md)
+- delete.sh 1.1.0: child tables discovered from the schema (thread_messages no longer exists; crashed with 'no such table') (skills/goose-recipe-session-cleanup/scripts/delete.sh)
+
+## 2026-11-24 12:38
+- preflight-reminder 1.9.0 version bump (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.9.0: a retry is recognised by the held call's saved response in sessions.db (tool_call_id), not only the 2 s window (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+
 ## 2026-11-24 12:28
 - ignore __pycache__/ and *.pyc (a replay import staged a .pyc) (.gitignore)
 

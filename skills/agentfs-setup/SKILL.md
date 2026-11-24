@@ -450,6 +450,9 @@ specific rules and scripts.
 
 Be precise and factual. Cite specific rule numbers and content.
 Do NOT editorialize or score — SDM handles scoring in Step 3.
+Keep the evidence: copy it to
+`~/.agents/skills/agentfs-setup/artifacts/agents-md/evidence/<version>.txt`
+so a later re-score (SDM or T4) grades the same input.
 
 ### Step 3 — SDM Scoring
 
@@ -466,13 +469,20 @@ bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md \
 
 Never score `phase: runtime` dimensions with SDM.
 
-If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
-fallback (report only). Answer each `dimensions[].question` as a
-classifier against the same evidence file. Report the answers labelled
-"T4-fallback (<model>, not persisted)". Do NOT write them to
-`scores.yaml`. Contract: `~/.agents/skills/schemas/sdm-endpoint.md`
-→ "SDM Unavailable — T4 Fallback".
-Skip Step 4. Continue to Step 5.
+If the output contains `"band": "SDM_UNAVAILABLE"`, use the calibrated
+T4 scorer. Contract: `~/.agents/skills/schemas/sdm-endpoint.md` →
+"Exception — Base-Skill Static Record".
+
+1. Calibrate. Run `bash ~/.agents/scripts/t4-static-score.sh` with
+   `--calibrate <score>` on the template version and schema of the last
+   SDM quality score (`scores.yaml` history), using evidence you extract
+   from that template as in Step 2.
+2. If the last line is `T4_CALIBRATION=FAIL`: report the T4 scores
+   labelled "T4-fallback (<model>, not persisted)". Skip Step 4.
+3. If `T4_CALIBRATION=PASS`: run `t4-static-score.sh` twice on
+   `/tmp/agents-md-evidence.txt` (the quality schema, then the operable
+   schema with `--phase build`). Use the `record` of each output in
+   Step 4.
 
 Read the output. It contains per-dimension scores and an aggregate
 Quality score with band classification.
@@ -482,7 +492,11 @@ Quality score with band classification.
 Update `~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml`
 (edit in place; do NOT rewrite the file):
 
-1. `version` → the template version (`metadata.version` above).
+1. `version` → the template version (`metadata.version` above), and
+   `template_hash` → `{rules, soul}` from
+   `bash ~/.agents/skills/agentfs-setup/scripts/template-hash.sh`.
+   Set `quality.evidence` and `operable.build.evidence` to
+   `evidence/<version>.txt`.
 2. `quality` → aggregate_score, band, dimensions, `evaluated` from the
    Quality SDM JSON.
 3. `operable.build` → dimensions and `evaluated` from the build SDM JSON.
@@ -491,7 +505,10 @@ Update `~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml`
    score or note.
 5. `history` → append one entry (date, type `static`, one-line note).
 
-Skip this step if SDM was unavailable (T4 fallback is report only).
+With T4 scores (calibration PASS): also set `quality.scorer` and
+`operable.build.scorer` to `t4-fallback:<model>`, write
+`quality.calibration`, use `agreement` instead of `confidence`, and add
+`scorer` to the history entry. With SDM scores: remove those keys.
 Run post-write.sh after writing, then re-run `static-sheet-status.sh`;
 it must print `STATIC_SHEET=CURRENT`.
 

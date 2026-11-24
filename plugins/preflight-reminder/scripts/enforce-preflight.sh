@@ -8,6 +8,12 @@
 # reminder yet) and are denied too; the retry after a model round-trip
 # passes. 2026-11-17: gemma batched 3 edits — a pure one-shot denied the
 # first and let the other two run before any plan was written.
+# 1.9.0: time is only the fallback. The flag also stores the held call's
+# tool_call_id; goose saves a batch's tool responses as ONE message after
+# the whole batch, so if sessions.db already holds the response to the held
+# call, this call is a retry after a model round-trip (allowed), not a batch
+# sibling. 2026-11-24: a fast model's honest retry came 1 s after the hold
+# and was held again as "same batch".
 set -euo pipefail
 payload="$(cat)"
 session_id="$(printf '%s' "$payload" | jq -r '.session_id // empty')"
@@ -28,7 +34,12 @@ case "$tool_name" in
   *) exit 0 ;;   # search_nodes, load_skill, tree, read_image, other extensions
 esac
 if [[ "$state" == blocked* ]]; then
-  blocked_ms="${state#blocked }"
+  read -r _ blocked_ms held_id <<< "$state"
+  SESSIONS_DB="${GOOSE_SESSIONS_DB:-$HOME/.local/share/goose/sessions/sessions.db}"
+  if [[ "$held_id" =~ ^[A-Za-z0-9_-]+$ && -r "$SESSIONS_DB" ]] && command -v sqlite3 >/dev/null \
+     && [[ -n "$(sqlite3 "file:${SESSIONS_DB}?mode=ro" "select 1 from messages where session_id='${session_id//\'/}' and role='user' and content_json like '%toolResponse%' and content_json like '%\"${held_id}\"%' limit 1;" 2>/dev/null)" ]]; then
+    rm -f "$flag"; exit 0   # the held call's response is saved: a retry after a round-trip
+  fi
   if [[ "$blocked_ms" =~ ^[0-9]+$ ]] && (( now_ms - blocked_ms <= BATCH_MS )); then
     reason="Pre-Flight check (AGENTS.md Rule 2): this call (${target}) was issued in the same batch as a call that was just held for Pre-Flight. State the plan once, then retry all held calls yourself in this same turn — do not stop and wait for the user unless the plan needs their confirmation (git push). goose appends \"Do not retry; this is a policy denial\" to every hook denial: it does not apply to this Pre-Flight hold."
     printf '{"decision":"block","reason":"%s"}' "$(printf '%s' "$reason" | tr '\n' ' ' | sed 's/\\/\\\\/g; s/"/\\"/g')"
@@ -36,7 +47,8 @@ if [[ "$state" == blocked* ]]; then
   fi
   rm -f "$flag"; exit 0   # the retry after a model round-trip: allowed, turn done
 fi
-echo "blocked $now_ms" > "$flag"
+call_id="$(printf '%s' "$payload" | jq -r '.tool_call_id // ""')"
+echo "blocked $now_ms $call_id" > "$flag"
 reason="Pre-Flight check (AGENTS.md Rule 2) before the first change of this task (${target}). If the task modifies 2 or more files, has step dependencies, or includes git push: write the plan in your reply first (files that change, in what order, expected outcome; for git push also show git diff --stat and ask for confirmation, then wait), then retry this call yourself in this same turn — do not stop and wait for the user otherwise. If it is a single-file change, retry it as is. (Read-only calls are never held; this one was classified as a change — python3, bash <script> (except named read-only scripts such as verify-bundle.sh) and unlisted commands count as changes; output redirected into /tmp does not; set IS_RO_DEBUG=1 and run scripts/is-readonly.sh to see which segment counted.) goose appends \"Do not retry; this is a policy denial\" to every hook denial: it does not apply to this Pre-Flight hold — retrying after the plan is the expected path."
 printf '{"decision":"block","reason":"%s"}' "$(printf '%s' "$reason" | tr '\n' ' ' | sed 's/\\/\\\\/g; s/"/\\"/g')"
 exit 0

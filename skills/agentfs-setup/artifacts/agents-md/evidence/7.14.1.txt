@@ -1,0 +1,39 @@
+=== Structural Facts ===
+Target: AGENTS.md
+Version: 7.14.1
+Total lines: 208
+Total words: 1390
+Estimated tokens: 1807
+Rule count: 7
+Total rule lines: 134
+Total rule words: 890
+Total sub-steps across rules: 35
+Total conditionals across rules: 22
+Total passive voice across rules: 2
+Signal dispatch entries: 6
+Scope definitions: 2
+BMBT bones — script references: 12, total actions: 35, delegation ratio: .34
+BMBT muscle — CNL violations: 4 (passive: 2, multi-action: 2)
+BMBT brain — unbounded judgment rules: 0
+BMBT harness — benchmark tests: 19 for 7 rules, coverage ratio: 2.71
+Rule 1 (Signal Dispatch): 38 lines, 278 words, 6 sub-steps, 6 conditionals, 0 passive voice
+Rule 2 (Pre-Flight): 24 lines, 129 words, 8 sub-steps, 3 conditionals, 0 passive voice
+Rule 3 (Session Canary): 18 lines, 120 words, 4 sub-steps, 1 conditionals, 0 passive voice
+Rule 4 (Conflict Resolution): 8 lines, 68 words, 2 sub-steps, 3 conditionals, 0 passive voice
+Rule 5 (Checkpoint): 13 lines, 86 words, 7 sub-steps, 4 conditionals, 1 passive voice
+Rule 6 (Scope & Post-Write): 17 lines, 96 words, 4 sub-steps, 3 conditionals, 0 passive voice
+Rule 7 (Dry-Run Gate): 16 lines, 113 words, 4 sub-steps, 2 conditionals, 1 passive voice
+
+=== Semantic Evidence ===
+rule_self_containment: Each rule's Do block carries its own consequences: Rule 5 includes the version bump, sync-agents-md.sh propagation and checkpoint.sh clear; Rule 6 runs post-write.sh after each write (step 2) and after each deletion (step 3) itself; Rule 7 parses the dry-run signal and decides apply/skip/stop within its own steps; Rule 2 folds Checkpoint and git push confirmation into its steps; Rule 4 step 2 ends with "Then stop" until the user replies. No rule's effect depends on another rule firing afterward.
+rule_action_density: Action counts per Do block: Rule 1 Path B has 6 numbered steps (plus Path A and two fallbacks); Rule 2 has 3 steps (Standard Mode) or 5 steps (Spec-Driven Mode), one mode applies per task; Rule 3 has 4 steps; Rule 4 has 2 conditional steps (one applies per trigger); Rule 5 has 7 steps, two conditional (steps 2, 4), one conditional fallback (step 6) and one prohibition (step 7); Rule 6 has 4 steps; Rule 7 has 4 steps. The maximum is Rule 5 with 7 listed steps (4 unconditional actions).
+concern_count: Rule 1: dispatch routing (its step 2 also orders session-start reads). Rule 2: user interaction (plan, confirmation) and version control (git push confirmation). Rule 3: user interaction and memory management (USER.md/MEMORY.md reads). Rule 4: user interaction. Rule 5: checkpoint/recovery, file operations (template edit, sync) and version control (version bump before committing). Rule 6: scope resolution, file operations (post-write.sh after writes and deletions) and memory management (graduation suggestion). Rule 7: file operations (running a Command script in dry-run then apply) and user interaction (stop and report). Rules 5 and 6 each touch three concerns; the others one or two.
+trigger_clarity: All seven When clauses are evaluable before acting: Rule 1 the "hey" prefix; Rule 2 the planned task (≥2 files, step dependencies, git push); Rule 3 turn number or compaction; Rule 4 a reversal or a conflict with a rule; Rule 5 a planned destructive op or planned edit to seed-agents-md.sh; Rule 6 a planned write or deletion under .agents/; Rule 7 a skill workflow step that runs a Command script. None requires a completed action to evaluate.
+cross_rule_dependency: Do-block references to other rules: Rule 1 step 2 references Rule 3 twice ("the session-start reads (SOUL.md, Rule 3 USER.md)" and "the Rule 3 canary is still the first line"); Rule 2 references Checkpoint (Rule 5) in Standard Mode step 2 and Spec-Driven Mode step 3. Rules 3-7 do not reference other rules in their Do blocks. Two rules (1 and 2) carry inter-rule references, four mentions in total. The Rules preamble (outside Do blocks) references the Conflict Resolution rule.
+item_overlap: Items = 7 rules + 8 SOUL.md principles, loaded together. Rule 4 step 1 ("When reversing a position: state what changed. State your previous position.") and the principle "Intellectual integrity" ("Do not reverse a stated position unless given new evidence...") both cover reversing a position; the rule prescribes how to report a reversal, the principle when a reversal is allowed. The principles "Name risks" (surface risks, push back) and "Data integrity" (flag anomalies, do not silently accept inconsistencies) both prescribe flagging problems, for risks and for structured-file anomalies respectively. "Verify before acting" and "Verify before responding" share the word "verify" for two moments (before building on a claim, before emitting one). Vocabulary: Rule 2 uses "Standard Mode"/"Spec-Driven Mode"; Rule 1 uses "Path A/Path B", "Index Browse", "Open Discretion"; "Checkpoint" names both Rule 5 and the checkpoint.sh operation, the same concept. No term is used for two different concepts in the rules.
+
+=== Semantic Evidence (Build) ===
+has_bones: Deterministic actions delegated to scripts: Rule 5 checkpoint.sh create and clear, sync-agents-md.sh; Rule 6 post-write.sh after writes and post-write.sh --deleted after deletions; Rule 7 delegates to the skill's Command script with --dry-run and reads its DRY_RUN_RESULT signal; Rule 1 delegates lookup to the search_nodes and load_skill tools. Prose-only actions are model-mediated judgment: Rule 2 planning, Rule 3 canary and self-check, Rule 4 conflict handling. Facts: 12 script references, 35 actions, delegation ratio 0.34.
+has_muscle: Do blocks are mostly one imperative per sentence ("Run `checkpoint.sh create <files>`.", "Quote the rule. Explain the conflict."). Facts: 4 CNL violations (2 passive, 2 multi-action) across 35 sub-steps; Rule 1 step 2 is a long multi-clause step (search first, defer reads, parameter name, hook note). Conditionals (If/When) are excluded per the schema.
+has_brain: Judgment points are bounded by explicit criteria: Rule 2 mode choice by listed conditions (independent single phase vs dependencies, multi-phase or explicit request); Rule 2 trigger by countable criteria (≥2 files, git push); Rule 1 by result type (skill vs knowledge bundle vs none) and a fixed retry; Rule 4 by "conflicts with a rule" with the required output (quote, explain, ask); Rule 7 by enumerated signal values (CONVERGED, PENDING, other). No rule requires open-ended reasoning without criteria.
+has_harness: benchmark.sh (~/.agents/scripts/benchmark.sh) tests: R1 (t1, t1_multi), R2 (5 tests), R3 (3 tests + 4 diagnostics), R4 (t_r4, t_r4c, t_ii), R6 (1 test), R7 (4 tests). Rule 5 Checkpoint has no benchmark test (parked, F25). 6 of 7 rules have at least one test.

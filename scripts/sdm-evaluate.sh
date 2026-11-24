@@ -34,7 +34,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SDM_CALL="${SCRIPT_DIR}/sdm-call.sh"
+SDM_CALL="${SDM_CALL:-${SCRIPT_DIR}/sdm-call.sh}"   # F30: t4-score-call.sh is a drop-in (see t4-static-score.sh)
 
 die()  { echo "ERROR: $*" >&2; exit 3; }
 log()  { echo "[sdm-evaluate] $*" >&2; }
@@ -343,6 +343,7 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
 
 # SystemOne returns answers as a dict keyed by question name
 ANSWERS=$(echo "$SDM_RESPONSE" | jq '.answers')
+SCORER=$(echo "$SDM_RESPONSE" | jq -r '.scorer // "sdm"')   # "t4:<model>" from t4-score-call.sh
 DIAGNOSTICS=$(echo "$SDM_RESPONSE" | jq '.diagnostics // {}')
 if [[ "$DIAGNOSTICS" == "{}" ]]; then
   log "WARNING: SDM response has no diagnostics (label_mass/argmax_is_label unavailable) — reliability checks skipped"
@@ -540,9 +541,13 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
     detail="$_ddetail"
   fi
 
+  # T4 scorer: no logits, so no calibrated confidence (t4-static-score.sh
+  # derives agreement across runs). Deterministic overrides keep 1.0.
+  if [[ "$SCORER" != sdm && "$confidence" != 1.0 ]]; then confidence=null; fi
+
   # Confidence-based reliability flag (model-agnostic; informational, score unchanged)
   low_conf=false
-  if (( $(echo "$(awk "BEGIN {printf \"%.10f\", $confidence}") < $MIN_CONF" | bc -l) )); then
+  if [[ "$confidence" != null ]] && (( $(echo "$(awk "BEGIN {printf \"%.10f\", $confidence}") < $MIN_CONF" | bc -l) )); then
     low_conf=true
     LOW_CONF_COUNT=$((LOW_CONF_COUNT + 1))
     LOW_CONF_NAMES="${LOW_CONF_NAMES:+$LOW_CONF_NAMES, }$name"
@@ -600,10 +605,12 @@ RECORD=$(jq -n \
   --argjson total_dims "$TOTAL_DIMS" \
   --argjson total_pass "$TOTAL_PASS" \
   --argjson low_conf "$LOW_CONF_COUNT" \
+  --arg scorer "$SCORER" \
   '{
     skill: $skill,
     schema_type: $schema_type,
     schema_version: $schema_version,
+    scorer: $scorer,
     timestamp: $ts,
     aggregate_score: $agg,
     band: $band,
@@ -620,7 +627,7 @@ echo "$RECORD" | jq '.'
 
 # --- Persist if observation type and skill has observations dir ---
 
-if [[ "$SCHEMA_TYPE" == "operable" ]]; then
+if [[ "$SCHEMA_TYPE" == "operable" && "$SCORER" == sdm ]]; then   # T4 runs never persist here
   # Infer skill dir from schema location
   SCHEMA_DIR=$(dirname "$SCHEMA")
   OBS_DIR="$SCHEMA_DIR/observations"

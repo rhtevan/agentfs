@@ -204,6 +204,25 @@ Limits: no logits, so the fallback has no calibrated `confidence`,
 `label_mass` or `argmax_is_label`; in-session answers are not an
 independent grader (F17).
 
+## Exception — Base-Skill Static Record: Calibrated T4 Scorer (F30)
+
+Decided 2026-11-24 (option C). Applies ONLY to the base skill's static
+record (`agentfs-setup/artifacts/agents-md/scores.yaml`, "upgrade
+agentfs"). Every other caller keeps the report-only fallback above.
+
+| Item | Contract |
+|------|----------|
+| Scorer | `scripts/t4-score-call.sh`, a drop-in for `sdm-call.sh` (same interface and JSON). Model: a different family from the prose author (default `gemini-3.1-pro-preview` on Vertex). Not the session model. |
+| Scoring | `scripts/t4-static-score.sh`: `sdm-evaluate.sh` with `SDM_CALL=t4-score-call.sh`, 3 runs, median aggregate, per-dimension `agreement` (no logits → `confidence: null`). Same score map, bands and deterministic overrides as SDM. Never writes. |
+| Gate | Before persisting: `--calibrate <SDM score>` on the template version and schema the SDM score was produced from. Persist only on `T4_CALIBRATION=PASS` (median within ±3). |
+| Record | `quality.scorer` / `operable.build.scorer` = `t4-fallback:<model>`; `quality.calibration` holds reference, T4 median, delta, tolerance, runs, result; one `history` entry with `scorer`. |
+| Status | `static-sheet-status.sh` prints the scorer; `STATIC_SHEET=CURRENT` stays the signal. A T4 score without a passing calibration is `INVALID`. |
+| Recovery | When SDM is reachable again, "upgrade agentfs" re-scores with SDM and removes the `scorer`/`calibration` keys. |
+
+Limits: the calibration checks the aggregate, not each dimension (at
+calibration T4 and SDM agreed on 4/6 dimensions); the original SDM
+evidence was not kept, so calibration evidence is re-extracted.
+
 ## Environment Variables
 
 | Variable | Default | Purpose |

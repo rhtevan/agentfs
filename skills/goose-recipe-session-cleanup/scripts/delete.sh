@@ -2,7 +2,7 @@
 # delete.sh — Delete Goose sessions by category
 # Usage: delete.sh [--recipe] [--terminal] [--hidden] [--desktop] [--all]
 #                  [--before YYYY-MM-DD] [--include-tracked] [--ids ID1,ID2,...]
-# Version: 1.0.0
+# Version: 1.1.0
 set -euo pipefail
 
 source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
@@ -111,14 +111,17 @@ def delete_sessions(where_clause, label, skip_ids=None):
     cur.execute(f"SELECT COUNT(*) FROM messages WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
     msg_count = cur.fetchone()[0]
 
-    cur.execute(f"DELETE FROM messages WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
-    cur.execute(f"DELETE FROM usage_ledger WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
-    cur.execute(f"DELETE FROM thread_messages WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
-    cur.execute(f"DELETE FROM session_tags WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)  # FK cascade is off
+    for t in CHILD_TABLES:  # FK cascade is off
+        cur.execute(f"DELETE FROM {t} WHERE session_id IN (SELECT id FROM sessions WHERE {wc})", params)
     cur.execute(f"DELETE FROM sessions WHERE {wc}", params)
 
     print(f"   {label}: {session_count} sessions, {msg_count} messages removed")
     return session_count, msg_count
+
+# Child tables = every table with a session_id column (the schema changes across
+# goose versions: thread_messages was dropped, usage_ledger/session_tags added).
+CHILD_TABLES = [t for (t,) in cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name != 'sessions'").fetchall()
+                if any(col[1] == "session_id" for col in cur.execute(f"PRAGMA table_info({t})").fetchall())]
 
 total_sessions = 0
 total_messages = 0
@@ -133,11 +136,10 @@ if DELETE_SPECIFIC_IDS:
         if sid in tracked_sids and SKIP_TRACKED:
             print(f"   ⏭  {sid} ({row[1]}): tracked in projects.json, skipping")
             continue
-        cur.execute("DELETE FROM messages WHERE session_id=?", (sid,))
-        mc = cur.rowcount
-        cur.execute("DELETE FROM usage_ledger WHERE session_id=?", (sid,))
-        cur.execute("DELETE FROM thread_messages WHERE session_id=?", (sid,))
-        cur.execute("DELETE FROM session_tags WHERE session_id=?", (sid,))  # FK cascade is off
+        cur.execute("SELECT COUNT(*) FROM messages WHERE session_id=?", (sid,))
+        mc = cur.fetchone()[0]
+        for t in CHILD_TABLES:  # FK cascade is off
+            cur.execute(f"DELETE FROM {t} WHERE session_id=?", (sid,))
         cur.execute("DELETE FROM sessions WHERE id=?", (sid,))
         print(f"   ✅ {sid} ({row[1]}): {mc} messages removed")
         total_sessions += 1

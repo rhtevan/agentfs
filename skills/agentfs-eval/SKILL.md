@@ -5,7 +5,7 @@ description: >
   agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.12.3"
+  version: "2.12.4"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -180,8 +180,9 @@ bash ~/.agents/skills/agentfs-setup/scripts/static-sheet-status.sh
 ```
 
 Report the version, the dates, and `STATIC_SHEET=CURRENT|STALE`. If
-STALE, recommend "upgrade agentfs" (needs SDM; the T4 fallback is report
-only). Do NOT write `artifacts/agents-md/scores.yaml` and do NOT run SDM
+STALE, recommend "upgrade agentfs" (SDM, or the calibrated T4 scorer when
+SDM is down). Report the `scorer` line: a T4 score is current but awaits
+an SDM re-score. Do NOT write `artifacts/agents-md/scores.yaml` and do NOT run SDM
 build scoring in this skill.
 
 ### Step 9 — Produce Consolidated Report

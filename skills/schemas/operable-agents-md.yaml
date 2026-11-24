@@ -6,7 +6,7 @@ description: >
   the scripts and hooks they reference). Two phases, two owners:
 
   build   — structural readiness (BMBT). Static, owned by agentfs-setup
-            ("upgrade agentfs"); SDM-scored (T4 fallback report-only).
+            ("upgrade agentfs"); SDM-scored (calibrated T4 scorer when SDM is down, F30).
             Stored in agentfs-setup/artifacts/agents-md/scores.yaml.
   runtime — rule compliance. NOT SDM-scored and NOT stored here or in
             scores.yaml: derived on demand from compliance-profile.yaml

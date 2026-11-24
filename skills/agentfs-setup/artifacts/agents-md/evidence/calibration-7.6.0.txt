@@ -1,0 +1,32 @@
+=== Structural Facts ===
+Target: AGENTS.md
+Version: 0.0
+Total lines: 181
+Total words: 1175
+Estimated tokens: 1527
+Rule count: 6
+Total rule lines: 105
+Total rule words: 659
+Total sub-steps across rules: 30
+Total conditionals across rules: 21
+Total passive voice across rules: 2
+Signal dispatch entries: 6
+Scope definitions: 2
+BMBT bones — script references: 11, total actions: 30, delegation ratio: .36
+BMBT muscle — CNL violations: 4 (passive: 2, multi-action: 2)
+BMBT brain — unbounded judgment rules: 0
+BMBT harness — benchmark tests: 19 for 6 rules, coverage ratio: 3.16
+Rule 1 (Signal Dispatch): 33 lines, 232 words, 6 sub-steps, 6 conditionals, 1 passive voice
+Rule 2 (Pre-Flight): 24 lines, 133 words, 8 sub-steps, 3 conditionals, 0 passive voice
+Rule 3 (Session Canary): 13 lines, 88 words, 4 sub-steps, 2 conditionals, 0 passive voice
+Rule 4 (Conflict Resolution): 8 lines, 48 words, 2 sub-steps, 3 conditionals, 0 passive voice
+Rule 5 (Checkpoint): 13 lines, 86 words, 7 sub-steps, 4 conditionals, 1 passive voice
+Rule 6 (Scope & Post-Write): 14 lines, 72 words, 3 sub-steps, 3 conditionals, 0 passive voice
+
+=== Semantic Evidence ===
+rule_self_containment: Each rule's Do block states its own follow-up actions: Rule 5 includes the version bump, the sync-agents-md.sh propagation and checkpoint.sh clear inside its own steps; Rule 6 runs post-write.sh in step 2 rather than relying on another rule; Rule 2 folds Checkpoint and git push confirmation into its own steps. No rule's effect depends on a different rule firing afterward. Rule 3 step 4 and Rule 1 Path B steps 5-6 complete their own retries and fallbacks.
+rule_action_density: Action counts per Do block: Rule 1 Path B has 6 numbered steps plus Path A and two fallback tiers; Rule 2 has 3 steps (Tier 1) or 5 steps (Tier 2), one tier applies per task; Rule 3 has 4 steps; Rule 4 has 2 conditional steps (one applies per trigger); Rule 5 has 7 steps, two of them conditional (steps 2 and 4) and one a prohibition (step 7); Rule 6 has 3 steps. The maximum is Rule 5 with 7 listed steps (5 unconditional actions).
+concern_count: Rule 1: dispatch routing. Rule 2: user interaction (plan statement, confirmation) and version control (git push confirmation). Rule 3: user interaction and memory management (reading USER.md/MEMORY.md). Rule 4: user interaction. Rule 5: checkpoint/recovery, file operations (template edit, sync) and version control (version bump before committing). Rule 6: scope resolution, file operations (post-write.sh) and memory management (graduation suggestion). Rules 5 and 6 each touch three concerns; the others one or two.
+trigger_clarity: All six When clauses are evaluable before acting: Rule 1 checks the message prefix "hey"; Rule 2 checks the planned task (≥2 files, dependencies, git push); Rule 3 checks turn number or compaction; Rule 4 checks a reversal or a conflict with a rule; Rule 5 checks a planned destructive op or a planned edit to seed-agents-md.sh; Rule 6 checks a planned write under .agents/. None requires a completed action to evaluate.
+cross_rule_dependency: Do-block references to other rules: Rule 2 step 2 (Tier 1) and step 3 (Tier 2) name "Checkpoint" (Rule 5). Rule 1 and Rule 3 do not reference other rules by number or name in their Do blocks; Rule 4, 5 and 6 do not either. The Rules preamble (outside any Do block) references the Conflict Resolution rule. Total inter-rule references in Do blocks: 1 rule (Rule 2) referencing Rule 5, appearing in both of its tiers.
+accidental_complexity: Implementation detail in rule prose: Rule 1 names tools search_nodes and load_skill, the index paths ~/.agents/skills/index.md and ~/.agents/knowledge/index.md, and the keyword-extraction procedure with examples; Rule 5 names checkpoint.sh create/clear, seed-agents-md.sh, sync-agents-md.sh and skills/agentfs-setup/SKILL.md; Rule 6 contains the full post-write.sh command line with path and arguments and the directory paths .agents/memories/ and ~/.agents/skills/; Rule 3 names .agents/memories/USER.md and MEMORY.md and the canary format. Rules 2 and 4 are almost entirely policy (when to plan, what to state, when to ask). Roughly a third of the rule prose (by words) is paths, tool names, script names and arguments; the remainder states when to act and the expected outcome.

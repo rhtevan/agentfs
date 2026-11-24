@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 13:12
+- F30 follow-ups: evidence kept, template_hash staleness; score-map fix queued (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 12:52
+- F30 closed (option C implemented, calibrated, persisted); F31 live-check findings closed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- F30 option C: calibrated T4 scorer for the base-skill static record (rule 6 exception) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
 ## 2026-11-24 12:27
 - F29 open-items close-out (closed); F30 W1 static record without SDM (open, awaiting decision) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

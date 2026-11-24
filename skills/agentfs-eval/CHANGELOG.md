@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-24 12:52 | v2.12.4 — F30 option C: calibrated T4 scorer for the base-skill static record (Step 8 wording); agentfs-eval 2.12.4: Step 8 reports the static record's scorer (SDM or calibrated T4) — F30 |
 | 2026-11-24 12:25 | v2.12.3 — template-behavioral.sh: dedup guard reads archive/template-scores.md (dead references/ path since R-a); B2 compares each log heading with the commit that recorded it (lag allowed; dated-after-commit = WARN; uncommitted = pending); B2 row: compares headings with the commit that recorded them |
 | 2026-11-24 11:36 | v2.12.2 — F28: B1 excludes scaffold commit + self-referential files; only FAIL blocks a maturity level |
 | 2026-11-24 11:12 | v2.12.1 — R-g findings: current guardrail refs in rubrics; Steps 2–8 may run in parallel, report in order |

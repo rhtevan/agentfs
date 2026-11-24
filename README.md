@@ -817,12 +817,14 @@ Every number has one stored home; derived views are computed, never copied.
 
 | Record | Holds | Written by |
 |--------|-------|------------|
-| `agentfs-setup/artifacts/agents-md/scores.yaml` | base skill static: Quality + Operable-build (+ a stateless runtime reference) | `hey upgrade agentfs` (SDM) |
+| `agentfs-setup/artifacts/agents-md/scores.yaml` | base skill static: Quality + Operable-build (+ a stateless runtime reference) | `hey upgrade agentfs` (SDM, or calibrated T4) |
 | `agentfs-setup/compliance-profile.yaml` | base skill runtime: per-rule, per-tier pass rates | compliance campaigns only |
 | `<skill>/scores.yaml` | ordinary skill QOO, including trace-based runtime | `skill-gen` / `skill-eval` |
 
 When SDM is unavailable, the session model answers as a T4 fallback:
-report only, never persisted.
+report only, never persisted. One exception: the base skill's static
+record uses a calibrated T4 scorer (another model family, median of 3,
+within ±3 of an SDM reference) and records it as `scorer: t4-fallback:<model>`.
 
 ### Maturity Levels
 

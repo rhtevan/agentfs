@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-24 12:40 | v3.2.2 — delete.sh 1.1.0: child tables discovered from the schema (thread_messages no longer exists; crashed with 'no such table'); version 3.2.2 (delete.sh schema fix) |
 | 2026-11-17 22:20 | v3.2.1 — F4: delete thread_messages and session_tags too (FK cascade is off; left orphan rows) |
 | 2026-11-09 10:49 | v3.2.0 — New script: scan Goose sessions DB by category (recipe/terminal/hidden/desktop) with date filter and trace instrumentation; New script: delete Goose sessions by category with --recipe/--terminal/--hidden/--desktop/--all flags, date filter, tracked session protection |
 | 2026-11-08 22:50 | v3.1.0 — Add Rules + trace |

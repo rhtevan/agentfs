@@ -99,7 +99,7 @@ never as a compliance score.
 3. **Static sheet** (`artifacts/agents-md/scores.yaml`) = Quality, Operable-build and Observable. Its runtime entry is a reference only: `{derived_from: compliance-profile.yaml, computed_by: agentfs-eval/scripts/runtime-compliance.sh}`, with no pass, date, score or note. Shape enforced by `agentfs-setup/scripts/static-sheet-status.sh` (`INVALID` if state is stored).
 4. **Precedence.** For "is it followed?", compliance wins. For "is it maintainable?", the static sheet wins. A static score never claims adherence.
 5. **Staleness checks.** `update-compliance.sh --check` flags template changes since the records. The static sheet has its own: `agentfs-setup/scripts/static-sheet-status.sh` → `STATIC_SHEET=CURRENT|STALE|INVALID` (sheet version vs template version); `--check` prints that line too.
-6. **SDM unavailable → T4 fallback, report only.** Answers are labelled `T4-fallback (<model>, not persisted)`. Never persist them, and never change a score that has an SDM component (`skills/schemas/sdm-endpoint.md`).
+6. **SDM unavailable → T4 fallback, report only.** Answers are labelled `T4-fallback (<model>, not persisted)`. Never persist them, and never change a score that has an SDM component (`skills/schemas/sdm-endpoint.md`). **One exception (F30, 2026-11-24):** the base skill's static record may persist a calibrated T4 score — different model family, median of 3, within ±3 of an SDM reference on the same inputs — labelled with its `scorer` and re-scored by SDM when it returns.
 7. **Scope boundary.** These base-skill rules do not change skill-eval. skill-eval keeps full QOO for ordinary skills (universal schemas, per-skill `scores.yaml`, `sdm-evaluate.sh`).
 
 ## 5. Static Evaluation of the Base Skill
