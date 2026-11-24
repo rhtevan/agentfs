@@ -262,10 +262,7 @@ fi
 echo ""
 echo "Score: ${SCORE}/100  ($PASS pass, $FAIL fail, $WARN warn)"
 
-# Show template-level score history if available
-HISTORY_FILE="$HOME/.agents/skills/agentfs-eval/references/template-scores.md"
-if [ -f "$HISTORY_FILE" ]; then
-  echo "  → Template score history: $HISTORY_FILE"
-fi
+# Records (2026-11-24): runtime = compliance-profile.yaml (runtime-compliance.sh);
+# static = agentfs-setup/artifacts/agents-md/scores.yaml (static-sheet-status.sh).
 
 exit "$FAIL"

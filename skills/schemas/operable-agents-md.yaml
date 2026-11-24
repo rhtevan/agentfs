@@ -1,18 +1,26 @@
-schema-version: "1.0"
+schema-version: "1.1"
 schema-type: operable
 artifact-type: agents-md
 description: >
-  Operable standard adapted for AGENTS.md — a declarative policy
-  document evaluated via external benchmark harness. Build-time BMBT
-  assesses structural readiness. Runtime CECX assesses rule compliance
-  from benchmark pass/fail evidence (not trace JSONL).
+  Operable standard adapted for the base skill (AGENTS.md + SOUL.md +
+  the scripts and hooks they reference). Two phases, two owners:
 
-  The universal operable.yaml applies to SKILL trace JSONL; this
-  schema applies to AGENTS.md benchmark results. Both use the same
-  CECX weighting formula: Cr×0.40 + Ef×0.25 + Cm×0.25 + Cx×0.10.
+  build   — structural readiness (BMBT). Static, owned by agentfs-setup
+            ("upgrade agentfs"); SDM-scored (T4 fallback report-only).
+            Stored in agentfs-setup/artifacts/agents-md/scores.yaml.
+  runtime — rule compliance. NOT SDM-scored and NOT stored here or in
+            scores.yaml: derived on demand from compliance-profile.yaml
+            (the only runtime record, written by campaigns) by
+            agentfs-eval/scripts/runtime-compliance.sh, which reads the
+            targets/thresholds below. The base skill has no traces, so
+            the universal async trace path (operable.yaml) cannot apply.
 
-  Evaluated by: benchmark.sh → sdm-evaluate.sh
-  Scores stored in: agentfs-setup/artifacts/agents-md/scores.yaml
+  The universal operable.yaml applies to SKILL trace JSONL (skill-eval,
+  unchanged). Methodology:
+  knowledge/agentfs-engineering-evolution/evaluation-methodology.md §3–§6
+
+  v1.1 (2026-11-24, F22): runtime section is derived-only; added
+  per_rule_comprehension.threshold (machine-readable 80%).
 
 dimensions:
   # --- Build-time Readiness (BMBT) ---
@@ -135,6 +143,7 @@ dimensions:
     evidence_source: benchmark results (per-rule breakdown)
     metric: count
     target: "0"
+    threshold: 0.80   # a rule counts as weak below this target-tier rate
     weight: 0.25
     phase: runtime
 

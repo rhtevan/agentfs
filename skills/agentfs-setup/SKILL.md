@@ -350,6 +350,7 @@ bash merge-changelog-entry.sh ~/.agents/skills/my-skill/CHANGELOG.md "1.1.0" "Ad
 - `scripts/seed-agents-md.sh` → `load_skill(name: "agentfs-setup/scripts/seed-agents-md.sh")`
 - `scripts/sync-agents-md.sh` → `load_skill(name: "agentfs-setup/scripts/sync-agents-md.sh")`
 - `scripts/verify-setup.sh` → `load_skill(name: "agentfs-setup/scripts/verify-setup.sh")`
+- `scripts/static-sheet-status.sh` → `load_skill(name: "agentfs-setup/scripts/static-sheet-status.sh")`
 - `references/design-spec.md` → `load_skill(name: "agentfs-setup/references/design-spec.md")`
 - `references/filesystem-integrity.md` → `load_skill(name: "agentfs-setup/references/filesystem-integrity.md")`
 
@@ -361,10 +362,24 @@ OKF knowledge bundles. This keeps the KGM search index in sync with
 knowledge content changes. See `load_skill(name: "goose-kgm")` for
 lifecycle management.
 
-## Upgrade AgentFS (QOO Build-time Quality)
+## Upgrade AgentFS (Static Record: Quality + Operable-build)
 
-When the user says "upgrade agentfs", run build-time Quality evaluation
-on the current AGENTS.md and address identified gaps.
+When the user says "upgrade agentfs", run the static evaluation of the
+base skill (AGENTS.md + SOUL.md + referenced scripts/hooks) and address
+identified gaps. This skill owns the static record
+(`artifacts/agents-md/scores.yaml`). Runtime adherence is NOT evaluated
+here: it is the compliance campaign (`agentfs-eval`), derived from
+`compliance-profile.yaml`. A static score never claims adherence.
+Methodology: `~/.agents/knowledge/agentfs-engineering-evolution/evaluation-methodology.md` §3–§5.
+
+Check staleness first:
+
+```bash
+bash ~/.agents/skills/agentfs-setup/scripts/static-sheet-status.sh
+```
+
+`STATIC_SHEET=CURRENT` → report and stop unless the user asks for a
+re-score. `STALE` or `INVALID` → continue to Step 1.
 
 ### Evidence Architecture
 
@@ -420,8 +435,18 @@ rule_action_density: <your evidence statement>
 concern_count: <your evidence statement>
 trigger_clarity: <your evidence statement>
 cross_rule_dependency: <your evidence statement>
-accidental_complexity: <your evidence statement>
+item_overlap: <your evidence statement>
+
+=== Semantic Evidence (Build) ===
+has_bones: <your evidence statement>
+has_muscle: <your evidence statement>
+has_brain: <your evidence statement>
+has_harness: <your evidence statement>
 ```
+
+The Build section answers the `phase: build` dimensions of
+`~/.agents/skills/schemas/operable-agents-md.yaml` (read it). Cite
+specific rules and scripts.
 
 Be precise and factual. Cite specific rule numbers and content.
 Do NOT editorialize or score — SDM handles scoring in Step 3.
@@ -434,7 +459,12 @@ Pass the composed evidence to SDM for quantitative evaluation:
 bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md \
   ~/.agents/skills/schemas/quality-agents-md.yaml \
   --evidence /tmp/agents-md-evidence.txt
+bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md \
+  ~/.agents/skills/schemas/operable-agents-md.yaml \
+  --evidence /tmp/agents-md-evidence.txt --phase build
 ```
+
+Never score `phase: runtime` dimensions with SDM.
 
 If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
 fallback (report only). Answer each `dimensions[].question` as a
@@ -449,24 +479,21 @@ Quality score with band classification.
 
 ### Step 4 — Persist Scores
 
-Write the Quality scores to the artifact scores file:
+Update `~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml`
+(edit in place; do NOT rewrite the file):
 
-```
-~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml
-```
+1. `version` → the template version (`metadata.version` above).
+2. `quality` → aggregate_score, band, dimensions, `evaluated` from the
+   Quality SDM JSON.
+3. `operable.build` → dimensions and `evaluated` from the build SDM JSON.
+4. `operable.runtime` → leave the stateless reference
+   (`derived_from`, `computed_by`) untouched. Never add pass, date,
+   score or note.
+5. `history` → append one entry (date, type `static`, one-line note).
 
-Use the format:
-
-```yaml
-artifact: AGENTS.md
-source_skill: agentfs-setup
-version: "<template-version>"
-quality:
-  aggregate_score: <score>
-  band: "<band>"
-  dimensions: [...]
-  evaluated: "<timestamp>"
-```
+Skip this step if SDM was unavailable (T4 fallback is report only).
+Run post-write.sh after writing, then re-run `static-sheet-status.sh`;
+it must print `STATIC_SHEET=CURRENT`.
 
 ### Step 5 — Address Gaps
 

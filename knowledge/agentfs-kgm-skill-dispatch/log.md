@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 10:43
+- Note: legacy score sheet retired (R-a) (knowledge/agentfs-kgm-skill-dispatch/testing-infrastructure.md)
+
 ## 2026-11-20 00:27
 - Ad-Hoc Fix -> Durable Fix: KGM symlink recast as counter-example; root cause and env-wrapper fix (goose-kgm 1.8.3) (knowledge/agentfs-kgm-skill-dispatch/design-principles.md)
 - Frontmatter description: symlink workaround -> index path delivery (knowledge/agentfs-kgm-skill-dispatch/architecture.md)

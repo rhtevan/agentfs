@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.9.1"
+  version: "2.10.0"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -162,54 +162,30 @@ frontier tier (T4): `rule_pass_rate`, `frontier_target_delta`,
 enforced by the benchmark graders (full tool chain required per run).
 Report every ❌ with the rule names. Do NOT re-score these with SDM.
 
-### Step 8 — Build-time Operable (SDM, optional)
+### Step 8 — Static Record Status (report only)
 
-Compose build evidence:
-
-```bash
-bash ~/.agents/scripts/gather-skill-state.sh --target agents-md ./AGENTS.md > /tmp/agentfs-build-evidence.txt
-```
-
-Append a `=== Semantic Evidence (Build) ===` section: for each build
-dimension in `~/.agents/skills/schemas/operable-agents-md.yaml`
-(has_bones, has_muscle, has_brain, has_harness), write a 1–3 sentence
-evidence statement citing specific rules and scripts. Then score:
+The static record (Quality + Operable-build) is owned by `agentfs-setup`
+("upgrade agentfs") and is never written here. Report its status:
 
 ```bash
-bash ~/.agents/scripts/sdm-evaluate.sh /tmp/agentfs-build-evidence.txt \
-  ~/.agents/skills/schemas/operable-agents-md.yaml \
-  --evidence /tmp/agentfs-build-evidence.txt --phase build
+bash ~/.agents/skills/agentfs-setup/scripts/static-sheet-status.sh
 ```
 
-If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
-fallback (report only). Answer each `dimensions[].question` as a
-classifier against the same evidence file. Report the answers labelled
-"T4-fallback (<model>, not persisted)". Do NOT write them to
-`scores.yaml`. Contract: `~/.agents/skills/schemas/sdm-endpoint.md`
-→ "SDM Unavailable — T4 Fallback". Continue to Step 9.
+Report the version, the dates, and `STATIC_SHEET=CURRENT|STALE`. If
+STALE, recommend "upgrade agentfs" (needs SDM; the T4 fallback is report
+only). Do NOT write `artifacts/agents-md/scores.yaml` and do NOT run SDM
+build scoring in this skill.
 
-### Step 9 — Persist Scores
-
-Update `~/.agents/skills/agentfs-setup/artifacts/agents-md/scores.yaml`:
-
-1. **`operable.build.dimensions`** — from the Step 8 SDM JSON (skip if
-   SDM was unavailable; keep the existing values).
-2. **`operable.runtime`** — keep it a pointer: `source:
-   compliance-profile.yaml`, `computed_by: runtime-compliance.sh`,
-   `evaluated: <date>`, `pass: <all target tiers pass>`. Do NOT copy
-   per-rule numbers; the compliance profile is the single record.
-3. **`history`** — append one entry (date, type `operable`, one-line note).
-
-Do NOT rewrite the entire file. Preserve the `quality` section (owned
-by `hey upgrade agentfs`), `observable` section, and existing history
-entries. Run post-write.sh after writing.
-
-### Step 10 — Produce Consolidated Report
+### Step 9 — Produce Consolidated Report
 
 Report ALL results in one summary: Stage S0 score, S1 pass/fail,
 S2 pass/warn, S3 Semantic pass/fail/N/A, runtime compliance per tier
-(Step 7), build-time operable (or "T4-fallback (<model>, not persisted)"),
-maturity level.
+(Step 7, computed now), static record status (Step 8), maturity level.
+
+This skill persists nothing except what campaigns write to
+`compliance-profile.yaml` (only when the user asks for a run, Step 6).
+Runtime dimensions are derived on demand and never copied elsewhere
+(methodology §4: one stored home per number).
 
 ## Overview
 
@@ -220,7 +196,7 @@ maturity level.
 | **Scope** | Evaluates a PROJECT or LITE-scoped `.agents/` directory |
 | **LITE scope** | Skips skills/profiles Stage S1 checks; adds LITE exclusion assertions |
 | **Dependencies** | `bash`, `find`, `grep`, `stat`, `git` (optional but recommended) |
-| **LLM required** | Stage S3 (semantic rubrics); Step 8 build-time SDM (optional) |
+| **LLM required** | Stage S3 (semantic rubrics) only; no SDM scoring in this skill |
 
 ## Recommended Usage
 
@@ -363,26 +339,26 @@ a human-driven skill update:
 The rubric YAML files never change automatically. The L2 script
 grows over time through human observation of L3 results.
 
-## Reference: QOO Details for AGENTS.md
+## Reference: Base-Skill Evaluation (AGENTS.md + SOUL.md)
 
-AGENTS.md QOO applicability:
+Evaluation is split by phase (methodology:
+`~/.agents/knowledge/agentfs-engineering-evolution/evaluation-methodology.md` §3–§6):
 
-| Axis | Applies? | Schema | Notes |
-|------|:--------:|--------|-------|
-| Quality | ✅ | `quality-agents-md.yaml` (adapted) | MCACS dims adapted for declarative policy. Universal `quality.yaml` is SKILL-specific. |
-| Observable | ❌ | N/A | Passive document — no self-instrumentation, no trace_step(). |
-| Operable (BMBT build) | ✅ | `operable-agents-md.yaml` (adapted) | Bones (scripts), muscle (CNL rules), harness (benchmark). |
-| Operable (CECX runtime) | ✅ | `operable-agents-md.yaml` (adapted) | Computed deterministically from `compliance-profile.yaml` (`runtime-compliance.sh`). No SDM. |
+| Axis | Owner | Record | How |
+|------|-------|--------|-----|
+| Quality (static) | `agentfs-setup` ("upgrade agentfs") | `agentfs-setup/artifacts/agents-md/scores.yaml` | S0 lint (Step 2, here) + optional SDM vs `quality-agents-md.yaml` |
+| Observable | — | N/A (passive text; N/A counts as PASS) | — |
+| Operable — build (static) | `agentfs-setup` | `scores.yaml` | SDM vs `operable-agents-md.yaml` `phase: build` |
+| Operable — runtime | `agentfs-eval` (this skill) | `compliance-profile.yaml` only | campaign (Step 6) → dimensions derived by `runtime-compliance.sh` (Step 7), targets read from the schema; no SDM |
 
-Steps 6–7 implement CECX runtime from the compliance profile (single
-record, measured by `update-compliance.sh` / `run-parallel.sh`).
-Step 8 implements BMBT build via SDM (`--phase build`). Quality
-build-time is handled by `agentfs-setup` ("upgrade agentfs").
+Ordinary skills are evaluated by `skill-eval` (async trace-based
+runtime); nothing here changes that.
 
 When Step 7 reports ❌, classify the cause:
 - **model-level** — model lacks capability (e.g., ignores canary rule)
 - **CNL weakness** — rule prose is ambiguous or insufficiently imperative
 - **platform limitation** — test environment gap (e.g., missing sandbox state)
+- **harness / effort** — grader, goose version or reasoning effort (F24); diagnose before rewording
 
 ## Design Principles
 
@@ -408,7 +384,6 @@ This skill is designed to enforce three non-negotiable principles:
 - `scripts/template-check.sh` → `load_skill(name: "agentfs-eval/scripts/template-check.sh")`
 - `scripts/template-behavioral.sh` → `load_skill(name: "agentfs-eval/scripts/template-behavioral.sh")`
 - `scripts/template-eval.sh` → `load_skill(name: "agentfs-eval/scripts/template-eval.sh")`
-- `scripts/merge-score-entry.sh` → `load_skill(name: "agentfs-eval/scripts/merge-score-entry.sh")`
 - `scripts/runtime-compliance.sh` → `load_skill(name: "agentfs-eval/scripts/runtime-compliance.sh")`
 - `rubrics/memory-classification.yaml` → `load_skill(name: "agentfs-eval/rubrics/memory-classification.yaml")`
 - `rubrics/reference-verification.yaml` → `load_skill(name: "agentfs-eval/rubrics/reference-verification.yaml")`
@@ -417,7 +392,6 @@ This skill is designed to enforce three non-negotiable principles:
 - `templates/report.md` → `load_skill(name: "agentfs-eval/templates/report.md")`
 - `references/execution-details.md` → `load_skill(name: "agentfs-eval/references/execution-details.md")`
 - `references/design-decisions.md` → `load_skill(name: "agentfs-eval/references/design-decisions.md")`
-- `references/template-scores.md` → `load_skill(name: "agentfs-eval/references/template-scores.md")`
 
 ## Companion Skills
 

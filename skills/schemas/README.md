@@ -11,6 +11,12 @@ correctness.
 | **quality** | Universal | `quality.yaml` | Skill design against MCACS principles | Build-time audit |
 | **observable** | Universal | `observable.yaml` | Build-time observability — instrumentation, traces, CNL, anti-fabrication | Build-time audit |
 | **operable** | Universal | `operable.yaml` | Runtime execution correctness from trace evidence (CECX) | Run-time evaluation |
+| **quality** | Base skill (AGENTS.md + SOUL.md) | `quality-agents-md.yaml` | Static design soundness of the always-on item set; owned by agentfs-setup | Build-time (optional SDM) |
+| **operable** | Base skill | `operable-agents-md.yaml` | Build: structural readiness (agentfs-setup). Runtime: definitions/targets only; values derived from `compliance-profile.yaml` by `runtime-compliance.sh`, never stored | Build + derived runtime |
+
+The universal schemas (skill-eval) and the base-skill schemas
+(agentfs-setup / agentfs-eval) are evaluated differently; see
+`knowledge/agentfs-engineering-evolution/evaluation-methodology.md`.
 
 ## Unified Format
 

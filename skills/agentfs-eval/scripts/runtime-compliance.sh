@@ -9,7 +9,9 @@
 # written by update-compliance.sh / run-parallel.sh. Read-only.
 #
 # Dimensions (schema: skills/schemas/operable-agents-md.yaml, phase runtime),
-# evaluated per target tier against the frontier tier:
+# evaluated per target tier against the frontier tier. Targets and the
+# per_rule_comprehension threshold are READ FROM THE SCHEMA (SCHEMA_YAML
+# overrides the path); the values below are the fallback if it is missing:
 #   rule_pass_rate          mean of tested per_rule rates (R5 'not_tested' excluded)  >= 0.90
 #   frontier_target_delta   frontier rule_pass_rate - target rule_pass_rate             <= 0.10
 #   per_rule_comprehension  count of tested rules with target rate < 80%                == 0
@@ -31,12 +33,34 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 PROFILE="${PROFILE_YAML:-$HOME/.agents/skills/agentfs-setup/compliance-profile.yaml}"
+SCHEMA="${SCHEMA_YAML:-$HOME/.agents/skills/schemas/operable-agents-md.yaml}"
 [[ -f "$PROFILE" ]] || { echo "ERROR: profile not found: $PROFILE" >&2; exit 2; }
 
-python3 - "$PROFILE" "$FRONTIER" "$TARGETS" "$FMT" <<'PY'
-import sys, re, yaml
-path, frontier, targets, fmt = sys.argv[1], sys.argv[2], sys.argv[3].split(","), sys.argv[4]
+python3 - "$PROFILE" "$FRONTIER" "$TARGETS" "$FMT" "$SCHEMA" <<'PY'
+import sys, re, yaml, operator
+path, frontier, targets, fmt, schema = sys.argv[1], sys.argv[2], sys.argv[3].split(","), sys.argv[4], sys.argv[5]
 d = yaml.safe_load(open(path)) or {}
+
+# Targets from the schema (phase runtime); fallback = the historical values.
+TGT = {"rule_pass_rate": ">= 0.90", "frontier_target_delta": "<= 0.10",
+       "per_rule_comprehension": "0", "stochastic_variance": "<= 0.20"}
+WEAK = 0.80
+tsrc = "fallback (schema not found)"
+try:
+    for dim in (yaml.safe_load(open(schema)) or {}).get("dimensions") or []:
+        if dim.get("phase") == "runtime" and dim.get("name") in TGT:
+            TGT[dim["name"]] = str(dim.get("target", TGT[dim["name"]])).strip()
+            if dim["name"] == "per_rule_comprehension" and dim.get("threshold") is not None:
+                WEAK = float(dim["threshold"])
+    tsrc = schema
+except OSError:
+    pass
+OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt, "==": operator.eq}
+def ok(value, target):
+    m = re.match(r"^\s*(>=|<=|==|>|<)?\s*([0-9.]+)\s*$", target)
+    if not m:
+        sys.exit(f"ERROR: unparseable target '{target}' in {tsrc}")
+    return OPS[m.group(1) or "=="](value, float(m.group(2)))
 vt = d.get("validated_tiers") or {}
 for t in [frontier] + targets:
     if t not in vt:
@@ -62,17 +86,17 @@ def variance_share(t):
     return (sum(1 for k, n in pairs if 0 < k < n) / len(pairs)) if pairs else 0.0, len(pairs)
 
 f_rate = mean(list(rules(frontier).values()))
-out = {"source": path, "frontier": {"tier": frontier, "model": vt[frontier].get("model"),
+out = {"source": path, "targets_from": tsrc, "frontier": {"tier": frontier, "model": vt[frontier].get("model"),
        "rule_pass_rate": round(f_rate, 3)}, "targets": {}}
 for t in targets:
     r = rules(t); rate = mean(list(r.values()))
-    weak = sorted(k for k, v in r.items() if v < 0.80)
+    weak = sorted(k for k, v in r.items() if v < WEAK)
     var, ntests = variance_share(t)
     dims = {
-        "rule_pass_rate":         {"value": round(rate, 3), "target": ">= 0.90", "pass": rate >= 0.90},
-        "frontier_target_delta":  {"value": round(f_rate - rate, 3), "target": "<= 0.10", "pass": (f_rate - rate) <= 0.10},
-        "per_rule_comprehension": {"value": len(weak), "target": "0", "pass": not weak, "rules": weak},
-        "stochastic_variance":    {"value": round(var, 3), "target": "<= 0.20", "pass": var <= 0.20, "tests": ntests},
+        "rule_pass_rate":         {"value": round(rate, 3), "target": TGT["rule_pass_rate"], "pass": ok(rate, TGT["rule_pass_rate"])},
+        "frontier_target_delta":  {"value": round(f_rate - rate, 3), "target": TGT["frontier_target_delta"], "pass": ok(round(f_rate - rate, 6), TGT["frontier_target_delta"])},
+        "per_rule_comprehension": {"value": len(weak), "target": TGT["per_rule_comprehension"], "pass": ok(len(weak), TGT["per_rule_comprehension"]), "rules": weak, "threshold": WEAK},
+        "stochastic_variance":    {"value": round(var, 3), "target": TGT["stochastic_variance"], "pass": ok(var, TGT["stochastic_variance"]), "tests": ntests},
     }
     out["targets"][t] = {"model": vt[t].get("model"), "agents_md_version": vt[t].get("agents_md_version"),
                          "date": str(vt[t].get("date")), "per_rule": vt[t].get("per_rule"),
@@ -82,6 +106,7 @@ if fmt == "yaml":
     print(yaml.safe_dump(out, sort_keys=False, allow_unicode=True).rstrip())
 else:
     print(f"Runtime compliance (source: {path})")
+    print(f"Targets from: {tsrc}")
     print(f"Frontier {frontier} {out['frontier']['model']}: rule_pass_rate {f_rate:.0%}")
     for t, e in out["targets"].items():
         print(f"\n{t} {e['model']} (v{e['agents_md_version']}, {e['date']}) — {'PASS' if e['pass'] else 'FAIL'}")

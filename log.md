@@ -2,6 +2,39 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 10:48
+- README Evaluation: phase split, S0–S3 + runtime stages, two records (R-a) (README.md)
+
+## 2026-11-24 10:44
+- F22: R-a done (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- R-a done: target markers → implemented; roadmap R-a done, R-b next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 10:43
+- Note: legacy score sheet retired (R-a) (knowledge/agentfs-kgm-skill-dispatch/testing-infrastructure.md)
+- R-a: G4 dispatch table by phase (fix split table); C3 note: accidental_complexity removed (skills/agentfs-setup/references/design-spec.md)
+- R-a: scripts/template-check.sh (archive legacy score sheet; drop stale history echo) (skills/agentfs-eval/scripts/template-check.sh)
+- R-a: archive/README.md (archive legacy score sheet; drop stale history echo) (skills/agentfs-eval/archive/README.md)
+- R-a: archive/merge-score-entry.sh (archive legacy score sheet; drop stale history echo) (skills/agentfs-eval/archive/merge-score-entry.sh)
+- R-a: archive/template-scores.md (archive legacy score sheet; drop stale history echo) (skills/agentfs-eval/archive/template-scores.md)
+- R-a: archive merge-score-entry.sh → archive/ (skills/agentfs-eval/scripts/merge-score-entry.sh)
+- R-a: archive legacy template-scores.md → archive/ (skills/agentfs-eval/references/template-scores.md)
+- R-a: list static-sheet-status.sh in supporting files (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-24 10:42
+- R-a: upgrade flow owns the static record (Quality + Operable-build SDM), staleness check first, runtime reference untouched (skills/agentfs-setup/SKILL.md)
+- R-a: --check prints the static record status (static-sheet-status.sh) (scripts/update-compliance.sh)
+- R-a: static sheet runtime entry → stateless reference; history note (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- R-a: add static-sheet-status.sh (static sheet staleness + stateless runtime reference check) (skills/agentfs-setup/scripts/static-sheet-status.sh)
+
+## 2026-11-24 10:41
+- R-a: Step 8 SDM build scoring + Step 9 persist removed (moved to agentfs-setup); Step 8 = static record status; base-skill reference table (skills/agentfs-eval/SKILL.md)
+- R-a: runtime-compliance.sh reads targets/threshold from operable-agents-md.yaml (fallback = previous constants) (skills/agentfs-eval/scripts/runtime-compliance.sh)
+
+## 2026-11-24 10:40
+- R-a: document base-skill schemas (skills/schemas/README.md)
+- R-a: re-scope operable-agents-md.yaml to v1.1 (F22, methodology §3–§5) (skills/schemas/operable-agents-md.yaml)
+- R-a: re-scope quality-agents-md.yaml to v1.1 (F22, methodology §3–§5) (skills/schemas/quality-agents-md.yaml)
+
 ## 2026-11-24 10:35
 - Roadmap: R-g points to F22/F23 (re-run after edit) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
 

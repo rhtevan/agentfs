@@ -67,24 +67,25 @@ Author (frontier) → Operate (mid-range + SDM) → Trace (scripts)
 - SDM integration: `~/.agents/knowledge/agentfs-engineering-evolution/sdm-integration-for-agentfs.md`
 - Observable Skill design: `~/.agents/knowledge/agentfs-engineering-evolution/observable-skill-design.md`
 
-### G4. QOO Evaluation Dispatch Model (v7.6.0)
+### G4. QOO Evaluation Dispatch Model (v7.6.0; revised 2026-11-24)
 
-QOO axes map to two evaluation signals per artifact. `upgrade`
-covers build-time design properties. `eval` covers operability
-(build-time structural readiness + runtime execution correctness).
+Evaluation is split by phase. Static signals answer "is it well built?";
+runtime signals answer "is it followed / executed correctly?". The base
+skill (AGENTS.md + SOUL.md, produced by this skill) and ordinary skills
+(produced by skill-gen) use different runtime methods. Canonical:
+`knowledge/agentfs-engineering-evolution/evaluation-methodology.md`.
 
-| Signal | QOO Axes | Phase | Purpose |
-|--------|----------|-------|---------|
-| `hey upgrade agentfs` | Quality (MCACS) | Build | Is the AGENTS.md design sound? |
-| `hey eval agentfs` | Operable (BMBT + CECX) | Build + Runtime | Does it work? (structure + benchmark) |
+| Signal | Artifact | QOO Axes | Phase | Record |
+|--------|----------|----------|-------|--------|
+| `hey upgrade agentfs` | base skill | Quality + Operable-build | Static | `artifacts/agents-md/scores.yaml` |
+| `hey eval agentfs` | base skill | Operable-runtime (compliance campaign, derived dims) + S0–S3 workspace checks | Runtime | `compliance-profile.yaml` only |
+| `hey score skill` | ordinary skill | Quality (MCACS) + Observable | Static | `<skill>/scores.yaml` |
+| `hey eval skill` | ordinary skill | Operable (BMBT + async trace CECX) | Build + Runtime | `<skill>/scores.yaml` |
 
-> **AGENTS.md Observable exemption:** Observable is N/A for AGENTS.md
-> (passive document, no runtime to instrument). N/A is ruled as PASS —
-> excluded from aggregate scoring and does not block QOO qualification.
-> Observable serves as the build-time instrumentation basis for
-> executable skills, not declarative policy artifacts.
-| `hey score skill` | Quality (MCACS) + Observable | Build | Is the skill well-designed and instrumented? |
-| `hey eval skill` | Operable (BMBT + CECX) | Build + Runtime | Does it run correctly? (structure + trace) |
+> **Base skill Observable exemption:** Observable is N/A (passive text,
+> no runtime to instrument). N/A is ruled as PASS. Because there are no
+> traces, the base skill's runtime is measured by a controlled campaign
+> (fixtures + graders, T4/T3/T2), never by the async trace path.
 
 **Observable is always build-time** — it measures whether
 instrumentation exists to produce audit trails, not whether
@@ -178,6 +179,11 @@ candidates.
 
 **Decision:** No action on accidental_complexity until rule engine
 infrastructure exists. Current score (75) is acceptable.
+
+**Update 2026-11-24 (F22):** `accidental_complexity` was removed from
+`quality-agents-md.yaml` (v1.1). It penalised exactly what C3 requires,
+and its heuristic was broken. Adherence is measured directly by the
+compliance campaign, so this trade-off no longer needs a proxy score.
 
 ### C4. Prose for Norms, Hooks for Constraints (v7.7.0)
 

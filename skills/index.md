@@ -4,10 +4,10 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-23 23:34 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-24 10:44 |
+| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-24 10:43 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety | fix goose desktop, goose shell environment, goose env fix, goose rm guard | 2026-11-23 22:27 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-11-23 20:40 |
-| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-23 20:30 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-23 20:20 |
 | [skill-eval](./skill-eval/SKILL.md) | agentfs, skills, evaluation, quality, audit, qoo, operable | check skill, eval skill, audit skill quality, check all skills, skill evaluation, assess skill | 2026-11-23 20:18 |
 | [skill-gen](./skill-gen/SKILL.md) | agentfs, skills, creation, scaffolding, evaluation | create skill, new skill, score skill, advanced skill | 2026-11-23 20:18 |

@@ -1,16 +1,26 @@
-schema-version: "1.0"
+schema-version: "1.1"
 schema-type: quality
 artifact-type: agents-md
 description: >
-  MCACS quality standard adapted for AGENTS.md — a declarative policy
-  document loaded as system prompt. Dimensions measure design soundness
-  of rules and dispatch tables, not imperative script workflows.
-  The universal quality.yaml applies to SKILL.md; this schema applies
-  to AGENTS.md. Both are grounded in the same MCACS principles.
+  MCACS quality standard adapted for the base skill (AGENTS.md rules,
+  SOUL.md principles) — always-on policy prose loaded as system prompt.
+  Dimensions measure design soundness of the item set, not imperative
+  script workflows. The universal quality.yaml applies to SKILL.md
+  (skill-eval, unchanged); this schema applies to the base skill.
+
+  Static evaluation only: these dimensions predict adherence but never
+  claim it — adherence is measured directly by the compliance campaign
+  (compliance-profile.yaml). Deterministic checks (S0 template-check.sh)
+  come first; SDM scoring here is optional.
 
   Evidence: gather-skill-state.sh (structural facts) + frontier model
   (semantic extraction per dimension) → sdm-evaluate.sh (scoring).
+  Owner: agentfs-setup ("upgrade agentfs").
   Scores stored in: agentfs-setup/artifacts/agents-md/scores.yaml
+  Methodology: knowledge/agentfs-engineering-evolution/evaluation-methodology.md §5
+
+  v1.1 (2026-11-24, F22): removed accidental_complexity (contradicted
+  design constraint C3, heuristic broken); added item_overlap.
 
 dimensions:
   - name: rule_self_containment
@@ -73,15 +83,15 @@ dimensions:
     weight: 1.0
     mcacs: Coupling
 
-  - name: accidental_complexity
+  - name: item_overlap
     question: >
-      What percentage of rule prose is dedicated to implementation
-      details (specific file paths, script arguments, directory
-      structures) versus policy intent (when to act, what outcome
-      is expected)? Implementation details that could be in scripts
-      are accidental complexity in a policy document.
-    evidence_source: AGENTS.md rules
-    metric: ratio
-    target: "<= 0.30"
+      The items are always on together, so overlap and ambiguity
+      across items matter. Count item pairs (rules, or principles)
+      that cover the same situation or prescribe the same behaviour,
+      plus terms used for two different concepts or two terms used
+      for one concept (vocabulary collisions).
+    evidence_source: AGENTS.md rules, SOUL.md principles
+    metric: count
+    target: "0"
     weight: 1.0
-    mcacs: Separation of Concerns
+    mcacs: Cohesion

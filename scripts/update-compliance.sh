@@ -194,6 +194,13 @@ if $CHECK_ONLY; then
   echo "  partial  functional, some rules — run-parallel.sh real --tiers <affected tiers>"
   echo "           (--tests REPLACES the whole tier entry; use it only with a scratch PROFILE_YAML)"
   echo "  full     release / several rules — run-parallel.sh real"
+  # Static record (2026-11-24, F22): one line from the owner's checker, so
+  # "is anything stale?" has one entry point. Details: static-sheet-status.sh.
+  SSS="${HOME}/.agents/skills/agentfs-setup/scripts/static-sheet-status.sh"
+  if [[ -x "$SSS" ]]; then
+    echo ""
+    echo "Static record (artifacts/agents-md/scores.yaml): $(bash "$SSS" --quiet 2>/dev/null || echo 'STATIC_SHEET=UNKNOWN')"
+  fi
   exit 0
 fi
 

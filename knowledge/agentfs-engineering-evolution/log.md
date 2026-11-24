@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 10:44
+- F22: R-a done (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- R-a done: target markers → implemented; roadmap R-a done, R-b next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
 ## 2026-11-24 10:35
 - Roadmap: R-g points to F22/F23 (re-run after edit) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
 

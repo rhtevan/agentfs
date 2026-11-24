@@ -1,5 +1,8 @@
-# scores.yaml — AGENTS.md artifact QOO scores
-# Quality (build-time, adapted) + Operable (BMBT build + CECX runtime, adapted).
+# scores.yaml — base skill (AGENTS.md + SOUL.md) STATIC record
+# Quality (adapted) + Operable-build (BMBT, adapted) + Observable (N/A).
+# Owner: agentfs-setup ("upgrade agentfs"). Runtime is NOT stored here: see
+# operable.runtime (reference) and evaluation-methodology.md §3–§4.
+# Staleness: agentfs-setup/scripts/static-sheet-status.sh (version vs template).
 # Observable: N/A (passive document, no self-instrumentation).
 # No composite score — per-axis bands reported separately.
 
@@ -42,22 +45,13 @@ operable:
     evaluated: "2026-11-03T11:34:02-05:00"
 
   runtime:
-    # F3 (2026-11-18): pointer only. Runtime compliance is recorded once, in
-    # compliance-profile.yaml (update-compliance.sh / run-parallel.sh), and the
-    # CECX runtime dimensions are computed from it by
-    # agentfs-eval/scripts/runtime-compliance.sh (deterministic, no SDM).
-    # The former SDM runtime block (v7.7.2, 2026-11-03, aggregate 94.4,
-    # user-picked frontier/target models) is in git history; not comparable.
-    schema: operable-agents-md.yaml
-    source: compliance-profile.yaml
+    # Stateless reference (2026-11-24, F22; evaluation-methodology.md §4).
+    # The base skill's runtime record is compliance-profile.yaml only; the
+    # dimensions are derived on demand. Never store pass/date/score/note here
+    # (the former stateful pointer said pass:false for 6 days after the
+    # profile computed PASS). static-sheet-status.sh enforces this shape.
+    derived_from: compliance-profile.yaml
     computed_by: agentfs-eval/scripts/runtime-compliance.sh
-    evaluated: "2026-11-18"
-    pass: false
-    note: >-
-      T3 glm-5-3 passes all four dimensions. T2 Qwen3.8-27B-FP8 fails
-      per_rule_comprehension on the recorded entry (R4 77%, t_r4s 1/3);
-      re-measure t_r4s 5/5 (F19) puts pooled R4 at 86% — small-sample
-      noise. Clears at the next T2 re-record.
 
 observable:
   aggregate_score: null
@@ -119,3 +113,6 @@ history:
   - date: "2026-11-18"
     type: operable
     note: "F3: runtime now a pointer to compliance-profile.yaml (runtime-compliance.sh, deterministic). T3 pass; T2 fails per_rule_comprehension (R4 77%). SDM runtime retired."
+  - date: "2026-11-24"
+    type: schema
+    note: "F22 revised: static record only. operable.runtime reduced to a stateless reference. quality-agents-md.yaml v1.1 drops accidental_complexity (its 75 above is historical) and adds item_overlap; scores stale (v7.7.2) until the next SDM upgrade run."

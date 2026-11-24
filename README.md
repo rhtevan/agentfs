@@ -772,10 +772,12 @@ Binding Pattern** (see [`knowledge/agentfs-skill-patterns/parameter-binding-patt
 AgentFS includes a QOO (Quality, Observable, Operable) evaluation
 framework with two domain-specific skill pairs:
 
-| Domain | Build-time (Quality) | Runtime (Evaluation) |
-|--------|---------------------|----------------------|
-| **AGENTS.md** | `agentfs-setup` (`hey upgrade agentfs`) | `agentfs-eval` (`hey eval agentfs`) |
-| **SKILL** | `skill-gen` (`hey score skill`) | `skill-eval` (`hey eval skill`) |
+| Domain | Static (Quality + Operable-build) | Runtime (Operable-runtime) | Runtime method |
+|--------|-----------------------------------|----------------------------|----------------|
+| **Base skill** (AGENTS.md + SOUL.md) | `agentfs-setup` (`hey upgrade agentfs`) → `artifacts/agents-md/scores.yaml` | `agentfs-eval` (`hey eval agentfs`) → `compliance-profile.yaml` | controlled compliance campaign (T4/T3/T2, fixtures + graders) |
+| **SKILL** | `skill-gen` (`hey score skill`) → `<skill>/scores.yaml` | `skill-eval` (`hey eval skill`) → `<skill>/scores.yaml` | async: scripts write traces, SDM scores the latest one |
+
+Canonical methodology: [`knowledge/agentfs-engineering-evolution/evaluation-methodology.md`](knowledge/agentfs-engineering-evolution/evaluation-methodology.md).
 
 ### QOO Properties
 
@@ -796,27 +798,31 @@ model for semantic extraction per dimension) + Stage 2 (SDM SystemOne
 API for reproducible bounded scoring). No composite score across axes
 — per-axis bands reported separately.
 
-### Evaluation Tiers (`agentfs-eval`)
+### Evaluation Stages (`agentfs-eval`)
 
-The full eval sequence (`hey eval agentfs`) executes 11 steps across
-4 tiers in strict order:
+The full eval sequence (`hey eval agentfs`) runs 9 steps in strict order:
 
-| Tier | Method | What It Verifies |
-|:----:|--------|-----------------|
-| 0 | `template-check.sh` (deterministic) | Template quality: token budget, section order, rule completeness (A1-A9) |
-| 1 | `agentfs-check.sh` (deterministic) | Structural: links, log ordering, index completeness, scope correctness (S1-S7) |
-| 2 | `agentfs-behavior.sh` (deterministic) | Behavioral: action-log correlation, timestamp alignment, scope leakage (B1-B5) |
-| 3 | `benchmark.sh` + `sdm-evaluate.sh` (SDM) | QOO Operable: frontier model 1 run + target model 5 runs, 3-level dispatch fidelity checking (presence, invocation correctness, result utilization), SDM scoring against CECX dimensions, gap analysis |
-
-Tier 3 uses the SDM (Semantic Decision Model) via NextToken API for
-zero-shot bounded semantic judgments at ~115-200ms per question.
+| Stage | Method | What It Verifies |
+|:-----:|--------|-----------------|
+| S0 | `template-check.sh` (deterministic) | Template quality: token budget, section order, rule completeness, version consistency, no effect-based triggers (A0–A10) |
+| S1 | `agentfs-check.sh` (deterministic) | Structural: links, log ordering, index completeness, scope correctness |
+| S2 | `agentfs-behavior.sh` (deterministic) | Behavioral: action-log correlation, timestamp alignment, scope leakage |
+| S3 | semantic rubrics (LLM) | Memory classification, reference verification, sycophancy detection |
+| Runtime | `update-compliance.sh --check` + `runtime-compliance.sh` (deterministic) | Rule compliance per tier from the compliance profile: pass rate, frontier delta, weak rules, variance. No SDM. Campaigns (`run-parallel.sh`) run only on request |
+| Static | `static-sheet-status.sh` | Static record current / stale (report only) |
 
 ### Scoring
 
-All scores converge to `scores.yaml` — one file per evaluated entity.
-AGENTS.md scores live at `agentfs-setup/artifacts/agents-md/scores.yaml`
-(artifact QOO separation pattern — the artifact's scores are stored
-under the producing skill, not the evaluating skill).
+Every number has one stored home; derived views are computed, never copied.
+
+| Record | Holds | Written by |
+|--------|-------|------------|
+| `agentfs-setup/artifacts/agents-md/scores.yaml` | base skill static: Quality + Operable-build (+ a stateless runtime reference) | `hey upgrade agentfs` (SDM) |
+| `agentfs-setup/compliance-profile.yaml` | base skill runtime: per-rule, per-tier pass rates | compliance campaigns only |
+| `<skill>/scores.yaml` | ordinary skill QOO, including trace-based runtime | `skill-gen` / `skill-eval` |
+
+When SDM is unavailable, the session model answers as a T4 fallback:
+report only, never persisted.
 
 ### Maturity Levels
 
@@ -824,17 +830,17 @@ under the producing skill, not the evaluating skill).
 |-------|------|--------------|
 | L0 | Absent | No `.agents/` directory |
 | L1 | Scaffolded | `.agents/` exists with valid structure |
-| L2 | Structurally Sound | All Tier 1 assertions pass |
-| L3 | Behaviorally Safe | Tier 1 + Tier 2 pass |
-| L4 | Semantically Accurate | Tier 1 + Tier 2 + Tier 3 pass |
+| L2 | Structurally Sound | All S1 assertions pass |
+| L3 | Behaviorally Safe | S1 + S2 pass |
+| L4 | Semantically Accurate | S1 + S2 + S3 pass |
 | L5 | Self-Correcting | Agent detects and fixes its own violations |
 
 ### Usage
 
 Run `agentfs-eval` explicitly by asking any agent:
 
-> "hey eval agentfs" — full eval (Tier 0-3, with provider/model selection)
-> "hey agentfs score" — Tier 0 only (quick deterministic check)
+> "hey eval agentfs" — full eval (S0–S3 + runtime compliance + static record status)
+> "hey agentfs score" — S0 only (quick deterministic check)
 > "hey check violations" — session audit mode (diagnostic, no scores)
 
 For the most reliable results, run in a **fresh session** with a
@@ -850,9 +856,9 @@ capable model to eliminate self-evaluation bias.
 - **Git provides audit evidence** — `agentfs-setup` initializes git
   in PROJECT scope by default; `.agents/memories/` is tracked for
   full audit trail
-- **Scores follow the artifact** — AGENTS.md scores in
-  `agentfs-setup/artifacts/agents-md/scores.yaml`, not in
-  `agentfs-eval/`
+- **Scores follow the artifact** — base skill records live under
+  `agentfs-setup/` (`artifacts/agents-md/scores.yaml` static,
+  `compliance-profile.yaml` runtime), not in `agentfs-eval/`
 - **SDM for objective scoring** — quantitative measurement via
   bounded semantic decisions, not frontier model subjective judgment
 

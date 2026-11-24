@@ -10,7 +10,7 @@ tags: [evaluation, compliance, QOO, base-skill, methodology, canonical]
 # AgentFS Evaluation Methodology
 
 - **Type:** Convention (canonical — supersedes the strategy parts of older docs, see §12)
-- **Status:** Active. Implementation of §3–§5 for agentfs-eval/agentfs-setup is pending (R-a, F22).
+- **Status:** Active. §3–§5 implemented for agentfs-eval/agentfs-setup (R-a, 2026-11-24). Next: §13.
 - **Decision trail:** F-tracker in [dry-run-and-compliance-plan.md](./dry-run-and-compliance-plan.md) (F3, F21–F27)
 
 ## 1. Goal
@@ -96,9 +96,9 @@ never as a compliance score.
 
 1. **One stored home per number.** A derived view is computed, never copied. Example of the failure mode: the stateful runtime pointer in `scores.yaml` said `pass: false` (2026-11-18) for 6 days after the profile already computed PASS.
 2. **Compliance profile** = the only runtime record for the base skill. Only campaigns write it (`update-compliance.sh` via `run-parallel.sh`). Never use `update-compliance.sh --tests …` into the real profile: it replaces the whole tier entry.
-3. **Static sheet** (`artifacts/agents-md/scores.yaml`) = Quality, Operable-build and Observable. Its runtime entry is a reference only: `{derived_from: compliance-profile.yaml, computed_by: agentfs-eval/scripts/runtime-compliance.sh}`, with no pass, date, score or note. *(Target, R-a: the file still holds a stateful pointer, `pass: false`, 2026-11-18.)*
+3. **Static sheet** (`artifacts/agents-md/scores.yaml`) = Quality, Operable-build and Observable. Its runtime entry is a reference only: `{derived_from: compliance-profile.yaml, computed_by: agentfs-eval/scripts/runtime-compliance.sh}`, with no pass, date, score or note. Shape enforced by `agentfs-setup/scripts/static-sheet-status.sh` (`INVALID` if state is stored).
 4. **Precedence.** For "is it followed?", compliance wins. For "is it maintainable?", the static sheet wins. A static score never claims adherence.
-5. **Staleness checks.** `update-compliance.sh --check` flags template changes since the records. The static sheet needs the same check (version behind the template → stale). *(Target, R-a: not implemented yet.)*
+5. **Staleness checks.** `update-compliance.sh --check` flags template changes since the records. The static sheet has its own: `agentfs-setup/scripts/static-sheet-status.sh` → `STATIC_SHEET=CURRENT|STALE|INVALID` (sheet version vs template version); `--check` prints that line too.
 6. **SDM unavailable → T4 fallback, report only.** Answers are labelled `T4-fallback (<model>, not persisted)`. Never persist them, and never change a score that has an SDM component (`skills/schemas/sdm-endpoint.md`).
 7. **Scope boundary.** These base-skill rules do not change skill-eval. skill-eval keeps full QOO for ordinary skills (universal schemas, per-skill `scores.yaml`, `sdm-evaluate.sh`).
 
@@ -174,7 +174,7 @@ The Principles catalogue is in [principles-test-catalogue.md](./principles-test-
 
 - Per test: PASS/FAIL per run. Per rule: pooled pass rate over its tests. Overall: mean of per-rule rates.
 - Run counts (real): 3 per test, with overrides `t1=5, t_r1=5, t_r6=5, t_r2=4, t_r2b=4, t_r2git=4`, diagnostics 2.
-- Runtime dimensions per target tier vs T4. Definitions live in the schema; values are computed by `runtime-compliance.sh`. *(Target, R-a: the script still hardcodes the thresholds below instead of reading `operable-agents-md.yaml`.)*
+- Runtime dimensions per target tier vs T4. Definitions live in the schema; values are computed by `runtime-compliance.sh`. The script reads the targets and the 80% weak-rule threshold from `operable-agents-md.yaml` (fallback: the values below).
 
 | Dimension | Definition | Target |
 |-----------|------------|--------|
@@ -259,7 +259,7 @@ Snapshot as of 2026-11-24. Current numbers: run `runtime-compliance.sh` (the pro
 | R5 Checkpoint | not tested — parked (F25): rare, maintenance-only, risky fixture; hook candidate under C4 |
 | R3 repeat (every 10th turn / after compaction) | not tested — parked (F27): needs a multi-turn harness |
 | Principles | not measured since the 11-18 wipe; catalogue drafted (F26); T2 baseline next |
-| Static sheet | stale (v7.7.2); re-scope and refresh in R-a |
+| Static sheet | re-scoped (R-a, 2026-11-24); scores stale (v7.7.2) until the next SDM "upgrade agentfs" run |
 
 ## 11. Pitfalls (learned the hard way)
 
@@ -294,8 +294,8 @@ the F-entries; update this list when a step closes.
 
 | # | Step | Detail | Status (2026-11-24) |
 |---|------|--------|---------------------|
-| 1 | **R-a** Implement §3–§5: re-scope the agents-md schemas; thresholds read from the schema; SDM build scoring moves from agentfs-eval to agentfs-setup's upgrade flow; stateless runtime reference; static-sheet staleness check; legacy `template-scores.md` / `merge-score-entry.sh` cleanup | F22 | next (Spec-Driven plan, user go) |
-| 2 | **R-b** Harvested lint into S0 (`template-check.sh`) | §5, F22 | open |
+| 1 | **R-a** Implement §3–§5: re-scope the agents-md schemas; thresholds read from the schema; SDM build scoring moves from agentfs-eval to agentfs-setup's upgrade flow; stateless runtime reference; static-sheet staleness check; legacy `template-scores.md` / `merge-score-entry.sh` cleanup | F22 | done 2026-11-24 |
+| 2 | **R-b** Harvested lint into S0 (`template-check.sh`) | §5, F22 | next |
 | 3 | **R-c** agentfs-eval template/workspace modes + time budget | §6.5, §8, F23 | open |
 | 4 | **R-g** Fresh-session `hey eval agentfs` end-to-end (T4 fallback while SDM is down), then push | F22, F23 | open |
 | 5 | **Principles**: answer the 4 open decisions, build the runner, T2 baseline (s0-current vs s1-control), s2-cnl rewrite, confirm at T3/T4, record in the profile | F26, principles-test-catalogue.md | after 1–4 |

@@ -38,6 +38,11 @@ Fallback chain: CLI args → session metadata → config.yaml.
 
 ## Score Sheet
 
+> **Retired 2026-11-24.** The sheet and `merge-score-entry.sh` moved to
+> `agentfs-eval/archive/`. Current records: `agentfs-setup/compliance-profile.yaml`
+> (runtime) and `agentfs-setup/artifacts/agents-md/scores.yaml` (static); see
+> `agentfs-engineering-evolution/evaluation-methodology.md`. Historical text below.
+
 Single table at `~/.agents/skills/agentfs-eval/references/template-scores.md`.
 Reverse chronological. One row per version + model combination.
 
