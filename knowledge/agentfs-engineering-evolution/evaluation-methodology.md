@@ -106,8 +106,8 @@ never as a compliance score.
 
 | Layer | What | How |
 |-------|------|-----|
-| S0 assertions | A0–A10 in `agentfs-eval/scripts/template-check.sh`. Examples: A1 token budget ≤ 2500; A3 rule count from `seed-agents-md.sh`; A9 version consistency; A10 no effect-based triggers | deterministic |
-| Harvested lint (from retired QOO prose dims) | one concrete `When:` per rule; no cross-rule references in `Do:`; one imperative action per step; literal tool syntax | deterministic, to add to S0 |
+| S0 assertions | A0–A14 in `agentfs-eval/scripts/template-check.sh`. Examples: A1 token budget ≤ 2500; A3 rule count from `seed-agents-md.sh`; A9 version consistency; A10 no effect-based triggers | deterministic |
+| Harvested lint (from retired QOO prose dims) | A11 one concrete `When:` per rule (FAIL); A12 no cross-rule references in `Do:`; A13 one imperative action per step; A14 literal tool syntax (WARN). v7.14.1 baseline 90/100: A12 R1→R3, R2→R5; A13 R4 step 2; A14 R1 `load_skill`, R5 bare script names | deterministic, in S0 (R-b, 2026-11-24) |
 | Design constraints | C1 Self-Contained Actions; C2 No Effect-Based Triggers; C3 Explicit Paths Over Abstraction; C4 Prose for Norms, Hooks for Constraints (`agentfs-setup/references/design-spec.md`) | lint + review |
 | Operable-build | scripts referenced by rules exist; Command scripts support `--dry-run` (R7); hooks installed; benchmark harness present | deterministic |
 | Semantic (optional) | overlap, redundancy, ambiguity, vocabulary collisions (CNL), mainly for principles | SDM, or T4 fallback (not persisted) |
@@ -295,8 +295,8 @@ the F-entries; update this list when a step closes.
 | # | Step | Detail | Status (2026-11-24) |
 |---|------|--------|---------------------|
 | 1 | **R-a** Implement §3–§5: re-scope the agents-md schemas; thresholds read from the schema; SDM build scoring moves from agentfs-eval to agentfs-setup's upgrade flow; stateless runtime reference; static-sheet staleness check; legacy `template-scores.md` / `merge-score-entry.sh` cleanup | F22 | done 2026-11-24 |
-| 2 | **R-b** Harvested lint into S0 (`template-check.sh`) | §5, F22 | next |
-| 3 | **R-c** agentfs-eval template/workspace modes + time budget | §6.5, §8, F23 | open |
+| 2 | **R-b** Harvested lint into S0 (`template-check.sh`) | §5, F22 | done 2026-11-24 (A11–A14) |
+| 3 | **R-c** agentfs-eval template/workspace modes + time budget | §6.5, §8, F23 | next |
 | 4 | **R-g** Fresh-session `hey eval agentfs` end-to-end (T4 fallback while SDM is down), then push | F22, F23 | open |
 | 5 | **Principles**: answer the 4 open decisions, build the runner, T2 baseline (s0-current vs s1-control), s2-cnl rewrite, confirm at T3/T4, record in the profile | F26, principles-test-catalogue.md | after 1–4 |
 | — | Shared design: profile schema v2 (per-item anatomy, failure labels), 429-adaptive per-model scheduler | F22 option b | with 5 |

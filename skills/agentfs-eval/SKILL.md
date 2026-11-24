@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.10.0"
+  version: "2.11.0"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -291,6 +291,17 @@ Validates that the AGENTS.md prose is structurally sound and behaviorally effect
 | A8 | **WHY vs HOW** — no explanatory prose in rule cells |
 | A9 | **Version consistency** — template version matches skill version |
 | A10 | **No effect-based triggers** — When clauses must be evaluable before execution (Self-Contained Actions) |
+| A11 | **One concrete When:** — exactly one `**When:**` per rule, ≥ 3 words (FAIL) |
+| A12 | **No cross-rule references in Do:** — "Rule N", "RN" or another rule's name (WARN; `A12_LEVEL=FAIL` to promote) |
+| A13 | **One action per step** — no chained actions (", then", "and then", ". Then") in a numbered step (WARN, heuristic) |
+| A14 | **Literal tool syntax** — `search_nodes(query:`, `load_skill(name:`, and `bash <path>/x.sh` for every invoked script (WARN, heuristic) |
+
+A11–A14 (2026-11-24) replace the retired QOO prose dimensions with
+deterministic lint. Lint predicts adherence but never claims it: a WARN
+on a rule that measures ≥ 90% at T4–T2 is not a reason to reword
+(evaluation-methodology.md §5, §9). v7.14.1 baseline: A12 R1→R3, R2→R5;
+A13 R4 step 2; A14 R1 `load_skill`, R5 `checkpoint.sh` / `sync-agents-md.sh`
+(90/100).
 
 ### Behavioral Tests (DEPRECATED)
 

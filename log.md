@@ -2,6 +2,13 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 10:53
+- R-b: S0 is A0–A14; roadmap R-b done, R-c next (README.md)
+- R-b: S0 is A0–A14; roadmap R-b done, R-c next (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- R-b: S0 is A0–A14; roadmap R-b done, R-c next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+- R-b: document A11–A14 and the v7.14.1 baseline (skills/agentfs-eval/SKILL.md)
+- R-b: A11–A14 harvested rule lint (A11 FAIL; A12–A14 WARN, env-promotable) (skills/agentfs-eval/scripts/template-check.sh)
+
 ## 2026-11-24 10:48
 - README Evaluation: phase split, S0–S3 + runtime stages, two records (R-a) (README.md)
 

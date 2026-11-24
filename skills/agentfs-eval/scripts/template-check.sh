@@ -250,6 +250,107 @@ else
   result_warn "A10: No When clauses found to check"
 fi
 
+# ── A11–A14: Harvested rule lint (2026-11-24, R-b, F22) ─────────────
+# Deterministic replacements for the retired QOO prose dimensions
+# (evaluation-methodology.md §5). Scope: the "## Rules" section, per
+# "### N. Name" rule. Lint predicts adherence; it never claims it.
+#   A11 one concrete When: per rule            (FAIL)
+#   A12 no cross-rule references in Do:        (WARN; v7.14.1 has 2 true hits
+#       R1→R3, R2→R5 while R1/R2 measure 100% at T4–T2: lint, not a verdict)
+#   A13 one imperative action per step         (WARN, heuristic)
+#   A14 literal tool syntax for tools/scripts  (WARN, heuristic)
+# Levels are env-overridable (A12_LEVEL/A13_LEVEL/A14_LEVEL=FAIL|WARN) so a
+# heuristic can be promoted once it shows zero false positives.
+while IFS=$'\t' read -r level msg; do
+  case "$level" in
+    PASS) result_pass "$msg" ;;
+    WARN) result_warn "$msg" ;;
+    FAIL) result_fail "$msg" ;;
+  esac
+done < <(python3 - "$AGENTS_FILE" "${A12_LEVEL:-WARN}" "${A13_LEVEL:-WARN}" "${A14_LEVEL:-WARN}" <<'PYLINT'
+import re, sys
+path, l12, l13, l14 = sys.argv[1:5]
+text = open(path).read().split("PROJECT-OWNED")[0]
+m = re.search(r"^## Rules\b(.*?)(?=^## )", text, re.S | re.M)
+if not m:
+    print("WARN\tA11-A14: no '## Rules' section found"); sys.exit()
+parts = re.split(r"^### (\d+)\. (.+)$", m.group(1), flags=re.M)
+rules = [(int(parts[i]), parts[i + 1].strip(), parts[i + 2]) for i in range(1, len(parts) - 2, 3)]
+names = {n: name for n, name, _ in rules}
+
+def do_block(body):
+    i = body.find("**Do:**")
+    return body[i + len("**Do:**"):] if i >= 0 else ""
+
+def steps(do):
+    out, cur = [], None
+    for line in do.splitlines():
+        if re.match(r"^\s*\d+\.\s", line):
+            if cur: out.append(cur)
+            cur = line.strip()
+        elif cur is not None and line.startswith("   ") and line.strip():
+            cur += " " + line.strip()
+        elif cur is not None and not line.strip():
+            out.append(cur); cur = None
+        elif cur is not None and not line.startswith(" "):
+            out.append(cur); cur = None
+    if cur: out.append(cur)
+    return out
+
+def strip_code(s):
+    return re.sub(r"\\?`[^`]*\\?`", "", s)
+
+# A11
+bad = []
+for n, name, body in rules:
+    whens = re.findall(r"^\*\*When:\*\*(.*)$", body, re.M)
+    if len(whens) != 1 or len(whens[0].split()) < 3:
+        bad.append(f"R{n} ({len(whens)} When:)")
+print(("FAIL\tA11: When: clause count/content — " + ", ".join(bad)) if bad
+      else f"PASS\tA11: One concrete When: per rule ({len(rules)} rules)")
+
+# A12
+hits = []
+for n, name, body in rules:
+    do = strip_code(do_block(body))
+    refs = set(re.findall(r"\bRule (\d+)\b", do)) | set(re.findall(r"\bR(\d)\b", do))
+    for k, other in names.items():
+        if k != n:
+            base = other.split(" & ")[0]
+            if re.search(r"\b" + re.escape(base) + r"\b(?!\.sh)", do):
+                refs.add(str(k))
+    refs.discard(str(n))
+    if refs:
+        hits.append(f"R{n}→" + "/".join("R" + r for r in sorted(refs)))
+print((f"{l12}\tA12: Cross-rule references in Do: — " + ", ".join(hits)) if hits
+      else "PASS\tA12: No cross-rule references in Do: blocks")
+
+# A13
+chain = re.compile(r"(,\s*then\b|\band then\b|\.\s+Then\b)", re.I)
+hits = []
+for n, name, body in rules:
+    for st in steps(do_block(body)):
+        if chain.search(strip_code(st)):
+            hits.append(f"R{n} step {st.split('.')[0]}")
+print((f"{l13}\tA13: Chained actions in one step — " + ", ".join(hits)) if hits
+      else "PASS\tA13: One imperative action per step (no chained steps)")
+
+# A14
+hits = []
+for n, name, body in rules:
+    do = do_block(body)
+    for tool, literal in (("search_nodes", r"search_nodes\(query:"), ("load_skill", r"load_skill\(name:")):
+        if re.search(r"\b" + tool + r"\b", do) and not re.search(literal, do):
+            hits.append(f"R{n} {tool} without {tool}(…:)")
+    # Only invocations ("run `x.sh`"); a script named as an edit target is not a call.
+    for sc in sorted(set(re.findall(r"\b[Rr]un\s+\\?`?([\w-]+\.sh)\b", do))):
+        if not re.search(r"bash\s+\S*/" + re.escape(sc), do):
+            hits.append(f"R{n} {sc} without 'bash <path>/'")
+print((f"{l14}\tA14: Non-literal tool/script syntax — " + "; ".join(hits)) if hits
+      else "PASS\tA14: Literal tool syntax for every tool/script reference")
+PYLINT
+)
+
 # ── Score & History ───────────────────────────────────────────────────
 TOTAL=$((PASS + FAIL + WARN))
 if [ "$TOTAL" -gt 0 ]; then

@@ -804,7 +804,7 @@ The full eval sequence (`hey eval agentfs`) runs 9 steps in strict order:
 
 | Stage | Method | What It Verifies |
 |:-----:|--------|-----------------|
-| S0 | `template-check.sh` (deterministic) | Template quality: token budget, section order, rule completeness, version consistency, no effect-based triggers (A0–A10) |
+| S0 | `template-check.sh` (deterministic) | Template quality: token budget, section order, rule completeness, version consistency, no effect-based triggers, rule lint (A0–A14) |
 | S1 | `agentfs-check.sh` (deterministic) | Structural: links, log ordering, index completeness, scope correctness |
 | S2 | `agentfs-behavior.sh` (deterministic) | Behavioral: action-log correlation, timestamp alignment, scope leakage |
 | S3 | semantic rubrics (LLM) | Memory classification, reference verification, sycophancy detection |
