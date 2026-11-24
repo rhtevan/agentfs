@@ -436,8 +436,12 @@ bash ~/.agents/scripts/sdm-evaluate.sh ./AGENTS.md \
   --evidence /tmp/agents-md-evidence.txt
 ```
 
-If the output contains `"band": "SDM_UNAVAILABLE"`, report:
-"⚠️ SDM unavailable — quality scoring skipped."
+If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
+fallback (report only). Answer each `dimensions[].question` as a
+classifier against the same evidence file. Report the answers labelled
+"T4-fallback (<model>, not persisted)". Do NOT write them to
+`scores.yaml`. Contract: `~/.agents/skills/schemas/sdm-endpoint.md`
+→ "SDM Unavailable — T4 Fallback".
 Skip Step 4. Continue to Step 5.
 
 Read the output. It contains per-dimension scores and an aggregate

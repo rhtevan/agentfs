@@ -62,12 +62,32 @@ declare -A DEFAULT_PROFILES=(
   [rhel-ai]="d3-27b-32k"
 )
 
+# ── Site Switch (shared with skupper-model-provider) ──────────
+# RHEL_AI_ENABLED resolves: environment > skupper-model-provider/topology.env
+# > "true" (same default as skupper). A disabled host is dropped from
+# ALL_HOSTS, and parse_profile refuses its profiles before any SSH.
+if [[ -z "${RHEL_AI_ENABLED:-}" ]]; then
+  _topo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../skupper-model-provider/topology.env"
+  if [[ -f "$_topo" ]]; then
+    RHEL_AI_ENABLED=$(sed -n -E 's/^RHEL_AI_ENABLED=["'"'"']?([A-Za-z]+)["'"'"']?.*/\1/p' "$_topo" | tail -1)
+  fi
+  unset _topo
+fi
+RHEL_AI_ENABLED="${RHEL_AI_ENABLED:-true}"
+
+host_enabled() { [[ "$1" != "rhel-ai" || "$RHEL_AI_ENABLED" == "true" ]]; }
+host_disabled_msg() {
+  echo "❌ Host '$1' is disabled (RHEL_AI_ENABLED=false in skupper-model-provider/topology.env). Set it to \"true\" to re-enable."
+}
+
 # ── All Hosts ─────────────────────────────────────────────────
 # Derived from DEPLOY_PROFILES — no separate list to maintain.
+# Disabled hosts (Site Switch) are excluded.
 declare -a ALL_HOSTS=()
 _seen_hosts=""
 for _p in "${!DEPLOY_PROFILES[@]}"; do
   _h="${DEPLOY_PROFILES[$_p]%%|*}"
+  host_enabled "$_h" || continue
   if [[ ! " $_seen_hosts " == *" $_h "* ]]; then
     ALL_HOSTS+=("$_h")
     _seen_hosts="$_seen_hosts $_h"
@@ -106,6 +126,10 @@ parse_profile() {
     return 1
   fi
   IFS='|' read -r PROFILE_HOST CONTAINER IMAGE ENGINE MODEL_ID TP CONTEXT PORT EXTRA SPEC_CONFIG PROFILE_DESC PROFILE_SPEED <<< "$entry"
+  if ! host_enabled "$PROFILE_HOST"; then
+    host_disabled_msg "$PROFILE_HOST" >&2
+    return 2
+  fi
   export PROFILE_HOST CONTAINER IMAGE ENGINE MODEL_ID TP CONTEXT PORT EXTRA SPEC_CONFIG PROFILE_DESC PROFILE_SPEED
 }
 

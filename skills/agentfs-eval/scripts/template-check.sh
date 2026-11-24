@@ -45,11 +45,15 @@ CONTENT="$(cat "$AGENTS_FILE")"
 TEMPLATE_CONTENT="$(sed '/PROJECT-OWNED/,$d' "$AGENTS_FILE")"
 
 # ── A1: Token Budget ──────────────────────────────────────────────────
-# Template-owned section should stay under 2000 tokens (~8000 chars)
-# to leave room for base system prompt + skills list + extensions
+# Template-owned section budget (chars/4 estimate), to leave room for base
+# system prompt + skills list + extensions.
+# 2000 → 2500 (2026-11-23, agentfs-eval 2.9.1): the 7-rule template (Rule 7
+# Dry-Run Gate since v7.8.0) measures ~2289 and is validated by the
+# compliance profile at that size (T4/T3 100%, T2 96%). Grow the budget
+# only with compliance evidence; a regression over 2500 fails A1.
 TEMPLATE_CHARS=$(echo "$TEMPLATE_CONTENT" | wc -c | tr -d ' ')
 TOKEN_EST=$((TEMPLATE_CHARS / 4))
-MAX_TOKENS=2000
+MAX_TOKENS=2500
 if [ "$TOKEN_EST" -le "$MAX_TOKENS" ]; then
   result_pass "A1: Token budget — ~${TOKEN_EST} tokens (limit: ${MAX_TOKENS})"
 else
@@ -91,11 +95,17 @@ if [ -n "$DISPATCH_LINE" ] && [ -n "$RULES_LINE" ]; then
 fi
 
 # ── A3: Rule Completeness ─────────────────────────────────────────────
-# v7.2.3: 7 numbered rules as ### headings (### N. Name) — no severity tags
+# v7.8.0+: 7 numbered rules as ### headings (### N. Name) — no severity tags
 #   Rule 8 (Path Hygiene) removed in v7.0.0 — redundant with pre-push-scan
 # v6.x: 10 rules as table rows (| N | Event|Signal|Always |)
 # Detect format and validate accordingly.
-EXPECTED_RULES=6
+# Expected count is read from the template source (project heredoc in
+# seed-agents-md.sh), so a new rule cannot leave this check stale again
+# (it said 6 from v7.8.0 to 2.9.1 while the template had 7).
+SEED_SH="$HOME/.agents/skills/agentfs-setup/scripts/seed-agents-md.sh"
+EXPECTED_RULES=$(awk '/agentfs-scope: project -->/{f=1} f && /^AGENTSEOF/{exit} f' "$SEED_SH" 2>/dev/null \
+  | grep -cP '^### [0-9]+\. ' || true)
+[[ "${EXPECTED_RULES:-0}" -gt 0 ]] || EXPECTED_RULES=7   # seed unreadable: last known count
 
 # Try v7.2+ heading format first (no severity tags)
 HEADING_RULE_COUNT=$(echo "$CONTENT" | grep -cP '^### [0-9]+\. ' || true)

@@ -307,6 +307,7 @@ Current bundles:
 - **KGM-Based Skill Dispatch** — Design decisions, evidence, and architecture for using KGM as the primary skill dispatch mechanism
 - **AgentFS Engineering Evolution** — MCACS systems engineering principles applied to evolve AgentFS for mid-range model operability, measurement framework, benchmark test suite, SDM integration
 - **Executable Specification First (ES-First)** — Development process principle: write test, verify fail, implement, verify pass. Three ES patterns (deterministic, SDM-hybrid, benchmark)
+- **Agentic I.K.E.A. Model & SDRD Strategy** — Information → Knowledge → Expertise → Action model and its AgentFS mapping, plus the SDRD (SDKMAN, Devbox, RPM, Direct) tooling strategy as a worked harvest example
 
 See [`knowledge/index.md`](knowledge/index.md) for the full catalog.
 

@@ -7,7 +7,7 @@ argument-hint: "hey check skill <name> | hey eval skill <name> | hey assess skil
 compatibility: "bash, shellcheck (optional), yq, jq"
 metadata:
   author: agentfs
-  version: "2.6.0"
+  version: "2.7.0"
   model-tier: T4
   tags: [agentfs, skills, evaluation, quality, audit, qoo, operable]
 user-invocable: true
@@ -152,8 +152,12 @@ bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
   --phase build
 ```
 
-If the output contains `"band": "SDM_UNAVAILABLE"`, report:
-"⚠️ SDM unavailable — BMBT score skipped."
+If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
+fallback (report only). Answer each `dimensions[].question` as a
+classifier against the same evidence file. Report the answers labelled
+"T4-fallback (<model>, not persisted)". Do NOT write them to
+`scores.yaml`. Contract: `~/.agents/skills/schemas/sdm-endpoint.md`
+→ "SDM Unavailable — T4 Fallback".
 Skip to Step 8.
 
 Extract the build-phase dimensions from the SDM JSON output:
@@ -187,7 +191,8 @@ bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
 ```
 
 Report these scores as "Quality (fresh)" and "Observable (fresh)"
-in the final report. Do NOT persist them — `quality` and
+in the final report. If SDM is unavailable, apply the Step 5 T4
+fallback and label them "T4-fallback (<model>, not persisted)". Do NOT persist them — `quality` and
 `observable` sections in `scores.yaml` are owned by `skill-gen`.
 
 Continue to Step 7.

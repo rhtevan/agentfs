@@ -3,7 +3,7 @@ name: agentfs-readme-audit
 description: >
   audit readme, readme alignment, readme drift, check readme
 metadata:
-  version: "3.4.0"
+  version: "3.5.0"
   model-tier: T3
   tags: [agentfs, readme, audit, semantic, pre-push]
 user-invocable: true
@@ -19,7 +19,7 @@ AgentFS scope. Supports USER and PROJECT scopes.
 
 | Property | Value |
 |----------|-------|
-| **Version** | 3.3.0 |
+| **Version** | 3.5.0 |
 | **Trigger** | Automatic during Git Push Safety, or explicit |
 | **Dependencies** | `scripts/gather-state.sh`, `scripts/evaluate-alignment.sh` |
 
@@ -74,9 +74,12 @@ Run the alignment evaluation script:
 bash ~/.agents/skills/agentfs-readme-audit/scripts/evaluate-alignment.sh /tmp/readme-audit-state.txt
 ```
 
-If the script exits 2, SDM is unavailable. Fall through to Step 3
-and perform the comparison using the facts from
-`/tmp/readme-audit-state.txt` directly.
+If the script exits 2, SDM is unavailable. Its stdout is the T4
+fallback JSON (`band: SDM_UNAVAILABLE`, `evidence_file`, in-scope
+`dimensions[].question`). Answer each question as a classifier against
+the matching `--- <prefix>:` section of `evidence_file`. Label the
+results "T4-fallback (<model>, not persisted)" in Step 3. Contract:
+`~/.agents/skills/schemas/sdm-endpoint.md` → "SDM Unavailable — T4 Fallback".
 
 If it succeeds, read the CECX JSON output. Each dimension has
 `pass: true/false`, `score`, and `confidence`.
@@ -100,8 +103,9 @@ For each dimension, map the SDM result to a status:
 
 Filter dimensions by scope: `D*` for USER, `P*` for PROJECT.
 
-If SDM was unavailable in Step 2, compare the raw gather-state
-facts against the README content from `/tmp/readme-audit-state.txt`.
+If SDM was unavailable in Step 2, use the T4-fallback answers:
+answer `yes` on a positive-polarity question → ✅ aligned, `no` →
+⚠️ DRIFT. Add "(T4-fallback, <model>)" to each Detail cell.
 
 Format as a single report:
 
@@ -128,7 +132,7 @@ Do not auto-apply fixes. Present them to the user for approval.
 | Step | Script | On Failure |
 |:----:|--------|------------|
 | 1 | `gather-state.sh` | Exit 1: no README, skip audit. Exit 2: not a git repo, report error. |
-| 2 | `extract-comparison.sh` + `sdm-evaluate.sh` | Exit 2: SDM unavailable, fall through to manual comparison. Exit 1: partial, report what succeeded. |
+| 2 | `extract-comparison.sh` + `sdm-evaluate.sh` | Exit 2: SDM unavailable, T4 fallback from the stdout questions. Exit 1: partial, report what succeeded. |
 
 ## Integration with Git Push Safety
 
@@ -165,7 +169,7 @@ When triggered by `pre-push-scan.sh` emitting `README_AUDIT_REQUIRED`:
 |---------|-------|-----|
 | Exit 1 + "no README found" | No README.md in PROJECT or USER scope | Create README.md or use `--scope user` |
 | Exit 2 + "not a git repository" | CWD is not inside a git repo | `cd` to a git repo or use `--scope user` |
-| Exit 2 + "SDM unavailable" | localhost:9000 not running | Start the LLM/SDM endpoint. Fall through to manual comparison. |
+| Exit 2 + "SDM unavailable" | localhost:9000 not running | Start the LLM/SDM endpoint. Meanwhile use the T4 fallback (stdout questions). |
 | Empty report | `gather-state.sh` output redirected, model didn't read the file | Check stderr for `✅` confirmation. Read `/tmp/readme-audit-state.txt`. |
 | All dimensions N/A | Scope mismatch — USER dims shown for PROJECT or vice versa | Verify scope in gather-state output. Use `--scope` flag. |
 

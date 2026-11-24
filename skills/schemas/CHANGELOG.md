@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-23 20:17 | v1.1 — sdm-endpoint.md — SDM Unavailable T4 fallback contract (report only, persist:false; sdm-evaluate.sh / evaluate-alignment.sh emit the dimension questions) |
 | 2026-11-16 16:30 | sdm-endpoint.md — documented Response Shape Variants (vLLM full vs llama.cpp noul-only) and Validating a New SDM Endpoint (`scripts/sdm-validate.sh`, gates, d3-mini FAIL reference) |
 | 2026-10-29 17:18 | v1.0 — Stream 2: AGENTS.md adapted schemas — quality-agents-md.yaml (6 MCACS dims for declarative policy), operable-agents-md.yaml (4 BMBT build + 5 CECX runtime dims for benchmark evidence) |
 | 2026-10-29 16:57 | v1.1 — QOO tidy-up: observable.yaml deduped to 4 dims (removed has_scripts, bones_muscle_separation), operable.yaml expanded with BMBT build-time section (has_bones, has_muscle, has_brain, has_harness), phase field added to all operable dims |

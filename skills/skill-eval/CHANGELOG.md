@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-23 20:18 | v2.7.0 — Step 5/6b: SDM_UNAVAILABLE → T4 fallback (report only, not persisted) |
 | 2026-11-18 15:45 | v2.6.0 — F18: stage names Static Checks / Build QOO / Runtime CECX (Tier reserved for model T1-T4); SDM-unavailable note |
 | 2026-11-08 18:30 | v2.5.0 — Simplify qualification: Build+Observable gated, Quality informational; Update Step 10 with simplified qualification formula |
 | 2026-11-08 18:06 | v2.4.0 — Add Rules section with anti-fabrication rules; Add trace-lib.sh sourcing for trace instrumentation |

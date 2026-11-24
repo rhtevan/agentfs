@@ -10,7 +10,7 @@ argument-hint: "list hosted model | hosted model status | start hosted model | s
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "7.16.0"
+  version: "7.17.0"
   model-tier: T3
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
@@ -46,12 +46,34 @@ Full details in [references/deployment-profiles.md](./references/deployment-prof
 | **`g3b-16k`** | Granite 3B Q4_K_M | llama.cpp | 16K | 37 tok/s | ✅ |
 | `g350m-2k` | Granite 4.0 350M FP16 | vLLM | 2K | 44 tok/s | |
 
-### rhel-ai (port 9000)
+### rhel-ai (port 9000; D3 sidecars 9001)
 
-| Profile | Model | Engine | TP | Context | Speed | Default |
-|---------|-------|:------:|:--:|:-------:|:-----:|:-------:|
-| **`g8b-fp8-spec-128k`** | Granite 4.2 8B FP8 + 3B FP8 draft | vLLM spec | 4 | 128K | **~50 tok/s** | ✅ |
-| `g8b-spec-128k` | Granite 4.2 8B BF16 + 3B BF16 draft | vLLM spec | 4 | 128K | 19-25 tok/s | |
+| Profile | Model | Engine | TP | Context | Port | Speed | Default |
+|---------|-------|:------:|:--:|:-------:|:----:|:-----:|:-------:|
+| **`d3-27b-32k`** | D3 27B Decision Model FP8 — dedicated SDM | vLLM | 4 | 32K | 9000 | 1.2-9.8 s/request | ✅ |
+| `g8b-fp8-spec-128k` | Granite 4.2 8B FP8 + 3B FP8 draft | vLLM spec | 4 | 128K | 9000 | 58-79 tok/s | |
+| `g8b-spec-128k` | Granite 4.2 8B BF16 + 3B BF16 draft | vLLM spec | 4 | 128K | 9000 | 19-25 tok/s | |
+| `qw14b-32k` | Qwen3 14B FP8 (GPU 0-1) | vLLM | 2 | 32K | 9000 | est. 25+ tok/s | |
+| `qw14b-40k` | Qwen3 14B FP8 | vLLM | 4 | 40K | 9000 | est. 50+ tok/s | |
+| `d3-27b-8k` | D3 27B Decision Model FP8 (GPU 2-3) | vLLM | 2 | 8K | 9001 | 250-470 ms/decision | |
+| `d3f-9b-32k` | D3-Flash 9B Decision Model FP8 (GPU 2) | vLLM | 1 | 32K | 9001 | 190-315 ms/decision | |
+| `qw14b+d3` | Composite: `qw14b-32k` + `d3-27b-8k` | — | 2+2 | — | 9000+9001 | — | |
+
+Source of truth: `DEPLOY_PROFILES` / `DEFAULT_PROFILES` in
+`scripts/common.sh`. `d3-27b-32k` serves the AgentFS SDM endpoint
+(`SDM_ENDPOINT`, default `http://localhost:9000` via the Skupper
+listener). The 9001 profiles need skupper-model-provider's optional
+decision route (`RHEL_AI_DECISION_ROUTING_KEY`/`RHEL_AI_DECISION_PORT`).
+
+### Site Switch — `RHEL_AI_ENABLED`
+
+hosted-model-ctl honours skupper-model-provider's switch. Resolution:
+environment, then `skupper-model-provider/topology.env`, then `true`.
+With `RHEL_AI_ENABLED=false`, rhel-ai is dropped from `list.sh`,
+`set-default.sh --show`, `stop.sh all` and `report.sh all`; any
+rhel-ai profile, `pre-check.sh rhel-ai` or `report.sh rhel-ai` exits
+2 with "Host 'rhel-ai' is disabled" before any SSH. Re-enable by
+setting `"true"` in `topology.env` (see skupper-model-provider).
 
 ### Speculative Decoding
 
@@ -78,6 +100,7 @@ into useful token verification (2-6× speedup).
 | S7 | Test running model | `scripts/test.sh PROFILE` → 4 tests pass |
 | S8 | Generate platform report | `scripts/report.sh [HOST]` → markdown report |
 | S9 | Set default profile for a host | `scripts/set-default.sh PROFILE` → persisted, shown in list/status |
+| S10 | Honour site switch `RHEL_AI_ENABLED` | `RHEL_AI_ENABLED=false` → `start.sh --dry-run d3-27b-32k` exits 2 "disabled", no SSH; `list.sh --names-only` omits rhel-ai |
 
 ## Operations
 

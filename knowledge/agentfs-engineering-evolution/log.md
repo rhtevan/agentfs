@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 20:30
+- F20 (benchmark host safety: option a, rm guard + daily backup) and F21 (principle evaluation joins agentfs-eval) added (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-19 21:43
 - Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/tokenomics-alignment.md)
 - Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/agentfs-engineering-evolution/skill-qoo-qualification-plan.md)

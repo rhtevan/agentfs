@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-23 20:18 | v4.4.0 — 7b/7c: SDM_UNAVAILABLE → T4 fallback (report only); 7d keeps existing quality/observable sections, never persists fallback answers |
 | 2026-11-16 19:44 | v4.3.0 — Version history corrected: 2026-10-02 v2.1.0→v3.6.0, 2026-10-28 v6.1.0→v3.7.1, 2026-11-08 v4.0.0→v4.3.0; 2 vv typos fixed; metadata.version 4.0.0→4.3.0 (4.1-4.3 bumps never reached SKILL.md) |
 | 2026-11-08 18:57 | v4.3.0 — Re-persisted scores after empty SDM fix — O=93.75 B=98.94 Q=42 qoo=true (recorded as v4.0.0, corrected 2026-11-16) |
 | 2026-11-08 18:30 | v4.3.0 — Simplify qualification: Build+Observable gated, Quality informational |

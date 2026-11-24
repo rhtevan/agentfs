@@ -4,7 +4,7 @@ description: >
   eval agentfs, agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.8.1"
+  version: "2.9.1"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -181,8 +181,12 @@ bash ~/.agents/scripts/sdm-evaluate.sh /tmp/agentfs-build-evidence.txt \
   --evidence /tmp/agentfs-build-evidence.txt --phase build
 ```
 
-If the output contains `"band": "SDM_UNAVAILABLE"`, report
-"⚠️ SDM unavailable — build-time operable skipped." and continue.
+If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
+fallback (report only). Answer each `dimensions[].question` as a
+classifier against the same evidence file. Report the answers labelled
+"T4-fallback (<model>, not persisted)". Do NOT write them to
+`scores.yaml`. Contract: `~/.agents/skills/schemas/sdm-endpoint.md`
+→ "SDM Unavailable — T4 Fallback". Continue to Step 9.
 
 ### Step 9 — Persist Scores
 
@@ -204,7 +208,7 @@ entries. Run post-write.sh after writing.
 
 Report ALL results in one summary: Stage S0 score, S1 pass/fail,
 S2 pass/warn, S3 Semantic pass/fail/N/A, runtime compliance per tier
-(Step 7), build-time operable (or "SKIPPED — SDM unavailable"),
+(Step 7), build-time operable (or "T4-fallback (<model>, not persisted)"),
 maturity level.
 
 ## Overview
@@ -302,9 +306,9 @@ Validates that the AGENTS.md prose is structurally sound and behaviorally effect
 
 | ID | Assertion |
 |----|-----------|
-| A1 | **Token budget** — template-owned content ≤ 2000 tokens |
+| A1 | **Token budget** — template-owned content ≤ 2500 tokens (raised from 2000 on 2026-11-23; 7-rule template validated by the compliance profile) |
 | A2 | **Section order** — Rules is first `##` section |
-| A3 | **Rule completeness** — all 6 numbered rules present |
+| A3 | **Rule completeness** — all numbered rules present; expected count read from `seed-agents-md.sh` (currently 7) |
 | A4 | **Context lookup fallback** — fallback note present for when `search_nodes` unavailable |
 | A5 | **Skill discovery in Signal Dispatch rule** — names `search_nodes` and `load_skill` |
 | A7 | **Redundancy** — skill lookup procedure not defined in 3+ places |

@@ -12,8 +12,10 @@ LANDSCAPE="${SCRIPT_DIR}/../references/model-landscape.md"
 target="${1:-all}"
 declare -a HOSTS
 case "$target" in
-  all)         HOSTS=(rhtevan-work rhel-ai) ;;
-  rhtevan-work|rhel-ai) HOSTS=("$target") ;;
+  all)         HOSTS=(rhtevan-work); host_enabled rhel-ai && HOSTS+=(rhel-ai) ;;
+  rhtevan-work|rhel-ai)
+    host_enabled "$target" || { host_disabled_msg "$target" >&2; exit 2; }
+    HOSTS=("$target") ;;
   *) echo "Usage: report.sh [rhtevan-work|rhel-ai|all]"; exit 1 ;;
 esac
 

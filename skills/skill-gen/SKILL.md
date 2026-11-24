@@ -6,7 +6,7 @@ argument-hint: "Describe what the skill should do. Add 'advanced' for full eval 
 compatibility: "Any agent with file write capability. Advanced mode benefits from subagent support."
 metadata:
   author: agentfs
-  version: "4.3.0"
+  version: "4.4.0"
   model-tier: T4
   tags: [agentfs, skills, creation, scaffolding, evaluation]
 user-invocable: true
@@ -577,8 +577,13 @@ bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
 ```
 
 Extract the aggregate score and per-dimension results from the
-JSON output. If `"band": "SDM_UNAVAILABLE"`, report: "⚠️ SDM
-unavailable — Quality score skipped."
+JSON output. If the output contains `"band": "SDM_UNAVAILABLE"`, use the T4
+fallback (report only). Answer each `dimensions[].question` as a
+classifier against the same evidence file. Report the answers labelled
+"T4-fallback (<model>, not persisted)". Do NOT write them to
+`scores.yaml`. Contract: `~/.agents/skills/schemas/sdm-endpoint.md`
+→ "SDM Unavailable — T4 Fallback".
+The same applies to 7c.
 
 **7c. Evaluate Observable:**
 
@@ -591,6 +596,10 @@ bash ~/.agents/scripts/sdm-evaluate.sh "$SKILL_DIR" \
 Extract the aggregate score and per-dimension results.
 
 **7d. Persist to scores.yaml:**
+
+If SDM was unavailable in 7b/7c: keep existing `quality` and
+`observable` sections unchanged. Write `band: SDM_UNAVAILABLE` only
+when the section does not exist yet. Never persist T4-fallback answers.
 
 Write or update `$SKILL_DIR/scores.yaml` with this structure:
 

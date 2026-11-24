@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-23 20:40 | v3.5.0 — SDM unavailable: emit in-scope dimension questions + evidence_file + fallback contract (t4-in-session, persist:false) on stdout; exit 2 unchanged; Step 2/3: SDM unavailable → T4 fallback from evaluate-alignment.sh stdout questions; report label T4-fallback; Overview table version synced to frontmatter (3.3.0 -> 3.5.0) |
 | 2026-11-16 19:44 | v3.4.0 — Version history corrected: 2026-10-31 v3.0.2 relabeled v3.1.0 (release in effect) |
 | 2026-11-08 18:58 | v3.4.0 — Re-scored under current standard: build+observable gated, standardized format |
 | 2026-11-05 19:30 | v3.4.0 — Add model-tier to frontmatter |

@@ -204,6 +204,7 @@ DIMENSION_WEIGHTS=()
 DIMENSION_TARGETS=()
 DIMENSION_METRICS=()
 DIMENSION_POLARITIES=()
+DIMENSION_QUESTIONS=()
 
 for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   name=$(yq -r ".dimensions[$i].name" "$SCHEMA")
@@ -231,6 +232,7 @@ for i in $(seq 0 $((DIMENSION_COUNT - 1))); do
   DIMENSION_TARGETS+=("$target")
   DIMENSION_METRICS+=("$metric")
   DIMENSION_POLARITIES+=("$polarity")
+  DIMENSION_QUESTIONS+=("$question")
 
   # Map metric type to SystemOne question type
   case "$metric" in
@@ -290,13 +292,20 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
   exit_code=$?
   if [[ $exit_code -eq 2 ]]; then
     log "WARNING: SDM endpoint unreachable. Returning SDM_UNAVAILABLE."
-    # Build CECX JSON with all dimensions marked N/A
+    # Build CECX JSON with all dimensions marked N/A. Each dimension carries
+    # its question/metric/target/polarity so the calling T4 agent can answer
+    # it in-session (T4 fallback, report only — see schemas/sdm-endpoint.md).
     UNAVAIL_DIMS="[]"
     for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
       dim=$(jq -n \
         --arg n "${DIMENSION_NAMES[$i]}" \
         --argjson w "${DIMENSION_WEIGHTS[$i]}" \
-        '{name: $n, pass: null, score: -1, confidence: 0, detail: "SDM unavailable", weight: $w}')
+        --arg q "${DIMENSION_QUESTIONS[$i]}" \
+        --arg m "${DIMENSION_METRICS[$i]}" \
+        --arg t "${DIMENSION_TARGETS[$i]}" \
+        --arg p "${DIMENSION_POLARITIES[$i]}" \
+        '{name: $n, pass: null, score: -1, confidence: 0, detail: "SDM unavailable", weight: $w,
+          question: $q, metric: $m, target: $t, polarity: $p}')
       UNAVAIL_DIMS=$(echo "$UNAVAIL_DIMS" | jq --argjson d "$dim" '. + [$d]')
     done
     jq -n \
@@ -316,9 +325,14 @@ SDM_RESPONSE=$("$SDM_CALL" --input "$EVIDENCE" --questions "$QUESTIONS" 2>/dev/n
         pass_rate: -1,
         dimensions_total: $total,
         dimensions_passed: 0,
-        dimensions: $dims
+        dimensions: $dims,
+        fallback: {
+          mode: "t4-in-session",
+          persist: false,
+          instruction: "SDM is unavailable. The current (T4) session model answers each dimension question as a classifier against the same evidence and reports the result labelled T4-fallback (<model>, not persisted). Do NOT write these answers to scores.yaml or observations. SDM scores resume automatically when SDM is reachable."
+        }
       }'
-    log "Evaluation skipped: $SKILL_NAME — SDM_UNAVAILABLE"
+    log "Evaluation skipped: $SKILL_NAME — SDM_UNAVAILABLE (T4 fallback questions included)"
     exit 0
   fi
   log "SDM call failed (exit $exit_code)."

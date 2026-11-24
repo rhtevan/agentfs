@@ -26,6 +26,7 @@ fi
 
 echo "=== Hosted Model Deployment Profiles ==="
 echo
+host_enabled rhel-ai || { echo "ℹ️  rhel-ai: disabled (RHEL_AI_ENABLED=false in skupper-model-provider/topology.env) — its profiles are hidden"; echo; }
 
 # Show active profiles
 for host in "${ALL_HOSTS[@]}"; do

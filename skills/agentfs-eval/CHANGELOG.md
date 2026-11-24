@@ -3,6 +3,8 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-23 20:30 | v2.9.1 — A3: expected rule count read from seed-agents-md.sh project template (was hardcoded 6 since v7.8.0 added Rule 7); A1 budget 2000→2500 (7-rule template ~2289 tokens, validated by compliance profile); Stage S0 wording (Tier reserved for model T1-T4); pointers to compliance-profile runtime + SDM build; A1 (2500) and A3 (count from seed) assertion text |
+| 2026-11-23 20:18 | v2.9.0 — Step 8: SDM_UNAVAILABLE → T4 fallback (in-session classifier answers, report only, not persisted); Step 10 report label |
 | 2026-11-18 15:55 | v2.8.1 — frontmatter: user-invocable: true (skill-check S01) |
 | 2026-11-18 15:52 | v2.8.0 — F17: vote_count 3->1 (correlated in-session votes); moved Execution Details reference out of SKILL.md; F17 vote_count note + S17 line budget (reference section moved); Step 6: warn --tests replaces tier entry |
 | 2026-11-18 15:20 | v2.7.0 — new: deterministic runtime CECX dims from compliance profile; F3: Stage S0-S3 terms; Steps 6-11 (Tier 3 QOO benchmark + SDM runtime) replaced by Runtime Compliance from compliance-profile (update-compliance --check + runtime-compliance.sh); SDM only for build-time (--phase build) |

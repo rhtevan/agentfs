@@ -171,6 +171,39 @@ do not predict AgentFS usability.
 | 500 | Model error | Log error, exit 1 |
 | 000 | Connection refused | SDM not running, exit 2 |
 
+## SDM Unavailable — T4 Fallback (report only)
+
+Decided 2026-11-23. When `sdm-call.sh` exits 2 (endpoint unreachable):
+
+| Caller | Output | Exit |
+|--------|--------|:----:|
+| `sdm-evaluate.sh` | `band: SDM_UNAVAILABLE`; each dimension carries `question`, `metric`, `target`, `polarity`; top-level `fallback` block | 0 |
+| `agentfs-readme-audit/scripts/evaluate-alignment.sh` | `band: SDM_UNAVAILABLE`, `evidence_file`, in-scope `dimensions` with `question`; `fallback` block | 2 |
+
+`fallback` = `{mode: "t4-in-session", persist: false, instruction}`.
+
+The calling skill then:
+
+1. Answers each dimension question as a classifier against the same
+   evidence. The fallback model is the current session model (the
+   SDM-using skills agentfs-eval, skill-eval and skill-gen are
+   `model-tier: T4`; agentfs-setup and agentfs-readme-audit are T3 —
+   name the model in the report).
+2. Reports the results labelled `T4-fallback (<model>, not persisted)`.
+3. Does NOT write fallback answers to `scores.yaml`, `observations/`
+   or any history. Existing SDM scores stay unchanged; a record already
+   at `SDM_UNAVAILABLE` stays so until SDM returns.
+
+Recovery is automatic: every run probes SDM, so the next run after SDM
+is reachable uses SDM and persists scores normally. Batch scorers
+(`score-all.sh`, `evaluate-pending.sh`) have no fallback — their only
+output is persisted scores. `sdm-validate.sh` has no fallback — it
+validates the SDM itself.
+
+Limits: no logits, so the fallback has no calibrated `confidence`,
+`label_mass` or `argmax_is_label`; in-session answers are not an
+independent grader (F17).
+
 ## Environment Variables
 
 | Variable | Default | Purpose |

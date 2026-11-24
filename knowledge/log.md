@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 20:30
+- F20 (benchmark host safety: option a, rm guard + daily backup) and F21 (principle evaluation joins agentfs-eval) added (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-23 16:18
 - SDRD concept: add Devbox on SSSD hosts (NSS bridge) root cause and fix (knowledge/agentic-ikea-sdrd/sdrd-tooling-strategy.md)
 

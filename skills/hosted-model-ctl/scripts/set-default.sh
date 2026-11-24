@@ -34,11 +34,8 @@ if [[ "${1:-}" == "--show" || -z "${1:-}" ]]; then
 fi
 
 PROFILE="$1"
-parse_profile "$PROFILE" 2>/dev/null || {
-  echo "❌ Unknown profile: $PROFILE" >&2
-  echo "Available: ${ALL_PROFILES[*]}" >&2
-  exit 1
-}
+# parse_profile prints the reason (unknown profile, or disabled host).
+parse_profile "$PROFILE" || exit 1
 HOST="$PROFILE_HOST"
 CURRENT=$(get_default_profile "$HOST")
 

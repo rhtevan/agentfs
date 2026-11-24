@@ -6,6 +6,7 @@
 source "$(dirname "$0")/common.sh"
 
 TARGET="${1:?Usage: pre-check.sh HOST (rhtevan-work|rhel-ai)}"
+host_enabled "$TARGET" || { host_disabled_msg "$TARGET" >&2; exit 2; }
 PASSED=0
 FAILED=0
 

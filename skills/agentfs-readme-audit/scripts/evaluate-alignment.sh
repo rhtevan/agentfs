@@ -60,7 +60,26 @@ fi
 # --- Step 2: Check SDM availability ---
 if ! bash "$SDM_CALL" --input "ping" --questions '{"ping": {"type": "noul", "instructions": "Is this a test?"}}' >/dev/null 2>&1; then
   trace 1 "sdm_unavailable" 2 "endpoint unreachable"
-  echo "⚠️ SDM unavailable — fall through to manual comparison" >&2
+  echo "⚠️ SDM unavailable — T4 fallback: answer the dimension questions on stdout (report only)" >&2
+  # T4 fallback contract (schemas/sdm-endpoint.md): emit the in-scope
+  # dimension questions so the session model can answer them against the
+  # same evidence. Nothing is persisted. Exit code stays 2.
+  FB_DIMS="[]"
+  for i in $(seq 0 $(( $(yq -r '.dimensions | length' "$SCHEMA") - 1 ))); do
+    fb_scope=$(yq -r ".dimensions[$i].scope // \"\"" "$SCHEMA")
+    [[ -n "$fb_scope" && "$fb_scope" != "$DETECTED_SCOPE" ]] && continue
+    FB_DIMS=$(echo "$FB_DIMS" | jq \
+      --arg n "$(yq -r ".dimensions[$i].name" "$SCHEMA")" \
+      --arg q "$(yq -r ".dimensions[$i].question" "$SCHEMA")" \
+      --arg m "$(yq -r ".dimensions[$i].metric" "$SCHEMA")" \
+      --arg p "$(yq -r ".dimensions[$i].polarity // \"positive\"" "$SCHEMA")" \
+      '. + [{name: $n, question: $q, metric: $m, polarity: $p}]')
+  done
+  jq -n --arg scope "$DETECTED_SCOPE" --arg ev "$COMPARISON_FILE" --argjson dims "$FB_DIMS" '{
+    band: "SDM_UNAVAILABLE", scope: $scope, evidence_file: $ev, dimensions: $dims,
+    fallback: {mode: "t4-in-session", persist: false,
+      instruction: "Answer each question as a classifier using the section of evidence_file whose \"--- <prefix>:\" marker matches the dimension name prefix (D1, P2, ...). Report results labelled T4-fallback (<model>, not persisted)."}
+  }'
   [[ "$(type -t trace_end)" == "function" ]] && trace_end
   exit 2
 fi

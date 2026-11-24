@@ -2,6 +2,38 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 20:40
+- README: add agentic-ikea-sdrd to Current bundles list (16 -> 17) (README.md)
+- Overview table version synced to frontmatter (3.3.0 -> 3.5.0) (skills/agentfs-readme-audit/SKILL.md)
+
+## 2026-11-23 20:30
+- F20 (benchmark host safety: option a, rm guard + daily backup) and F21 (principle evaluation joins agentfs-eval) added (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- A1 (2500) and A3 (count from seed) assertion text (skills/agentfs-eval/SKILL.md)
+- Stage S0 wording (Tier reserved for model T1-T4); pointers to compliance-profile runtime + SDM build (skills/agentfs-eval/scripts/template-eval.sh)
+- A3: expected rule count read from seed-agents-md.sh project template (was hardcoded 6 since v7.8.0 added Rule 7); A1 budget 2000→2500 (7-rule template ~2289 tokens, validated by compliance profile) (skills/agentfs-eval/scripts/template-check.sh)
+
+## 2026-11-23 20:20
+- rhel-ai table: all 8 profiles from common.sh, default d3-27b-32k (dedicated SDM; was stale g8b-fp8-spec-128k); Site Switch section; spec S10 (skills/hosted-model-ctl/SKILL.md)
+- show parse_profile's reason (unknown profile or disabled host) instead of a blanket 'Unknown profile' (skills/hosted-model-ctl/scripts/set-default.sh)
+- note when rhel-ai is disabled (profiles hidden) (skills/hosted-model-ctl/scripts/list.sh)
+- all skips a disabled rhel-ai; explicit disabled host exits 2 (skills/hosted-model-ctl/scripts/report.sh)
+- refuse a disabled host (exit 2) (skills/hosted-model-ctl/scripts/pre-check.sh)
+- Site switch: RHEL_AI_ENABLED (env > skupper-model-provider/topology.env > true); disabled host dropped from ALL_HOSTS, parse_profile refuses its profiles (exit 2) before any SSH (skills/hosted-model-ctl/scripts/common.sh)
+
+## 2026-11-23 20:18
+- Step 2/3: SDM unavailable → T4 fallback from evaluate-alignment.sh stdout questions; report label T4-fallback (skills/agentfs-readme-audit/SKILL.md)
+- Quality Step 3: SDM_UNAVAILABLE → T4 fallback (report only, not persisted); docs only, version not bumped (skills/agentfs-setup/SKILL.md)
+- 7b/7c: SDM_UNAVAILABLE → T4 fallback (report only); 7d keeps existing quality/observable sections, never persists fallback answers (skills/skill-gen/SKILL.md)
+- Step 5/6b: SDM_UNAVAILABLE → T4 fallback (report only, not persisted) (skills/skill-eval/SKILL.md)
+- Step 8: SDM_UNAVAILABLE → T4 fallback (in-session classifier answers, report only, not persisted); Step 10 report label (skills/agentfs-eval/SKILL.md)
+
+## 2026-11-23 20:17
+- SDM Unavailable — T4 Fallback (report only) contract: outputs, in-session answering, no persistence, automatic recovery, limits (skills/schemas/sdm-endpoint.md)
+
+## 2026-11-23 20:16
+- SDM unavailable: emit in-scope dimension questions + evidence_file + fallback contract (t4-in-session, persist:false) on stdout; exit 2 unchanged (skills/agentfs-readme-audit/scripts/evaluate-alignment.sh)
+- SDM_UNAVAILABLE record carries each dimension's question/metric/target/polarity + fallback contract (t4-in-session, persist:false) for in-session T4 fallback; scores unchanged (scripts/sdm-evaluate.sh)
+
 ## 2026-11-23 19:05
 - Allowlist: crc-ols $SECRET/$SECRET_EXISTS/$CKEY variable names (secret names, not values) as known FP (.pre-push-allowlist)
 
