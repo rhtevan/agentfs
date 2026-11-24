@@ -41,6 +41,7 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [Tokenomics Alignment](./tokenomics-alignment.md) | Reference | AI tokenomics convergence with QOO — multi-tier model routing, showback/ROI metrics, token cost tracking |
 | [Artifact QOO Separation](./artifact-qoo-separation.md) | Pattern | Sub-artifact directory pattern for skills that produce independently-consumed artifacts (e.g., agentfs-setup → AGENTS.md) |
 | [Benchmark Results](./benchmark-results.md) | Evidence | Stochastic benchmark results: frontier 100%, 14B 85% skill operability after QOO conversions |
+| [AgentFS Evaluation Methodology](./evaluation-methodology.md) | Convention | **Canonical.** Artifact model (ordinary vs base skill), evaluation matrix (Quality / Observable / Operable build+runtime), records & invariants, static + compliance-runtime evaluation, improvement loop, pitfalls, doc map |
 | [Dry-Run & Compliance Plan](./dry-run-and-compliance-plan.md) | Convention | R7 dry-run gate design, compliance-profile schema, and the F1–F26 findings tracker (harness drift, effort root cause, QOO retirement, eval modes) |
 | [Principles Test Catalogue](./principles-test-catalogue.md) | Convention | DRAFT (F26): 19 SOUL principle tests (smoke set 8), harness contract, value/cost screen, T2-first campaign shape, per-principle adoption rule |
 | [Quality Schema v2.0 Plan](./quality-schema-v2-plan.md) | Convention | Replace broken concern_count + accidental_complexity heuristics with step_clarity + prose_executability semantic dimensions |

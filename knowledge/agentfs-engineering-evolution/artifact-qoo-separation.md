@@ -9,6 +9,8 @@ tags: [QOO, artifact, separation-of-concerns, AGENTS.md, measurement]
 
 # Artifact QOO Separation
 
+> **Historical.** Current methodology: [evaluation-methodology.md](./evaluation-methodology.md) (2026-11-24). The sub-artifact directory pattern still applies; the AGENTS.md QOO model below is superseded by §3–§5 there (see 'Superseded 2026-11-24' at the end).
+
 - **Type:** Pattern
 - **Status:** Active
 - **Source:** Session analysis — discovered while measuring AGENTS.md operability
@@ -162,3 +164,23 @@ Initial benchmark established with 6 tests covering Rules 1-4,7:
 **Identified gaps:**
 - R3 Post-Write: 0% on both models — structural prose gap
 - R4 Session Canary: 100% frontier → 60% target — CNL rewrite candidate
+
+## Superseded 2026-11-24
+
+The AGENTS.md QOO model in this document is replaced by
+[evaluation-methodology.md](./evaluation-methodology.md) §3–§5:
+
+- AGENTS.md + SOUL.md + `~/.agents/scripts` are the **base skill**
+  produced by the meta-skill agentfs-setup.
+- Static QOO (Quality, Operable-build, Observable N/A) stays with
+  agentfs-setup and is re-scoped. `accidental_complexity` is removed
+  (contradicted C3, broken heuristic). Prose dimensions that only predict
+  adherence become S0 lint.
+- **Operable-runtime = the compliance campaign.** The base skill has no
+  observability, so the async trace path cannot apply. Runtime
+  dimensions are derived on demand from `compliance-profile.yaml`
+  (`runtime-compliance.sh`) and never stored in `scores.yaml`.
+- What changed: an interim decision (F22, 2026-11-23) to retire QOO for
+  policy artifacts judged QOO by whether it raised compliance. That is the
+  wrong yardstick: it answers "is it well built?", not "is it followed?".
+

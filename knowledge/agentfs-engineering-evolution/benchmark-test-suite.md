@@ -9,6 +9,8 @@ tags: [benchmark, testing, operability, 14B, stochastic]
 
 # Benchmark Test Suite v2
 
+> **Historical.** Current methodology: [evaluation-methodology.md](./evaluation-methodology.md) (2026-11-24). This v2 suite (2026-10) predates the v6 cleanup; the current Rules catalogue is §6.3 there plus `scripts/benchmark.sh`.
+
 - **Type:** Convention
 - **Status:** Active — v2 validated by stochastic testing (2026-10-27)
 - **Source:** Session analysis — test design for MCACS evolution validation

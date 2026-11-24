@@ -2,6 +2,32 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 10:35
+- Roadmap: R-g points to F22/F23 (re-run after edit) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 10:34
+- Roadmap: R-g points to F22/F23 (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+- Methodology: Principles aims (§1), R-a target markers (§4.3/§4.5/§6.4), snapshot labels (§6.1/§10), new §13 Roadmap (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 10:32
+- Wrap T4-fallback label in backticks so the model placeholder renders (§4.6) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+- Fix bare `<model>` tag swallowed by Markdown renderer (§4.6) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 10:26
+- Add §2.1 base-vs-ordinary skill differences; runtime dims + tier stance rows; principle lift vs control; base-first diagnosis (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 10:18
+- F22 revised: evaluation split by phase (static QOO in agentfs-setup; runtime Operable derived from compliance) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Historical banner -> evaluation-methodology.md (knowledge/agentfs-engineering-evolution/benchmark-results.md)
+- Historical banner -> evaluation-methodology.md (knowledge/agentfs-engineering-evolution/benchmark-test-suite.md)
+- Historical banner -> evaluation-methodology.md (knowledge/agentfs-engineering-evolution/artifact-qoo-separation.md)
+
+## 2026-11-24 10:17
+- New canonical concept: AgentFS evaluation methodology (artifact model, evaluation matrix, records/invariants, static + compliance runtime, improvement loop, pitfalls, doc map) (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 09:26
+- F1 closed (no prose change); F22 scope = agentfs-eval only; F27 R3 repeat coverage parked (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-24 09:12
 - F26: Principles test catalogue tracker row (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

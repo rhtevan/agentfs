@@ -7,6 +7,8 @@ timestamp: 2026-10-27T20:58:33-04:00
 
 # Stochastic Benchmark Results — 2026-10-27
 
+> **Historical.** Current methodology: [evaluation-methodology.md](./evaluation-methodology.md) (2026-11-24). Results below are from 2026-10-27; current results live in `skills/agentfs-setup/compliance-profile.yaml`.
+
 ## Test Configuration
 
 | Parameter | Value |
