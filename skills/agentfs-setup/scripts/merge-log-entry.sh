@@ -134,6 +134,9 @@ flock 9
 
 # Use unique temp file to prevent collisions
 TMPFILE="$(mktemp "${LOG_FILE}.XXXXXX")"
+# mktemp creates 0600 and mv replaces log.md with it: keep the log's mode
+# (644 for a new log) so it does not silently turn owner-only.
+chmod --reference="$LOG_FILE" "$TMPFILE" 2>/dev/null || chmod 644 "$TMPFILE"
 # Do NOT remove LOCK_FILE: another process may already hold a
 # descriptor on it, and recreating the path yields a different inode,
 # so two writers would each "hold the lock" on separate files.

@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-11-24 11:48
+- New gotcha: project plugin registration persists in config.yaml after directory removal; test teardown (knowledge/goose-desktop-operations/plugin-registration-teardown.md)
+
 ## 2026-11-23 23:28
 - New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium 0/8 vs high 8/8 on R2) (knowledge/goose-desktop-operations/reasoning-effort.md)
 - New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium vs high R2 impact) (knowledge/goose-desktop-operations/reasoning-effort.md)

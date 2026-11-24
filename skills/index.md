@@ -4,8 +4,9 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
-| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, eval agentfs workspace, eval agentfs template, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-24 11:12 |
-| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-24 10:44 |
+| [agentfs-setup](./agentfs-setup/SKILL.md) | agentfs, setup, scaffolding, guardrails, sync | setup agentfs, sync agentfs, upgrade agentfs | 2026-11-24 12:27 |
+| [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-11-24 12:26 |
+| [agentfs-eval](./agentfs-eval/SKILL.md) | agentfs, eval, maturity, guardrails, audit | eval agentfs, eval agentfs workspace, eval agentfs template, agentfs health, agentfs status, agentfs score, maturity check, check violations, self audit | 2026-11-24 12:25 |
 | [goose-desktop-env-fix](./goose-desktop-env-fix/SKILL.md) | goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety | fix goose desktop, goose shell environment, goose env fix, goose rm guard | 2026-11-23 22:27 |
 | [agentfs-readme-audit](./agentfs-readme-audit/SKILL.md) | agentfs, readme, audit, semantic, pre-push | audit readme, readme alignment, readme drift, check readme | 2026-11-23 20:40 |
 | [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-23 20:20 |
@@ -31,7 +32,6 @@
 | [agentfs-archify](./agentfs-archify/SKILL.md) | visualization, diagrams, architecture, workflow, sequence, dataflow, lifecycle, mermaid, html | create architecture diagram, create workflow diagram, create sequence diagram, create data flow diagram, create lifecycle diagram, visualize architecture, map architecture, convert mermaid, beautify mermaid | 2026-11-19 16:53 |
 | [agentfs-ctx-chk](./agentfs-ctx-chk/SKILL.md) | agentfs, context, audit, optimization, guardrails | audit context, check context, context audit | 2026-11-19 16:53 |
 | [agentfs-git-push](./agentfs-git-push/SKILL.md) | agentfs, git, safety, pre-push, guardrail | git push safety, pre-push scan, hey git workflow, hey git, git | 2026-11-19 16:53 |
-| [agentfs-profile](./agentfs-profile/SKILL.md) | agentfs, profiles, multi-agent, identity | create profile, new agent profile, add agent | 2026-11-19 16:53 |
 | [bash-completion-gen](./bash-completion-gen/SKILL.md) | bash, completion, cli, shell, automation | generate bash completion, bash completion, tab completion | 2026-11-19 16:53 |
 | [crc-aap-demo-config](./crc-aap-demo-config/SKILL.md) | openshift, crc, aap-demo, configuration, safety, preflight | configure aap demo, setup aap demo, aap demo | 2026-11-19 16:53 |
 | [crc-coo-config](./crc-coo-config/SKILL.md) | openshift, crc, observability, operator, perses | install coo, configure coo, cluster observability | 2026-11-19 16:53 |

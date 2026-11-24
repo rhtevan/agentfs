@@ -247,7 +247,7 @@ PROFILES_INDEX="$AGENTS/profiles/index.md"
 if [[ -f "$PROFILES_INDEX" ]]; then
   if ! grep -q "| $PROFILE_NAME " "$PROFILES_INDEX"; then
     NOW=$(date '+%Y-%m-%d %H:%M')
-    NEW_ROW="| $PROFILE_NAME | [SOUL.md](./$PROFILE_NAME/SOUL.md) | [memories/](./$PROFILE_NAME/memories/MEMORY.md) | $NOW |"
+    NEW_ROW="| $PROFILE_NAME | [SOUL.md](./$PROFILE_NAME/SOUL.md) | [memories/](./$PROFILE_NAME/memories/MEMORY.md) · [USER.md](./$PROFILE_NAME/memories/USER.md) | $NOW |"
     # Insert after the table header separator (---|---) to keep newest first
     HEADER_SEP=$(grep -n '^|---' "$PROFILES_INDEX" | head -1 | cut -d: -f1)
     if [[ -n "$HEADER_SEP" ]]; then

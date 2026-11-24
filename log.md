@@ -2,6 +2,92 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 12:28
+- ignore __pycache__/ and *.pyc (a replay import staged a .pyc) (.gitignore)
+
+## 2026-11-24 12:27
+- README: post-write-enforce 1.6.0 row (7 hooks, failed commands, per-file clear, script-internal writes not detected) (README.md)
+- F29 open-items close-out (closed); F30 W1 static record without SDM (open, awaiting decision) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- merge-log-entry.sh keeps log.md mode (mktemp 0600 + mv turned 13 logs owner-only) (skills/agentfs-setup/scripts/merge-log-entry.sh)
+
+## 2026-11-24 12:26
+- profiles/index.md row links memories/USER.md (was an S7 orphan per profile) (skills/agentfs-profile/scripts/create-profile.sh)
+- scaffold index templates (project, lite) link memories/USER.md (was an S7 orphan in every new scaffold) (skills/agentfs-setup/scripts/scaffold-dotagents.sh)
+
+## 2026-11-24 12:25
+- B2 row: compares headings with the commit that recorded them (skills/agentfs-eval/SKILL.md)
+- B2 compares each log heading with the commit that recorded it (lag allowed; dated-after-commit = WARN; uncommitted = pending) (skills/agentfs-eval/scripts/agentfs-behavior.sh)
+- template-behavioral.sh: dedup guard reads archive/template-scores.md (dead references/ path since R-a) (skills/agentfs-eval/scripts/template-behavioral.sh)
+
+## 2026-11-24 12:24
+- post-write-enforce 1.6.0: docstring (plugins/post-write-enforce/scripts/detect-shell-write.py)
+- post-write-enforce 1.6.0: per-file clear, PostToolUseFailure, $PWD fix (plugins/post-write-enforce/plugin.json)
+
+## 2026-11-24 12:23
+- post-write-enforce 1.6.0: $PWD resolves to the cd-tracked dir (plugins/post-write-enforce/scripts/detect-shell-write.py)
+- post-write-enforce 1.6.0: test tree under ~/.cache (rm-guard) (plugins/post-write-enforce/tests/flag-lifecycle-cases.sh)
+- post-write-enforce 1.6.0: test tree under ~/.cache (rm-guard) (plugins/post-write-enforce/tests/flag-lifecycle-cases.sh)
+
+## 2026-11-24 12:22
+- post-write-enforce 1.6.0: flag lifecycle e2e cases (plugins/post-write-enforce/tests/flag-lifecycle-cases.sh)
+- post-write-enforce 1.6.0: PostToolUseFailure (shell) -> detect-shell-write.py (plugins/post-write-enforce/hooks/hooks.json)
+- post-write-enforce 1.6.0: deleted-variant match without word splitting (plugins/post-write-enforce/scripts/clear-flag.sh)
+- post-write-enforce 1.6.0: clear only the files post-write.sh ran on (plugins/post-write-enforce/scripts/clear-flag.sh)
+- post-write-enforce 1.6.0 WIP: import time (plugins/post-write-enforce/scripts/detect-shell-write.py)
+
+## 2026-11-24 12:21
+- post-write-enforce 1.6.0 WIP: changed_recently (plugins/post-write-enforce/scripts/detect-shell-write.py)
+- post-write-enforce 1.6.0 WIP: main subtraction + failure evidence (plugins/post-write-enforce/scripts/detect-shell-write.py)
+- post-write-enforce 1.6.0 WIP: post_write_args() (plugins/post-write-enforce/scripts/detect-shell-write.py)
+- preflight-reminder 1.8.0 description (plugins/preflight-reminder/plugin.json)
+
+## 2026-11-24 12:16
+- preflight-reminder 1.8.0: scanner/awk literal cases (plugins/preflight-reminder/tests/is-readonly-cases.sh)
+- preflight-reminder 1.8.0: awk literals masked before redirect/pipe check (plugins/preflight-reminder/scripts/is-readonly.sh)
+
+## 2026-11-24 12:13
+- preflight-reminder 1.8.0: scanner treats '..' inside $(..) as literal; awk string-literal "|" not a pipe (plugins/preflight-reminder/scripts/is-readonly.sh)
+
+## 2026-11-24 12:09
+- preflight-reminder 1.8.0 regression cases (plugins/preflight-reminder/tests/is-readonly-cases.sh)
+- preflight-reminder 1.8.0 version bump (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.8.0: readelf/nm/objdump read-only (plugins/preflight-reminder/scripts/is-readonly.sh)
+
+## 2026-11-24 12:08
+- preflight-reminder 1.8.0 WIP: perl one-pass quote tokenizer (closes "it's" and " bypasses), readelf/nm/objdump read-only (plugins/preflight-reminder/scripts/is-readonly.sh)
+- preflight-reminder 1.8.0 WIP: git check-ignore & co read-only, git branch `<name>`/reflog expire mutating, sqlite3/awk scan own invocation, gsettings/secret-tool/rpm query subcommands (plugins/preflight-reminder/scripts/is-readonly.sh)
+
+## 2026-11-24 11:55
+- F28 closed: shell-write detection, stale hooktest plugin removed + teardown gotcha (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- post-write-enforce row: shell writes detected (F28) (README.md)
+- post-write-enforce 1.5.0: shell writes under .agents/ set the post-write flag (F28) (plugins/post-write-enforce/tests/detect-shell-write-cases.sh)
+- post-write-enforce 1.5.0: shell writes under .agents/ set the post-write flag (F28) (plugins/post-write-enforce/plugin.json)
+- post-write-enforce 1.5.0: shell writes under .agents/ set the post-write flag (F28) (plugins/post-write-enforce/hooks/hooks.json)
+- post-write-enforce 1.5.0: shell writes under .agents/ set the post-write flag (F28) (plugins/post-write-enforce/scripts/enforce-postwrite.sh)
+- post-write-enforce 1.5.0: shell writes under .agents/ set the post-write flag (F28) (plugins/post-write-enforce/scripts/detect-shell-write.py)
+
+## 2026-11-24 11:50
+- post-write-enforce 1.5.0: regression cases for shell-write detection (F28) (plugins/post-write-enforce/tests/detect-shell-write-cases.sh)
+- post-write-enforce 1.5.0: detect .agents/ writes made by shell commands (F28) (plugins/post-write-enforce/scripts/detect-shell-write.py)
+
+## 2026-11-24 11:48
+- New gotcha: project plugin registration persists in config.yaml after directory removal; test teardown (knowledge/goose-desktop-operations/plugin-registration-teardown.md)
+
+## 2026-11-24 11:36
+- F28: R-g re-test follow-ups, hook bypasses fixed; open decision on shell-write detection (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Maturity: only FAIL blocks a level (F28) (README.md)
+- post-write-enforce 1.4.0: clear the flag only when post-write.sh is run, not mentioned; regression cases (F28) (plugins/post-write-enforce/tests/clear-flag-cases.sh)
+- post-write-enforce 1.4.0: clear the flag only when post-write.sh is run, not mentioned; regression cases (F28) (plugins/post-write-enforce/plugin.json)
+- post-write-enforce 1.4.0: clear the flag only when post-write.sh is run, not mentioned; regression cases (F28) (plugins/post-write-enforce/scripts/clear-flag.sh)
+- preflight-reminder 1.7.0: close mention + command-substitution bypasses; /tmp redirects read-only; IS_RO_DEBUG; regression cases (F28) (plugins/preflight-reminder/tests/is-readonly-cases.sh)
+- preflight-reminder 1.7.0: close mention + command-substitution bypasses; /tmp redirects read-only; IS_RO_DEBUG; regression cases (F28) (plugins/preflight-reminder/plugin.json)
+- preflight-reminder 1.7.0: close mention + command-substitution bypasses; /tmp redirects read-only; IS_RO_DEBUG; regression cases (F28) (plugins/preflight-reminder/scripts/enforce-preflight.sh)
+- preflight-reminder 1.7.0: close mention + command-substitution bypasses; /tmp redirects read-only; IS_RO_DEBUG; regression cases (F28) (plugins/preflight-reminder/scripts/is-readonly.sh)
+- F28: B1 excludes scaffold commit + self-referential files; only FAIL blocks a maturity level (skills/agentfs-eval/references/design-decisions.md)
+- F28: B1 excludes scaffold commit + self-referential files; only FAIL blocks a maturity level (skills/agentfs-eval/references/execution-details.md)
+- F28: B1 excludes scaffold commit + self-referential files; only FAIL blocks a maturity level (skills/agentfs-eval/SKILL.md)
+- F28: B1 excludes scaffold commit + self-referential files; only FAIL blocks a maturity level (skills/agentfs-eval/scripts/agentfs-behavior.sh)
+
 ## 2026-11-24 11:14
 - F22 R-c/R-g done, closed; Rules phase complete (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - §13 R-g done, Rules phase complete; Principles next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)

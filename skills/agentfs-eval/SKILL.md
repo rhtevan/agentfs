@@ -5,7 +5,7 @@ description: >
   agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.12.1"
+  version: "2.12.3"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -238,10 +238,13 @@ it defaults to the current working directory.
 |-------|------|--------------|
 | **L0** | Absent | No `.agents/` directory exists |
 | **L1** | Scaffolded | `.agents/` exists with valid structure |
-| **L2** | Structurally Sound | All Stage S1 assertions pass |
-| **L3** | Behaviorally Safe | Stage S1 + Stage S2 assertions pass |
-| **L4** | Semantically Accurate | Stage S1 + Stage S2 + Stage S3 assertions pass |
+| **L2** | Structurally Sound | No Stage S1 assertion fails |
+| **L3** | Behaviorally Safe | No Stage S1 or S2 assertion fails |
+| **L4** | Semantically Accurate | No Stage S1, S2 or S3 assertion fails |
 | **L5** | Self-Correcting | Agent can run eval, detect violations, and fix them |
+
+Only FAIL blocks a level. WARN and N/A do not block; list them in the
+report under the level they would affect.
 
 ## Reference: Execution Details
 
@@ -268,8 +271,8 @@ Pure shell. Requires accumulated evidence. Script: `scripts/agentfs-behavior.sh`
 
 | ID | Assertion | Evidence Needed | Method |
 |----|-----------|----------------|--------|
-| B1 | **Action-Log Correlation** | `log.md` with >1 entry + git history | Compare `git log -- .agents/` against `log.md` entries. Every git-recorded file change should have a corresponding log entry |
-| B2 | **Log-Git Timestamp Alignment** | `log.md` + git history | For each `log.md` entry, check if a git commit touching the mentioned file exists within ±10 minutes |
+| B1 | **Action-Log Correlation** | `log.md` with >1 entry + git history | Compare `git log -- .agents/` after the scaffold commit (the first commit touching `.agents/`) against `log.md` entries. Every git-recorded file change should have a corresponding log entry. Self-referential files (`log.md`, `index.md`, `CHANGELOG.md`) are skipped, as post-write.sh skips them |
+| B2 | **Log-Git Timestamp Alignment** | `log.md` + git history | Each `log.md` heading is consistent with the commit that recorded it (the first commit whose `log.md` contains it): not dated more than 10 min after that commit. A lag between change and commit is allowed (no rule requires a commit per change); uncommitted entries are reported as pending, not misaligned |
 | B3 | **Scope Leakage** | Git history in both scopes | Check for commits that modified both `~/.agents/` and `./.agents/` simultaneously |
 | B4 | **Idempotency Spot-Check** | At least one skill with executable scripts | `md5sum` state, re-run a skill's setup steps, `md5sum` again, diff |
 | B5 | **Rule-in-Memory Heuristic** | `MEMORY.md` with entries | `grep` for imperative language ("always", "never", "must", "shall", "enforce") in `MEMORY.md` — warn if found |
@@ -313,9 +316,10 @@ A13 R4 step 2; A14 R1 `load_skill`, R5 `checkpoint.sh` / `sync-agents-md.sh`
 
 ### Behavioral Tests (DEPRECATED)
 
-B1-B3 behavioral tests are deprecated. They are subsumed by QOO
-auto-discovered dispatch tests in `benchmark.sh` which use registered
-signals from QOO-qualified skills (more maintainable, better coverage).
+The live-model tests in `template-behavioral.sh` (named B1-skill-discovery,
+B2-signal-git, B3; unrelated to the Stage S2 assertions B1–B5) are
+deprecated. Rule adherence is measured by the compliance campaign
+(`benchmark.sh` / `run-parallel.sh`, recorded in `compliance-profile.yaml`).
 
 `template-behavioral.sh` is retained for backward compatibility but
 is no longer called by the default evaluation flow.

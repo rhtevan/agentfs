@@ -11,6 +11,17 @@
         ]
       }
     ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "(^|__)shell$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/detect-shell-write.py"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "^write$",
@@ -40,6 +51,15 @@
           {
             "type": "command",
             "command": "${PLUGIN_ROOT}/scripts/clear-flag.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "\\.agents",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PLUGIN_ROOT}/scripts/detect-shell-write.py"
           }
         ]
       }

@@ -209,10 +209,13 @@ block advancement but are noted in the report.
 |-------|------|--------------|
 | L0 | Absent | Nothing — no `.agents/` exists |
 | L1 | Scaffolded | `.agents/` exists with basic structure |
-| L2 | Structurally Sound | All Layer 1 assertions pass |
-| L3 | Behaviorally Safe | All Layer 1 + Layer 2 assertions pass |
-| L4 | Semantically Accurate | All Layer 1 + Layer 2 + Layer 3 assertions pass |
+| L2 | Structurally Sound | No Layer 1 (S1) assertion fails |
+| L3 | Behaviorally Safe | No Layer 1 or Layer 2 (S1, S2) assertion fails |
+| L4 | Semantically Accurate | No Layer 1–3 (S1–S3) assertion fails |
 | L5 | Self-Correcting | Human-assessed: agent runs eval, detects violations, fixes them |
+
+Only FAIL blocks a level; WARN and N/A are reported but do not block
+(clarified 2026-11-24).
 
 L5 is intentionally not auto-scored. It requires observing the agent
 in action — can it find a problem and fix it without being told how?

@@ -144,6 +144,7 @@ cat > "$AGENTS/index.md" << 'EOF'
 |-------|------|---------|
 | Identity | [SOUL.md](./SOUL.md) | Default agent identity (human-authored) |
 | Memories | [memories/](./memories/MEMORY.md) | Default agent's experiences and learned context |
+| User model | [memories/USER.md](./memories/USER.md) | Default agent's model of the user (agent-writable) |
 
 See [log.md](./log.md) for recent activity.
 EOF
@@ -159,6 +160,7 @@ cat > "$AGENTS/index.md" << 'EOF'
 | Profiles | [profiles/](./profiles/index.md) | Named agent profiles with individual SOUL & memories |
 | Capability | [skills/](./skills/index.md) | Project-scoped agent workflows (Agent Skills format) |
 | Memories | [memories/](./memories/MEMORY.md) | Default agent's experiences and learned context |
+| User model | [memories/USER.md](./memories/USER.md) | Default agent's model of the user (agent-writable) |
 
 See [log.md](./log.md) for recent activity.
 EOF

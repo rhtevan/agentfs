@@ -84,9 +84,14 @@ if ! $GIT_AVAILABLE || [ "$GIT_COMMIT_COUNT" -lt 2 ]; then
 elif [ "$LOG_ENTRY_COUNT" -lt 2 ]; then
   result_na "B1: Action-Log Correlation — N/A (need ≥2 log entries)"
 else
-  # Get files changed in git under .agents/ (excluding initial commit)
+  # Files changed in git under .agents/ after the scaffold commit (the first
+  # commit touching .agents/, logged as one directory-level entry), minus the
+  # self-referential files post-write.sh never logs (log.md, index.md,
+  # CHANGELOG.md). Fixed 2026-11-24: the exclusion was documented but missing.
+  SCAFFOLD_COMMIT=$(git -C "$TARGET" log --reverse --format=%H -- .agents/ 2>/dev/null | head -1)
   GIT_CHANGED_FILES=$(git -C "$TARGET" log --pretty=format: --name-only \
-    --diff-filter=ACMR -- .agents/ 2>/dev/null | sort -u | grep -v '^$' || true)
+    --diff-filter=ACMR "${SCAFFOLD_COMMIT}..HEAD" -- .agents/ 2>/dev/null \
+    | grep -v '^$' | grep -vE '(^|/)(log|index|CHANGELOG)\.md$' | sort -u || true)
 
   if [ -z "$GIT_CHANGED_FILES" ]; then
     result_na "B1: Action-Log Correlation — N/A (no .agents/ changes in git)"
@@ -141,49 +146,42 @@ else
     [ -n "$ts" ] && LOG_TIMESTAMPS+=("$ts")
   done < "$LOG_FILE"
 
-  # Get git commit timestamps for .agents/ changes
-  GIT_TIMESTAMPS=$(git -C "$TARGET" log --format='%ai' -- .agents/ 2>/dev/null | \
-    sed 's/\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\) \([0-9]\{2\}:[0-9]\{2\}\).*/\1 \2/' | \
-    sort -u || true)
+  # 2.12.3: compare each heading with the commit that RECORDED it (the first
+  # commit whose log.md contains the heading), not with any .agents/ commit
+  # within ±10 min. AGENTS.md does not require a commit per change, so a lag
+  # between the logged change and its commit is normal (batched commits).
+  # A heading dated more than 10 min AFTER the commit that recorded it is
+  # impossible for an honest log (fabricated or mis-dated) -> misaligned.
+  # Headings not committed yet are reported as pending, not misaligned.
+  ALIGNED=0
+  MISALIGNED=0
+  PENDING=0
+  MISALIGNED_LIST=""
+  for log_ts in "${LOG_TIMESTAMPS[@]}"; do
+    log_epoch=$(date -d "$log_ts" +%s 2>/dev/null || echo 0)
+    [ "$log_epoch" -eq 0 ] && continue
+    rec_epoch=$(git -C "$TARGET" log --reverse --format=%at -S"## $log_ts" -- .agents/log.md 2>/dev/null | head -1)
+    if [ -z "$rec_epoch" ]; then
+      PENDING=$((PENDING + 1))
+    elif [ $(( log_epoch - rec_epoch )) -gt 600 ]; then
+      MISALIGNED=$((MISALIGNED + 1))
+      MISALIGNED_LIST+="  - log.md entry at $log_ts is dated after the commit that recorded it ($(date -d "@$rec_epoch" '+%F %H:%M'))\n"
+    else
+      ALIGNED=$((ALIGNED + 1))
+    fi
+  done
 
-  if [ ${#LOG_TIMESTAMPS[@]} -eq 0 ] || [ -z "$GIT_TIMESTAMPS" ]; then
+  if [ ${#LOG_TIMESTAMPS[@]} -eq 0 ]; then
     result_na "B2: Log-Git Timestamp Alignment — N/A (insufficient timestamps)"
   else
-    ALIGNED=0
-    MISALIGNED=0
-    MISALIGNED_LIST=""
-
-    for log_ts in "${LOG_TIMESTAMPS[@]}"; do
-      # Convert to epoch for ±10 minute comparison
-      log_epoch=$(date -d "$log_ts" +%s 2>/dev/null || echo 0)
-      [ "$log_epoch" -eq 0 ] && continue
-
-      found=false
-      while IFS= read -r git_ts; do
-        [ -z "$git_ts" ] && continue
-        git_epoch=$(date -d "$git_ts" +%s 2>/dev/null || echo 0)
-        [ "$git_epoch" -eq 0 ] && continue
-        diff=$(( log_epoch - git_epoch ))
-        [ "$diff" -lt 0 ] && diff=$(( -diff ))
-        if [ "$diff" -le 600 ]; then  # ±10 minutes
-          found=true
-          break
-        fi
-      done <<< "$GIT_TIMESTAMPS"
-
-      if $found; then
-        ALIGNED=$((ALIGNED + 1))
-      else
-        MISALIGNED=$((MISALIGNED + 1))
-        MISALIGNED_LIST+="  - log.md entry at $log_ts has no git commit within ±10min\n"
-      fi
-    done
-
     TOTAL_CHECKED=$((ALIGNED + MISALIGNED))
-    if [ "$MISALIGNED" -eq 0 ]; then
-      result_pass "B2: Log-Git Timestamp Alignment — $ALIGNED/$TOTAL_CHECKED aligned"
+    PENDING_NOTE=""; [ "$PENDING" -gt 0 ] && PENDING_NOTE=" ($PENDING not committed yet)"
+    if [ "$TOTAL_CHECKED" -eq 0 ]; then
+      result_na "B2: Log-Git Timestamp Alignment — N/A (no log entries committed yet)"
+    elif [ "$MISALIGNED" -eq 0 ]; then
+      result_pass "B2: Log-Git Timestamp Alignment — $ALIGNED/$TOTAL_CHECKED consistent with their commits$PENDING_NOTE"
     else
-      result_warn "B2: Log-Git Timestamp Alignment — $MISALIGNED/$TOTAL_CHECKED misaligned" \
+      result_warn "B2: Log-Git Timestamp Alignment — $MISALIGNED/$TOTAL_CHECKED dated after their commit$PENDING_NOTE" \
         "B2 Details" "$(echo -e "$MISALIGNED_LIST")"
     fi
   fi

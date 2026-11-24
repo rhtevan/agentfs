@@ -81,7 +81,7 @@ the output. Include:
 - Git status (tracked? how many commits?)
 - Per-layer results with pass/fail/N/A per assertion
 - Details for any failures or warnings
-- Overall maturity level (lowest layer with all-pass determines level)
+- Overall maturity level (the highest level with no FAIL in it or below)
 - Recommendations for reaching the next level
 
 ### Maturity Level Calculation
@@ -89,14 +89,15 @@ the output. Include:
 ```
 If .agents/ does not exist           → L0 (Absent)
 Else if .agents/ exists              → L1 (Scaffolded)
-  If ALL Stage S1 assertions pass     → L2 (Structurally Sound)
-    If ALL Stage S2 assertions pass   → L3 (Behaviorally Safe)
-      If ALL Stage S3 assertions pass → L4 (Semantically Accurate)
+  If NO Stage S1 assertion fails      → L2 (Structurally Sound)
+    If NO Stage S2 assertion fails    → L3 (Behaviorally Safe)
+      If NO Stage S3 assertion fails  → L4 (Semantically Accurate)
 ```
 
-Assertions reporting `N/A` (insufficient evidence) are **excluded**
-from the pass/fail calculation — they do not block advancement but
-are noted in the report.
+Only FAIL blocks a level. Assertions reporting `WARN` (advisory) or
+`N/A` (insufficient evidence) do not block advancement; list them in
+the report under the level they would affect. (Clarified 2026-11-24:
+"all pass" was ambiguous for WARN.)
 
 L5 (Self-Correcting) is assessed by a human observing whether the
 agent can run eval, detect violations, and fix them in the same

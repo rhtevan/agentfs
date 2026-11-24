@@ -41,7 +41,7 @@ fi
 # under .agents/ sets the flag again (one reminder per write).
 files="$(cat "$flag_file" | sort -u | head -3 | tr '\n' ', ')"
 rm -f "$flag_file"
-reason="Post-Write rule: you wrote to .agents/ (${files%,}) but have not run post-write.sh yet. Run: bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> \"<description>\" for each modified file before continuing."
+reason="Post-Write rule: you wrote to .agents/ (${files%,}) but have not run post-write.sh yet. Run: bash ~/.agents/skills/agentfs-setup/scripts/post-write.sh <file> \"<description>\" for each modified file before continuing (add --deleted for a file marked deleted)."
 
 printf '{"decision":"block","reason":"%s"}' "$(echo "$reason" | tr '\n' ' ' | sed 's/"/\\"/g')"
 exit 0

@@ -345,7 +345,7 @@ live in every goose session). Rule text is unchanged; hooks only block and remin
 |--------|------|-----------|
 | `signal-dispatch` | 1 | On a `hey` prompt not in the Signal Dispatch table, blocks the first other tool once with a reminder to run `search_nodes`; a wrongly named KGM tool gets a one-time notice with the fix. Fail-open: enforces only when the KGM extension is enabled in goose `config.yaml`, otherwise Rule 1 is left to the model. With goose-kgm's default (`enabled: false`, enabled per session) it stays inactive; with KGM enabled globally (`enabled: true`) it enforces in every session |
 | `preflight-reminder` | 2 | Blocks the first mutating tool call of each turn once with a Pre-Flight reminder; the user's reply after a hold, or a short approval (`yes`/`go`/…), option pick (`A`, `option 2`) or 2–3 word reply ending in one (`fix + go`; not `no go`), counts as approval |
-| `post-write-enforce` | 6 | After a write under `.agents/`, blocks the next non-shell tool once with a reminder to run `post-write.sh` (fail-open: never locks the session) |
+| `post-write-enforce` | 7 | After a write under `.agents/` (write/edit tools, or a shell command that writes there: redirect, `sed -i`, `cp`/`mv`/`rm`, `python3` file writes — also when the command then fails, if the file changed), blocks the next non-shell tool once with a reminder to run `post-write.sh`; a `post-write.sh` run clears only the file it was run on (fail-open: never locks the session). Not detected: writes inside a script the command runs (`bash some-script.sh`) — that script must call `post-write.sh` itself |
 
 Per-session state lives in `/tmp/goose-{dispatch,preflight,postwrite}/<session-id>`.
 goose reuses session IDs, so each plugin clears its state on `SessionStart` (new sessions only).
@@ -830,10 +830,12 @@ report only, never persisted.
 |-------|------|--------------|
 | L0 | Absent | No `.agents/` directory |
 | L1 | Scaffolded | `.agents/` exists with valid structure |
-| L2 | Structurally Sound | All S1 assertions pass |
-| L3 | Behaviorally Safe | S1 + S2 pass |
-| L4 | Semantically Accurate | S1 + S2 + S3 pass |
+| L2 | Structurally Sound | No S1 assertion fails |
+| L3 | Behaviorally Safe | No S1 or S2 assertion fails |
+| L4 | Semantically Accurate | No S1–S3 assertion fails |
 | L5 | Self-Correcting | Agent detects and fixes its own violations |
+
+Only FAIL blocks a level; WARN and N/A are reported but do not block.
 
 ### Usage
 

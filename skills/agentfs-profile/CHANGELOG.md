@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-24 12:26 | v1.12.1 — profiles/index.md row links memories/USER.md (was an S7 orphan per profile) |
 | 2026-11-09 20:31 | v1.12.0 — Added Rules, Workflow CNL Steps 1-2 (create/recipe), Output Contract; Add --dry-run flag parsing and strip from positional args; Add --dry-run pre-check block with DRY_RUN_RESULT signals; Add DRY_RUN/CHANGES/ERRORS variables; Add --dry-run/--check to arg parser; Add dry-run exit block with DRY_RUN_RESULT signal before file write |
 | 2026-11-08 22:37 | v1.11.0 — Add Rules, bump to 1.11.0; Add trace-lib.sh; Add trace-lib.sh |
 | 2026-11-05 19:30 | v1.10.0 — Add model-tier to frontmatter |

@@ -18,3 +18,7 @@ skills/*/topology.env
 
 # Rule 5 checkpoint (transient; checkpoint.sh create/clear)
 .checkpoint
+
+# Python bytecode (tests/replays import plugin scripts)
+__pycache__/
+*.pyc

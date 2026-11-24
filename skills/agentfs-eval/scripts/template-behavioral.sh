@@ -218,7 +218,7 @@ except:
 # ── Dedup Guard ───────────────────────────────────────────────────────
 # Prevent weaker models from re-running the same test in a loop.
 # If a score was recorded for this version+model within the last 10 minutes, skip.
-SCORES_FILE="$HOME/.agents/skills/agentfs-eval/references/template-scores.md"
+SCORES_FILE="$HOME/.agents/skills/agentfs-eval/archive/template-scores.md"   # moved to archive/ in R-a (99075cb)
 MODEL_SHORT_GUARD="${MODEL:-unknown}"
 
 if [ -f "$SCORES_FILE" ]; then

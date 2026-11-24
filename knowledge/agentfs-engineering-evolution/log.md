@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 12:27
+- F29 open-items close-out (closed); F30 W1 static record without SDM (open, awaiting decision) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 11:55
+- F28 closed: shell-write detection, stale hooktest plugin removed + teardown gotcha (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 11:36
+- F28: R-g re-test follow-ups, hook bypasses fixed; open decision on shell-write detection (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-24 11:14
 - F22 R-c/R-g done, closed; Rules phase complete (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - §13 R-g done, Rules phase complete; Principles next (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
