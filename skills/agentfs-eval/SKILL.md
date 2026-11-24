@@ -1,10 +1,11 @@
 ---
 name: agentfs-eval
 description: >
-  eval agentfs, agentfs health, agentfs status, agentfs score,
+  eval agentfs, eval agentfs workspace, eval agentfs template,
+  agentfs health, agentfs status, agentfs score,
   maturity check, check violations, self audit
 metadata:
-  version: "2.11.0"
+  version: "2.12.0"
   model-tier: T4
   tags: [agentfs, eval, maturity, guardrails, audit]
 user-invocable: true
@@ -28,12 +29,17 @@ do not estimate.
 | User says                                          | Run                                                                                               |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | "agentfs score", "agentfs status"                  | Stage S0 only. Run `template-check.sh "$PROJECT"`. Stop after reporting score.                      |
-| "eval agentfs", "agentfs health", "maturity check" | Full eval. Execute ALL steps in the Full Eval Sequence below. Do NOT skip steps.                  |
+| "eval agentfs workspace", "maturity check"         | Workspace mode. Full Eval Sequence Steps 1, 3, 4, 5, then Step 9 (S1–S3 + maturity). Report only: writes nothing. Budget ≤ 2 min. |
+| "eval agentfs template"                            | Template mode. Full Eval Sequence Steps 1, 2, 6, 7, 8, then Step 9 (S0 + compliance status + runtime dimensions + static record status). Writes the compliance profile only if the user asks for a campaign. Budget ≤ 1 min without a campaign. |
+| "eval agentfs", "agentfs health"                   | Full eval. Execute ALL steps in the Full Eval Sequence below (template mode, then workspace mode, one report). Do NOT skip steps. |
 | "check violations", "self audit"                   | Session audit mode. Follow the Session Audit Mode section below. Diagnostic only — no scores persisted. |
+
+Match the most specific row first ("eval agentfs workspace" before
+"eval agentfs").
 
 **ROUTING STOP: Find your match above, then jump to that section.
 Do NOT read past the matched section. Do NOT run the Full Eval
-Sequence unless the match says "Full eval".**
+Sequence unless the match says "Full eval" or names its steps.**
 
 ## Session Audit Mode
 

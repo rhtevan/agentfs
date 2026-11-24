@@ -215,6 +215,8 @@ records. Classify each change and choose a run:
 | Targeted | `benchmark.sh --tests … --runs 5` (no profile write) | confirm a smoke failure or a changed item | ~3–5 min |
 | Real | `run-parallel.sh real [--tiers …]` (writes the profile, gate must be PENDING) | the recorded verdict | ~15–20 min (≤ 30 with Principles) |
 
+Budgets are report only: `run-parallel.sh` ends with `budget :: <wall> / <budget>` (smoke 7, real all tiers 20, `--tiers` subset 10 min; `RUN_BUDGET_MIN` overrides) and the provider-error units excluded per tier. It never stops a run.
+
 Benchmarks run only when the user asks. `run-parallel.sh` runs from a
 benchmark project dir (`~/app/playground/context-eng`).
 
@@ -229,13 +231,13 @@ async Operable-runtime from the latest trace. See the `skill-eval` and
 
 ## 8. Workspace Evaluation
 
-`agentfs-eval` workspace mode checks a project's `.agents/`: S1
-structural, S2 behavioural, S3 semantic assertions, and a maturity level.
-**Report only:** it never writes the compliance profile or the static
-sheet. Budget ≤ 2 min.
+`agentfs-eval` has three routes (Quick Dispatch):
 
-Template mode = S0 + compliance status (+ campaigns on request). It
-writes the profile.
+| Say | Mode | Runs | Writes | Budget |
+|-----|------|------|--------|--------|
+| `eval agentfs workspace` | workspace | S1 structural, S2 behavioural, S3 semantic + maturity | nothing (report only) | ≤ 2 min (deterministic stages < 1 s; S3 dominates) |
+| `eval agentfs template` | template | S0 lint + compliance status + runtime dimensions + static record status | the profile, only through a campaign the user asks for | ≤ 1 min without a campaign |
+| `eval agentfs` | full | template, then workspace, one report | as above | sum |
 
 ## 9. Improvement Loop
 
@@ -296,8 +298,8 @@ the F-entries; update this list when a step closes.
 |---|------|--------|---------------------|
 | 1 | **R-a** Implement §3–§5: re-scope the agents-md schemas; thresholds read from the schema; SDM build scoring moves from agentfs-eval to agentfs-setup's upgrade flow; stateless runtime reference; static-sheet staleness check; legacy `template-scores.md` / `merge-score-entry.sh` cleanup | F22 | done 2026-11-24 |
 | 2 | **R-b** Harvested lint into S0 (`template-check.sh`) | §5, F22 | done 2026-11-24 (A11–A14) |
-| 3 | **R-c** agentfs-eval template/workspace modes + time budget | §6.5, §8, F23 | next |
-| 4 | **R-g** Fresh-session `hey eval agentfs` end-to-end (T4 fallback while SDM is down), then push | F22, F23 | open |
+| 3 | **R-c** agentfs-eval template/workspace modes + time budget | §6.5, §8, F23 | done 2026-11-24 (scheduler levers moved to the shared design row) |
+| 4 | **R-g** Fresh-session `hey eval agentfs` end-to-end (T4 fallback while SDM is down), then push | F22, F23 | next |
 | 5 | **Principles**: answer the 4 open decisions, build the runner, T2 baseline (s0-current vs s1-control), s2-cnl rewrite, confirm at T3/T4, record in the profile | F26, principles-test-catalogue.md | after 1–4 |
-| — | Shared design: profile schema v2 (per-item anatomy, failure labels), 429-adaptive per-model scheduler | F22 option b | with 5 |
+| — | Shared design: profile schema v2 (per-item anatomy, failure labels); campaign scheduler (one queue per model across Rules + Principles, 429-adaptive concurrency, early stop, per-item re-run) | F22 option b, F23 | with 5 |
 | — | Parked: R5 test (F25), R3 repeat test (F27), rhel-ai SDM host re-enable | — | parked |

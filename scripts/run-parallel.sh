@@ -14,6 +14,11 @@
 # merged, checked for completeness (every unit exactly once), regraded
 # with the current checkers and recorded via update-compliance replay.
 #
+# Budget (F23, report only — never stops a run): smoke 7 min; real with all
+# of T4,T3,T2 20 min; real with a --tiers subset 10 min. RUN_BUDGET_MIN
+# overrides. The final lines report wall time vs budget and the provider-error
+# units excluded per tier (from the recorded profile entry).
+#
 # Exit: 0 all tiers recorded; 1 any tier failed (not recorded); 2 usage/gate.
 set -uo pipefail
 MODE=${1:-}; [[ $MODE == smoke || $MODE == real ]] || { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
@@ -32,6 +37,7 @@ UC=$HOME/.agents/scripts/update-compliance.sh; BS=$HOME/.agents/scripts/benchmar
 PROJ=${BENCHMARK_PROJECT_CWD:-$HOME/app/playground/context-eng}
 P=$S/run-parallel-$MODE-$TS.log; echo "$P" > "$S/run-parallel-latest"
 say(){ echo "[$(date +%H:%M:%S)] $*" | tee -a "$P"; }
+T_START=$SECONDS
 cd "$PROJ" || { echo "ERROR: project '$PROJ' not found" >&2; exit 2; }
 [[ -f AGENTS.md ]] || { echo "ERROR: '$PROJ' has no AGENTS.md" >&2; exit 2; }
 
@@ -66,6 +72,16 @@ for T in "${TIER_LIST[@]}"; do
   [[ -n ${MODEL_OF[$T]} && -n ${PROV_OF[$T]} && -n ${TESTS_OF[$T]} ]] || { say "$T: cannot parse model/provider/tests from dry-run — STOP"; exit 2; }
 done
 say "mode=$MODE shards=$SHARDS tiers=$TIERS runs=$RUNS override='${OVR}' profile=$PROFILE"
+
+budget_line() {  # mode tiers elapsed_s -> one summary line
+  local mode=$1 tiers=$2 el=$3 b
+  if [[ -n ${RUN_BUDGET_MIN:-} ]]; then b=$RUN_BUDGET_MIN
+  elif [[ $mode == smoke ]]; then b=7
+  elif [[ $tiers == "T4,T3,T2" ]]; then b=20
+  else b=10; fi
+  local mark="✅"; (( el > b * 60 )) && mark="⚠️ over budget"
+  say "budget :: $((el / 60))m$((el % 60))s / ${b}m (${mode}${tiers:+ $tiers}) $mark"
+}
 
 build_queue() {  # tests -> lines '<test> <run>' longest-first
   local tests=",$1," t r
@@ -123,5 +139,14 @@ for T in "${TIER_LIST[@]}"; do rm -rf /tmp/benchmark-proj-"$T"-w* /tmp/benchmark
 rm -f "$PROFILE.lock"
 left=$(sqlite3 -cmd ".timeout 15000" "$HOME/.local/share/goose/sessions/sessions.db" \
   "SELECT count(*) FROM sessions WHERE working_dir LIKE '/tmp/benchmark-%-w%'" 2>/dev/null)
+# --- Excluded units + budget (F23) ---
+excl=$(python3 - "$PROFILE" "$TIERS" <<'PYX' 2>/dev/null
+import sys, yaml
+vt = (yaml.safe_load(open(sys.argv[1])) or {}).get("validated_tiers") or {}
+print(" ".join(f"{t}={len((vt.get(t) or {}).get('provider_errors_excluded') or [])}" for t in sys.argv[2].split(",")))
+PYX
+)
+say "excluded (provider errors) :: ${excl:-unknown}"
+budget_line "$MODE" "$TIERS" $((SECONDS - T_START))
 say "ALL DONE fail=$fail leaked_sessions=${left:-?} log=$P"
 exit $fail

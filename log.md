@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 11:02
+- R-c: usage lists workspace/template modes (README.md)
+- R-c: modes table, budget line, roadmap R-c done / R-g next; F23 status (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- R-c: modes table, budget line, roadmap R-c done / R-g next; F23 status (knowledge/agentfs-engineering-evolution/evaluation-methodology.md)
+
+## 2026-11-24 11:01
+- R-c: workspace / template modes in Quick Dispatch + triggers; full eval unchanged (F23) (skills/agentfs-eval/SKILL.md)
+- R-c: budget line (smoke 7 / real 20 / subset 10 min, RUN_BUDGET_MIN) + excluded provider-error units per tier, report only (F23) (scripts/run-parallel.sh)
+
 ## 2026-11-24 10:53
 - R-b: S0 is A0–A14; roadmap R-b done, R-c next (README.md)
 - R-b: S0 is A0–A14; roadmap R-b done, R-c next (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)

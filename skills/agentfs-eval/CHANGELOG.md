@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-24 11:01 | v2.12.0 — R-c: workspace / template modes in Quick Dispatch + triggers; full eval unchanged (F23) |
 | 2026-11-24 10:53 | v2.11.0 — R-b: A11–A14 harvested rule lint (A11 FAIL; A12–A14 WARN, env-promotable); R-b: document A11–A14 and the v7.14.1 baseline |
 | 2026-11-24 10:43 | v2.10.0 — R-a: runtime-compliance.sh reads targets/threshold from operable-agents-md.yaml (fallback = previous constants); R-a: Step 8 SDM build scoring + Step 9 persist removed (moved to agentfs-setup); Step 8 = static record status; base-skill reference table; R-a: archive/template-scores.md (archive legacy score sheet; drop stale history echo); R-a: archive/merge-score-entry.sh (archive legacy score sheet; drop stale history echo); R-a: archive/README.md (archive legacy score sheet; drop stale history echo); R-a: scripts/template-check.sh (archive legacy score sheet; drop stale history echo) |
 | 2026-11-23 20:30 | v2.9.1 — A3: expected rule count read from seed-agents-md.sh project template (was hardcoded 6 since v7.8.0 added Rule 7); A1 budget 2000→2500 (7-rule template ~2289 tokens, validated by compliance profile); Stage S0 wording (Tier reserved for model T1-T4); pointers to compliance-profile runtime + SDM build; A1 (2500) and A3 (count from seed) assertion text |

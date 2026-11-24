@@ -840,6 +840,8 @@ report only, never persisted.
 Run `agentfs-eval` explicitly by asking any agent:
 
 > "hey eval agentfs" — full eval (S0–S3 + runtime compliance + static record status)
+> "hey eval agentfs workspace" — S1–S3 + maturity, report only (≤ 2 min)
+> "hey eval agentfs template" — S0 + runtime compliance + static record status
 > "hey agentfs score" — S0 only (quick deterministic check)
 > "hey check violations" — session audit mode (diagnostic, no scores)
 
