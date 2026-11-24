@@ -416,6 +416,7 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
 
   pass=false
   score_val=0
+  score_raw=null   # ordinal bucket for count/ratio/score metrics (kept so score maps can be recomputed)
   confidence=0
   detail=""
 
@@ -478,16 +479,24 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
 
       if [[ -n "$target_op" && -n "$target_num" ]]; then
         if [[ "$target_op" == ">=" ]]; then
-          # Higher is better. score_raw/max_scale → 0-100.
-          score_val=$(echo "$score_raw $max_scale" | awk '{printf "%.0f", ($1 / $2) * 100}')
-          # Map target to ordinal threshold.
+          # Higher is better. Score relative to the target, mirroring the <=
+          # branch (2026-11-24 score-map fix; was score_raw/max_scale, which
+          # gave a passing has_bones 25 and a passing step_clarity 67):
+          #   score_raw >= target_bucket → 100
+          #   below → 100 * score_raw / target_bucket (share of the target
+          #   reached: 0 at 0; a distance-from-target formula gave a 0% has_bones 75)
           if [[ "$metric" == "ratio" ]]; then
-            # ratio target like ">= 0.50" → need score_raw >= 2 (40-60% bucket or higher)
-            target_bucket=$(echo "$target_num $max_scale" | awk '{printf "%.0f", $1 * $2}')
+            # The bucket that CONTAINS the threshold: 5 buckets of 20%, so
+            # floor(t*5) capped at 4 (">= 0.80" → 80-100%). Was round(t*4),
+            # which let a 60-80% answer pass a 0.80 target.
+            target_bucket=$(echo "$target_num" | awk '{b = int($1 * 5 + 1e-9); if (b > 4) b = 4; print b}')
           else
-            # count target like ">= 3" → need score_raw >= 3
+            # count/score target like ">= 3" → need score_raw >= 3
             target_bucket=$(printf "%.0f" "$target_num")
           fi
+          score_val=$(echo "$score_raw $target_bucket" | awk '{
+            if ($1 >= $2) printf "%.0f", 100; else printf "%.0f", 100 * $1 / $2
+          }')
           if (( $(echo "$score_raw >= $target_bucket" | bc -l) )); then pass=true; fi
         else
           # Lower is better (<=). Score 100 when at/below target, scale
@@ -497,7 +506,7 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
           # When score_raw <= target_bucket → 100 (at or below target)
           # When score_raw > target_bucket → decreases toward 0
           if [[ "$metric" == "ratio" ]]; then
-            _tb=$(echo "$target_num $max_scale" | awk '{printf "%.0f", $1 * $2}')
+            _tb=$(echo "$target_num" | awk '{b = int($1 * 5 + 1e-9); if (b > 4) b = 4; print b}')
           else
             _tb=$(printf "%.0f" "$target_num")
           fi
@@ -508,7 +517,7 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
           # Map target to ordinal threshold.
           if [[ "$metric" == "ratio" ]]; then
             # ratio target like "<= 0.30" → pass if score_raw <= 1 (20-40% bucket)
-            target_bucket=$(echo "$target_num $max_scale" | awk '{printf "%.0f", $1 * $2}')
+            target_bucket=$(echo "$target_num" | awk '{b = int($1 * 5 + 1e-9); if (b > 4) b = 4; print b}')
           else
             # count target like "<= 5" → pass if score_raw <= 4 (bucket "4")
             # count target like "0" → pass if score_raw == 0
@@ -564,7 +573,8 @@ for i in $(seq 0 $((EVALUATED_COUNT - 1))); do
     --argjson lm "$label_mass" \
     --argjson ao "$(echo "$argmax_ok" | jq -R 'if . == "true" then true else false end')" \
     --argjson lc "$low_conf" \
-    '{name: $n, pass: $p, score: $s, confidence: $c, detail: $d, weight: $w, label_mass: $lm, argmax_is_label: $ao, low_confidence: $lc}')
+    --argjson raw "$score_raw" \
+    '{name: $n, pass: $p, score: $s, raw: $raw, confidence: $c, detail: $d, weight: $w, label_mass: $lm, argmax_is_label: $ao, low_confidence: $lc}')
 
   DIMENSIONS_JSON=$(echo "$DIMENSIONS_JSON" | jq --argjson d "$dim_json" '. + [$d]')
 

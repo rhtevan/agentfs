@@ -243,7 +243,7 @@ CHANGED_FILES=$($DIFF_CMD --name-only 2>/dev/null || true)
 # (the deletion itself is logged); coverage categories use this list.
 LIVE_FILES=$($DIFF_CMD --name-only --diff-filter=d 2>/dev/null || true)
 README_AUDIT_REQUIRED=""
-if echo "$CHANGED_FILES" | grep -qE '(skills/|knowledge/|AGENTS\.md)'; then
+if grep -qE '(skills/|knowledge/|AGENTS\.md)' <<<"$CHANGED_FILES"; then
   README_AUDIT_REQUIRED="yes"
 fi
 if [[ -n "$README_AUDIT_REQUIRED" ]]; then
@@ -340,7 +340,7 @@ if [[ -n "$PW_CANDIDATES" ]]; then
       [[ -z "$staged_file" ]] && continue
       # Skip self-referential/auto-generated files
       BASENAME=$(basename "$staged_file")
-      if echo "$BASENAME" | grep -qE "$PW_SKIP_PATTERN"; then
+      if grep -qE "$PW_SKIP_PATTERN" <<<"$BASENAME"; then
         continue
       fi
       # Skip infrastructure path prefixes
@@ -348,7 +348,9 @@ if [[ -n "$PW_CANDIDATES" ]]; then
         continue
       fi
       # Check if today's log mentions this file (basename or relative path)
-      if ! echo "$TODAY_LOG" | grep -qF "$BASENAME"; then
+      # Here-string, not "echo | grep -q": under pipefail grep -q exiting early
+      # SIGPIPEs echo on a large log and reported a false GAP (2026-11-24, 7/200).
+      if ! grep -qF "$BASENAME" <<<"$TODAY_LOG"; then
         PW_GAPS+="$staged_file; "
       fi
     done <<< "$PW_CANDIDATES"
@@ -377,8 +379,8 @@ fi
 # ── Category 12: Seed Template Version Bump ────────────────────────
 # If seed-agents-md.sh was modified, SKILL.md version must also change.
 SEED_VERSION_GAP=""
-if echo "$CHANGED_FILES" | grep -qF 'seed-agents-md.sh'; then
-  if ! echo "$CHANGED_FILES" | grep -qE 'agentfs-setup/SKILL\.md$'; then
+if grep -qF 'seed-agents-md.sh' <<<"$CHANGED_FILES"; then
+  if ! grep -qE 'agentfs-setup/SKILL\.md$' <<<"$CHANGED_FILES"; then
     SEED_VERSION_GAP="seed-agents-md.sh modified but agentfs-setup/SKILL.md version not bumped"
   fi
 fi

@@ -6,7 +6,7 @@ qualification_rule: exempt
 qoo-qualified: exempt
 quality:
   schema: quality.yaml
-  aggregate_score: 54.5
+  aggregate_score: 60.0
   band: Re-engineer
   dimensions:
     script_coverage:
@@ -18,7 +18,7 @@ quality:
       pass: false
       confidence: 0.7758387902216866
     step_clarity:
-      score: 67
+      score: 100
       pass: true
       confidence: 0.8894244021180678
     prose_executability:
@@ -89,3 +89,6 @@ history:
   build_score: 50
   build_band: Re-engineer
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'
+- date: "2026-11-24T13:23:36-05:00"
+  type: score-map
+  note: "score-map fix (sdm-evaluate.sh '>=' targets: 100 at/above target, share of target below; ratio threshold = bucket containing t). Recomputed from stored scores, no re-grade."

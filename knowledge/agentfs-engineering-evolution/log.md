@@ -2,6 +2,12 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 13:30
+- F31: record pre-push-scan pipefail/SIGPIPE false-GAP fix (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 13:25
+- F30: score-map fix applied (33 files migrated) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-24 13:12
 - F30 follow-ups: evidence kept, template_hash staleness; score-map fix queued (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

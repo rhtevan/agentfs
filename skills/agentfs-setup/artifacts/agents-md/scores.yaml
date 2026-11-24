@@ -43,7 +43,7 @@ operable:
     evidence: evidence/7.14.1.txt
     scorer: "t4-fallback:gemini-3.1-pro-preview"   # calibration: see quality.calibration
     dimensions:   # agreement = share of the 3 runs giving this score
-      has_bones: { score: 25, pass: true, agreement: 1.0, detail: "delegation ratio 0.34 (20-40% bucket) >= 0.30 target; the score map gives 25 for bucket 1 even when it passes" }
+      has_bones: { score: 100, pass: true, agreement: 1.0, detail: "delegation ratio 0.34 (20-40% bucket) >= 0.30 target (was 25 under the old >= score map, fixed 2026-11-24)" }
       has_muscle: { score: 100, pass: true, agreement: 1.0, detail: "4 CNL violations (2 passive, 2 multi-action) across 35 sub-steps" }
       has_brain: { score: 100, pass: true, agreement: 1.0 }
       has_harness: { score: 100, pass: true, agreement: 1.0, detail: "6 of 7 rules have benchmark tests; R5 Checkpoint has none (F25 parked)" }
@@ -128,3 +128,6 @@ history:
     score: 76.7
     band: Tunable
     note: "v7.14.1 quality 76.7 (3/6), build 4/4 — T4 fallback, calibrated (96.7 vs SDM 95.8). Data fix: the 95.8 record was scored on template v7.6.0 (2026-10-29) but labelled 7.7.2; the version field had been advanced without a re-score."
+  - date: "2026-11-24T13:23:36-05:00"
+    type: score-map
+    note: "score-map fix (sdm-evaluate.sh '>=' targets: 100 at/above target, share of target below; ratio threshold = bucket containing t). Recomputed from stored scores, no re-grade."

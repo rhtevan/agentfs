@@ -6,23 +6,23 @@ qualification_rule: T4
 qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 56.833333333333336
+  aggregate_score: 62.5
   band: Re-engineer
   dimensions:
     script_coverage:
       score: 75
-      pass: true
+      pass: false
       confidence: 0.06195821572156396
     inference_hop_count:
       score: 100
       pass: true
       confidence: 0.0021059790050288714
     step_clarity:
-      score: 33
+      score: 50
       pass: false
       confidence: 0.0006143893407559854
     prose_executability:
-      score: 33
+      score: 50
       pass: false
       confidence: 0.00014636853616754804
     model_portability:
@@ -89,3 +89,6 @@ history:
   build_score: 100
   build_band: Operable
   note: 'Batch scored by score-all.sh (build+observable gated, quality informational)'
+- date: "2026-11-24T13:23:36-05:00"
+  type: score-map
+  note: "score-map fix (sdm-evaluate.sh '>=' targets: 100 at/above target, share of target below; ratio threshold = bucket containing t). Recomputed from stored scores, no re-grade."

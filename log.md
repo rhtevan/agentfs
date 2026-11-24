@@ -2,6 +2,56 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 13:30
+- F31: record pre-push-scan pipefail/SIGPIPE false-GAP fix (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 13:27
+- pre-push-scan.sh: here-strings instead of echo|grep -q (pipefail + SIGPIPE gave intermittent false post-write GAPs) (skills/agentfs-setup/scripts/pre-push-scan.sh)
+
+## 2026-11-24 13:25
+- F30: score-map fix applied (33 files migrated) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/spec-kit-setup/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/skill-gen/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/skill-eval/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/okf-bundle-harvest/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/okf-bundle-gen/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/ocp-containerfile/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/litellm-proxy-status/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/hosted-model-ctl/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/hermes-litellm-provider/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/hermes-agentfs-setup/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/headroom-proxy-status/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/headroom-litellm-proxy/scores.yaml)
+
+## 2026-11-24 13:24
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/goose-recipe-session-cleanup/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/goose-maas-provider/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/goose-litellm-provider/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/goose-kgm/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/goose-headroom-provider/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/goose-desktop-env-fix/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/fedora-nm-boot-slow/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/fedora-dns-cache/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/fedora-desktop-wmclass-fix/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/dsh-litellm-provider/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/crc-status/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/crc-ovn-frr-metallb-config/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/crc-ctl/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/crc-aap-demo-config/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/bash-completion-gen/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/agentfs-setup/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/agentfs-readme-audit/scores.yaml)
+
+## 2026-11-24 13:23
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/agentfs-eval/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/agentfs-ctx-chk/scores.yaml)
+- score-map fix migration: '>=' scores recomputed (no re-grade) (skills/agentfs-archify/scores.yaml)
+
+## 2026-11-24 13:18
+- migration: recompute stored '>=' scores after the score-map fix (dry-run default) (scripts/migrations/2026-11-24-ge-score-map.sh)
+- sdm-evaluate.sh: '>=' score map relative to target (100 at/above, share of target below), ratio threshold = bucket containing t, raw bucket kept (scripts/sdm-evaluate.sh)
+
 ## 2026-11-24 13:12
 - F30 follow-ups: evidence kept, template_hash staleness; score-map fix queued (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - Upgrade Steps 2/4: keep evidence/`<version>`.txt; record template_hash (skills/agentfs-setup/SKILL.md)

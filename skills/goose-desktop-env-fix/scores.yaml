@@ -6,7 +6,7 @@ qualification_rule: T4
 qoo-qualified: true
 quality:
   schema: quality.yaml
-  aggregate_score: 52.333333333333336
+  aggregate_score: 63.3
   band: Re-engineer
   dimensions:
     script_coverage:
@@ -18,11 +18,11 @@ quality:
       pass: false
       confidence: 0.999027959570017
     step_clarity:
-      score: 67
+      score: 100
       pass: true
       confidence: 0.9810914981260332
     prose_executability:
-      score: 67
+      score: 100
       pass: true
       confidence: 0.6149994147084531
     model_portability:
@@ -96,3 +96,6 @@ history:
   build_score: 100
   build_band: Operable
   note: 'Manual build rescore after script creation. has_bones+has_muscle+has_brain+has_harness all verified present.'
+- date: "2026-11-24T13:23:36-05:00"
+  type: score-map
+  note: "score-map fix (sdm-evaluate.sh '>=' targets: 100 at/above target, share of target below; ratio threshold = bucket containing t). Recomputed from stored scores, no re-grade."
