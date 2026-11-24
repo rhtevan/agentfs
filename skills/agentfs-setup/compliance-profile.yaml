@@ -5,12 +5,12 @@
 #      ~/.agents/knowledge/agentfs-engineering-evolution/benchmark-results.md
 
 schema_version: "1.2"
-agents_md_version: "7.13.1"
+agents_md_version: "7.14.1"
 # Provenance only (2026-11-18): rules_hash / harness_sha / writer_sha /
 # hooks_sha are recorded but no script compares them. Re-measuring is a
 # semantic decision: update-compliance.sh --check lists rules-template
 # commits since the records; classify none | smoke | partial | full.
-agents_md_rules_hash: "c5fb6ff9e0a43281"
+agents_md_rules_hash: "b1b45cc3a401bde9"
 compliance_target: "≥90%"
 required_tiers: [T2, T3, T4]
 
@@ -33,13 +33,16 @@ representatives:
   T4:
     provider: gcp_vertex_ai
     model: claude-sonnet-5-5
+    effort: high   # pinned by benchmark.sh (GOOSE_THINKING_EFFORT); native provider honours it
     note: >-
       Same model as before, provider moved 2026-11-23: the post-wipe corp key
       (subscription "personal") returns 403 model_not_entitled for
       claude-sonnet-5.5. Previous: custom_corp claude-sonnet-5.5.
+      Effort matters: medium gave R2 0/8, high 8/8 (F24).
   T3:
     provider: custom_corp
     model: glm-5-3
+    effort: server-default   # custom OpenAI-engine provider: goose drops effort (bug)
     note: >-
       Open-weight, ~756 GB - not rhel-ai hostable. Selected 2026-11-17 from
       14-model screen (10/10; only non-frontier model to pass R2 Pre-Flight).
@@ -47,6 +50,7 @@ representatives:
   T2:
     provider: custom_corp
     model: Qwen3.8-27B-FP8
+    effort: server-default   # custom OpenAI-engine provider: goose drops effort (bug)
     note: >-
       Fits 2x L4 (TP2) at 64K (18.4 GiB/GPU). Selected 2026-11-17 from
       14-model screen (8/10, perfect except R2). Previous: nemotron-3-nano-ga
@@ -60,18 +64,19 @@ representatives:
 
 validated_tiers:
   T4:
-    model: claude-sonnet-5.5
-    provider: custom_corp
-    date: '2026-11-17'
-    agents_md_version: 7.13.1
-    rules_hash: c5fb6ff9e0a43281
-    harness_sha: 667b0d2abfc3
-    writer_sha: 8a07036f8c49
-    hooks_sha: 34c9ea7756fe
+    model: claude-sonnet-5-5
+    provider: gcp_vertex_ai
+    date: '2026-11-23'
+    agents_md_version: 7.14.1
+    rules_hash: b1b45cc3a401bde9
+    harness_sha: 903182743cbf
+    writer_sha: 10464f82ceef
+    hooks_sha: ce8baa263384
     hooks:
     - post-write-enforce
     - preflight-reminder
     - signal-dispatch
+    thinking_effort: high
     runs_per_test: 3
     runs_override: t1=5,t_r1=5,t_r6=5,t_r2=4,t_r2b=4,t_r2git=4,t_r3c_implicit=2,t_r3c_explicit=2
     tests: 45
@@ -106,19 +111,19 @@ validated_tiers:
     - rule: R3-diag
       test: t_r3c_implicit
       rate: 100% fail
-    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T4-20261117_225629
+    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T4-20261123_232901
     diagnostics:
       t_r3c_implicit: 0/2
       t_r3c_explicit: 2/2
   T3:
     model: glm-5-3
     provider: custom_corp
-    date: '2026-11-17'
-    agents_md_version: 7.13.1
-    rules_hash: c5fb6ff9e0a43281
-    harness_sha: 667b0d2abfc3
-    writer_sha: 8a07036f8c49
-    hooks_sha: 34c9ea7756fe
+    date: '2026-11-23'
+    agents_md_version: 7.14.1
+    rules_hash: b1b45cc3a401bde9
+    harness_sha: 839bdb57a077
+    writer_sha: fd10572f1ba2
+    hooks_sha: ce8baa263384
     hooks:
     - post-write-enforce
     - preflight-reminder
@@ -154,71 +159,75 @@ validated_tiers:
       R6_scope_post_write: 100%
       R7_dry_run_gate: 100%
     failure_modes: []
-    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T3-20261117_225629
+    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T3-20261123_224314
     diagnostics:
       t_r3c_implicit: 2/2
       t_r3c_explicit: 2/2
   T2:
     model: Qwen3.8-27B-FP8
     provider: custom_corp
-    date: '2026-11-17'
-    agents_md_version: 7.13.1
-    rules_hash: c5fb6ff9e0a43281
-    harness_sha: 667b0d2abfc3
-    writer_sha: 8a07036f8c49
-    hooks_sha: 34c9ea7756fe
+    date: '2026-11-23'
+    agents_md_version: 7.14.1
+    rules_hash: b1b45cc3a401bde9
+    harness_sha: 839bdb57a077
+    writer_sha: fd10572f1ba2
+    hooks_sha: ce8baa263384
     hooks:
     - post-write-enforce
     - preflight-reminder
     - signal-dispatch
     runs_per_test: 3
     runs_override: t1=5,t_r1=5,t_r6=5,t_r2=4,t_r2b=4,t_r2git=4,t_r3c_implicit=2,t_r3c_explicit=2
-    tests: 44
+    tests: 43
     pass: 42
-    overall: 96%
+    overall: 98%
     overall_basis: mean of per-rule rates
-    overall_runs_weighted: 95%
+    overall_runs_weighted: 97%
     per_test:
       t1: 5/5
       t_ii: 3/3
       t_r1: 5/5
       t_r2: 4/4
-      t_r2b: 4/4
-      t_r2git: 4/4
+      t_r2b: 3/3
+      t_r2git: 3/4
       t_r3c_explicit: 1/2
-      t_r3c_implicit: 2/2
-      t_r4s: 1/3
+      t_r3c_implicit: 0/2
+      t_r4s: 2/2
       t_r4x: 3/3
-      t_r6: 4/4
+      t_r6: 5/5
       t_r7dry: 3/3
       t_r7dry_conv: 3/3
       t_r7dry_pend: 3/3
     per_rule:
       R1_signal_dispatch: 100%
-      R2_pre_flight: 100%
+      R2_pre_flight: 90%
       R3_session_canary: 100%
-      R4_conflict_resolution: 77%
+      R4_conflict_resolution: 100%
       R5_checkpoint: not_tested
       R6_scope_post_write: 100%
       R7_dry_run_gate: 100%
     failure_modes:
+    - rule: R2
+      test: t_r2git
+      rate: 25% fail
     - rule: R3-diag
       test: t_r3c_explicit
       rate: 50% fail
-    - rule: R4
-      test: t_r4s
-      rate: 66% fail
-    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T2-20261117_225629
+    - rule: R3-diag
+      test: t_r3c_implicit
+      rate: 100% fail
+    output_dir: ~/.local/state/agentfs/benchmarks/compliance-T2-20261123_224314
     diagnostics:
-      t_r3c_implicit: 2/2
+      t_r3c_implicit: 0/2
       t_r3c_explicit: 1/2
     provider_errors_excluded:
-      t_r6: 1
+      t_r2b: 1
+      t_r4s: 1
 
 # ── Summary ──────────────────────────────────────────────────────────────
 
 minimum_tier: T2
-minimum_tier_rate: 96%
+minimum_tier_rate: 98%
 
 # ── Evolution History ────────────────────────────────────────────────────
 
@@ -297,6 +306,16 @@ evolution:
   T2_model: Qwen3.8-27B-FP8
   T3_overall: 100%
   T3_model: glm-5-3
+- version: 7.14.1
+  rules_hash: b1b45cc3a401bde9
+  date: '2026-11-23'
+  note: pending note
+  T4_overall: 100%
+  T4_model: claude-sonnet-5-5
+  T3_overall: 100%
+  T3_model: glm-5-3
+  T2_overall: 98%
+  T2_model: Qwen3.8-27B-FP8
 
 # ── Archived Baselines (superseded tier representatives) ─────────────────
 

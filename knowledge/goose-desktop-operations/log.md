@@ -1,5 +1,9 @@
 # Directory Update Log
 
+## 2026-11-23 23:28
+- New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium 0/8 vs high 8/8 on R2) (knowledge/goose-desktop-operations/reasoning-effort.md)
+- New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium vs high R2 impact) (knowledge/goose-desktop-operations/reasoning-effort.md)
+
 ## 2026-08-26 12:07
 
 - Created bundle: goose-desktop-operations

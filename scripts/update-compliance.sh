@@ -368,6 +368,7 @@ entry = {
     "date": datetime.date.today().isoformat(),
     "agents_md_version": ver, "rules_hash": rhash, "harness_sha": hsha,
     "writer_sha": wsha, "hooks_sha": ksha, "hooks": klist.split(",") if klist else [],
+    "thinking_effort": rep.get("effort"),
     "runs_per_test": int(runs), "runs_override": runs_override or None,
     "tests": total_t, "pass": total_p, "overall": overall,
     "overall_basis": "mean of per-rule rates", "overall_runs_weighted": overall_runs,

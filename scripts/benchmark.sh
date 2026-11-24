@@ -55,6 +55,11 @@
 #     no longer exists; the fixed DELETE list removed nothing).
 #   - GOOSE_CLI_MIN_PRIORITY=0.5 pinned: tool output hidden in transcripts
 #     (goose 1.60.2 printed it flush-left; graders treated it as prose).
+#   - GOOSE_THINKING_EFFORT=high pinned (override BENCHMARK_THINKING_EFFORT):
+#     native providers (gcp_vertex_ai/anthropic) send output_config.effort
+#     from the user's goose config (was medium -> sonnet-5-5 R2 0/8; high
+#     8/8). Custom OpenAI-engine providers drop it (goose bug) and run at the
+#     server default. See knowledge goose-desktop-operations/reasoning-effort.md.
 #
 # 2026-11-17 changes:
 #   - Pinned extension set: goose run --no-profile --with-builtin
@@ -259,6 +264,8 @@ BENCHMARK_PIN_EXTENSIONS="${BENCHMARK_PIN_EXTENSIONS:-1}"
 # satisfied "model reported X" checks (t_r1 token, t_r7dry_conv) without the
 # model saying it. Hook evidence comes from the session DB, not the transcript.
 export GOOSE_CLI_MIN_PRIORITY="${BENCHMARK_CLI_MIN_PRIORITY:-0.5}"
+# Reasoning effort is a measured variable: pin it (no-op for custom providers).
+export GOOSE_THINKING_EFFORT="${BENCHMARK_THINKING_EFFORT:-high}"
 goose_ext_args() {
   if [[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]]; then
     printf '%s\0' --no-profile --with-builtin developer,tom \

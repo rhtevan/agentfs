@@ -2,6 +2,20 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 23:28
+- F24: resolution - effort pinned high, gotcha documented (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium 0/8 vs high 8/8 on R2) (knowledge/goose-desktop-operations/reasoning-effort.md)
+- New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium vs high R2 impact) (knowledge/goose-desktop-operations/reasoning-effort.md)
+
+## 2026-11-23 23:27
+- F24: root cause of T4 R2 failure = thinking effort medium vs high (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-23 23:17
+- F24: root cause of T4 R2 failure = goose thinking effort medium (0/8) vs high (8/8); hidden-thinking plan (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-23 22:57
+- F24 goose 1.60.2 harness drift + T4 R2 false passes; real campaign 20261123_224314 results (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-23 21:39
 - F23: capacity probe result (per-model throttling) + T4 sonnet-5.5 not entitled on corp key (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 
