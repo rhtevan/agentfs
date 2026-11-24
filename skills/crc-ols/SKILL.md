@@ -7,7 +7,7 @@ description: >
 argument-hint: "install | list | add-provider | switch-provider PROVIDER MODEL | remove-provider PROVIDER | rotate-key PROVIDER"
 metadata:
   author: agentfs
-  version: "3.8.1"
+  version: "3.9.0"
   model-tier: T3
   tags: [openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation]
   related_skills: [gcp-vertex-models, goose-corp-provider, crc-ctl, skupper-model-provider]
@@ -51,7 +51,7 @@ serves it.
 
 ## Prerequisites
 
-- OpenShift Local (CRC) running (`crc status` shows Running)
+- OpenShift Local (CRC) running (`crc status` shows Running) — verified on CRC 2.65.0 / OpenShift 5.0.0 with lightspeed-operator 2.0.1 (2026-11-23)
 - Logged in as `kubeadmin` (`oc whoami` confirms)
 - For each provider, appropriate credentials (see Provider Types Reference below)
 
@@ -150,7 +150,10 @@ Wait until the `PHASE` column shows `Succeeded`.
 
 #### ⚠️ CRC Fix — Missing `metrics-client-ca` ConfigMap
 
-CRC disables the monitoring stack, so the operator will crash with:
+Only when the CRC monitoring stack is disabled (the CRC default unless
+`enable-cluster-monitoring` is true — `crc-post-setup-config` enables it, and
+`install.sh` then reports `metrics-client-ca cm: present` and skips this fix).
+Without it the operator crashes with:
 
 ```
 ConfigMap "metrics-client-ca" not found in namespace "openshift-monitoring"
@@ -656,31 +659,26 @@ Models served by `hosted-model-ctl` on remote GPU hosts can be exposed to the CR
 two providers sharing the same `credentialsSecretRef` causes a Kubernetes
 duplicate volume mount error.
 
-**Setup pattern:**
+**Setup pattern** (verified 2026-11-23 with rhtevan-work `g3b-16k`):
 ```bash
-# 1. Create a dummy credentials secret (self-hosted models have no auth)
-echo -n 'no-key-required' > /tmp/llm-key.txt
-oc create secret generic skupper-model-rhel-llmcreds \
-  --from-file=apitoken=/tmp/llm-key.txt \
-  -n openshift-lightspeed
-rm /tmp/llm-key.txt
+# Model ID exactly as the backend reports it — query it from inside the cluster
+oc exec deployment/lightspeed-app-server -n openshift-lightspeed -c lightspeed-service-api -- \
+  curl -s http://listener-model-api-rhtevan-work.model-provider-crc:9000/v1/models
 
-# 2. Add provider pointing at the Skupper in-cluster service
-oc patch olsconfig cluster --type=json -p '[
-  {
-    "op": "add",
-    "path": "/spec/llm/providers/-",
-    "value": {
-      "name": "skupper-model-rhel",
-      "type": "openai",
-      "url": "http://listener-model-api-rhel-ai.model-provider-crc:9000/v1",
-      "credentialsSecretRef": {"name": "skupper-model-rhel-llmcreds"},
-      "credentialKey": "apitoken",
-      "models": [{"name": "ibm-granite/granite-4.2-8b-fp8"}]
-    }
-  }
-]'
+# --dummy-key creates skupper-model-rhtevan-llmcreds (apitoken=no-key-required)
+# BEFORE patching the provider in. Dry-run first (Rule 7).
+bash scripts/add-provider.sh skupper-model-rhtevan --type openai \
+  --url http://listener-model-api-rhtevan-work.model-provider-crc:9000/v1 \
+  --model /models/granite-4.1-3b-Q4_K_M.gguf --dummy-key --dry-run --context crc-admin
 ```
+
+**Small llama.cpp models under OLS — what to expect:** OLS sends every
+openshift-mcp-server tool definition with every request (34 tools ≈ 11.7K
+tokens). With `g3b-16k` a single question works (HTTP 200, real tool call,
+~20–50 s) but peaks at ~14K of 16K tokens, so long chats overflow, and a 3B
+model can answer wrongly. Do **not** set `contextWindowSize: 16384` — OLS then
+rejects every request with HTTP 413 (`Tool definitions (11749 tokens) … exceed
+prompt budget`). Keep a cloud provider as the default.
 
 **Dependencies:** Requires `skupper-model-provider` VAN to be running
 (`start skupper`) and a model started via `hosted-model-ctl` on the target host.
@@ -759,11 +757,13 @@ After completing any operation, verify through the OpenShift web console:
 
 | Issue | Root Cause | Fix |
 |-------|-----------|-----|
-| `metrics-client-ca` ConfigMap not found | CRC disables monitoring stack | Create manually from kube-apiserver CA; key MUST be `client-ca.crt` (not `ca-bundle.crt`) |
+| `metrics-client-ca` ConfigMap not found | CRC monitoring stack disabled (not the case after `crc-post-setup-config`) | Create manually from kube-apiserver CA; key MUST be `client-ca.crt` (not `ca-bundle.crt`) |
 | 401 Unauthorized after secret creation | Whitespace/newline in API key via `--from-literal` | Use `echo -n` + `--from-file=` approach |
 | Duplicate volume mount error | Two providers sharing the same `credentialsSecretRef` | Each provider MUST use a separate secret |
 | `tool_choice="none"` error (Vertex AI) | OLS final-round code sends `tool_choice="none"` incompatible with Anthropic SDK | Set `maxIterations: 20` to avoid the final-round code path |
-| "failed to parse grammar" (llama.cpp) | OLS sends `response_format: json_schema` which llama-server cannot parse | Set `introspectionEnabled: false` — basic Q&A works, tool-use does not |
+| HTTP 400 "failed to parse grammar" (llama.cpp provider) | llama.cpp turns tool JSON schemas into a GBNF grammar and, before PR #26939 (e.g. b9994), copies regex shorthands (`\d` `\w` `\s` `\/`) in a `pattern` verbatim → `unknown escape`. openshift-mcp-server's Prometheus tools use `^\d+[smhdwy]$`, so **every** OLS request fails. Goose works because its tools have no `pattern` | Upgrade llama.cpp to ≥ b12648 (hosted-model-ctl 7.16.0 pins it) — unsupported patterns fall back to any-string with a WARNING. Do NOT use `introspectionEnabled: false` as the fix: it is global and removes tools from every provider |
+| HTTP 413 "Prompt is too long" for a llama.cpp provider | `contextWindowSize: 16384` makes OLS budget the ~11.7K tokens of tool definitions against what is left after the response reserve | Leave `contextWindowSize` unset for 16K models (the real prompt ~14K fits llama.cpp's 16384); for real headroom use a ≥32K model |
+| `install.sh` prints `rollout … not complete` right after install | The operator creates `lightspeed-app-server` only after reconciling OLSConfig; the old wait ran before the deployment existed | Fixed in 3.9.0 (waits for the deployment first). Earlier: `oc rollout status deploy/lightspeed-app-server -n openshift-lightspeed` |
 | `clusterInteraction.enabled` silently ignored | Field does NOT exist in the CRD | Use `introspectionEnabled` instead |
 | `defaultModel` mismatch goes undetected | OLSConfig CRD does not validate model exists under the provider — mismatch causes runtime 404 | `switch-provider.sh` validates model exists under provider before patching |
 | Provider unreachable: in-pod `curl` → `HTTP=000`, `exit code 60` | Provider served by a private/corporate CA absent from the cluster trust bundle. `curl -k` → 200 confirms it is trust, not network | Add the root CA via `spec.ols.additionalCAConfigMapRef` — see [Phase 5](#phase-5--trust-a-private-ca-only-for-providers-behind-an-internal-ca) |

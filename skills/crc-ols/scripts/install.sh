@@ -312,6 +312,14 @@ fi
 trace_step 8 "verify" 0 "" 2>/dev/null || true
 
 echo -n "  ⏳ waiting for lightspeed-app-server rollout ... "
+# The operator creates the deployment only after it reconciles the new
+# OLSConfig (~20–60 s on CRC). 'rollout status' on a missing deployment fails
+# at once, so wait for it to exist first (verified on OCP 5.0, operator 2.0.1).
+for _ in $(seq 1 $(( TIMEOUT / 5 ))); do
+  # shellcheck disable=SC2086
+  oc $OC_CONTEXT get deployment/lightspeed-app-server -n "$NS" >/dev/null 2>&1 && break
+  sleep 5
+done
 # shellcheck disable=SC2086
 if oc $OC_CONTEXT rollout status deployment/lightspeed-app-server -n "$NS" --timeout="${TIMEOUT}s" >/dev/null 2>&1; then
   echo "✅"

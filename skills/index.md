@@ -4,6 +4,8 @@
 
 | Skill | Tags | Description | Updated |
 |-------|------|-------------|---------|
+| [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-23 19:01 |
+| [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider, rotate ols key, ols credential status | 2026-11-23 19:00 |
 | [skupper-model-provider](./skupper-model-provider/SKILL.md) | skupper, model-serving, van, service-mesh, llm, inference, remote-gpu, granite, podman, kubernetes, crc, openshift, interior-mode, rhel-ai, rhtevan-work | setup skupper, teardown skupper, upgrade skupper, start skupper, stop skupper, skupper status, test skupper, precheck skupper, skupper topology, start skupper on SITE, stop skupper on SITE, start skupper with PROFILE, stop skupper with PROFILE | 2026-11-23 16:30 |
 | [crc-install](./crc-install/SKILL.md) | crc, openshift-local, install, upgrade, libvirt, ssh, vm-access | install crc, upgrade crc, uninstall crc, crc install status, log into crc vm | 2026-11-23 16:10 |
 | [crc-cmd](./crc-cmd/SKILL.md) | openshift, crc, wrapper, shell | install crcstart, install crcstop, crc wrapper | 2026-11-23 15:17 |
@@ -35,7 +37,6 @@
 | [crc-nad-dynamic-plugin-config](./crc-nad-dynamic-plugin-config/SKILL.md) | openshift, crc, networking, console-plugin, helm | install nad plugin, nad console plugin, network attachment | 2026-11-19 16:53 |
 | [crc-nmstate-config](./crc-nmstate-config/SKILL.md) | openshift, crc, networking, nmstate, operator | install nmstate, configure nmstate, nmstate operator | 2026-11-19 16:53 |
 | [crc-noo-config](./crc-noo-config/SKILL.md) | openshift, crc, networking, observability, operator, ebpf | install noo, configure noo, network observability | 2026-11-19 16:53 |
-| [crc-ols](./crc-ols/SKILL.md) | openshift, crc, lightspeed, ols, llm, provider-management, credentials, rotation | install ols, list ols providers, add ols provider, switch ols provider, switch ols model, remove ols provider, rotate ols key, ols credential status | 2026-11-19 16:53 |
 | [crc-ovn-frr-metallb-config](./crc-ovn-frr-metallb-config/SKILL.md) | openshift, crc, networking, ovn, bgp, metallb | setup ovn frr, setup metallb, bgp metallb | 2026-11-19 16:53 |
 | [dsh-litellm-provider](./dsh-litellm-provider/SKILL.md) | dsh, deepseek-harness, litellm, custom-provider, configuration | configure dsh litellm, dsh litellm provider, dsh custom provider | 2026-11-19 16:53 |
 | [dsh-setup](./dsh-setup/SKILL.md) | dsh, deepseek-harness, agent-harness, setup, launcher | setup dsh, install dsh, update dsh, teardown dsh, dsh status | 2026-11-19 16:53 |
@@ -54,7 +55,6 @@
 | [headroom-litellm-proxy](./headroom-litellm-proxy/SKILL.md) | headroom, proxy, litellm, systemd, compression, context-optimization, installation | install headroom, setup headroom proxy, headroom service | 2026-11-19 16:53 |
 | [headroom-proxy-status](./headroom-proxy-status/SKILL.md) | headroom, proxy, status, health, systemd, compression, context-optimization | headroom status, check headroom, headroom health | 2026-11-19 16:53 |
 | [hermes-headroom-provider](./hermes-headroom-provider/SKILL.md) | hermes, headroom, proxy, provider, llm | configure hermes headroom, hermes headroom provider | 2026-11-19 16:53 |
-| [hosted-model-ctl](./hosted-model-ctl/SKILL.md) | granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted | list hosted model, setup hosted model, start hosted model, stop hosted model, hosted model status, test hosted model, teardown hosted model, precheck hosted model, set default profile, hosted model report, hosting machine report, score deployment, deployment fitting, fitting guide | 2026-11-19 16:53 |
 | [litellm-proxy-status](./litellm-proxy-status/SKILL.md) | litellm, proxy, status, health, systemd | litellm status, check litellm, litellm health, litellm model list, litellm default model | 2026-11-19 16:53 |
 | [ocp-containerfile](./ocp-containerfile/SKILL.md) | openshift, containerfile, container-image, security, scc, ubi, audit | audit containerfile, generate containerfile, openshift container image, containerfile best practices, ocp containerfile | 2026-11-19 16:53 |
 | [okf-bundle-gen](./okf-bundle-gen/SKILL.md) | agentfs, okf, knowledge, generation, session | generate knowledge bundle, create knowledge bundle, okf generate | 2026-11-19 16:53 |

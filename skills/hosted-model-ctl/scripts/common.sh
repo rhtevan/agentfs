@@ -19,7 +19,11 @@ set -euo pipefail
 declare -A DEPLOY_PROFILES=(
   # ── rhtevan-work (1× RTX A500, 4 GB GDDR6, 128 GB/s) ──
   [g350m-2k]="rhtevan-work|model-g350m|docker.io/vllm/vllm-openai:latest|vllm|ibm-granite/granite-4.0-350m|1|2048|10000|--enforce-eager||Granite 4.0 350M FP16 @2K|44 tok/s (no quality)"
-  [g3b-16k]="rhtevan-work|model-g3b|ghcr.io/ggml-org/llama.cpp:server-cuda-b9994|llamacpp|ibm-granite/granite-3b|1|16384|10000|--parallel 1||Granite 3B Q4_K_M @16K|37 tok/s"
+  # llama.cpp b12648 (44d50873, server-cuda 2026-11-23) pinned by digest — versioned
+  # server-cuda-bNNNNN tags are no longer published. >= PR #26939: unsupported regex
+  # in tool-schema "pattern" (\d \w \s \/) falls back to any-string instead of HTTP 400
+  # "failed to parse grammar" (b9994 broke OLS / openshift-mcp-server tools).
+  [g3b-16k]="rhtevan-work|model-g3b|ghcr.io/ggml-org/llama.cpp@sha256:f8e7c336e3660804f6bc35a4147dbfdf1ddae9b7c3c50d412fab49b323e28fea|llamacpp|ibm-granite/granite-3b|1|16384|10000|--parallel 1||Granite 3B Q4_K_M @16K|37 tok/s"
 
   # ── rhel-ai (4× NVIDIA L4, 88 GB GDDR6, 1200 GB/s) ──
   [g8b-spec-128k]="rhel-ai|model-granite-8b-spec|docker.io/vllm/vllm-openai:nightly|vllm-spec|ibm-granite/granite-4.2-8b|4|131072|9000|--enforce-eager --dtype bfloat16 --enable-auto-tool-choice --tool-call-parser qwen3_coder --reasoning-parser nemotron_v3|{SPEC_G8B_BF16}|Granite 4.2 8B BF16 + 3B BF16 draft TP=4 @128K|19-25 tok/s"

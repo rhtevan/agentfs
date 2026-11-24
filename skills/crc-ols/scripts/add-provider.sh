@@ -19,6 +19,10 @@
 #   --location LOC    Vertex location (google_vertex_anthropic)
 #   --from-keyring    Create the secret from GNOME Keyring via rotate-key.sh
 #   --keyring-field F Keyring field name (default: CUSTOM_CORP_API_KEY)
+#   --dummy-key       Create the secret with the placeholder 'no-key-required'
+#                     (self-hosted / Skupper endpoints without auth). Created
+#                     BEFORE the provider is patched in, so the app-server never
+#                     references a missing secret. Not combinable with --from-keyring.
 #   --set-default     Also make this provider+model the active default
 #   --dry-run         Report what would change. Writes nothing.
 #   --context CTX     oc context (default: $CRC_OC_CONTEXT or current)
@@ -31,7 +35,7 @@ source "${HOME}/.agents/scripts/trace-lib.sh" 2>/dev/null || true
 trace_init "crc-ols" "3.5.0" 2>/dev/null || true
 
 NAME=""; PTYPE=""; MODEL=""; PURL=""; SECRET=""; CKEY="apitoken"
-PROJECT=""; LOCATION=""; FROM_KEYRING=false; KEYRING_FIELD="CUSTOM_CORP_API_KEY"
+PROJECT=""; LOCATION=""; FROM_KEYRING=false; KEYRING_FIELD="CUSTOM_CORP_API_KEY"; DUMMY_KEY=false
 SET_DEFAULT=false; DRY_RUN=false; OC_CONTEXT=""
 NS="openshift-lightspeed"
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -46,6 +50,7 @@ while [[ $# -gt 0 ]]; do
     --project)        PROJECT="${2:?}"; shift 2 ;;
     --location)       LOCATION="${2:?}"; shift 2 ;;
     --from-keyring)   FROM_KEYRING=true; shift ;;
+    --dummy-key)      DUMMY_KEY=true; shift ;;
     --keyring-field)  KEYRING_FIELD="${2:?}"; shift 2 ;;
     --set-default)    SET_DEFAULT=true; shift ;;
     --dry-run)        DRY_RUN=true; shift ;;
@@ -63,6 +68,7 @@ fail() { echo "❌ $1" >&2; trace_end 1 2>/dev/null || true; exit 1; }
 [[ -n "$MODEL" ]] || { echo "❌ --model is required" >&2; exit 2; }
 OC_CONTEXT="${OC_CONTEXT:-$([ -n "${CRC_OC_CONTEXT:-}" ] && echo "--context $CRC_OC_CONTEXT" || echo "")}"
 SECRET="${SECRET:-${NAME}-llmcreds}"
+$FROM_KEYRING && $DUMMY_KEY && { echo "--from-keyring and --dummy-key are mutually exclusive" >&2; exit 2; }
 
 case "$PTYPE" in
   openai|azure_openai|watsonx|bam)
@@ -134,7 +140,7 @@ fi
 if $DRY_RUN; then
   echo ""
   echo "Changes:"
-  $SECRET_EXISTS || echo "  secret/$SECRET: CREATE (key $CKEY)"
+  $SECRET_EXISTS || echo "  secret/$SECRET: CREATE (key $CKEY$($DUMMY_KEY && echo ', dummy value no-key-required'))"
   echo "  olsconfig/cluster: ADD provider $NAME"
   $SET_DEFAULT && echo "  olsconfig/cluster: defaultProvider=$NAME defaultModel=$MODEL"
   echo ""
@@ -144,6 +150,17 @@ fi
 
 # ── Step 4: patch the provider into OLSConfig ───────────────────────
 trace_step 3 "patch-olsconfig" 0 "$NAME" 2>/dev/null || true
+
+# Dummy-key secret first: a provider patched in before its secret exists makes
+# the app-server rollout reference a missing volume.
+if $DUMMY_KEY && ! $SECRET_EXISTS; then
+  _tmp=$(mktemp); printf '%s' 'no-key-required' > "$_tmp"
+  # shellcheck disable=SC2086
+  oc $OC_CONTEXT create secret generic "$SECRET" --from-file="$CKEY=$_tmp" -n "$NS" >/dev/null \
+    || { rm -f "$_tmp"; fail "could not create secret $SECRET"; }
+  rm -f "$_tmp"; SECRET_EXISTS=true
+  echo "  Secret:  $SECRET created (dummy key)"
+fi
 
 BAK="/tmp/olsconfig.bak.$(date +%Y%m%d_%H%M%S).yaml"
 # shellcheck disable=SC2086

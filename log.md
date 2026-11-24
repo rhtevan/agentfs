@@ -2,6 +2,24 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 19:05
+- Allowlist: crc-ols $SECRET/$SECRET_EXISTS/$CKEY variable names (secret names, not values) as known FP (.pre-push-allowlist)
+
+## 2026-11-23 19:01
+- g3b-16k speed note: drop power-profile sentence (power drop no longer occurs under performance profile) (skills/hosted-model-ctl/references/deployment-profiles.md)
+
+## 2026-11-23 19:00
+- add-provider.sh: --dummy-key creates no-key-required secret before patching (Skupper/self-hosted) (skills/crc-ols/scripts/add-provider.sh)
+- install.sh: wait for lightspeed-app-server to exist before rollout status (OCP 5.0) (skills/crc-ols/scripts/install.sh)
+- SKILL.md 3.9.0: verified OCP 5.0/operator 2.0.1; Skupper example rhtevan g3b + --dummy-key; llama.cpp grammar root cause (regex shorthand, fixed >= b12648); 413 with contextWindowSize 16384; monitoring note; install rollout gotcha (skills/crc-ols/SKILL.md)
+- g3b-16k: speed by context depth (37/27.7 tok/s), power-profile note, 32K rejected (f16 OOM, q8_0 KV half speed) (skills/hosted-model-ctl/references/deployment-profiles.md)
+
+## 2026-11-23 17:36
+- g3b-16k runtime b12648 + tool-schema pattern note (skills/hosted-model-ctl/references/deployment-profiles.md)
+- version 7.16.0 (skills/hosted-model-ctl/SKILL.md)
+- pre-check image list: llama.cpp b12648 digest (skills/hosted-model-ctl/scripts/pre-check.sh)
+- g3b-16k: llama.cpp b9994 -> b12648 pinned by digest (tool-schema pattern fix) (skills/hosted-model-ctl/scripts/common.sh)
+
 ## 2026-11-23 16:38
 - pre-push allowlist: crc-vm SSH alias (crc-install VM access example) is a known FP (.pre-push-allowlist)
 

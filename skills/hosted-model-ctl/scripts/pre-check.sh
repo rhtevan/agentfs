@@ -89,7 +89,7 @@ fi
 echo "5. Container images"
 case "$TARGET" in
   rhtevan-work)
-    images=("docker.io/vllm/vllm-openai:latest" "ghcr.io/ggml-org/llama.cpp:server-cuda-b9994")
+    images=("docker.io/vllm/vllm-openai:latest" "ghcr.io/ggml-org/llama.cpp@sha256:f8e7c336e3660804f6bc35a4147dbfdf1ddae9b7c3c50d412fab49b323e28fea")  # llama.cpp b12648
     ;;
   rhel-ai)
     images=("registry.redhat.io/rhelai1/instructlab-nvidia-rhel9:1.5.0")

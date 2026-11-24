@@ -49,7 +49,7 @@ For benchmark data, see [benchmark-report.md](./benchmark-report.md).
 | Setting | Value |
 |---------|-------|
 | **Model** | `ibm-granite/granite-3b` (Q4_K_M GGUF, version auto-detected) |
-| **Runtime** | llama.cpp (`ghcr.io/ggml-org/llama.cpp:server-cuda-b9994`) |
+| **Runtime** | llama.cpp b12648 (`ghcr.io/ggml-org/llama.cpp@sha256:f8e7c336e3660804f6bc35a4147dbfdf1ddae9b7c3c50d412fab49b323e28fea`, pinned by digest — versioned `server-cuda-bNNNNN` tags are no longer published) |
 | **Container** | `model-g3b` |
 | **Port** | 10000 |
 | **TP** | 1 |
@@ -60,6 +60,25 @@ For benchmark data, see [benchmark-report.md](./benchmark-report.md).
 | **Quality** | ✅ Passes all 7 benchmark tests |
 | **VRAM** | ~3.4 GB / 4 GB (85%) |
 | **Cold start** | ~15s |
+
+**Tool-schema `pattern` support:** b9994 rejected any tool whose JSON-schema
+`pattern` used `\d`/`\w`/`\s`/`\/` (HTTP 400 `failed to parse grammar`, upstream
+issues #27580/#27397, closed by the stale bot), which broke every OpenShift
+Lightspeed request (openshift-mcp-server Prometheus tools use `^\d+[smhdwy]$`).
+b12648 includes PR #26939: unsupported patterns degrade to "any string" with a
+server WARNING. Verified 2026-11-23 with the 34 real MCP tools → valid
+`pods_list_in_namespace` call; the tool schemas alone cost ~11.5K prompt tokens.
+
+**Measured speed by context depth** (b12648, sustained 3 min at 30 W,
+2026-11-23): **37.0 tok/s** at a short prompt, **27.7 tok/s** at ~10.5K prompt
+tokens (~26 at 12.9K, ~21 near 14.7K). The drop is attention over the filled
+KV cache.
+
+**32K evaluated and rejected (2026-11-23):** `--ctx-size 32768` with the default
+f16 KV cache OOMs (`allocating 2560.00 MiB … cudaMalloc failed`). With
+`--flash-attn on -ctk q8_0 -ctv q8_0` it fits (3589 MiB) and matches 16K at short
+prompts (36.4 tok/s) but halves decode at depth (13.5 vs 27.8 tok/s at ~10.5K;
+8.7 tok/s at ~21K). Not worth it.
 
 **Why default:** Best speed-to-quality ratio on this hardware. 5.7× faster
 than Granite 8B on the same GPU. 16K context is the VRAM ceiling.

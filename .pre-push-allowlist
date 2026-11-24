@@ -55,3 +55,10 @@
   the local CRC VM via the user-networking loopback forward (HostName
   127.0.0.1, Port 2222, User core) — not a real host, IP, or username.
   Accepted by the user 2026-11-23.
+- The shell variable names `$SECRET` / `$SECRET_EXISTS` (and `$CKEY`)
+  in crc-ols scripts (add-provider.sh, install.sh, rotate-key.sh,
+  remove-provider.sh) and their echo/log lines. They hold the *name*
+  of a Kubernetes secret and its data key, never a credential value.
+  The only literal is the placeholder `no-key-required` used by
+  --dummy-key for unauthenticated self-hosted/Skupper endpoints.
+  Accepted by the user 2026-11-23.

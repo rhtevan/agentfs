@@ -10,7 +10,7 @@ argument-hint: "list hosted model | hosted model status | start hosted model | s
 compatibility: "podman, NVIDIA GPU with CDI, SSH access to remote hosts"
 metadata:
   author: agentfs
-  version: "7.15.0"
+  version: "7.16.0"
   model-tier: T3
   tags: [granite, vllm, llama-cpp, inference, llm, podman, nvidia, gpu, model-serving, tool-calling, gguf, rhel-ai, speculative-decoding, fp8, self-hosted]
 user-invocable: true
