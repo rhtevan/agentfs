@@ -2,6 +2,18 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-24 09:12
+- F26: Principles test catalogue tracker row (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 09:11
+- New concept: Principles test catalogue F26 (draft, 19 tests, smoke 8, harness contract, value/cost screen) (knowledge/agentfs-engineering-evolution/principles-test-catalogue.md)
+
+## 2026-11-24 09:07
+- F25: R5 Checkpoint test coverage parked (value vs cost) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-24 09:01
+- Fix Follow-ups table: remove blank line after F5 that split the table (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-23 23:28
 - F24: resolution - effort pinned high, gotcha documented (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - New concept: reasoning effort gotcha (custom providers drop GOOSE_THINKING_EFFORT; medium 0/8 vs high 8/8 on R2) (knowledge/goose-desktop-operations/reasoning-effort.md)
