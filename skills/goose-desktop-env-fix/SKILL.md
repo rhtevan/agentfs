@@ -3,7 +3,7 @@ name: goose-desktop-env-fix
 description: >
   fix goose desktop, goose shell environment, goose env fix, goose rm guard
 metadata:
-  version: "1.8.1"
+  version: "1.9.0"
   model-tier: T4
   tags: [goose, desktop, shell, environment, bashrc, devbox, nix, fork-bomb, rm-guard, safety]
 ---
@@ -337,6 +337,8 @@ listed folder **and anything directly inside it**:
 | `$HOME` | Everything the incident wiped |
 | `~/app`, `~/app/playground` | Each child is a separate project |
 | `~/.config`, `~/.local`, `~/.local/share` | `rm -rf ~/.config/*` etc. is the same catastrophe one level down |
+| `~/.ssh`, `~/.local/state`, `~/.local/share/goose` | Benchmarked models work next to these: SSH keys, benchmark/guard state, goose sessions (added 1.9.0, 2026-11-23) |
+| `~/.agents` — **directories only** (`PROTECT_DIR_CHILDREN_OF`) | `rm -rf ~/.agents/*` (skills, knowledge, .git) is blocked; plain files directly inside stay deletable because log writers keep temp files next to `log.md` (1.9.0) |
 
 Everything deeper is allowed: `/tmp/<x>`, `/var/tmp/<x>`, `~/.cache/<x>`,
 `./build`, `~/.agents/skills/<old>`, a workdir under `/tmp` itself.

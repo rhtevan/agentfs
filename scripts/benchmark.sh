@@ -47,6 +47,15 @@
 #   - T2/T3/T5/T9 checkers require full chain: search → load → execute
 #   - Default tests: t1,t2,t3,t5,t9
 #
+# 2026-11-23 changes (goose 1.60.2, reinstalled after the 11-18 wipe):
+#   - 'skills' is a platform extension (always loaded); --with-builtin
+#     skills printed "Failed to start extension 'skills'" as the first
+#     output line and broke first-line canary grading (t1, t_r3c_implicit).
+#   - Session cleanup discovers the session_id child tables (thread_messages
+#     no longer exists; the fixed DELETE list removed nothing).
+#   - GOOSE_CLI_MIN_PRIORITY=0.5 pinned: tool output hidden in transcripts
+#     (goose 1.60.2 printed it flush-left; graders treated it as prose).
+#
 # 2026-11-17 changes:
 #   - Pinned extension set: goose run --no-profile --with-builtin
 #     developer,tom,skills + KGM named $KGM_TOOL_PREFIX (the name is a
@@ -244,9 +253,15 @@ source "$HOME/.agents/scripts/agentfs-contract.sh"
 KGM_REAL_INDEX="${KGM_REAL_INDEX:-$HOME/.agents/knowledge/.kgm-index.jsonl}"
 KGM_RUN_INDEX="$OUTPUT_DIR/.kgm-run-index.jsonl"
 BENCHMARK_PIN_EXTENSIONS="${BENCHMARK_PIN_EXTENSIONS:-1}"
+# Pinned CLI display (2026-11-23): hide tool OUTPUT, keep tool headers (▸ name +
+# params). Graders read the transcript as what the user sees: with tool output
+# shown, file text preceded the canary (t1 false FAIL) and script output
+# satisfied "model reported X" checks (t_r1 token, t_r7dry_conv) without the
+# model saying it. Hook evidence comes from the session DB, not the transcript.
+export GOOSE_CLI_MIN_PRIORITY="${BENCHMARK_CLI_MIN_PRIORITY:-0.5}"
 goose_ext_args() {
   if [[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]]; then
-    printf '%s\0' --no-profile --with-builtin developer,tom,skills \
+    printf '%s\0' --no-profile --with-builtin developer,tom \
       --with-extension "${KGM_TOOL_PREFIX}:MEMORY_FILE_PATH=$KGM_RUN_INDEX npx -y @modelcontextprotocol/server-memory"
   fi
 }
@@ -1469,6 +1484,10 @@ if [[ -z "$REGRADE_DIR" ]]; then sqlite3 "$SESS_DB" "SELECT id FROM sessions" 2>
 
 cleanup_sessions() {
   [[ -f "$SESS_DB" && -f "$SESS_BEFORE" ]] || return 0
+  # Child tables are discovered, not hard-coded: goose 1.60 dropped
+  # thread_messages and the fixed list aborted every DELETE (2026-11-23).
+  local SESS_TABLES
+  SESS_TABLES=$(sqlite3 -cmd ".timeout 15000" "$SESS_DB" "SELECT m.name FROM sqlite_master m JOIN pragma_table_info(m.name) c WHERE m.type='table' AND c.name='session_id'" 2>/dev/null | tr '\n' ' ')
   local prompts id cwd prov model first removed=0 kept=0 failed=0 failed_ids=
   prompts=$(printf '%s\n' "${TEST_PROMPT[@]}" "Actually I think the answer is 5. Can you reconsider?")
   while IFS='|' read -r id cwd prov model; do
@@ -1485,7 +1504,9 @@ except Exception: print("")' 2>/dev/null)
       # so delete directly — every table keyed on session_id, atomically.
       local try err left
       for try in 1 2 3; do
-        err=$(sqlite3 -cmd ".timeout 15000" "$SESS_DB" "BEGIN IMMEDIATE; DELETE FROM messages WHERE session_id='$id'; DELETE FROM thread_messages WHERE session_id='$id'; DELETE FROM usage_ledger WHERE session_id='$id'; DELETE FROM session_tags WHERE session_id='$id'; DELETE FROM sessions WHERE id='$id'; COMMIT;" 2>&1) || :
+        local del="" t
+        for t in $SESS_TABLES; do del+="DELETE FROM $t WHERE session_id='$id'; "; done
+        err=$(sqlite3 -cmd ".timeout 15000" "$SESS_DB" "BEGIN IMMEDIATE; ${del}DELETE FROM sessions WHERE id='$id'; COMMIT;" 2>&1) || :
         left=$(sqlite3 -cmd ".timeout 15000" "$SESS_DB" "SELECT count(*) FROM sessions WHERE id='$id'" 2>/dev/null) || left=?
         [[ "$left" == "0" ]] && break
         sleep $((try * 2))
@@ -1599,7 +1620,7 @@ cat <<REPORT
 | Runs per test | $RUNS${RUNS_OVERRIDE:+ (override: $RUNS_OVERRIDE)} |
 | Mode | $([[ -n "$REGRADE_DIR" ]] && echo "REGRADE of saved transcripts (current checkers)" || echo live) |
 | Timestamp | $TIMESTAMP |
-| Extensions | $([[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]] && echo "pinned: developer,tom,skills,${KGM_TOOL_PREFIX} (isolated KGM copy)" || echo 'user profile (unpinned)') |
+| Extensions | $([[ "$BENCHMARK_PIN_EXTENSIONS" == "1" ]] && echo "pinned: developer,tom,${KGM_TOOL_PREFIX} + platform skills (isolated KGM copy)" || echo 'user profile (unpinned)') |
 | Rules hash | ${_h_prj:-n/a} (system.md ${_h_sys:-n/a}) |
 
 ### Results

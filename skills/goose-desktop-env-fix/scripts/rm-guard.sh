@@ -19,7 +19,11 @@ REAL_RM=/usr/bin/rm
 H=$(realpath -m -- "$HOME")
 
 # Edit this list to change what is protected (direct children included).
-PROTECT_CHILDREN_OF=("/" "$H" "$H/app" "$H/app/playground" "$H/.config" "$H/.local" "$H/.local/share")
+PROTECT_CHILDREN_OF=("/" "$H" "$H/app" "$H/app/playground" "$H/.config" "$H/.local" "$H/.local/share" \
+  "$H/.ssh" "$H/.local/state" "$H/.local/share/goose")
+# Only DIRECTORIES directly inside these are protected; plain files are not
+# (log writers keep temp files next to ~/.agents/log.md and rm them).
+PROTECT_DIR_CHILDREN_OF=("$H/.agents")
 
 LOG="$H/.local/state/goose-guard/blocked.log"
 
@@ -48,7 +52,11 @@ if (( ${#dirs[@]} )); then
     p=${res[i]}                            # empty if realpath failed -> blocks below (fail closed)
     if [[ -z ${names[i]} ]]; then t=${p:-/}; else t=${p%/}/${names[i]}; fi
     par=${t%/*}; par=${par:-/}
-    for prot in "${PROTECT_CHILDREN_OF[@]}"; do
+    hit=""
+    for prot in "${PROTECT_DIR_CHILDREN_OF[@]}"; do
+      [[ $par == "$prot" && -d $t && ! -L $t ]] && hit=1
+    done
+    for prot in "${PROTECT_CHILDREN_OF[@]}" ${hit:+"$par"}; do
       if [[ $t == "$prot" || $par == "$prot" ]]; then
         echo "rm-guard: BLOCKED: refusing to remove protected path '$t'" >&2
         echo "rm-guard: protected: '/', and these folders plus anything directly inside them: ${PROTECT_CHILDREN_OF[*]}" >&2

@@ -2,6 +2,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-23 22:27 | v1.9.0 — rm guard protects ~/.agents, ~/.ssh, ~/.local/state, ~/.local/share/goose and their direct children (benchmark host safety, F20); Protected table: ~/.agents, ~/.ssh, ~/.local/state, ~/.local/share/goose; rm guard: ~/.agents protects directories only (PROTECT_DIR_CHILDREN_OF) — log writers rm temp files next to log.md; Protected table: ~/.agents directories-only row |
 | 2026-11-22 21:47 | v1.8.1 — v1.8.1: example ~/.bashrc drops 'eval $(hermes completion bash)' — hermes-install writes a lazy bash-completion loader |
 | 2026-11-20 18:47 | v1.8.0 — rm guard for goose shell commands (after the 2026-11-18 home-wipe incident). New `scripts/rm-guard.sh`, installed as `~/.local/share/goose-guard/bin/rm`: refuses rm when a target, after shell expansion, is `/`, `$HOME`, `~/app`, `~/app/playground`, `~/.config`, `~/.local`, `~/.local/share` or anything directly inside them; blocks are logged to `~/.local/state/goose-guard/blocked.log`. `setup.sh`: wrapper template puts the guard first in PATH and upgrades an existing wrapper (backup), step 2b installs the guard, step 5b adds `export GOOSE_SHELL=…` to `~/.bashrc` above the interactive guard (backup + `bash -n`). SKILL.md: rm Guard section. |
 | 2026-11-09 18:50 | v1.7.0 — Migrate --check to --dry-run contract with DRY_RUN_RESULT signals |

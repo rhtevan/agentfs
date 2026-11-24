@@ -2,6 +2,22 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-23 22:27
+- Protected table: ~/.agents directories-only row (skills/goose-desktop-env-fix/SKILL.md)
+- rm guard: ~/.agents protects directories only (PROTECT_DIR_CHILDREN_OF) — log writers rm temp files next to log.md (skills/goose-desktop-env-fix/scripts/rm-guard.sh)
+
+## 2026-11-23 22:26
+- pin GOOSE_CLI_MIN_PRIORITY=0.5: hide tool output in transcripts (t1 false FAIL; t_r1/t_r7dry_conv passed on script output) (scripts/benchmark.sh)
+
+## 2026-11-23 22:25
+- Protected table: ~/.agents, ~/.ssh, ~/.local/state, ~/.local/share/goose (skills/goose-desktop-env-fix/SKILL.md)
+
+## 2026-11-23 22:24
+- rm guard protects ~/.agents, ~/.ssh, ~/.local/state, ~/.local/share/goose and their direct children (benchmark host safety, F20) (skills/goose-desktop-env-fix/scripts/rm-guard.sh)
+
+## 2026-11-23 22:02
+- goose 1.60.2: drop --with-builtin skills (platform ext; warning broke canary grading); session cleanup discovers session_id tables (thread_messages gone) (scripts/benchmark.sh)
+
 ## 2026-11-23 21:51
 - T4 representative -> gcp_vertex_ai claude-sonnet-5-5 (corp key not entitled for sonnet-5.5) (skills/agentfs-setup/compliance-profile.yaml)
 
