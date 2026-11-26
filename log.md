@@ -2,6 +2,10 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:21
+- F32(f) resolved: author-soul.sh fallback removed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- author-soul.sh: stale v6 fallback Principles removed; fails before writing if seed-soul.sh is missing (single source of truth) (skills/agentfs-setup/scripts/author-soul.sh)
+
 ## 2026-11-25 19:17
 - allowlist: principles-lab detector regex and plab-jail git remote test input (.pre-push-allowlist)
 

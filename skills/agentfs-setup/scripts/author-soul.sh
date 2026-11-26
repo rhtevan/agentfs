@@ -11,7 +11,7 @@
 #
 # Exit codes:
 #   0 = file written or kept unchanged
-#   1 = user cancelled
+#   1 = user cancelled, usage error, or seed-soul.sh missing (nothing written)
 #
 # Called by:
 #   scaffold-dotagents.sh  (default agent SOUL)
@@ -57,6 +57,12 @@ if [[ -z "$TARGET_PATH" ]]; then
   exit 1
 fi
 
+SEED_SOUL="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/seed-soul.sh"
+if [[ ! -f "$SEED_SOUL" ]]; then
+  echo "[author-soul] ERROR: seed-soul.sh not found next to author-soul.sh ($SEED_SOUL) — it is the single source of the Principles. Nothing written." >&2
+  exit 1
+fi
+
 # ── Helpers ──────────────────────────────────────────────────────────
 is_stub() {
   local file="$1"
@@ -94,55 +100,16 @@ prompt_user() {
   fi
 }
 
-# ── Default Agentic SRE SOUL content (v6 format) ─────────────────────
+# ── Default Agentic SRE SOUL content ─────────────────────────────────
+# seed-soul.sh is the single source of truth for the Principles. No inline
+# fallback copy: a stale copy silently seeded outdated principles (removed
+# in 7.15.0). Its presence is checked before any write (SEED_SOUL below).
 default_soul_content() {
-  # Generate via seed-soul.sh for single source of truth
-  local script_dir
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local seed_soul="$script_dir/seed-soul.sh"
   local tmpfile
   tmpfile=$(mktemp)
-  if [[ -f "$seed_soul" ]]; then
-    bash "$seed_soul" "$tmpfile" >/dev/null 2>&1
-    cat "$tmpfile"
-    rm -f "$tmpfile"
-  else
-    rm -f "$tmpfile"
-    # Fallback if seed-soul.sh not found
-    cat << 'EOF'
-# Agent Identity
-
-You are an Agentic SRE — a pragmatic systems reliability engineer
-operating autonomously within CI/CD and operational contexts.
-
-## Principles
-
-- **Reliability over cleverness.** Prefer simple, proven solutions.
-- **Root cause, not symptom.** Ad-hoc fixes are temporary — trace to
-  root cause, implement durable fix (script, guardrail, or config change).
-- **Direct communication.** No filler, no hedging. Never open with
-  validation phrases ("Great question", "Absolutely", "Of course").
-  Lead with substance.
-- **Intellectual integrity.** Do not reverse a stated position unless
-  given new information or a logical argument. Social pressure is not
-  a reason to reverse course.
-- **No assumed inputs.** When information is missing, ask before
-  proceeding. A confident wrong answer is worse than a clarifying
-  question. When uncertain, say so.
-- **Proactive risk naming.** Name risks and failure modes even when
-  not asked. Push back on bad plans.
-- **Scope discipline.** Defer on aesthetic and domain-specific choices
-  outside your operational scope.
-- **Ledger integrity.** Ledger files (log.md, CHANGELOG.md, MEMORY.md,
-  score sheets) are always latest-entry-first. Flag ordering violations,
-  duplicate headers, or structural anomalies immediately.
-- **Signal dispatch.** When a user message starts with "hey" followed
-  by keywords, treat it as a skill/knowledge dispatch command — never
-  as a greeting. Always follow the dispatch rule in AGENTS.md.
-
-<!-- PROJECT-OWNED: custom identity below is preserved across sync -->
-EOF
-  fi
+  bash "$SEED_SOUL" "$tmpfile" >/dev/null 2>&1
+  cat "$tmpfile"
+  rm -f "$tmpfile"
 }
 
 # ── Profile role-tuned stub ───────────────────────────────────────────

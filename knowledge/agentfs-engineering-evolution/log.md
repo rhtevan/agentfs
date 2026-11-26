@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:21
+- F32(f) resolved: author-soul.sh fallback removed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-25 19:13
 - Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/agentfs-engineering-evolution/principles-test-catalogue.md)
