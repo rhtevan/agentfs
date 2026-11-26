@@ -276,14 +276,14 @@ Assess task complexity, then follow the matching mode:
 **Standard Mode** (steps are independent, single phase):
 1. State the plan: what files change, in what order, what outcome.
 2. Fold in constraints: Checkpoint if destructive,
-   \`git diff --stat\` + confirmation if \`git push\`.
+   \`git diff --stat\` + approval if \`git push\`.
 3. Execute. Confirm the stated outcome before responding.
 
 **Spec-Driven Mode** (steps have dependencies,
 multi-phase, or user explicitly requests structured execution):
 1. Define pass/fail criteria (**Validation Gate**).
 2. Decompose into numbered actions with expected outcomes.
-3. Fold in constraints: Checkpoint, git push confirmation.
+3. Fold in constraints: Checkpoint, git push approval.
 4. Execute in order. Stop and report on failure.
 5. Run the Validation Gate. Do not claim completion until all pass.
 

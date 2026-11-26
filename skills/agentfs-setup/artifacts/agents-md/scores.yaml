@@ -8,39 +8,39 @@
 
 artifact: AGENTS.md
 source_skill: agentfs-setup
-version: "7.15.0"
-template_hash: { rules: "b1b45cc3a401bde9", soul: "f92012c4fb129cb9" }   # template-hash.sh at scoring time; decides staleness
+version: "7.15.1"
+template_hash: { rules: "946f9d2eb443c292", soul: "f92012c4fb129cb9" }   # template-hash.sh at scoring time; decides staleness
 qualification_rule: build+observable
 qoo-qualified: true
 qoo-qualified-date: "2026-11-25"
 
 quality:
   schema: quality-agents-md.yaml
-  evidence: evidence/7.15.0.txt   # Stage 1a+1b input, kept so SDM can re-score the same evidence
+  evidence: evidence/7.15.1.txt   # Stage 1a+1b input, kept so SDM can re-score the same evidence
   scorer: "t4-fallback:gemini-3.1-pro-preview"   # F30 option C; SDM re-scores when it returns
-  calibration: { reference: 95.8, reference_scorer: sdm, reference_template: "7.6.0", reference_schema: "quality-agents-md.yaml@fc8f328", evidence: evidence/calibration-7.6.0.txt, t4_median: 96.7, delta: 0.9, tolerance: 3, runs: 3, result: PASS, recalibrated: "2026-11-25 (96.7 x3, PASS)", dims_agreeing_with_sdm: "4/6", note: "aggregate within tolerance; T4 failed concern_count and passed accidental_complexity where SDM did the reverse (evidence re-extracted: original not kept)" }
-  aggregate_score: 76.7
+  calibration: { reference: 95.8, reference_scorer: sdm, reference_template: "7.6.0", reference_schema: "quality-agents-md.yaml@fc8f328", evidence: evidence/calibration-7.6.0.txt, t4_median: 96.7, delta: 0.9, tolerance: 3, runs: 3, result: PASS, recalibrated: "2026-11-25 20:05 (96.7 x3, PASS)", dims_agreeing_with_sdm: "4/6", note: "aggregate within tolerance; T4 failed concern_count and passed accidental_complexity where SDM did the reverse (evidence re-extracted: original not kept)" }
+  aggregate_score: 80
   band: Tunable
   pass_rate: 50.0
-  runs: { aggregates: [76.7, 70, 80], median: 76.7 }
+  runs: { aggregates: [80, 80, 80], median: 80 }
   dimensions:   # agreement = share of the 3 runs giving this score (no logits: no calibrated confidence)
     rule_self_containment: { score: 100, pass: true, agreement: 1.0 }
     rule_action_density: { score: 100, pass: true, agreement: 1.0 }
-    concern_count: { score: 80, pass: false, agreement: 0.67, detail: "Rules 5 and 6 touch three concerns each; T4 fails this where SDM passed it at calibration" }
+    concern_count: { score: 80, pass: false, agreement: 1.0, detail: "Rules 5 and 6 touch three concerns each; T4 fails this where SDM passed it at calibration" }
     trigger_clarity: { score: 100, pass: true, agreement: 1.0 }
     cross_rule_dependency: { score: 40, pass: false, agreement: 1.0, detail: "Rule 1 step 2 references Rule 3 twice (added after v7.6.0); Rule 2 references Checkpoint" }
-    item_overlap: { score: 40, pass: false, agreement: 0.67, detail: "7.15.0 (6 principles): Consent for the irreversible vs Rule 2 git push confirmation; vs Rule 5 (same trigger, different action); approval/confirmation vocabulary. The 7.14.1 overlaps (Intellectual integrity, Data integrity, verify/verify) are gone" }
+    item_overlap: { score: 60, pass: false, agreement: 1.0, detail: "7.15.1: Consent for the irreversible vs Rule 2 git push approval (complementary: evidence to show vs every irreversible action); vs Rule 5 (same trigger, different action). Vocabulary aligned on approval (7.15.0: 40)" }
   note: >
     T4-fallback score (F30, option C): Stage 1b evidence by the session
     frontier model (Claude), Stage 2 scoring by gemini-3.1-pro-preview via
     t4-static-score.sh (median of 3) with the sdm-evaluate.sh scoring map.
     Not comparable 1:1 with the 95.8 SDM record: the schema replaced
     accidental_complexity with item_overlap, and the template grew 6 -> 7 rules.
-  evaluated: "2026-11-25T19:58:24-05:00"
+  evaluated: "2026-11-25T20:07:17-05:00"
 operable:
   build:
     schema: operable-agents-md.yaml
-    evidence: evidence/7.15.0.txt
+    evidence: evidence/7.15.1.txt
     scorer: "t4-fallback:gemini-3.1-pro-preview"   # calibration: see quality.calibration
     dimensions:   # agreement = share of the 3 runs giving this score
       has_bones: { score: 100, pass: true, agreement: 1.0, detail: "delegation ratio 0.34 (20-40% bucket) >= 0.30 target (was 25 under the old >= score map, fixed 2026-11-24)" }
@@ -48,8 +48,8 @@ operable:
       has_brain: { score: 100, pass: true, agreement: 1.0 }
       has_harness: { score: 100, pass: true, agreement: 1.0, detail: "6 of 7 rules have benchmark tests; R5 Checkpoint has none (F25 parked)" }
     note: >
-      BMBT 4/4 pass on v7.15.0 (T4-fallback, median of 3).
-    evaluated: "2026-11-25T19:58:24-05:00"
+      BMBT 4/4 pass on v7.15.1 (T4-fallback, median of 3).
+    evaluated: "2026-11-25T20:08:35-05:00"
   runtime:
     # Stateless reference (2026-11-24, F22; evaluation-methodology.md §4).
     # The base skill's runtime record is compliance-profile.yaml only; the
@@ -135,3 +135,7 @@ history:
     type: static
     scorer: "t4-fallback:gemini-3.1-pro-preview"
     note: "7.15.0 re-score (SOUL 8 -> 6 principles, rules unchanged): quality 76.7 Tunable (76.7/70/80), build 100; item_overlap still 40 with different overlaps; calibration re-run PASS (96.7 vs SDM 95.8)."
+  - date: "2026-11-25T20:08:35-05:00"
+    type: static
+    scorer: "t4-fallback:gemini-3.1-pro-preview"
+    note: "7.15.1 re-score (Rule 2 git push confirmation -> approval): quality 76.7 -> 80 Tunable (80 x3), item_overlap 40 -> 60; build 100; calibration PASS (96.7)."

@@ -2,6 +2,17 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 20:09
+- static record re-scored for 7.15.1: quality 80, item_overlap 60, build 100 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-11-25 20:05
+- static record evidence 7.15.1 (Rule 2 approval) (skills/agentfs-setup/artifacts/agents-md/evidence/7.15.1.txt)
+- README version references -> 7.15.1 (sync-readme-version) (README.md)
+
+## 2026-11-25 20:04
+- version 7.15.1 (skills/agentfs-setup/SKILL.md)
+- Rule 2: git push 'confirmation' -> 'approval' (one term with the Consent principle; item_overlap vocabulary) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
 ## 2026-11-25 19:59
 - F32: (d) re-score done, (a) accepted, (h) stays accepted gap (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - static record re-scored for 7.15.0 (T4-fallback, calibration PASS): quality 76.7, build 100 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
