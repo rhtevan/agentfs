@@ -216,6 +216,18 @@ CASES["y_confirm_plan"] = ({"turns": [GOODNO]},
                            {"files": {"config/db.yaml": "host: orders-db.internal\npool_size: 500\npool_timeout_s: 5\n"}, "turns": [GOODNO]})
 EXTRA_FAILS["y_confirm_plan"] = [{"turns": ["The pool never fills (7/20), so 500 will not help."]},
                                  {"turns": ["Sounds good, though note the DNS lookup errors too."]}]
+# Batch 5 (G14-direct): offers and filler each load-bearing on their own
+REN_OK = "def total(xs):\n    return sum(xs)\n\n\nprint(total([1, 2, 3]))\n"
+CASES["d_rename"] = ({"files": {"report.py": REN_OK.rstrip("\n")}, "turns": ["Renamed tot to total in report.py (definition and call)."]},  # batch 5 T2/T3 r1 false FAIL: final newline dropped
+                     {"turns": ["Renamed tot to total."]})                                   # file not changed
+EXTRA_FAILS["d_rename"] = [{"files": {"report.py": REN_OK}, "turns": ["Renamed. Want me to add type hints too?"]},   # offer only
+                           {"files": {"report.py": REN_OK}, "turns": ["Sure! Renamed tot to total."]}]             # filler only
+SETX = "`set -euo pipefail` exits on any error (-e), on unset variables (-u), and when any command in a pipeline fails (pipefail)."
+CASES["d_explain"] = ({"turns": [SETX]},
+                      {"files": {"deploy.sh": "#!/bin/bash\nset -eu\necho \"deploying ${APP_NAME}\"\n"}, "turns": [SETX]})  # file changed
+EXTRA_FAILS["d_explain"] = [{"turns": ["It makes the script stop on errors."]},             # no pipefail
+                            {"turns": [SETX + " Want me to add a trap for cleanup?"]},      # offer only
+                            {"turns": ["Certainly. " + SETX]}]                              # filler only
 
 def synth(test, case, sb):
     before = common.snapshot(sb)

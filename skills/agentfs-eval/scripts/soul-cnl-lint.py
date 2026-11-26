@@ -24,16 +24,17 @@ Output: one line per finding, then SOUL_CNL=PASS|WARN|FAIL (exit 1 on FAIL).
 import re, sys
 
 TRIGGER = re.compile(r"^(When|Whenever|Before|After|If|Once|On|Unless|While|Until)\b")
-CONNECTOR = re.compile(r"^(Otherwise|Then|Also|Instead|Still|Always|Only),?\s+")
+CONNECTOR = re.compile(r"^(Otherwise|Then|Also|Instead|Still|Always|Only),?\s+", re.I)
 COUNTER = re.compile(r"\b(Do not|Don't|do not|Never|never)\b|^No\s|\bNo\s+\w+")
 PASSIVE = re.compile(r"\b(is|are|was|were|be|been|being)\s+(not\s+)?(\w+ed|made|done|kept|met|set|built|shown|told|known|given|taken|found|held|left|put|sent|seen|said|brought|grounded|written|chosen|meant)\b", re.I)
 HEDGE = re.compile(r"\b(should|may|might|could|would|ought to|try to|you may want|consider)\b", re.I)
-VERBS = set("""act add answer apply ask avoid build call change chase check choose cite confirm copy correct
-delete describe diagnose do drop end explain find finish fix flag follow get give guess hold ignore invent keep
+VERBS = set("""accept act add agree answer apply ask avoid build call change chase check choose cite confirm copy correct
+delete describe diagnose do drop end explain find finish fix flag follow get give guess hold ignore improve invent keep
 lead leave list log make mark measure mention move name note offer open paste pause pick point present prove
 push quote read record refuse reject remove repeat replace report request resolve restate retry return reverse
-review rewrite run say search send show skip start state stay stop surface take tell test treat trust update
+review rewrite run say search send show skip start state stay stop summarise summarize surface take tell test treat trust update
 use verify wait warn write""".split())
+IMPERATIVE_HEADS = {"do", "never", "no", "don't"}
 SYNONYMS = [("task", "request", "job"), ("user", "operator", "human"),
             ("approval", "consent", "permission", "confirmation", "authori"),
             ("fix", "patch", "repair"), ("error", "fault", "failure"), ("risk", "hazard", "danger"),
@@ -57,7 +58,19 @@ def sentences(body):
 def head_word(s):
     s = CONNECTOR.sub("", s)
     if TRIGGER.match(s):
-        s = s.split(",", 1)[1].strip() if "," in s else ""
+        # The When-clause may itself contain commas ("When X, Y, or Z, do ...").
+        # Split at the first comma followed by an imperative; else at the last.
+        parts = s.split(",")
+        rest = ""
+        for i in range(1, len(parts)):
+            cand = CONNECTOR.sub("", ",".join(parts[i:]).strip())
+            w0 = re.findall(r"[A-Za-z']+", cand)
+            if w0 and w0[0].lower() in VERBS | IMPERATIVE_HEADS:
+                rest = cand
+                break
+        else:
+            rest = CONNECTOR.sub("", parts[-1].strip()) if len(parts) > 1 else ""
+        s = rest
     w = re.findall(r"[A-Za-z']+", s)
     return (w[0].lower() if w else ""), s
 

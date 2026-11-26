@@ -2,6 +2,15 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:59
+- F32: (d) re-score done, (a) accepted, (h) stays accepted gap (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-25 19:46
+- F32: (a) G14-direct IRRELEVANT on plain tasks; (g)② done (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
+## 2026-11-25 19:31
+- F32: (b) closed, (e) and (g)① done (agentfs-eval 2.13.1); (g)② and (h) folded into (a) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+
 ## 2026-11-25 19:21
 - F32(f) resolved: author-soul.sh fallback removed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

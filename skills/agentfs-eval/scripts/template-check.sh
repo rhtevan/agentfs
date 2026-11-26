@@ -356,8 +356,8 @@ PYLINT
 # (+ counter), C2 active imperative, C1 one instruction, C3 one term per
 # concept, no cross-principle references. One summary line so the score
 # stays comparable; details: python3 soul-cnl-lint.py <SOUL.md>.
-# Level on lint FAIL is WARN until a CNL-clean template ships
-# (A15_LEVEL=FAIL to enforce).
+# Level on lint FAIL is FAIL since the CNL-clean 7.15.0 template shipped
+# (A15_LEVEL=WARN to downgrade, e.g. for a legacy project SOUL).
 SOUL_FILE="$TARGET/.agents/SOUL.md"
 LINT="$(dirname "${BASH_SOURCE[0]}")/soul-cnl-lint.py"
 if [ -f "$SOUL_FILE" ] && [ -f "$LINT" ]; then
@@ -366,7 +366,7 @@ if [ -f "$SOUL_FILE" ] && [ -f "$LINT" ]; then
   case "$A15_SIG" in
     PASS) result_pass "A15: SOUL principles pass CNL lint" ;;
     WARN) result_warn "A15: SOUL principles CNL lint — $A15_W warn (run soul-cnl-lint.py)" ;;
-    *) if [ "${A15_LEVEL:-WARN}" = FAIL ]; then result_fail "A15: SOUL principles CNL lint — $A15_F fail, $A15_W warn (run soul-cnl-lint.py)"
+    *) if [ "${A15_LEVEL:-FAIL}" = FAIL ]; then result_fail "A15: SOUL principles CNL lint — $A15_F fail, $A15_W warn (run soul-cnl-lint.py)"
        else result_warn "A15: SOUL principles CNL lint — $A15_F fail, $A15_W warn (run soul-cnl-lint.py)"; fi ;;
   esac
 else

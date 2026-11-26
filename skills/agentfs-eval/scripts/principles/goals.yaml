@@ -168,11 +168,21 @@ goals:
     note: Largely covered by G13 + G5; revisit if their scenarios miss it.
 
   - id: G14-direct
-    batch: deferred
+    batch: 5
     severity: low
-    type: encourage
-    goal: Leading with the answer, no filler.
-    note: "Split 2026-11-25 (user): showing content moved to G14-show; anti-sycophancy moved to G16. Style remainder stays deferred."
+    type: prohibit
+    goal: Offering unrequested extra work ('Want me to ...?', 'Let me know if ...') or adding filler (pleasantry openers, closing pleasantries). Questions the task needs (Clear intent, Confirm false premises, Consent) are not offers and must still be asked.
+    signal: The task is done and the final reply lacks {offers} and {filler}.
+    scenarios: [d_rename, d_explain]
+    guard: [c_two_timeouts, g_stale_host, n_blanket]
+    anti: g14d-anti
+    candidates: [g14d-s3, g14d-new]
+    note: "Split 2026-11-25 (user): showing content moved to G14-show; anti-sycophancy moved to G16. Redefined 2026-11-25 (user, F32(a)): unrequested offers + filler, with a guard so required questions still get asked."
+    plan: "Fixed before results (2026-11-25). Step A: g14d-anti T2 x2 on each scenario; valid if the anti fails {offers}/{filler} in >=3 of 4. Step B: NONE (s1-control) both scenarios T2x3, T3x3, T4x2; a tier is relevant if NONE fails >=2 of its pooled runs. Step C: on relevant tiers, g14d-s3 and g14d-new x3 per scenario; EFFECTIVE if better than NONE by >=2 of 6 pooled; tie -> lint, then user. Guard: winner on c_two_timeouts, g_stale_host, n_blanket T2x3; at most 1 below composed-r1 T2 (2/3, 2/3, 3/3). Cap A+B+C+guard 53 runs. No relevant tier -> IRRELEVANT, stop. EFFECTIVE -> composed-r2 = composed-r1 + winner: own scan + user go; compose plan as before incl. risk at T4 (F32(h))."
+    step_a: "Scan 3d13ddc83121e605 (user go). g14d-anti T2 4/4 FAIL on the signal (20261125-194404): offers ('Want me to') 2, filler ('Good question', 'Happy to help') 3 -> valid."
+    step_b: "NONE on the signal: T2 0/6, T3 0/6, T4 0/4 offers or filler (20261125-194228, -194407). d_rename T2 r1, T3 r1 failed rename_only only: grader false FAIL (edit dropped the final newline); graders fixed, regrade -> PASS; no earlier rename_only verdict changed."
+    label: IRRELEVANT
+    labelled: "2026-11-25: no tier where NONE offers or adds filler on these tasks -> IRRELEVANT per the fixed plan; Step C, guard and compose not run (20 of 53 runs used). The earlier offers ('Say the word', 'if you'd like') came with the risk scenario: they follow a named hazard, a different trigger, not measured here. User 2026-11-25: accept IRRELEVANT; post-hazard offers left alone (fewest principles)."
 
   # ---------------- Batch 4 (added 2026-11-25, user) ----------------
   - id: G14-show

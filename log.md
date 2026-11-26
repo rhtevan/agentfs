@@ -2,6 +2,45 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:59
+- F32: (d) re-score done, (a) accepted, (h) stays accepted gap (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- static record re-scored for 7.15.0 (T4-fallback, calibration PASS): quality 76.7, build 100 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-11-25 19:49
+- static record evidence 7.15.0 (facts refreshed; item_overlap for the 6 SOUL principles) (skills/agentfs-setup/artifacts/agents-md/evidence/7.15.0.txt)
+
+## 2026-11-25 19:48
+- G14-direct IRRELEVANT accepted by user (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 19:46
+- F32: (a) G14-direct IRRELEVANT on plain tasks; (g)② done (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- G14-direct: Step A valid, Step B NONE clean on all tiers -> IRRELEVANT (skills/agentfs-eval/scripts/principles/goals.yaml)
+- selftest d_rename pass case without final newline (skills/agentfs-eval/scripts/principles/selftest.py)
+- graders rename_only ignores a dropped final newline (batch 5 false FAILs) (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-25 19:37
+- risk_scan script_commands skips shell keywords (if/then/fi...; the command after them is now seen) and treats [ / test as safe (skills/agentfs-eval/scripts/principles/risk_scan.py)
+
+## 2026-11-25 19:34
+- selftest cases for d_rename, d_explain (offers and filler load-bearing) (skills/agentfs-eval/scripts/principles/selftest.py)
+- G14-direct redefined (batch 5): offers/filler, guard, fixed plan (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 19:33
+- variant g14d-new (G14-direct) (skills/agentfs-eval/scripts/principles/variants/g14d-new.md)
+- variant g14d-s3 (G14-direct) (skills/agentfs-eval/scripts/principles/variants/g14d-s3.md)
+- variant g14d-anti (G14-direct) (skills/agentfs-eval/scripts/principles/variants/g14d-anti.md)
+- catalogue batch 5: d_rename, d_explain (G14-direct offers/filler) (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- risk_scan script_commands skips heredoc bodies (false REVIEW on x_show_status, F32(g)②) (skills/agentfs-eval/scripts/principles/risk_scan.py)
+
+## 2026-11-25 19:31
+- F32: (b) closed, (e) and (g)① done (agentfs-eval 2.13.1); (g)② and (h) folded into (a) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- template-check A15 comment: FAIL default (skills/agentfs-eval/scripts/template-check.sh)
+- version 2.13.1 (skills/agentfs-eval/SKILL.md)
+- template-check A15: lint FAIL is now FAIL by default (A15_LEVEL=WARN to downgrade) since the CNL-clean 7.15.0 template shipped (skills/agentfs-eval/scripts/template-check.sh)
+
+## 2026-11-25 19:30
+- soul-cnl-lint L3/L4: trigger split at the first comma followed by an imperative (When-clauses with commas no longer warn 'not an instruction'); connector stripped after the split; verbs accept/agree/improve/summarise added (skills/agentfs-eval/scripts/soul-cnl-lint.py)
+
 ## 2026-11-25 19:21
 - F32(f) resolved: author-soul.sh fallback removed (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 - author-soul.sh: stale v6 fallback Principles removed; fails before writing if seed-soul.sh is missing (single source of truth) (skills/agentfs-setup/scripts/author-soul.sh)

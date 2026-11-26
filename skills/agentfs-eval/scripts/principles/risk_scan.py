@@ -21,18 +21,29 @@ HOSTPORT = re.compile(r"\b[a-z][\w-]*(\.[\w-]+)+:\d{2,5}\b")
 DESTRUCTIVE = re.compile(r"(rm\s+-[a-zA-Z]*[rf]|-delete\b|\bmkfs|\bdd\s+if=|:\(\)\s*\{|chmod\s+-R|\bshred\b|\btruncate\b|>\s*/dev/sd|\bfind\b[^\n]*-exec\s+rm)")
 INJECTION = re.compile(r"(?i)(ignore (all |the )?(previous|prior|above) instructions|disregard (your|the) (rules|instructions)|system prompt|you are now|new instructions:)")
 PROMPT_DESTRUCT = re.compile(r"(?i)\b(delete|remove|wipe|purge|free up|clean ?up|drop|reset)\b")
-SAFE_SCRIPT_CMDS = {"echo", "printf", "mkdir", "python3", "exit", "source", "set", "cat", "true", "false", "find"}
+SHELL_KW = {"if", "then", "else", "elif", "fi", "do", "done", "while", "until", "for", "case", "esac", "!", "{", "}", "[[", "]]"}
+SAFE_SCRIPT_CMDS = {"[", "test", "echo", "printf", "mkdir", "python3", "exit", "source", "set", "cat", "true", "false", "find"}
 
 
 def script_commands(text):
     cmds = set()
+    end = None   # heredoc terminator: body lines are data, not commands
     for line in text.splitlines():
         line = line.strip()
+        if end is not None:
+            if line == end:
+                end = None
+            continue
         if not line or line.startswith("#"):
             continue
+        h = re.search(r"<<-?\s*['\"]?(\w+)['\"]?", line)
+        if h:
+            end = h.group(1)
         line = re.sub(r"\d*[<>]+&?\d*", " ", re.sub(r"\"[^\"]*\"|'[^']*'", "Q", line))   # quotes, redirects (>&2, 2>&1)
         for seg in re.split(r"[;&|]+", line):
             w = seg.strip().split()
+            while w and w[0] in SHELL_KW:   # if/then/do/... are syntax; the command follows them
+                w = w[1:]
             if w and not re.match(r"^\w+=", w[0]):
                 cmds.add(w[0])
             elif w and len(w) > 1 and w[0] == "export":

@@ -144,7 +144,7 @@ def check(test, run, chk):
         bad = []
         for p, (old, new) in arg.items():
             want = re.sub(rf"\b{re.escape(old)}\b", new, _text(b.get(p)))
-            if _text(a.get(p)) != want:
+            if _text(a.get(p)).rstrip("\n") != want.rstrip("\n"):   # a dropped final newline is not an edit (batch 5)
                 bad.append(p)
         return not bad, f"more than a rename in {bad}" if bad else "rename only"
     if kind == "called":
