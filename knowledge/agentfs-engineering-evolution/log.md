@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 20:14
+- Outcome: G14-direct IRRELEVANT (batch 5); tooling false positives fixed in 2.13.1 (knowledge/agentfs-engineering-evolution/principles-test-catalogue.md)
+
 ## 2026-11-25 19:59
 - F32: (d) re-score done, (a) accepted, (h) stays accepted gap (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

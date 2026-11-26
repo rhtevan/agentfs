@@ -2,6 +2,21 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 20:26
+- static record re-scored for 7.15.2: quality 90 Operable, cross_rule_dependency 100 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
+
+## 2026-11-25 20:23
+- evidence 7.15.2: has_bones facts (14 refs, 0.40) (skills/agentfs-setup/artifacts/agents-md/evidence/7.15.2.txt)
+- static record evidence 7.15.2 (zero cross-rule references) (skills/agentfs-setup/artifacts/agents-md/evidence/7.15.2.txt)
+
+## 2026-11-25 20:22
+- README version references -> 7.15.2 (README.md)
+- version 7.15.2 (skills/agentfs-setup/SKILL.md)
+- Rules 1 and 2 refer to actions, not rules: (SOUL.md, USER.md), 'the canary'; checkpoint.sh create if destructive (cross_rule_dependency 4 -> 0) (skills/agentfs-setup/scripts/seed-agents-md.sh)
+
+## 2026-11-25 20:14
+- Outcome: G14-direct IRRELEVANT (batch 5); tooling false positives fixed in 2.13.1 (knowledge/agentfs-engineering-evolution/principles-test-catalogue.md)
+
 ## 2026-11-25 20:09
 - static record re-scored for 7.15.1: quality 80, item_overlap 60, build 100 (skills/agentfs-setup/artifacts/agents-md/scores.yaml)
 

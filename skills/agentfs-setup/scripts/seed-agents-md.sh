@@ -243,8 +243,8 @@ If keywords match a Signal Dispatch entry below → execute that action directly
    Example: user says `hey crc status` → keywords = `crc status`.
 2. Call \`search_nodes(query: "<keywords>")\` as your FIRST tool
    call — before any other tool, including the session-start reads
-   (SOUL.md, Rule 3 USER.md); do those after dispatch. Defer only
-   the reads: on turn 1 the Rule 3 canary is still the first line
+   (SOUL.md, USER.md); do those after dispatch. Defer only
+   the reads: on turn 1 the canary is still the first line
    of your reply, written with this call. The parameter name is
    \`query\`, not \`keywords\`. The policy hook blocks all other
    tools until it completes.
@@ -275,7 +275,7 @@ Assess task complexity, then follow the matching mode:
 
 **Standard Mode** (steps are independent, single phase):
 1. State the plan: what files change, in what order, what outcome.
-2. Fold in constraints: Checkpoint if destructive,
+2. Fold in constraints: \`checkpoint.sh create\` if destructive,
    \`git diff --stat\` + approval if \`git push\`.
 3. Execute. Confirm the stated outcome before responding.
 
@@ -283,7 +283,8 @@ Assess task complexity, then follow the matching mode:
 multi-phase, or user explicitly requests structured execution):
 1. Define pass/fail criteria (**Validation Gate**).
 2. Decompose into numbered actions with expected outcomes.
-3. Fold in constraints: Checkpoint, git push approval.
+3. Fold in constraints: \`checkpoint.sh create\` if destructive,
+   git push approval.
 4. Execute in order. Stop and report on failure.
 5. Run the Validation Gate. Do not claim completion until all pass.
 
