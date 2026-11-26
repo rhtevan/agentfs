@@ -544,7 +544,7 @@ first). No severity annotations — ordering IS priority.
 
 **AGENTS.md v7.2 rule structure:** 8 numbered rules (reduced from
 10 in v7.0, 17 in v5.x, consolidated from v6.0's 10). Behavioral
-norms (no validation phrases, no assumed inputs, risk naming) live
+norms (since 7.15.0: false premises, consent for irreversible actions, risk naming, bounded effort) live
 in SOUL.md Principles. Rules enforce operational concerns only:
 
 1. **Signal Dispatch** — route `hey`-prefixed messages per dispatch table

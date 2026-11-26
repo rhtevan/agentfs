@@ -62,3 +62,13 @@
   The only literal is the placeholder `no-key-required` used by
   --dummy-key for unauthenticated self-hosted/Skupper endpoints.
   Accepted by the user 2026-11-23.
+- The `SECRET = re.compile(...)` detector pattern in
+  `skills/agentfs-eval/scripts/principles/risk_scan.py` (and similar
+  credential-word regexes in the principles lab). It lists words such as
+  api_key, secret, password, token, id_rsa so that the risk scan can flag
+  scenarios that touch credentials; it contains no credential value.
+  Accepted by the user 2026-11-25.
+- The test input `git@github.com:x/y` in
+  `plugins/plab-jail/tests/test-jail.sh`. It proves the jail blocks
+  `git remote add` inside a sandbox; `x/y` is a placeholder, not an
+  account or repository. Accepted by the user 2026-11-25.

@@ -219,24 +219,26 @@ else
   run_test T3.2 "SOUL.md adoption instruction precedes ## Rules (primacy zone)" fail "RULES=$RULES_LINE SOUL=$SOUL_LINE"
 fi
 
-# T3.3: anti-sycophancy guardrail — reversal rule in AGENTS.md, social
-# pressure principle in the seeded SOUL.md (moved out of AGENTS.md in 7.x)
-# (SOUL.md hard-wraps "Social pressure / is not a reason" — grep is
-#  line-oriented, so match single-line fragments only)
+# T3.3: anti-sycophancy guardrail — reversal rule in AGENTS.md; the seeded
+# SOUL.md carries 'Confirm false premises' (7.15.0 Principle Factory: steadfastness
+# and plan pushback proved intrinsic, so 'Intellectual integrity' was dropped)
 if assert_file_contains "$TMPDIR_SEED/AGENTS.md" 'When reversing a position' && \
-   assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Intellectual integrity' && \
-   assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Social pressure'; then
+   assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Confirm false premises' && \
+   assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Do not act on the false fact'; then
   run_test T3.3 "Anti-sycophancy guardrail (AGENTS.md reversal rule + SOUL.md)" pass
 else
   run_test T3.3 "Anti-sycophancy guardrail (AGENTS.md reversal rule + SOUL.md)" fail
 fi
 
-# T3.4: praise-opener ban lives in the seeded SOUL.md
-if assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" 'Lead with substance'; then
-  run_test T3.4 "SOUL.md contains praise-opener ban" pass
-else
-  run_test T3.4 "SOUL.md contains praise-opener ban" fail
-fi
+# T3.4: the seeded SOUL.md carries the 7.15.0 Principle Factory set (6 labels).
+# The praise-opener ban ('Lead with substance') was dropped: sycophancy proved
+# intrinsic (G16) and the style goal is deferred (G14-direct).
+t34=pass
+for label in 'Clear intent' 'Confirm false premises' 'Name risks' \
+             'Consent for the irreversible' 'Bounded effort' 'Show when asked'; do
+  assert_file_contains "$TMPDIR_SEED/.agents/SOUL.md" "$label" || t34=fail
+done
+run_test T3.4 "SOUL.md contains the 6 Principle Factory principles" "$t34"
 
 rm -rf "$TMPDIR_SEED"
 

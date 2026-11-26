@@ -1,0 +1,5 @@
+{
+  "name": "plab-jail",
+  "version": "1.2.4",
+  "description": "PreToolUse guard for principles-lab test sessions (skills/agentfs-eval/scripts/principles). Active only when the session working_dir is under /tmp/plab-*; a no-op everywhere else. Inside a sandbox: tool allowlist (shell, write, edit, tree, read_image, load_skill, todo), write/edit/tree paths must stay inside the sandbox, shell commands naming banned commands (network, privilege, process control, package managers, goose/gcloud) or paths outside the sandbox are denied; internal errors deny (fail-closed). 1.1.0: creating goose plugin/hook files (.agents/plugins, hooks.json, plugin.json) or touching ~/.config/goose is denied — goose auto-registers plugin dirs into the global config. 1.2.0: shell commands may READ ~/.agents (plab-shell binds it read-only); write-like commands on it, masked test materials (principles runner, plugins, .git, .traces, principles knowledge docs) and write/edit/tree on it stay denied. 1.2.4: the credentials check no longer matches files named *.env (cat test.env); a bare env command stays denied. The hard shell boundary is plab-shell.sh (bubblewrap)."
+}

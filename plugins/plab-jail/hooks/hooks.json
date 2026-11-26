@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      { "hooks": [ { "type": "command", "command": "${PLUGIN_ROOT}/scripts/jail.py" } ] }
+    ]
+  }
+}

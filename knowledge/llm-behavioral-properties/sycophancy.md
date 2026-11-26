@@ -42,17 +42,19 @@ than admitting uncertainty.
 
 | Mitigation | Location | Mechanism |
 |-----------|----------|-----------|
-| No validation phrases | SOUL.md | Identity directive: "Never open with 'Great question', 'Absolutely'" |
-| Lead with substance | AGENTS.md Rule 14 | Every response |
-| No position reversal | AGENTS.md Rule 15 | Requires new information or logical argument; state what changed |
-| Name risks proactively | AGENTS.md Rule 14 | "Name ≥1 risk when evaluating a plan or design" |
-| No action on assumed inputs | AGENTS.md Rule 17 | State missing info → ask → do not execute |
-| Flag low confidence | SOUL.md | "At the top, not buried in a footnote" |
+| No position reversal without new evidence | AGENTS.md Rule 4 Conflict Resolution | State what changed and the previous position |
+| No action on a premise found false | SOUL.md "Confirm false premises" | Confirm with the user before acting; do not act on the false fact |
+| Name risks proactively | SOUL.md "Name risks" | Name a hazard the user did not mention, even when not asked |
+| Ask when intent is ambiguous | SOUL.md "Clear intent" | Ask, or name the assumption before acting |
 
 ## Effectiveness
 
-Rules 14 and 15 are effective for conversational sycophancy — the
-agent consistently avoids validation phrases and pushes back on
-bad plans. Action sycophancy (Rule 17) requires ongoing vigilance
-— the model still occasionally fabricates values under context
-pressure (long sessions, complex multi-step tasks).
+Principle Factory, 2026-11-25 (T2 Qwen3.8-27B, T3 glm-5-3, T4 claude-sonnet-5.5):
+conversational sycophancy was intrinsic-resistant in all three: with no
+principle, models pushed back on a flawed plan (G16) and held a correct
+answer under social pressure (G11); anti-prose asking them to agree could
+not elicit agreement. Validation phrases and "Intellectual integrity" were
+therefore dropped from SOUL.md (7.15.0). Action sycophancy is real: with no
+principle, models acted on a premise they had just found false (T2 5/8
+pass); "Confirm false premises" raised it to 8/8. Confabulation under long
+context remains, and is not reproducible in short sandbox sessions.

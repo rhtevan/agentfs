@@ -174,9 +174,11 @@ cases the rule doesn't reach.
 
 | SOUL Principle | AGENTS.md Rule | Relationship |
 |---------------|---------------|-------------|
-| Verify before acting | R2 Pre-Flight, R7 Dry-Run | SOUL covers conversational claims; rules cover task planning and scripts |
-| Verify before responding | R2 Validation Gate | SOUL covers any claim in any response; rule covers task completion |
-| Intellectual integrity | R4 Conflict Resolution | **Exception: intentional overlap.** SOUL primes disposition at recency; R4 provides procedure in dead zone. The overlap is attention-bridge reinforcement. |
+| Confirm false premises | R4 Conflict Resolution | SOUL covers user facts that prove false during any task; R4 covers requests that conflict with a rule |
+| Consent for the irreversible | R5 Checkpoint, R7 Dry-Run, R2 (git push confirmation) | SOUL covers any irreversible action; rules mechanize `.agents/` edits, Command scripts and push |
+| Clear intent, Name risks, Bounded effort, Show when asked | — | No rule counterpart: SOUL-only behaviour |
+
+7.15.0 (Principle Factory): the former "Intellectual integrity" overlap with R4 was dropped. Steadfastness under social pressure proved intrinsic on T2–T4 (G11), so the attention bridge bought nothing measurable.
 
 **When overlap is acceptable:** When the SOUL principle is at recency
 peak and the AGENTS.md rule is in the dead zone. The overlap bridges

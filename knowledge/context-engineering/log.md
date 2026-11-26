@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:13
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+
 ## 2026-11-19 21:33
 - Add missing YAML frontmatter to rule trigger classification (OKF conformance) (knowledge/context-engineering/rule-trigger-classification.md)
 - Add fail-open hook design to bundle index; update MOIM entry (knowledge/context-engineering/index.md)

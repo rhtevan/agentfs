@@ -2,6 +2,382 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:17
+- allowlist: principles-lab detector regex and plab-jail git remote test input (.pre-push-allowlist)
+
+## 2026-11-25 19:15
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/template-check.sh)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/soul-cnl-lint.py)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/principles/variants/s3-trigger.md)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/principles/variants/s2-draft.md)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/principles/variants/s1-control.md)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/principles/variants/s0-current.md)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/principles/risk_scan.py)
+- backfill post-write trace (principles lab, 2.13.0) (skills/agentfs-eval/scripts/principles/plab-shell.sh)
+- test-jail.sh: $HOME instead of a hardcoded home path (pre-push scan) (plugins/plab-jail/tests/test-jail.sh)
+
+## 2026-11-25 19:14
+- system.md base re-pinned to Goose v1.61.0 by system-md-gen.sh (template content unchanged, same sha256); version not bumped (skills/goose-agentfs-setup/artifacts/system.md.base.meta)
+- FACTORY.md status: v1, first full run (skills/agentfs-eval/scripts/principles/FACTORY.md)
+- Behavioral norms list updated for SOUL 7.15.0 (skills/agentfs-setup/references/design-spec.md)
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (README.md)
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/llm-behavioral-properties/sycophancy.md)
+
+## 2026-11-25 19:13
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/agentfs-engineering-evolution/principles-test-catalogue.md)
+
+## 2026-11-25 18:59
+- T3.4: check the 6 Principle Factory labels (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+
+## 2026-11-25 18:58
+- SOUL Principles 7.15.0: Principle Factory composed set (6 principles) (skills/agentfs-setup/scripts/test-soul-authoring.sh)
+- SOUL Principles 7.15.0: Principle Factory composed set (6 principles) (skills/agentfs-setup/SKILL.md)
+
+## 2026-11-25 18:57
+- SOUL Principles 7.15.0: Principle Factory composed set (6 principles) (skills/agentfs-setup/scripts/seed-soul.sh)
+- SOUL Principles 7.15.0: Principle Factory composed set (6 principles) (skills/agentfs-eval/rubrics/sycophancy-detection.yaml)
+
+## 2026-11-25 18:55
+- principles: G12 refinement EFFECTIVE (g12-r1); composed-r1 final (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 18:48
+- principles: G12 refinement plan (skills/agentfs-eval/scripts/principles/goals.yaml)
+- principles: G12 refinement variant composed-r1 (skills/agentfs-eval/scripts/principles/variants/composed-r1.md)
+- principles: G12 refinement variant g12-r1 (skills/agentfs-eval/scripts/principles/variants/g12-r1.md)
+
+## 2026-11-25 18:44
+- principles: compose validation results; G12 interaction (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 17:58
+- principles: composed set of the 6 winners (Batches 1-4) (skills/agentfs-eval/scripts/principles/variants/composed.md)
+- principles: G14-show EFFECTIVE g14-new; Batch 4 closed (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 17:51
+- principles: G15 UNOBSERVABLE, G16 IRRELEVANT, G14 Step C plan (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 17:48
+- principles: Batch 4 Step A/B results recorded (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 17:45
+- principles: _runs skips shell keywords; v_covered pattern widened (Batch 4 audit) (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles: _runs skips shell keywords; v_covered pattern widened (Batch 4 audit) (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- principles: _runs skips shell keywords; v_covered pattern widened (Batch 4 audit) (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-25 17:27
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g16-anti.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g15-anti.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g14-anti.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g16-new.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g16-s0.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g15-new.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g15-s0.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g14-new.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/variants/g14-s0.md)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/goals.yaml)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/selftest.py)
+- Batch 4: G14-show, G15 grounded claims, G16 candid agreement (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+
+## 2026-11-25 16:56
+- G9 EFFECTIVE; Batch 3 closed (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 16:47
+- G9 rescored + step C (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 16:45
+- G9: timeout_check (evidence-based timeout scoring); k_retry not_ran alternative (skills/agentfs-eval/scripts/principles/selftest.py)
+- G9: timeout_check (evidence-based timeout scoring); k_retry not_ran alternative (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- G9: timeout_check (evidence-based timeout scoring); k_retry not_ran alternative (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-25 16:37
+- G9 step A/B (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 16:34
+- timeout_fails: G9 timeouts scored FAIL (k_retry runs were all excluded) (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- timeout_fails: G9 timeouts scored FAIL (k_retry runs were all excluded) (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-25 16:09
+- Batch 3: k_retry, g9-s3, g9-anti (skills/agentfs-eval/scripts/principles/variants/g9-anti.md)
+- Batch 3: k_retry, g9-s3, g9-anti (skills/agentfs-eval/scripts/principles/variants/g9-s3.md)
+- Batch 3: k_retry, g9-s3, g9-anti (skills/agentfs-eval/scripts/principles/goals.yaml)
+- Batch 3: k_retry, g9-s3, g9-anti (skills/agentfs-eval/scripts/principles/selftest.py)
+- Batch 3: k_retry, g9-s3, g9-anti (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- G12 winner g12-s0 accepted; Batch 2 closed (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 16:02
+- G12 step C results (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 15:59
+- G12 step B: relevant on all tiers (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 15:51
+- G3 winner g3-s3; G12 risk valid (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 15:43
+- G5/G8/G11 IRRELEVANT (user); G3 step C (skills/agentfs-eval/scripts/principles/goals.yaml)
+- unclaimed(): tolerate list-shaped results (skills/agentfs-eval/scripts/principles/common.py)
+
+## 2026-11-25 15:41
+- unclaimed(): goose 1.61.0 'not available in this request' shape (false tripwire abort root cause) (skills/agentfs-eval/scripts/principles/selftest.py)
+- unclaimed(): goose 1.61.0 'not available in this request' shape (false tripwire abort root cause) (skills/agentfs-eval/scripts/principles/watchdog.py)
+- unclaimed(): goose 1.61.0 'not available in this request' shape (false tripwire abort root cause) (skills/agentfs-eval/scripts/principles/common.py)
+
+## 2026-11-25 15:28
+- Batch 2 step A/B results (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 15:17
+- Step A fixes: s_recount negation false fail; watchdog logs raw bypass response (skills/agentfs-eval/scripts/principles/selftest.py)
+- Step A fixes: s_recount negation false fail; watchdog logs raw bypass response (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- Step A fixes: s_recount negation false fail; watchdog logs raw bypass response (skills/agentfs-eval/scripts/principles/watchdog.py)
+
+## 2026-11-25 15:06
+- Batch 2 scenarios, anti and candidates wired (skills/agentfs-eval/scripts/principles/goals.yaml)
+- Batch 2 selftest cases (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-25 15:05
+- Batch 2 variant g11-anti (skills/agentfs-eval/scripts/principles/variants/g11-anti.md)
+- Batch 2 variant g8-anti (skills/agentfs-eval/scripts/principles/variants/g8-anti.md)
+- Batch 2 variant g5-anti (skills/agentfs-eval/scripts/principles/variants/g5-anti.md)
+- Batch 2 variant g3-anti (skills/agentfs-eval/scripts/principles/variants/g3-anti.md)
+- Batch 2 variant g12-anti (skills/agentfs-eval/scripts/principles/variants/g12-anti.md)
+- Batch 2 variant g11-s3 (skills/agentfs-eval/scripts/principles/variants/g11-s3.md)
+- Batch 2 variant g11-s0 (skills/agentfs-eval/scripts/principles/variants/g11-s0.md)
+- Batch 2 variant g8-s3 (skills/agentfs-eval/scripts/principles/variants/g8-s3.md)
+- Batch 2 variant g5-s3 (skills/agentfs-eval/scripts/principles/variants/g5-s3.md)
+- Batch 2 variant g3-s3 (skills/agentfs-eval/scripts/principles/variants/g3-s3.md)
+- Batch 2 variant g3-s0 (skills/agentfs-eval/scripts/principles/variants/g3-s0.md)
+- Batch 2 variant g12-s3 (skills/agentfs-eval/scripts/principles/variants/g12-s3.md)
+- Batch 2 variant g12-s0 (skills/agentfs-eval/scripts/principles/variants/g12-s0.md)
+
+## 2026-11-25 15:04
+- max_changed_lines grader (skills/agentfs-eval/scripts/principles/graders.py)
+- Batch 2 scenarios (7) (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+
+## 2026-11-25 14:59
+- Batch 1 closed: G1 g1-new and G13 g13-s3 EFFECTIVE, guards pass (skills/agentfs-eval/scripts/principles/goals.yaml)
+
+## 2026-11-25 14:51
+- g_stale_host pass case uses bold wording regression (skills/agentfs-eval/scripts/principles/selftest.py)
+- prose_has strips markdown emphasis (Step C false fail) (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-25 14:20
+- g1-new: counter-behaviour clause (lint PASS) (skills/agentfs-eval/scripts/principles/variants/g1-new.md)
+
+## 2026-11-25 14:17
+- g1-new: one instruction (lint) (skills/agentfs-eval/scripts/principles/variants/g1-new.md)
+
+## 2026-11-25 14:14
+- G10 IRRELEVANT; G1 redefined (skills/agentfs-eval/scripts/principles/goals.yaml)
+- G1 candidate: confirm false premises (skills/agentfs-eval/scripts/principles/variants/g1-new.md)
+
+## 2026-11-25 13:11
+- Factory Batch 1: n_blanket rev2, g_stale_host, k_coverage (skills/agentfs-eval/scripts/principles/goals.yaml)
+- Factory Batch 1: n_blanket rev2, g_stale_host, k_coverage (skills/agentfs-eval/scripts/principles/selftest.py)
+- Factory Batch 1: n_blanket rev2, g_stale_host, k_coverage (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+
+## 2026-11-25 13:10
+- Factory Batch 1: n_blanket rev2, g_stale_host, k_coverage (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-25 12:24
+- G1 retire g_flaky; G13 revision 1 (skills/agentfs-eval/scripts/principles/goals.yaml)
+- n_blanket: backup differs from live DB (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- plab-jail 1.2.4: .env false block fixed (plugins/plab-jail/plugin.json)
+- plab-jail 1.2.4: .env false block fixed (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail 1.2.4: .env false block fixed (plugins/plab-jail/scripts/jail.py)
+
+## 2026-11-25 12:01
+- Factory: refinement loop and stop rules (skills/agentfs-eval/scripts/principles/FACTORY.md)
+
+## 2026-11-25 11:36
+- g_flaky selftest case update (skills/agentfs-eval/scripts/principles/selftest.py)
+- g_flaky fixture: no URL/token (scan BLOCKERs) (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+
+## 2026-11-25 11:33
+- Goals v2: severity batches, merges (skills/agentfs-eval/scripts/principles/goals.yaml)
+- Selftest cases for Factory Batch 1 scenarios (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-25 11:32
+- Factory Batch 1: variants/g13-anti.md (skills/agentfs-eval/scripts/principles/variants/g13-anti.md)
+- Factory Batch 1: variants/g13-s3.md (skills/agentfs-eval/scripts/principles/variants/g13-s3.md)
+- Factory Batch 1: variants/g10-anti.md (skills/agentfs-eval/scripts/principles/variants/g10-anti.md)
+- Factory Batch 1: variants/g10-new.md (skills/agentfs-eval/scripts/principles/variants/g10-new.md)
+- Factory Batch 1: variants/g1-anti.md (skills/agentfs-eval/scripts/principles/variants/g1-anti.md)
+- Factory Batch 1: variants/g1-s3.md (skills/agentfs-eval/scripts/principles/variants/g1-s3.md)
+- Factory Batch 1: variants/g1-s0.md (skills/agentfs-eval/scripts/principles/variants/g1-s0.md)
+- Factory Batch 1: catalogue.yaml (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+
+## 2026-11-25 11:13
+- Factory: T2 calibration tier, T3 fallback (skills/agentfs-eval/scripts/principles/FACTORY.md)
+
+## 2026-11-25 10:52
+- Retire REDESIGN.md (superseded by FACTORY.md) (skills/agentfs-eval/scripts/principles/REDESIGN.md)
+- Principle Factory goals (draft) (skills/agentfs-eval/scripts/principles/goals.yaml)
+- Principle Factory spec (draft) (skills/agentfs-eval/scripts/principles/FACTORY.md)
+
+## 2026-11-25 01:23
+- Draft principles test redesign (review only) (skills/agentfs-eval/scripts/principles/REDESIGN.md)
+
+## 2026-11-25 00:36
+- principles: turns skip TOM turn-context (userVisible=false) + answers[]; max_lines/max_chars on final answer; ii_hold concession check; offers += say the word (skills/agentfs-eval/scripts/principles/run.py)
+- principles: turns skip TOM turn-context (userVisible=false) + answers[]; max_lines/max_chars on final answer; ii_hold concession check; offers += say the word (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles: turns skip TOM turn-context (userVisible=false) + answers[]; max_lines/max_chars on final answer; ii_hold concession check; offers += say the word (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- principles: turns skip TOM turn-context (userVisible=false) + answers[]; max_lines/max_chars on final answer; ii_hold concession check; offers += say the word (skills/agentfs-eval/scripts/principles/graders.py)
+- principles: turns skip TOM turn-context (userVisible=false) + answers[]; max_lines/max_chars on final answer; ii_hold concession check; offers += say the word (skills/agentfs-eval/scripts/principles/common.py)
+
+## 2026-11-25 00:15
+- principles: prose_has (code-stripped) for risk hazard check (smoke 5 false PASS); provider retries 4 with 30/60/120s backoff; T2 concurrency 3 (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-25 00:14
+- principles: prose_has (code-stripped) for risk hazard check (smoke 5 false PASS); provider retries 4 with 30/60/120s backoff; T2 concurrency 3 (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles: prose_has (code-stripped) for risk hazard check (smoke 5 false PASS); provider retries 4 with 30/60/120s backoff; T2 concurrency 3 (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- principles: prose_has (code-stripped) for risk hazard check (smoke 5 false PASS); provider retries 4 with 30/60/120s backoff; T2 concurrency 3 (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-24 23:39
+- principles graders: asks accepts an explicit request without '?' (10/10 vba_missing FAILs in smokes 1-5 were requests) (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles graders: asks accepts an explicit request without '?' (10/10 vba_missing FAILs in smokes 1-5 were requests) (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-24 23:23
+- plab-jail 1.2.3: ~/.agents check ignores relative tokens (verdict was cwd-dependent: hook vs watchdog diverged on '~20' -> false jail_bypass); cwd-invariance tests (plugins/plab-jail/plugin.json)
+- plab-jail 1.2.3: ~/.agents check ignores relative tokens (verdict was cwd-dependent: hook vs watchdog diverged on '~20' -> false jail_bypass); cwd-invariance tests (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail 1.2.3: ~/.agents check ignores relative tokens (verdict was cwd-dependent: hook vs watchdog diverged on '~20' -> false jail_bypass); cwd-invariance tests (plugins/plab-jail/scripts/jail.py)
+
+## 2026-11-24 23:10
+- principles watchdog -> deterministic tripwire (jail_bypass + fail-closed poll); T4 reviewer removed; report Observations table (jail reasons, probes, invented tools) (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles watchdog -> deterministic tripwire (jail_bypass + fail-closed poll); T4 reviewer removed; report Observations table (jail reasons, probes, invented tools) (skills/agentfs-eval/scripts/principles/risk_scan.py)
+- principles watchdog -> deterministic tripwire (jail_bypass + fail-closed poll); T4 reviewer removed; report Observations table (jail reasons, probes, invented tools) (skills/agentfs-eval/scripts/principles/run.py)
+- principles watchdog -> deterministic tripwire (jail_bypass + fail-closed poll); T4 reviewer removed; report Observations table (jail reasons, probes, invented tools) (skills/agentfs-eval/scripts/principles/watchdog.py)
+- principles: removed T4 reviewer calibration (watchdog is now a deterministic tripwire) (skills/agentfs-eval/scripts/principles/watchdog_calib.py)
+
+## 2026-11-24 23:09
+- plab-jail 1.2.2: -i counts as in-place only for sed/perl (rg/grep -i reads were blocked); 6 tests (plugins/plab-jail/plugin.json)
+- plab-jail 1.2.2: -i counts as in-place only for sed/perl (rg/grep -i reads were blocked); 6 tests (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail 1.2.2: -i counts as in-place only for sed/perl (rg/grep -i reads were blocked); 6 tests (plugins/plab-jail/scripts/jail.py)
+
+## 2026-11-24 22:58
+- principles watchdog: consequence-based T4 review prompt + build-time reviewer calibration (watchdog_calib, scan BLOCKER on miss) (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-24 22:57
+- principles watchdog: consequence-based T4 review prompt + build-time reviewer calibration (watchdog_calib, scan BLOCKER on miss) (skills/agentfs-eval/scripts/principles/risk_scan.py)
+- principles watchdog: consequence-based T4 review prompt + build-time reviewer calibration (watchdog_calib, scan BLOCKER on miss) (skills/agentfs-eval/scripts/principles/watchdog_calib.py)
+- principles watchdog: consequence-based T4 review prompt + build-time reviewer calibration (watchdog_calib, scan BLOCKER on miss) (skills/agentfs-eval/scripts/principles/watchdog.py)
+
+## 2026-11-24 22:55
+- plab-jail 1.2.1: quote-aware command segments (grep patterns with | no longer split); 7 regression tests (plugins/plab-jail/plugin.json)
+- plab-jail 1.2.1: quote-aware command segments (grep patterns with | no longer split); 7 regression tests (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail 1.2.1: quote-aware command segments (grep patterns with | no longer split); 7 regression tests (plugins/plab-jail/scripts/jail.py)
+
+## 2026-11-24 22:40
+- principles runner: gate_shell asserts library read-only + masks empty (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-24 22:35
+- principles: scan blocks if answer-key masks missing; hook_stall selftest (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles: scan blocks if answer-key masks missing; hook_stall selftest (skills/agentfs-eval/scripts/principles/risk_scan.py)
+
+## 2026-11-24 22:34
+- principles: hook_stall + diagnostics in report; reviewer knows ~/.agents is read-only (skills/agentfs-eval/scripts/principles/watchdog.py)
+- principles: hook_stall + diagnostics in report; reviewer knows ~/.agents is read-only (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-24 22:33
+- plab-jail 1.2.0: read-only ~/.agents for shell; masks; write-like commands denied (plugins/plab-jail/plugin.json)
+- plab-jail 1.2.0: read-only ~/.agents for shell; masks; write-like commands denied (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail 1.2.0: read-only ~/.agents for shell; masks; write-like commands denied (plugins/plab-jail/scripts/jail.py)
+- plab-shell: .traces mask optional (skills/agentfs-eval/scripts/principles/plab-shell.sh)
+- plab-shell: ~/.agents read-only with test materials masked; git identity; comment fix (skills/agentfs-eval/scripts/principles/plab-shell.sh)
+
+## 2026-11-24 22:23
+- principles: execution-aware ran/not_ran/max_runs checks; probe prompt; watchdog task context + per-run abort (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles: execution-aware ran/not_ran/max_runs checks; probe prompt; watchdog task context + per-run abort (skills/agentfs-eval/scripts/principles/run.py)
+- principles: execution-aware ran/not_ran/max_runs checks; probe prompt; watchdog task context + per-run abort (skills/agentfs-eval/scripts/principles/watchdog.py)
+- principles: execution-aware ran/not_ran/max_runs checks; probe prompt; watchdog task context + per-run abort (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+- principles: execution-aware ran/not_ran/max_runs checks; probe prompt; watchdog task context + per-run abort (skills/agentfs-eval/scripts/principles/graders.py)
+
+## 2026-11-24 21:53
+- watchdog: jail-blocked calls never reach the T4 reviewer (same-poll ordering bug); selftest case (skills/agentfs-eval/scripts/principles/selftest.py)
+- watchdog: jail-blocked calls never reach the T4 reviewer (same-poll ordering bug); selftest case (skills/agentfs-eval/scripts/principles/watchdog.py)
+
+## 2026-11-24 21:52
+- selftest: G4 unclaimed-tool case (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-24 21:51
+- principles: goose unclaimed (invented) tool calls = not executed (watchdog false jail-bypass abort) (skills/agentfs-eval/scripts/principles/common.py)
+- principles: goose unclaimed (invented) tool calls = not executed (watchdog false jail-bypass abort) (skills/agentfs-eval/scripts/principles/watchdog.py)
+
+## 2026-11-24 21:22
+- selftest: hygiene test column fix (skills/agentfs-eval/scripts/principles/selftest.py)
+- selftest: session hygiene test (delete_sessions child rows, sessions_for slash) (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-24 21:21
+- principles: delete_sessions cursor bug (orphan messages + session id reuse) fixed and self-verifying (skills/agentfs-eval/scripts/principles/common.py)
+
+## 2026-11-24 21:20
+- principles: sessions_for matches working_dir without trailing slash (would have graded every run empty) (skills/agentfs-eval/scripts/principles/common.py)
+
+## 2026-11-24 20:54
+- principles lab: SOUL CNL lint integration + s3 default variant (skills/agentfs-eval/scripts/principles/risk_scan.py)
+- principles lab: SOUL CNL lint integration + s3 default variant (skills/agentfs-eval/scripts/principles/run.py)
+- template-check A15: SOUL CNL lint summary line (skills/agentfs-eval/scripts/template-check.sh)
+
+## 2026-11-24 20:53
+- principles lab: s3 reflow (skills/agentfs-eval/scripts/principles/variants/s3-trigger.md)
+- principles lab: s3 lint fixes (skills/agentfs-eval/scripts/principles/variants/s3-trigger.md)
+- principles lab: s3 trigger-form variant (CNL C7/C3/C5) (skills/agentfs-eval/scripts/principles/variants/s3-trigger.md)
+
+## 2026-11-24 20:49
+- SOUL CNL lint (L1-L7) (skills/agentfs-eval/scripts/soul-cnl-lint.py)
+
+## 2026-11-24 17:23
+- risk scan: redirect tokenizer fix (skills/agentfs-eval/scripts/principles/risk_scan.py)
+
+## 2026-11-24 17:20
+- principles: block/revert goose plugin auto-registration (skills/agentfs-eval/scripts/principles/risk_scan.py)
+- principles: block/revert goose plugin auto-registration (skills/agentfs-eval/scripts/principles/run.py)
+- principles: block/revert goose plugin auto-registration (skills/agentfs-eval/scripts/principles/plab-shell.sh)
+- plab-jail 1.1.0: block plugin auto-registration vector (plugins/plab-jail/plugin.json)
+- plab-jail 1.1.0: block plugin auto-registration vector (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail 1.1.0: block plugin auto-registration vector (plugins/plab-jail/scripts/jail.py)
+
+## 2026-11-24 17:19
+- selftest: single-violation cases (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-24 17:18
+- selftest: every check load-bearing (skills/agentfs-eval/scripts/principles/selftest.py)
+- selftest: G4 harness fixes (skills/agentfs-eval/scripts/principles/selftest.py)
+- principles selftest (G2/G4) (skills/agentfs-eval/scripts/principles/selftest.py)
+
+## 2026-11-24 17:16
+- principles risk scan (buildtime) (skills/agentfs-eval/scripts/principles/risk_scan.py)
+- runner: default runs (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-24 17:15
+- principles runner (skills/agentfs-eval/scripts/principles/run.py)
+
+## 2026-11-24 17:14
+- watchdog: any hook denial = contained (skills/agentfs-eval/scripts/principles/watchdog.py)
+- principles runner: T4 watchdog (skills/agentfs-eval/scripts/principles/watchdog.py)
+
+## 2026-11-24 17:13
+- principles graders: dispatch cleanup (skills/agentfs-eval/scripts/principles/graders.py)
+- principles runner: graders (skills/agentfs-eval/scripts/principles/graders.py)
+- principles runner: shared library (skills/agentfs-eval/scripts/principles/common.py)
+
+## 2026-11-24 17:12
+- principles catalogue v1 (21 tests) (skills/agentfs-eval/scripts/principles/catalogue.yaml)
+
+## 2026-11-24 17:11
+- principles variant s2-draft.md (skills/agentfs-eval/scripts/principles/variants/s2-draft.md)
+- principles variant s1-control.md (skills/agentfs-eval/scripts/principles/variants/s1-control.md)
+- principles variant s0-current.md (skills/agentfs-eval/scripts/principles/variants/s0-current.md)
+- principles runner: bubblewrap GOOSE_SHELL (skills/agentfs-eval/scripts/principles/plab-shell.sh)
+
+## 2026-11-24 17:10
+- plab-jail hooks (plugins/plab-jail/hooks/hooks.json)
+- plab-jail 1.0.0 (plugins/plab-jail/plugin.json)
+- plab-jail 1.0.0 (plugins/plab-jail/hooks/hooks.json)
+- plab-jail 1.0.0 (plugins/plab-jail/scripts/jail.py)
+- plab-jail unit cases (plugins/plab-jail/tests/test-jail.sh)
+- plab-jail: PreToolUse guard for principles-lab sandboxes (plugins/plab-jail/scripts/jail.py)
+
 ## 2026-11-24 13:30
 - F31: record pre-push-scan pipefail/SIGPIPE false-GAP fix (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 

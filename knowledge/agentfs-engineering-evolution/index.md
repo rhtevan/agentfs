@@ -43,7 +43,7 @@ Three ultimate goals for this Context/AgentFS Evolution:
 | [Benchmark Results](./benchmark-results.md) | Evidence | Stochastic benchmark results: frontier 100%, 14B 85% skill operability after QOO conversions |
 | [AgentFS Evaluation Methodology](./evaluation-methodology.md) | Convention | **Canonical.** Artifact model (ordinary vs base skill), evaluation matrix (Quality / Observable / Operable build+runtime), records & invariants, static + compliance-runtime evaluation, improvement loop, pitfalls, doc map |
 | [Dry-Run & Compliance Plan](./dry-run-and-compliance-plan.md) | Convention | R7 dry-run gate design, compliance-profile schema, and the F1–F26 findings tracker (harness drift, effort root cause, QOO retirement, eval modes) |
-| [Principles Test Catalogue](./principles-test-catalogue.md) | Convention | DRAFT (F26): 19 SOUL principle tests (smoke set 8), harness contract, value/cost screen, T2-first campaign shape, per-principle adoption rule |
+| [Principles Test Catalogue](./principles-test-catalogue.md) | Convention | F26 ✅: original 19-test draft plus §7 Principle Factory outcome (6 EFFECTIVE goals → SOUL 7.15.0, labels, interaction, findings) |
 | [Quality Schema v2.0 Plan](./quality-schema-v2-plan.md) | Convention | Replace broken concern_count + accidental_complexity heuristics with step_clarity + prose_executability semantic dimensions |
 | [Skill QOO Qualification Plan](./skill-qoo-qualification-plan.md) | Convention | Full portfolio plan: 4-tier model classification (T1-T4), tier-aware qualification targets, 8-phase execution (A-H), 59 skills classified |
 

@@ -351,6 +351,28 @@ print((f"{l14}\tA14: Non-literal tool/script syntax — " + "; ".join(hits)) if 
 PYLINT
 )
 
+# ── A15: SOUL principles CNL lint (2026-11-24, F26) ─────────────────
+# soul-cnl-lint.py on $TARGET/.agents/SOUL.md: C7 trigger + behaviour
+# (+ counter), C2 active imperative, C1 one instruction, C3 one term per
+# concept, no cross-principle references. One summary line so the score
+# stays comparable; details: python3 soul-cnl-lint.py <SOUL.md>.
+# Level on lint FAIL is WARN until a CNL-clean template ships
+# (A15_LEVEL=FAIL to enforce).
+SOUL_FILE="$TARGET/.agents/SOUL.md"
+LINT="$(dirname "${BASH_SOURCE[0]}")/soul-cnl-lint.py"
+if [ -f "$SOUL_FILE" ] && [ -f "$LINT" ]; then
+  A15_SUM=$(python3 "$LINT" "$SOUL_FILE" --tsv | awk -F'\t' '$1=="SUMMARY"{print $2" "$3" "$4}')
+  read -r A15_SIG A15_F A15_W <<< "${A15_SUM:-FAIL ? ?}"
+  case "$A15_SIG" in
+    PASS) result_pass "A15: SOUL principles pass CNL lint" ;;
+    WARN) result_warn "A15: SOUL principles CNL lint — $A15_W warn (run soul-cnl-lint.py)" ;;
+    *) if [ "${A15_LEVEL:-WARN}" = FAIL ]; then result_fail "A15: SOUL principles CNL lint — $A15_F fail, $A15_W warn (run soul-cnl-lint.py)"
+       else result_warn "A15: SOUL principles CNL lint — $A15_F fail, $A15_W warn (run soul-cnl-lint.py)"; fi ;;
+  esac
+else
+  result_warn "A15: SOUL.md or soul-cnl-lint.py not found — CNL lint skipped"
+fi
+
 # ── Score & History ───────────────────────────────────────────────────
 TOTAL=$((PASS + FAIL + WARN))
 if [ "$TOTAL" -gt 0 ]; then

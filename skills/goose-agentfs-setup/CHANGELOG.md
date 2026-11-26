@@ -3,6 +3,7 @@
 
 | Updated | Change |
 |---------|--------|
+| 2026-11-25 19:14 | v1.10.5 — system.md base re-pinned to Goose v1.61.0 by system-md-gen.sh (template content unchanged, same sha256); version not bumped |
 | 2026-11-20 01:17 | v1.10.5 — Troubleshooting: preflight-reminder 1.5.0 passes the six named read-only scripts without a hold; List the preflight 1.5.0 read-only script exemption in Troubleshooting (skills/goose-agentfs-setup/SKILL.md) |
 | 2026-11-20 00:59 | v1.10.4 — Dependencies: signal-dispatch row covers KGM enabled globally (enforces every session); fresh-setup-roadmap Phase 5 notes the global-enable effects; Cover KGM enabled globally in the signal-dispatch Dependencies row (skills/goose-agentfs-setup/SKILL.md) |
 | 2026-11-20 00:29 | v1.10.3 — Troubleshooting: replace stale KGM symlink row with env-wrapper root cause (goose-kgm 1.8.3); Troubleshooting: preflight-reminder 1.4.0 read-only classification and 'Do not retry' clarification |

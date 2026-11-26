@@ -2,6 +2,9 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:14
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/llm-behavioral-properties/sycophancy.md)
+
 ## 2026-11-19 21:44
 - Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/over-tooling.md)
 - Add OKF frontmatter (type, title, description, timestamp) for v0.1 conformance (knowledge/llm-behavioral-properties/no-forward-chaining.md)

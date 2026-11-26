@@ -2,6 +2,14 @@
 
 <!-- Append-only. Newest entries at top. -->
 
+## 2026-11-25 19:14
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/llm-behavioral-properties/sycophancy.md)
+
+## 2026-11-25 19:13
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/context-engineering/cnl-authoring-for-weak-models.md)
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
+- Principle Factory outcome: SOUL 7.15.0 (6 principles) (knowledge/agentfs-engineering-evolution/principles-test-catalogue.md)
+
 ## 2026-11-24 13:30
 - F31: record pre-push-scan pipefail/SIGPIPE false-GAP fix (knowledge/agentfs-engineering-evolution/dry-run-and-compliance-plan.md)
 
